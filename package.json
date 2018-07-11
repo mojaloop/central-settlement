@@ -1,0 +1,36 @@
+{
+    "name": "settlementengine",
+    "description": "",
+    "version": "1.0.0",
+    "author": "Valentin Genev <vgenev@gmail.com>",
+    "contributors": [],
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/vgenev/settlementengine.git"
+    },
+    "bugs": "http://github.com/vgenev/settlementengine/issues",
+    "publishConfig": {
+        "registry": "https://registry.npmjs.org"
+    },
+    "dependencies": {
+        "hapi": "^17.0.0",
+        "boom": "^7.1.1",
+        "hapi-openapi": "^1.0.0"
+    },
+    "devDependencies": {
+        "eslint": "^2",
+        "tape": "^4",
+        "istanbul": "~0.4.3",
+        "swagmock": "~0.0.2"
+    },
+    "scripts": {
+        "test": "tape 'tests/**/*.js'",
+        "cover": "istanbul cover tape -- 'tests/**/*.js'",
+        "lint": "eslint .",
+        "regenerate": "yo swaggerize:test --framework hapi --apiPath './config/swagger.json'"
+    },
+    "generator-swaggerize": {
+        "version": "4.1.0"
+    },
+    "main": "./server"
+}
