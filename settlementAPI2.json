@@ -310,7 +310,7 @@
           "400": {
             "description": "Bad request.",
             "schema": {
-              "$ref": "#/definitions/SettlementAckResponse"
+              "$ref": "#/definitions/ErrorCode400"
             }
           },
           "401": {

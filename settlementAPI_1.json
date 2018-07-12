@@ -12,6 +12,7 @@
   ],
   "paths": {
     "/settlementWindows/findByState": {
+      "x-hapi-handler": "./handlers/settlementWindows/findByState",
       "get": {
         "produces": [
           "application/json"
@@ -66,6 +67,7 @@
       }
     },
     "/settlementWindows/findByDateRange": {
+      "x-hapi-handler": "./handlers/settlementWindows/findByDateRange",
       "get": {
         "produces": [
           "application/json"
@@ -123,6 +125,7 @@
       }
     },
     "/settlementWindows/{settlementWindowId}": {
+      "x-hapi-handler": "./handlers/settlementWindows/{settlementWindowId}",
       "post": {
         "produces": [
           "application/json"
@@ -182,6 +185,7 @@
       }
     },
     "/settlements/{settlementId}": {
+      "x-hapi-handler": "./handlers/settlements/{settlementId}",
       "get": {
         "produces": [
           "application/json"
@@ -229,6 +233,7 @@
       }
     },
     "/settlements": {
+      "x-hapi-handler": "./handlers/settlements",
       "post": {
         "produces": [
           "application/json"
@@ -308,28 +313,16 @@
             }
           },
           "400": {
-            "description": "Bad request.",
-            "schema": {
-              "$ref": "#/definitions/SettlementAckResponse"
-            }
+            "description": "Bad request."
           },
           "401": {
-            "description": "Authorisation information is missing or invalid.",
-            "schema": {
-              "$ref": "#/definitions/ErrorCode401"
-            }
+            "description": "Authorisation information is missing or invalid."
           },
           "404": {
-            "description": "Settlement window could not be closed.",
-            "schema": {
-              "$ref": "#/definitions/ErrorCode404"
-            }
+            "description": "Settlement window could not be closed."
           },
           "415": {
-            "description": "Unsupported Media Type",
-            "schema": {
-              "$ref": "#/definitions/ErrorCode415"
-            }
+            "description": "Unsupported Media Type"
           },
           "default": {
             "description": "Unexpected error",
@@ -341,6 +334,7 @@
       }
     },
     "/settlements/findByParticipant": {
+      "x-hapi-handler": "./handlers/findByParticipant",
       "get": {
         "produces": [
           "application/json"
@@ -368,28 +362,16 @@
             }
           },
           "400": {
-            "description": "Bad request. The participant must be a valid string.",
-            "schema": {
-              "$ref": "#/definitions/ErrorCode400"
-            }
+            "description": "Bad request. The participant must be a valid string."
           },
           "401": {
-            "description": "Authorisation information is missing or invalid.",
-            "schema": {
-              "$ref": "#/definitions/ErrorCode401"
-            }
+            "description": "Authorisation information is missing or invalid."
           },
           "404": {
-            "description": "No settlement for this participant found.",
-            "schema": {
-              "$ref": "#/definitions/ErrorCode404"
-            }
+            "description": "No settlement for this participant found."
           },
           "415": {
-            "description": "Unsupported Media Type.",
-            "schema": {
-              "$ref": "#/definitions/ErrorCode415"
-            }
+            "description": "Unsupported Media Type"
           },
           "default": {
             "description": "Unexpected error",
@@ -537,50 +519,6 @@
           "items": {
             "$ref": "#/definitions/SettledParticipant"
           }
-        }
-      }
-    },
-    "ErrorCode400": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        }
-      }
-    },
-    "ErrorCode401": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        }
-      }
-    },
-    "ErrorCode404": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        }
-      }
-    },
-    "ErrorCode415": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
         }
       }
     },
