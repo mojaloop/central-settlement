@@ -68,7 +68,7 @@ Test('/settlements/{settlementId}/participants', function (t) {
 
         for (let responseCode of responseCodes) {
 //            options.responseCode = responseCode
-            server.app.responseCode = responseCode            
+            server.app.responseCode = responseCode
             const response = await server.inject(options);
             t.equal(response.statusCode, responseCode, 'Ok response status');
         }
