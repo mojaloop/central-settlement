@@ -76,6 +76,7 @@ Test('/settlements/{settlementId}/participants', function (t) {
         t.end();
     } catch (e) {
         console.log(e)
+        t.end()
     }
     });
 });
