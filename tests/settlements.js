@@ -35,6 +35,7 @@ Test('/settlements', function (t) {
             Mockgen().requests({
                 path: '/settlements',
                 operation: 'post',
+                response: '200',
                 headers: {"Content-Type": "application/json"}
             }, function (error, mock) {
                 return error ? reject(error) : resolve(mock);
