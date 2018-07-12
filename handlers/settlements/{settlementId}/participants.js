@@ -17,7 +17,10 @@ module.exports = {
     get: async function getSettledParticipants(request, h) {
         const getData = new Promise((resolve, reject) => {
             dataAccess.get[`${request.server.app.responseCode}`](request, h, (error, mock) => {
-                return error ? reject(error) : resolve(mock.responses)
+                if (error) reject(error)
+                else if (!mock.responses) resolve()
+                else if (mock.responses && mock.responses.code) resolve(Boom.boomify(new Error(mock.responses.message), {statusCode: mock.responses.code}))
+                else resolve(mock.responses)
             })
         })
         try {
