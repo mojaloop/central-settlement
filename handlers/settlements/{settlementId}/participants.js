@@ -2,6 +2,7 @@
 
 const Boom = require('boom');
 const dataAccess = require('../../../data/settlements/{settlementId}/participants')
+
 /**
  * Operations on /settlements/{settlementId}/participants
  */
@@ -13,12 +14,16 @@ module.exports = {
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    put: async function putSettledParticipants(request, h) {
+    get: async function getSettledParticipants(request, h) {
         const getData = new Promise((resolve, reject) => {
-            dataAccess.put["200"](request, h, (error, mock) => {
+            dataAccess.get[`${request.server.app.responseCode}`](request, h, (error, mock) => {
                 return error ? reject(error) : resolve(mock.responses)
             })
         })
+        try {
         return await getData
+    } catch (e) {
+        console.log(e)
+    }
     }
 };
