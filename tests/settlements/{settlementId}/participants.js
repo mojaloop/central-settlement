@@ -5,7 +5,7 @@ const Hapi = require('hapi');
 const HapiOpenAPI = require('hapi-openapi');
 const Path = require('path');
 const Mockgen = require('../../../data/mockgen.js');
-const responseCodes = [200, 400, 401, 404, 415]
+const responseCodes = [200, 400, 401, 404, 415];
 
 /**
  * Test for /settlements/{settlementId}/participants
@@ -67,7 +67,6 @@ Test('/settlements/{settlementId}/participants', function (t) {
         }
 
         for (let responseCode of responseCodes) {
-//            options.responseCode = responseCode
             server.app.responseCode = responseCode
             const response = await server.inject(options);
             t.equal(response.statusCode, responseCode, 'Ok response status');

@@ -42,19 +42,28 @@
             }
           },
           "400": {
-            "description": "Bad request. The settlement window state must be a valid string."
+            "description": "Bad request.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode400"
+            }
           },
           "401": {
-            "description": "Authorisation information is missing or invalid."
+            "description": "Authorisation information is missing or invalid.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode401"
+            }
           },
           "404": {
-            "description": "No settlement windows with this state found."
+            "description": "No data found.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode404"
+            }
           },
           "415": {
-            "description": "Unsupported Media Type."
-          },
-          "500": {
-            "description": "connection refused."
+            "description": "Unsupported Media Type.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode415"
+            }
           },
           "default": {
             "description": "Unexpected error",
@@ -102,16 +111,28 @@
             }
           },
           "400": {
-            "description": "Bad request. `start_date` + `end_date` are required.."
+            "description": "Bad request.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode400"
+            }
           },
           "401": {
-            "description": "Authorisation information is missing or invalid."
+            "description": "Authorisation information is missing or invalid.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode401"
+            }
           },
           "404": {
-            "description": "No settlement windows with this date range found."
+            "description": "No data found.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode404"
+            }
           },
           "415": {
-            "description": "Unsupported Media Type"
+            "description": "Unsupported Media Type.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode415"
+            }
           },
           "default": {
             "description": "Unexpected error",
@@ -161,16 +182,28 @@
             }
           },
           "400": {
-            "description": "Bad request."
+            "description": "Bad request.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode400"
+            }
           },
           "401": {
-            "description": "Authorisation information is missing or invalid."
+            "description": "Authorisation information is missing or invalid.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode401"
+            }
           },
           "404": {
-            "description": "Settlement window could not be closed."
+            "description": "No data found.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode404"
+            }
           },
           "415": {
-            "description": "Unsupported Media Type"
+            "description": "Unsupported Media Type.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode415"
+            }
           },
           "default": {
             "description": "Unexpected error",
@@ -208,16 +241,28 @@
             }
           },
           "400": {
-            "description": "Bad request. The settlement window state must be a valid string."
+            "description": "Bad request.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode400"
+            }
           },
           "401": {
-            "description": "Authorisation information is missing or invalid."
+            "description": "Authorisation information is missing or invalid.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode401"
+            }
           },
           "404": {
-            "description": "No settlement windows with this state found."
+            "description": "No data found.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode404"
+            }
           },
           "415": {
-            "description": "Unsupported Media Type"
+            "description": "Unsupported Media Type.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode415"
+            }
           },
           "default": {
             "description": "Unexpected error",
@@ -261,16 +306,28 @@
             }
           },
           "400": {
-            "description": "Bad request."
+            "description": "Bad request.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode400"
+            }
           },
           "401": {
-            "description": "Authorisation information is missing or invalid."
+            "description": "Authorisation information is missing or invalid.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode401"
+            }
           },
           "404": {
-            "description": "Settlement window could not be closed."
+            "description": "No data found.",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode404"
+            }
           },
           "415": {
-            "description": "Unsupported Media Type"
+            "description": "Unsupported Media Type",
+            "schema": {
+              "$ref": "#/definitions/ErrorCode415"
+            }
           },
           "default": {
             "description": "Unexpected error",
@@ -310,7 +367,7 @@
           "400": {
             "description": "Bad request.",
             "schema": {
-              "$ref": "#/definitions/SettlementAckResponse"
+              "$ref": "#/definitions/ErrorCode400"
             }
           },
           "401": {
@@ -320,7 +377,7 @@
             }
           },
           "404": {
-            "description": "Settlement window could not be closed.",
+            "description": "No data found.",
             "schema": {
               "$ref": "#/definitions/ErrorCode404"
             }
@@ -368,7 +425,7 @@
             }
           },
           "400": {
-            "description": "Bad request. The participant must be a valid string.",
+            "description": "Bad request.",
             "schema": {
               "$ref": "#/definitions/ErrorCode400"
             }
@@ -380,7 +437,7 @@
             }
           },
           "404": {
-            "description": "No settlement for this participant found.",
+            "description": "No data found.",
             "schema": {
               "$ref": "#/definitions/ErrorCode404"
             }
@@ -541,10 +598,20 @@
       }
     },
     "ErrorCode400": {
-      "type": "object",
+      "required": [
+        "status",
+        "code",
+        "message"
+      ],
       "properties": {
+        "status": {
+          "type": "integer"
+        },
         "code": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            400
+          ]
         },
         "message": {
           "type": "string"
@@ -552,10 +619,20 @@
       }
     },
     "ErrorCode401": {
-      "type": "object",
+      "required": [
+        "status",
+        "code",
+        "message"
+      ],
       "properties": {
+        "status": {
+          "type": "integer"
+        },
         "code": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            401
+          ]
         },
         "message": {
           "type": "string"
@@ -563,10 +640,20 @@
       }
     },
     "ErrorCode404": {
-      "type": "object",
+      "required": [
+        "status",
+        "code",
+        "message"
+      ],
       "properties": {
+        "status": {
+          "type": "integer"
+        },
         "code": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            404
+          ]
         },
         "message": {
           "type": "string"
@@ -574,10 +661,20 @@
       }
     },
     "ErrorCode415": {
-      "type": "object",
+      "required": [
+        "status",
+        "code",
+        "message"
+      ],
       "properties": {
+        "status": {
+          "type": "integer"
+        },
         "code": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            415
+          ]
         },
         "message": {
           "type": "string"
@@ -585,19 +682,27 @@
       }
     },
     "Error": {
-      "type": "object",
+      "required": [
+        "status",
+        "code",
+        "message"
+      ],
       "properties": {
+        "status": {
+          "type": "integer"
+        },
         "code": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "MISSING_REQUIRED_PARAMETER",
+            "INVALID_INPUT",
+            "OTHER"
+          ]
         },
         "message": {
           "type": "string"
         }
-      },
-      "required": [
-        "code",
-        "message"
-      ]
+      }
     }
   }
 }
