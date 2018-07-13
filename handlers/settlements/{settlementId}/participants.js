@@ -9,7 +9,7 @@ const dataAccess = require('../../../data/settlements/{settlementId}/participant
 module.exports = {
     /**
      * summary: Acknowledgement of a settlement.
-     * description: 
+     * description:
      * parameters: settlementId
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
@@ -24,9 +24,9 @@ module.exports = {
             })
         })
         try {
-        return await getData
-    } catch (e) {
-        console.log(e)
-    }
+            return await getData
+        } catch (e) {
+            console.log(e)
+        }
     }
 };
