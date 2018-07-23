@@ -1,14 +1,18 @@
 {
-    "name": "settlementengine",
-    "description": "",
     "version": "1.0.0",
+    "name": "central-settlement",
+    "description": "Central settlements hosted by a scheme to record and settle settlements.",
+    "license": "Apache-2.0",
+    "private": true,
     "author": "Valentin Genev <vgenev@gmail.com>",
-    "contributors": [],
+    "contributors": [
+        "Deon Botha <deon.botha@modusbox.com>"
+    ],
     "repository": {
         "type": "git",
-        "url": "git://github.com/vgenev/settlementengine.git"
+        "url": "git://github.com/mojaloop/central-settlement"
     },
-    "bugs": "http://github.com/vgenev/settlementengine/issues",
+    "bugs": "http://github.com/mojaloop/central-settlement/issues",
     "publishConfig": {
         "registry": "https://registry.npmjs.org"
     },
@@ -25,8 +29,10 @@
     },
     "scripts": {
         "test": "tape 'tests/**/*.js'",
-        "cover": "istanbul cover tape -- 'tests/**/*.js'",
+        "cover": "istanbul cover tape -- 'tests/*.js'",
         "lint": "eslint .",
+        "test:coverage-check": "npm run test:coverage && istanbul check-coverage",
+        "test:coverage": "istanbul cover tape -- 'tests/**/*.js'",
         "regenerate": "yo swaggerize:test --framework hapi --apiPath './config/swagger.json'"
     },
     "generator-swaggerize": {
