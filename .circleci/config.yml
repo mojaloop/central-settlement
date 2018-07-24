@@ -157,10 +157,7 @@ jobs:
           command: mkdir -p ./test/results
       - run:
           name: Install tape and tap-xunit
-          command: npm install -g tape tap-xunit
-      - run:
-          name: Install tapes
-          command: npm install -g tapes
+          command: npm install -g tape tapes tap-xunit
       - run:
           name: Execute unit tests
             command: npm -s run test:xunit > ./test/results/tape.xml

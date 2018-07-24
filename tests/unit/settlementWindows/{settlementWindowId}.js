@@ -4,38 +4,38 @@ const Test = require('tape');
 const Hapi = require('hapi');
 const HapiOpenAPI = require('hapi-openapi');
 const Path = require('path');
-const Mockgen = require('../../data/mockgen.js');
+const Mockgen = require('../../../data/mockgen.js');
 const responseCodes = [200, 400, 401, 404, 415, 500];
 
 /**
- * Test for /settlements/{settlementId}
+ * Test for /settlementWindows/{settlementWindowId}
  */
-Test('/settlements/{settlementId}', function (t) {
+Test('/settlementWindows/{settlementWindowId}', function (t) {
 
     /**
-     * summary: Returns Settlements per Id.
+     * summary: If the settlementWindow is open, it can be closed and a new window created. If it is already closed, return an error message. Returns the new settlement window.
      * description:
-     * parameters: settlementId
+     * parameters: settlementWindowId, settlementWindowClosurePayload
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    t.test('test getSettlementsById get operation', async function (t) {
+    t.test('test closeSettlementWindow post operation', async function (t) {
 
         const server = new Hapi.Server();
         try {
             await server.register({
                 plugin: HapiOpenAPI,
                 options: {
-                    api: Path.resolve(__dirname, '../../config/swagger.json'),
-                    handlers: Path.join(__dirname, '../../handlers'),
+                    api: Path.resolve(__dirname, '../../../config/swagger.json'),
+                    handlers: Path.join(__dirname, '../../../handlers'),
                     outputvalidation: true
                 }
             });
 
             const requests = new Promise((resolve, reject) => {
                 Mockgen().requests({
-                    path: '/settlements/{settlementId}',
-                    operation: 'get'
+                    path: '/settlementWindows/{settlementWindowId}',
+                    operation: 'post'
                 }, function (error, mock) {
                     return error ? reject(error) : resolve(mock);
                 });
@@ -48,7 +48,7 @@ Test('/settlements/{settlementId}', function (t) {
             //Get the resolved path from mock request
             //Mock request Path templates({}) are resolved using path parameters
             const options = {
-                method: 'get',
+                method: 'post',
                 url: '/v2' + mock.request.path
             };
             if (mock.request.body) {
@@ -65,6 +65,7 @@ Test('/settlements/{settlementId}', function (t) {
             if (mock.request.headers && mock.request.headers.length > 0) {
                 options.headers = mock.request.headers;
             }
+
             for (let responseCode of responseCodes) {
                 server.app.responseCode = responseCode
                 const response = await server.inject(options);
@@ -73,8 +74,9 @@ Test('/settlements/{settlementId}', function (t) {
             t.end();
 
         } catch (e) {
-            console.log(e)
+            t.fail(e)
             t.end()
         }
     });
+
 });
