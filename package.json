@@ -29,6 +29,7 @@
     },
     "scripts": {
         "test": "tape 'tests/**/*.js'",
+        "test:xunit": "tape 'testPI2/unit/**/*.test.js' | tap-xunit",
         "cover": "istanbul cover tape -- 'tests/*.js'",
         "lint": "eslint .",
         "test:coverage-check": "npm run test:coverage && istanbul check-coverage",
