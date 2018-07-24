@@ -161,7 +161,6 @@ jobs:
       - run:
           name: Execute unit tests
             command: npm -s run test:xunit > ./test/results/tape.xml
-
       - store_artifacts:
           path: ./test/results
           prefix: test
