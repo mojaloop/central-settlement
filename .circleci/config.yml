@@ -149,13 +149,18 @@ jobs:
           command: *defaults_Dependencies
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-      - run:
-          name: Install tape, tapes and tap-xunit
-          command: npm install -g tape tapes tap-xunit
+          keys:
+            - dependency-cache-{{ checksum "package.json" }}
+            - dependency-cache-
       - run:
           name: Create dir for test results
           command: mkdir -p ./test/results
+      - run:
+          name: Install tape and tap-xunit
+          command: npm install -g tape tap-xunit
+      - run:
+          name: Install tapes
+          command: npm install -g tapes
       - run:
           name: Execute unit tests
           command: npm -s run test > ./test/results/tape.xml
@@ -177,7 +182,9 @@ jobs:
           command: *defaults_awsCliDependencies
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
+          keys: 
+            - dependency-cache-{{ checksum "package.json" }}
+            - dependency-cache-
       - run:
           name: Execute code coverage check
           command: npm -s run cover
@@ -192,7 +199,7 @@ jobs:
             if [ "${CIRCLE_BRANCH}" == "master" ];
             then
                 echo "Sending lcov.info to SonarQube..."
-                aws s3 cp coverage/lcov.info $AWS_S3_DIR_SONARQUBE/central-ledger/lcov.info
+                aws s3 cp coverage/lcov.info $AWS_S3_DIR_SONARQUBE/central-settlement/lcov.info
             else
                 echo "Not a release (env CIRCLE_BRANCH != 'master'), skipping sending lcov.info to SonarQube."
             fi
