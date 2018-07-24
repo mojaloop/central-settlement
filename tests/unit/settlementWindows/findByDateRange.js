@@ -4,37 +4,37 @@ const Test = require('tape');
 const Hapi = require('hapi');
 const HapiOpenAPI = require('hapi-openapi');
 const Path = require('path');
-const Mockgen = require('../../data/mockgen.js');
+const Mockgen = require('../../../data/mockgen.js');
 const responseCodes = [200, 400, 401, 404, 415, 500];
 
 /**
- * Test for /settlements/findByParticipant
+ * Test for /settlementWindows/findByDateRange
  */
-Test('/settlements/findByParticipant', function (t) {
+Test('/settlementWindows/findByDateRange', function (t) {
 
     /**
-     * summary: Returns Settlements per Partricipant (DFSP).
+     * summary: Returns Settlement Windows including states and closure reasons. Filtered by date Range.
      * description:
-     * parameters: participantId
+     * parameters: startDate, endDate
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    t.test('test getSettlementsByParticipantId get operation', async function (t) {
+    t.test('test getSettlementWindowsByDateRange get operation', async function (t) {
 
         const server = new Hapi.Server();
         try {
             await server.register({
                 plugin: HapiOpenAPI,
                 options: {
-                    api: Path.resolve(__dirname, '../../config/swagger.json'),
-                    handlers: Path.join(__dirname, '../../handlers'),
+                    api: Path.resolve(__dirname, '../../../config/swagger.json'),
+                    handlers: Path.join(__dirname, '../../../handlers'),
                     outputvalidation: true
                 }
             });
 
             const requests = new Promise((resolve, reject) => {
                 Mockgen().requests({
-                    path: '/settlements/findByParticipant',
+                    path: '/settlementWindows/findByDateRange',
                     operation: 'get'
                 }, function (error, mock) {
                     return error ? reject(error) : resolve(mock);
@@ -65,6 +65,7 @@ Test('/settlements/findByParticipant', function (t) {
             if (mock.request.headers && mock.request.headers.length > 0) {
                 options.headers = mock.request.headers;
             }
+
             for (let responseCode of responseCodes) {
                 server.app.responseCode = responseCode
                 const response = await server.inject(options);
@@ -73,7 +74,7 @@ Test('/settlements/findByParticipant', function (t) {
             t.end();
 
         } catch (e) {
-            console.log(e)
+            t.fail(e)
             t.end()
         }
     });

@@ -23,13 +23,16 @@
     },
     "devDependencies": {
         "eslint": "^2",
-        "tape": "^4",
         "istanbul": "~0.4.3",
-        "swagmock": "~0.0.2"
+        "swagmock": "~0.0.2",
+        "tap-xunit": "1.4.0",
+        "tape": "4.6.2",
+        "tapes": "4.1.0"
+    
     },
     "scripts": {
-        "test": "tape 'tests/**/*.js'",
-        "test:xunit": "tape 'testPI2/unit/**/*.test.js' | tap-xunit",
+        "test": "tape 'tests/unit/**/*.js'",
+        "test:xunit": "tape 'tests/unit/**/*.js' | tap-xunit",
         "cover": "istanbul cover tape -- 'tests/*.js'",
         "lint": "eslint .",
         "test:coverage-check": "npm run test:coverage && istanbul check-coverage",

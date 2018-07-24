@@ -43,7 +43,7 @@ module.exports = {
         try {
             return await getData
         } catch (e) {
-            console.log(e)
+            throw (Boom.boomify(e))
         }
     }
 };

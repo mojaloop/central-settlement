@@ -4,38 +4,38 @@ const Test = require('tape');
 const Hapi = require('hapi');
 const HapiOpenAPI = require('hapi-openapi');
 const Path = require('path');
-const Mockgen = require('../../data/mockgen.js');
+const Mockgen = require('../../../data/mockgen.js');
 const responseCodes = [200, 400, 401, 404, 415, 500];
 
 /**
- * Test for /settlementWindows/{settlementWindowId}
+ * Test for /settlementWindows/findByState
  */
-Test('/settlementWindows/{settlementWindowId}', function (t) {
+Test('/settlementWindows/findByState', function (t) {
 
     /**
-     * summary: If the settlementWindow is open, it can be closed and a new window created. If it is already closed, return an error message. Returns the new settlement window.
+     * summary: Returns Settlement Windows including states and closure reasons. Filtered by state.
      * description:
-     * parameters: settlementWindowId, settlementWindowClosurePayload
+     * parameters: state
      * produces: application/json
-     * responses: 200, 400, 401, 404, 415, default
+     * responses: 200, 400, 401, 404, 415, 500, default
      */
-    t.test('test closeSettlementWindow post operation', async function (t) {
+    t.test('test getSettlementWindowsByState get operation', async function (t) {
 
         const server = new Hapi.Server();
         try {
             await server.register({
                 plugin: HapiOpenAPI,
                 options: {
-                    api: Path.resolve(__dirname, '../../config/swagger.json'),
-                    handlers: Path.join(__dirname, '../../handlers'),
+                    api: Path.resolve(__dirname, '../../../config/swagger.json'),
+                    handlers: Path.join(__dirname, '../../../handlers'),
                     outputvalidation: true
                 }
             });
 
             const requests = new Promise((resolve, reject) => {
                 Mockgen().requests({
-                    path: '/settlementWindows/{settlementWindowId}',
-                    operation: 'post'
+                    path: '/settlementWindows/findByState',
+                    operation: 'get'
                 }, function (error, mock) {
                     return error ? reject(error) : resolve(mock);
                 });
@@ -48,7 +48,7 @@ Test('/settlementWindows/{settlementWindowId}', function (t) {
             //Get the resolved path from mock request
             //Mock request Path templates({}) are resolved using path parameters
             const options = {
-                method: 'post',
+                method: 'get',
                 url: '/v2' + mock.request.path
             };
             if (mock.request.body) {
@@ -71,10 +71,11 @@ Test('/settlementWindows/{settlementWindowId}', function (t) {
                 const response = await server.inject(options);
                 t.equal(response.statusCode, responseCode, 'Ok response status');
             }
+
             t.end();
 
         } catch (e) {
-            console.log(e)
+            t.fail(e)
             t.end()
         }
     });
