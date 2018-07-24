@@ -182,7 +182,9 @@ jobs:
           command: *defaults_awsCliDependencies
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
+          keys: 
+            - dependency-cache-{{ checksum "package.json" }}
+            - dependency-cache-
       - run:
           name: Execute code coverage check
           command: npm -s run cover
@@ -197,7 +199,7 @@ jobs:
             if [ "${CIRCLE_BRANCH}" == "master" ];
             then
                 echo "Sending lcov.info to SonarQube..."
-                aws s3 cp coverage/lcov.info $AWS_S3_DIR_SONARQUBE/central-ledger/lcov.info
+                aws s3 cp coverage/lcov.info $AWS_S3_DIR_SONARQUBE/central-settlement/lcov.info
             else
                 echo "Not a release (env CIRCLE_BRANCH != 'master'), skipping sending lcov.info to SonarQube."
             fi
