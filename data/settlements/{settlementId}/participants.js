@@ -10,9 +10,9 @@ module.exports = {
      * parameters: settlementId
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
-     * operationId: putSettledParticipants
+     * operationId: getSettledParticipants
      */
-    put: {
+    get: {
         200: function (req, res, callback) {
             /**
              * Using mock data generator module.
@@ -20,7 +20,7 @@ module.exports = {
              */
             Mockgen().responses({
                 path: '/settlements/{settlementId}/participants',
-                operation: 'put',
+                operation: 'get',
                 response: '200'
             }, callback);
         },
@@ -31,7 +31,7 @@ module.exports = {
              */
             Mockgen().responses({
                 path: '/settlements/{settlementId}/participants',
-                operation: 'put',
+                operation: 'get',
                 response: '400'
             }, callback);
         },
@@ -42,7 +42,7 @@ module.exports = {
              */
             Mockgen().responses({
                 path: '/settlements/{settlementId}/participants',
-                operation: 'put',
+                operation: 'get',
                 response: '401'
             }, callback);
         },
@@ -53,7 +53,7 @@ module.exports = {
              */
             Mockgen().responses({
                 path: '/settlements/{settlementId}/participants',
-                operation: 'put',
+                operation: 'get',
                 response: '404'
             }, callback);
         },
@@ -64,7 +64,7 @@ module.exports = {
              */
             Mockgen().responses({
                 path: '/settlements/{settlementId}/participants',
-                operation: 'put',
+                operation: 'get',
                 response: '415'
             }, callback);
         },
@@ -75,7 +75,7 @@ module.exports = {
              */
             Mockgen().responses({
                 path: '/settlements/{settlementId}/participants',
-                operation: 'put',
+                operation: 'get',
                 response: 'default'
             }, callback);
         }

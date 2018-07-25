@@ -4,36 +4,37 @@ const Test = require('tape');
 const Hapi = require('hapi');
 const HapiOpenAPI = require('hapi-openapi');
 const Path = require('path');
-const Mockgen = require('../../data/mockgen.js');
+const Mockgen = require('../../../../data/mockgen.js');
+const responseCodes = [200, 400, 401, 404, 415, 500];
 
 /**
- * Test for /settlementWindows/findByDateRange
+ * Test for /settlements/{settlementId}/participants
  */
-Test('/settlementWindows/findByDateRange', function (t) {
+Test('/settlements/{settlementId}/participants', function (t) {
 
     /**
-     * summary: Returns Settlement Windows including states and closure reasons. Filtered by date Range.
+     * summary: Acknowledgement of a settlement.
      * description: 
-     * parameters: startDate, endDate
+     * parameters: settlementId
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    t.test('test getSettlementWindowsByDateRange get operation', async function (t) {
+    t.test('test getSettledParticipants get operation', async function (t) {
 
         const server = new Hapi.Server();
-
+        try {
         await server.register({
             plugin: HapiOpenAPI,
             options: {
-                api: Path.resolve(__dirname, '../../config/swagger.json'),
-                handlers: Path.join(__dirname, '../../handlers'),
+                api: Path.resolve(__dirname, '../../../../config/swagger.json'),
+                handlers: Path.join(__dirname, '../../../../handlers'),
                 outputvalidation: true
             }
         });
 
         const requests = new Promise((resolve, reject) => {
             Mockgen().requests({
-                path: '/settlementWindows/findByDateRange',
+                path: '/settlements/{settlementId}/participants',
                 operation: 'get'
             }, function (error, mock) {
                 return error ? reject(error) : resolve(mock);
@@ -65,11 +66,16 @@ Test('/settlementWindows/findByDateRange', function (t) {
             options.headers = mock.request.headers;
         }
 
-        const response = await server.inject(options);
+        for (let responseCode of responseCodes) {
+            server.app.responseCode = responseCode
+            const response = await server.inject(options);
+            t.equal(response.statusCode, responseCode, 'Ok response status');
+        }
 
-        t.equal(response.statusCode, 200, 'Ok response status');
         t.end();
-
+    } catch (e) {
+        t.fail(e)
+        t.end()
+    }
     });
-    
 });
