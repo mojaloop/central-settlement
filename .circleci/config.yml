@@ -157,10 +157,13 @@ jobs:
           command: mkdir -p ./test/results
       - run:
           name: Install tape and tap-xunit
-          command: npm install -g tape tapes tap-xunit
+          command: npm install -g tape tap-xunit
+      - run:
+          name: Install tapes
+          command: npm install -g tapes
       - run:
           name: Execute unit tests
-            command: npm -s run test:xunit > ./test/results/tape.xml
+          command: npm -s run test:xunit > ./test/results/tape.xml
       - store_artifacts:
           path: ./test/results
           prefix: test
@@ -430,17 +433,17 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
-    #   - test-integration:
-    #       context: org-global
-    #       requires:
-    #         - setup
-    #       filters:
-    #         tags:
-    #           only: /.*/
-    #         branches:
-    #           ignore:
-    #             - /feature*/
-    #             - /bugfix*/
+#       - test-integration:
+#           context: org-global
+#           requires:
+#             - setup
+#           filters:
+#             tags:
+#               only: /.*/
+#             branches:
+#               ignore:
+#                 - /feature*/
+#                 - /bugfix*/
 #      - test-functional:
 #          context: org-global
 #          requires:
@@ -452,17 +455,17 @@ workflows:
 #              ignore:
 #                - /feature*/
 #                - /bugfix*/
-    #   - test-spec:
-    #       context: org-global
-    #       requires:
-    #         - setup
-    #       filters:
-    #           tags:
-    #             only: /.*/
-    #         branches:
-    #           ignore:
-    #             - /feature*/
-    #             - /bugfix*/
+#       - test-spec:
+#           context: org-global
+#           requires:
+#             - setup
+#           filters:
+#               tags:
+#                 only: /.*/
+#             branches:
+#               ignore:
+#                 - /feature*/
+#                 - /bugfix*/
       - build-snapshot:
           context: org-global
           requires:
@@ -470,7 +473,7 @@ workflows:
             - test-unit
             - test-coverage
             # - test-integration
-#            - test-functional
+            # - test-functional
             # - test-spec
           filters:
             tags:
@@ -495,7 +498,7 @@ workflows:
             - test-unit
             - test-coverage
             # - test-integration
-#            - test-functional
+            # - test-functional
             # - test-spec
           filters:
             tags:
