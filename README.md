@@ -6,3 +6,4 @@ The API is still only a design and the current code is the boilerplate for furth
 
 This is part of the Mojaloop project.
 
+See license information for more details.
