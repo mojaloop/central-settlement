@@ -33,10 +33,10 @@
     "scripts": {
         "test": "tape 'tests/unit/**/*.js'",
         "test:xunit": "tape 'tests/unit/**/*.js' | tap-xunit",
-        "cover": "istanbul cover tape -- 'tests/*.js'",
+        "cover": "istanbul cover tape -- 'tests/unit/**/*.js'",
         "lint": "eslint .",
         "test:coverage-check": "npm run test:coverage && istanbul check-coverage",
-        "test:coverage": "istanbul cover tape -- 'tests/**/*.js'",
+        "test:coverage": "istanbul cover tape -- 'tests/unit/**/*.js'",
         "regenerate": "yo swaggerize:test --framework hapi --apiPath './config/swagger.json'"
     },
     "generator-swaggerize": {
