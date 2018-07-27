@@ -9,7 +9,17 @@ const Mockgen = require('../../../../../../../data/mockgen.js');
 /**
  * Test for /settlements/{settlementId}/participants/{participantId}/accounts/{accountId}
  */
-Test('/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}', function (t) {
+Test('/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}', async function (t) {
+
+    const server = new Hapi.Server();
+    await server.register({
+        plugin: HapiOpenAPI,
+        options: {
+            api: Path.resolve(__dirname, '../../../../../../../config/swagger.json'),
+            handlers: Path.join(__dirname, '../../../../../../../handlers'),
+            outputvalidation: true
+        }
+    });
 
     /**
      * summary: Returns Settlement(s) as per filter criteria.
@@ -18,18 +28,8 @@ Test('/settlements/{settlementId}/participants/{participantId}/accounts/{account
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    t.test('test getSettlementsBySettlementParticipantAccounts get operation', async function (t) {
 
-        const server = new Hapi.Server();
-
-        await server.register({
-            plugin: HapiOpenAPI,
-            options: {
-                api: Path.resolve(__dirname, '../../../../../../config/swagger.json'),
-                handlers: Path.join(__dirname, '../../../../../../handlers'),
-                outputvalidation: true
-            }
-        });
+   await t.test('test getSettlementsBySettlementParticipantAccounts get operation', async function (t) {
 
         const requests = new Promise((resolve, reject) => {
             Mockgen().requests({
@@ -78,9 +78,9 @@ Test('/settlements/{settlementId}/participants/{participantId}/accounts/{account
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    t.test('test updateSettlementBySettlementParticipantsAccounts put operation', async function (t) {
+   await t.test('test updateSettlementBySettlementParticipantsAccounts put operation', async function (t) {
 
-        const server = new Hapi.Server();
+        /*const server = new Hapi.Server();
 
         await server.register({
             plugin: HapiOpenAPI,
@@ -89,7 +89,7 @@ Test('/settlements/{settlementId}/participants/{participantId}/accounts/{account
                 handlers: Path.join(__dirname, '../../../../../../handlers'),
                 outputvalidation: true
             }
-        });
+        });*/
 
         const requests = new Promise((resolve, reject) => {
             Mockgen().requests({
@@ -129,6 +129,7 @@ Test('/settlements/{settlementId}/participants/{participantId}/accounts/{account
 
         t.equal(response.statusCode, 200, 'Ok response status');
         t.end();
+        server.close();
 
     });
     
