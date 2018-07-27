@@ -5,14 +5,14 @@ var Mockgen = require('./mockgen.js');
  */
 module.exports = {
     /**
-     * summary: Trigger the creation of a settlement event, that does the calculation of the net settlement position per participant and marks all transfers in the affected windows as Pending settlement. Returned dataset is the net settlement report for the settlementwindow
+     * summary: Returns Settlement(s) as per parameter(s).
      * description: 
-     * parameters: settlementEventPayload
+     * parameters: id, settlementWindowId, ledgerId, state, fromDateTime, toDateTime
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
-     * operationId: postSettlementEvent
+     * operationId: getSettlementsByParams
      */
-    post: {
+    get: {
         200: function (req, res, callback) {
             /**
              * Using mock data generator module.
@@ -20,7 +20,7 @@ module.exports = {
              */
             Mockgen().responses({
                 path: '/settlements',
-                operation: 'post',
+                operation: 'get',
                 response: '200'
             }, callback);
         },
@@ -31,7 +31,7 @@ module.exports = {
              */
             Mockgen().responses({
                 path: '/settlements',
-                operation: 'post',
+                operation: 'get',
                 response: '400'
             }, callback);
         },
@@ -42,7 +42,7 @@ module.exports = {
              */
             Mockgen().responses({
                 path: '/settlements',
-                operation: 'post',
+                operation: 'get',
                 response: '401'
             }, callback);
         },
@@ -53,7 +53,7 @@ module.exports = {
              */
             Mockgen().responses({
                 path: '/settlements',
-                operation: 'post',
+                operation: 'get',
                 response: '404'
             }, callback);
         },
@@ -64,7 +64,7 @@ module.exports = {
              */
             Mockgen().responses({
                 path: '/settlements',
-                operation: 'post',
+                operation: 'get',
                 response: '415'
             }, callback);
         },
@@ -75,7 +75,7 @@ module.exports = {
              */
             Mockgen().responses({
                 path: '/settlements',
-                operation: 'post',
+                operation: 'get',
                 response: 'default'
             }, callback);
         }

@@ -1,16 +1,16 @@
 'use strict';
-var Mockgen = require('../mockgen.js');
+var Mockgen = require('./mockgen.js');
 /**
- * Operations on /settlementWindows/findByDateRange
+ * Operations on /settlementWindows
  */
 module.exports = {
     /**
-     * summary: Returns Settlement Windows including states and closure reasons. Filtered by date Range.
+     * summary: Returns a Settlement Window(s) as per parameter(s).
      * description: 
-     * parameters: startDate, endDate
+     * parameters: id, state, fromDateTime, toDateTime
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
-     * operationId: getSettlementWindowsByDateRange
+     * operationId: getSettlementWindowByParams
      */
     get: {
         200: function (req, res, callback) {
@@ -19,7 +19,7 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/findByDateRange',
+                path: '/settlementWindows',
                 operation: 'get',
                 response: '200'
             }, callback);
@@ -30,7 +30,7 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/findByDateRange',
+                path: '/settlementWindows',
                 operation: 'get',
                 response: '400'
             }, callback);
@@ -41,7 +41,7 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/findByDateRange',
+                path: '/settlementWindows',
                 operation: 'get',
                 response: '401'
             }, callback);
@@ -52,7 +52,7 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/findByDateRange',
+                path: '/settlementWindows',
                 operation: 'get',
                 response: '404'
             }, callback);
@@ -63,7 +63,7 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/findByDateRange',
+                path: '/settlementWindows',
                 operation: 'get',
                 response: '415'
             }, callback);
@@ -74,7 +74,7 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/findByDateRange',
+                path: '/settlementWindows',
                 operation: 'get',
                 response: 'default'
             }, callback);
