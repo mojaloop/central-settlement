@@ -3,17 +3,17 @@
 const Boom = require('boom');
 
 /**
- * Operations on /settlements
+ * Operations on /settlementWindows
  */
 module.exports = {
     /**
-     * summary: Returns Settlement(s) as per parameter(s).
+     * summary: Returns a Settlement Window(s) as per parameter(s).
      * description: 
-     * parameters: id, settlementWindowId, ledgerId, state, fromDateTime, toDateTime
+     * parameters: id, state, fromDateTime, toDateTime
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    get: function getSettlementsByParams(request, h) {
+    get: function getSettlementWindowByParams(request, h) {
         return Boom.notImplemented();
     }
 };
