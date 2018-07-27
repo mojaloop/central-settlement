@@ -4,7 +4,7 @@ const Test = require('tape');
 const Hapi = require('hapi');
 const HapiOpenAPI = require('hapi-openapi');
 const Path = require('path');
-const Mockgen = require('../../../../data/mockgen.js');
+const Mockgen = require('../../../data/mockgen.js');
 
 /**
  * Test for /settlementWindows/{settlementWindowId}
