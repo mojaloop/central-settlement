@@ -3,8 +3,9 @@
 const Boom = require('boom');
 const Path = require('path');
 const dataAccess = require('../data/settlements');
+const Logger = require('@mojaloop/central-services-shared').Logger
 
-console.log('path ', Path.basename(__filename));
+Logger.info('path ', Path.basename(__filename));
 /**
  * Operations on /settlements
  */

@@ -2,6 +2,7 @@
 
 const Boom = require('boom');
 const dataAccess = require('../data/settlementWindows');
+const Logger = require('@mojaloop/central-services-shared').Logger
 
 /**
  * Operations on /settlementWindows
