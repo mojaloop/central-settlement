@@ -17,9 +17,10 @@
         "registry": "https://registry.npmjs.org"
     },
     "dependencies": {
-        "hapi": "^17.0.0",
         "boom": "^7.1.1",
-        "hapi-openapi": "^1.0.0"
+        "hapi": "^17.0.0",
+        "hapi-openapi": "^1.0.0",
+        "hapi-pagination": "^2.0.0"
     },
     "devDependencies": {
         "eslint": "^2",
