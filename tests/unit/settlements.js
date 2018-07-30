@@ -5,7 +5,7 @@ const Hapi = require('hapi');
 const HapiOpenAPI = require('hapi-openapi');
 const Path = require('path');
 const Mockgen = require('../../data/mockgen.js');
-const responseCodes = [200, 400, 401, 404, 415];
+const responseCodes = [200, 400, 401, 404, 415, 500];
 
 /**
  * Test for /settlements
