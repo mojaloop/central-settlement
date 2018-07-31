@@ -8,18 +8,18 @@ const Mockgen = require('../../data/mockgen.js');
 const responseCodes = [200, 400, 401, 404, 415, 500];
 
 /**
- * Test for /settlements
+ * Test for /settlementWindows
  */
-Test('/settlements', function (t) {
+Test('/settlementWindows', function (t) {
 
     /**
-     * summary: Returns Settlement(s) as per parameter(s).
+     * summary: Returns a Settlement Window(s) as per parameter(s).
      * description:
-     * parameters: id, settlementWindowId, ledgerId, state, fromDateTime, toDateTime
+     * parameters: id, state, fromDateTime, toDateTime
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    t.test('test getSettlementsByParams get operation', async function (t) {
+    t.test('test getSettlementWindowByParams get operation', async function (t) {
 
         const server = new Hapi.Server();
         try {
@@ -34,7 +34,7 @@ Test('/settlements', function (t) {
 
             const requests = new Promise((resolve, reject) => {
                 Mockgen().requests({
-                    path: '/settlements',
+                    path: '/settlementWindows',
                     operation: 'get'
                 }, function (error, mock) {
                     return error ? reject(error) : resolve(mock);
@@ -73,7 +73,7 @@ Test('/settlements', function (t) {
             }
             t.end();
         } catch (e) {
-            t.fail(e)
+            t.fail(e);
             t.end()
         }
     });

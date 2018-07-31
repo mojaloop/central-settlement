@@ -12,7 +12,7 @@ const openAPIOptions = {
 
 const init = async function(config = {
     port: 8080
-    }, openAPIPluginOptions = openAPIOptions) {
+}, openAPIPluginOptions = openAPIOptions) {
     const server = new Hapi.Server(config);
 
     await server.register({

@@ -4,37 +4,37 @@ const Test = require('tape');
 const Hapi = require('hapi');
 const HapiOpenAPI = require('hapi-openapi');
 const Path = require('path');
-const Mockgen = require('../../../data/mockgen.js');
+const Mockgen = require('../../../../../../../data/mockgen.js');
 const responseCodes = [200, 400, 401, 404, 415, 500];
 
 /**
- * Test for /settlementWindows/{settlementWindowId}
+ * Test for /settlements/{settlementId}/participants/{participantId}/accounts/{accountId}
  */
-Test('/settlementWindows/{settlementWindowId}', function (t) {
+Test('/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}', async function (t) {
+
+    const server = new Hapi.Server();
+    await server.register({
+        plugin: HapiOpenAPI,
+        options: {
+            api: Path.resolve(__dirname, '../../../../../../../config/swagger.json'),
+            handlers: Path.join(__dirname, '../../../../../../../handlers'),
+            outputvalidation: true
+        }
+    });
 
     /**
-     * summary: Returns a Settlement Window as per Settlement Window Id.
+     * summary: Returns Settlement(s) as per filter criteria.
      * description:
-     * parameters: settlementWindowId
+     * parameters: settlementId, participantId, accountId
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    t.test('test getSettlementWindowById get operation', async function (t) {
 
-        const server = new Hapi.Server();
+    await t.test('test getSettlementsBySettlementParticipantAccounts get operation', async function (t) {
         try {
-            await server.register({
-                plugin: HapiOpenAPI,
-                options: {
-                    api: Path.resolve(__dirname, '../../../config/swagger.json'),
-                    handlers: Path.join(__dirname, '../../../handlers'),
-                    outputvalidation: true
-                }
-            });
-
             const requests = new Promise((resolve, reject) => {
                 Mockgen().requests({
-                    path: '/settlementWindows/{settlementWindowId}',
+                    path: '/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}',
                     operation: 'get'
                 }, function (error, mock) {
                     return error ? reject(error) : resolve(mock);
@@ -78,29 +78,29 @@ Test('/settlementWindows/{settlementWindowId}', function (t) {
         }
     });
     /**
-     * summary: If the settlementWindow is open, it can be closed and a new window created. If it is already closed, return an error message. Returns the new settlement window.
+     * summary: Acknowledegement of settlement by updating thereason and state by Settlements Id, Participant Id and accounts Id
      * description:
-     * parameters: settlementWindowId, settlementWindowClosurePayload
+     * parameters: settlementId, participantId, accountId, settlementUpdatePayload
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    t.test('test closeSettlementWindow post operation', async function (t) {
+    await t.test('test updateSettlementBySettlementParticipantsAccounts put operation', async function (t) {
 
-        const server = new Hapi.Server();
+        /*const server = new Hapi.Server();
+
+        await server.register({
+            plugin: HapiOpenAPI,
+            options: {
+                api: Path.resolve(__dirname, '../../../../../../config/swagger.json'),
+                handlers: Path.join(__dirname, '../../../../../../handlers'),
+                outputvalidation: true
+            }
+        });*/
         try {
-            await server.register({
-                plugin: HapiOpenAPI,
-                options: {
-                    api: Path.resolve(__dirname, '../../../config/swagger.json'),
-                    handlers: Path.join(__dirname, '../../../handlers'),
-                    outputvalidation: true
-                }
-            });
-
             const requests = new Promise((resolve, reject) => {
                 Mockgen().requests({
-                    path: '/settlementWindows/{settlementWindowId}',
-                    operation: 'post'
+                    path: '/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}',
+                    operation: 'put'
                 }, function (error, mock) {
                     return error ? reject(error) : resolve(mock);
                 });
@@ -113,7 +113,7 @@ Test('/settlementWindows/{settlementWindowId}', function (t) {
             //Get the resolved path from mock request
             //Mock request Path templates({}) are resolved using path parameters
             const options = {
-                method: 'post',
+                method: 'put',
                 url: '/v1' + mock.request.path
             };
             if (mock.request.body) {

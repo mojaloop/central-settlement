@@ -1,7 +1,7 @@
 {
-    "version": "1.0.0",
-    "name": "central-settlement",
+    "name": "new-central-settlement",
     "description": "Central settlements hosted by a scheme to record and settle settlements.",
+    "version": "1.0.0",
     "license": "Apache-2.0",
     "private": true,
     "author": "Valentin Genev <vgenev@gmail.com>",
@@ -17,9 +17,15 @@
         "registry": "https://registry.npmjs.org"
     },
     "dependencies": {
-        "hapi": "^17.0.0",
+        "@mojaloop/central-services-auth": "0.2.0",
+        "@mojaloop/central-services-database": "^1.2.4-snapshotMYSQL",
+        "@mojaloop/central-services-error-handling": "0.5.1",
+        "@mojaloop/central-services-shared": "^3.1.0-snapshot",
+        "@mojaloop/forensic-logging-client": "0.5.1",
         "boom": "^7.1.1",
-        "hapi-openapi": "^1.0.0"
+        "hapi": "^17.0.0",
+        "hapi-openapi": "^1.0.0",
+        "hapi-pagination": "^2.0.0"
     },
     "devDependencies": {
         "eslint": "^2",
@@ -28,7 +34,6 @@
         "tap-xunit": "1.4.0",
         "tape": "4.6.2",
         "tapes": "4.1.0"
-    
     },
     "scripts": {
         "test": "tape 'tests/unit/**/*.js'",

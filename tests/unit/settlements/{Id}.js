@@ -8,18 +8,18 @@ const Mockgen = require('../../../data/mockgen.js');
 const responseCodes = [200, 400, 401, 404, 415, 500];
 
 /**
- * Test for /settlementWindows/{settlementWindowId}
+ * Test for /settlements/{Id}
  */
-Test('/settlementWindows/{settlementWindowId}', function (t) {
+Test('/settlements/{Id}', function (t) {
 
     /**
-     * summary: Returns a Settlement Window as per Settlement Window Id.
+     * summary: Returns Settlement(s) as per parameters/filter criteria.
      * description:
-     * parameters: settlementWindowId
+     * parameters: Id, currency, Id
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    t.test('test getSettlementWindowById get operation', async function (t) {
+    t.test('test getSettlementsBySettlementParticipantCurrency get operation', async function (t) {
 
         const server = new Hapi.Server();
         try {
@@ -34,7 +34,7 @@ Test('/settlementWindows/{settlementWindowId}', function (t) {
 
             const requests = new Promise((resolve, reject) => {
                 Mockgen().requests({
-                    path: '/settlementWindows/{settlementWindowId}',
+                    path: '/settlements/{Id}',
                     operation: 'get'
                 }, function (error, mock) {
                     return error ? reject(error) : resolve(mock);
@@ -78,13 +78,13 @@ Test('/settlementWindows/{settlementWindowId}', function (t) {
         }
     });
     /**
-     * summary: If the settlementWindow is open, it can be closed and a new window created. If it is already closed, return an error message. Returns the new settlement window.
+     * summary: Acknowledegement of settlement by updating with Settlements Id.
      * description:
-     * parameters: settlementWindowId, settlementWindowClosurePayload
+     * parameters: Id, settlementUpdatePayload
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    t.test('test closeSettlementWindow post operation', async function (t) {
+    t.test('test updateSettlementBySettlementId put operation', async function (t) {
 
         const server = new Hapi.Server();
         try {
@@ -99,8 +99,8 @@ Test('/settlementWindows/{settlementWindowId}', function (t) {
 
             const requests = new Promise((resolve, reject) => {
                 Mockgen().requests({
-                    path: '/settlementWindows/{settlementWindowId}',
-                    operation: 'post'
+                    path: '/settlements/{Id}',
+                    operation: 'put'
                 }, function (error, mock) {
                     return error ? reject(error) : resolve(mock);
                 });
@@ -113,7 +113,7 @@ Test('/settlementWindows/{settlementWindowId}', function (t) {
             //Get the resolved path from mock request
             //Mock request Path templates({}) are resolved using path parameters
             const options = {
-                method: 'post',
+                method: 'put',
                 url: '/v1' + mock.request.path
             };
             if (mock.request.body) {

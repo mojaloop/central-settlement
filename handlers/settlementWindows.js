@@ -1,20 +1,21 @@
 'use strict';
 
 const Boom = require('boom');
-const dataAccess = require('../../data/settlementWindows/findByDateRange')
+const dataAccess = require('../data/settlementWindows');
+const Logger = require('@mojaloop/central-services-shared').Logger
 
 /**
- * Operations on /settlementWindows/findByDateRange
+ * Operations on /settlementWindows
  */
 module.exports = {
     /**
-     * summary: Returns Settlement Windows including states and closure reasons. Filtered by date Range.
+     * summary: Returns a Settlement Window(s) as per parameter(s).
      * description:
-     * parameters: startDate, endDate
+     * parameters: id, state, fromDateTime, toDateTime
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    get: async function getSettlementWindowsByDateRange(request, h) {
+    get: async function getSettlementWindowByParams(request, h) {
         const getData = new Promise((resolve, reject) => {
             switch (request.server.app.responseCode) {
                 case 200:
