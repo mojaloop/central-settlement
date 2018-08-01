@@ -29,20 +29,20 @@
 
  --------------
  ******/
-
 'use strict';
+
 var Mockgen = require('../mockgen.js');
 /**
- * Operations on /settlementWindows/{settlementWindowId}
+ * Operations on /settlements/{Id}
  */
 module.exports = {
     /**
-     * summary: Returns a Settlement Window as per Settlement Window Id.
+     * summary: Returns Settlement(s) as per parameters/filter criteria.
      * description: 
-     * parameters: settlementWindowId
+     * parameters: Id, currency, Id
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
-     * operationId: getSettlementWindowById
+     * operationId: getSettlementsBySettlementParticipantCurrency
      */
     get: {
         200: function (req, res, callback) {
@@ -51,7 +51,7 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
+                path: '/settlements/{Id}',
                 operation: 'get',
                 response: '200'
             }, callback);
@@ -62,7 +62,7 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
+                path: '/settlements/{Id}',
                 operation: 'get',
                 response: '400'
             }, callback);
@@ -73,7 +73,7 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
+                path: '/settlements/{Id}',
                 operation: 'get',
                 response: '401'
             }, callback);
@@ -84,7 +84,7 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
+                path: '/settlements/{Id}',
                 operation: 'get',
                 response: '404'
             }, callback);
@@ -95,7 +95,7 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
+                path: '/settlements/{Id}',
                 operation: 'get',
                 response: '415'
             }, callback);
@@ -106,29 +106,29 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
+                path: '/settlements/{Id}',
                 operation: 'get',
                 response: 'default'
             }, callback);
         }
     },
     /**
-     * summary: If the settlementWindow is open, it can be closed and a new window created. If it is already closed, return an error message. Returns the new settlement window.
+     * summary: Acknowledegement of settlement by updating with Settlements Id.
      * description: 
-     * parameters: settlementWindowId, settlementWindowClosurePayload
+     * parameters: Id, settlementUpdatePayload
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
-     * operationId: closeSettlementWindow
+     * operationId: updateSettlementBySettlementId
      */
-    post: {
+    put: {
         200: function (req, res, callback) {
             /**
              * Using mock data generator module.
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
-                operation: 'post',
+                path: '/settlements/{Id}',
+                operation: 'put',
                 response: '200'
             }, callback);
         },
@@ -138,8 +138,8 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
-                operation: 'post',
+                path: '/settlements/{Id}',
+                operation: 'put',
                 response: '400'
             }, callback);
         },
@@ -149,8 +149,8 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
-                operation: 'post',
+                path: '/settlements/{Id}',
+                operation: 'put',
                 response: '401'
             }, callback);
         },
@@ -160,8 +160,8 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
-                operation: 'post',
+                path: '/settlements/{Id}',
+                operation: 'put',
                 response: '404'
             }, callback);
         },
@@ -171,8 +171,8 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
-                operation: 'post',
+                path: '/settlements/{Id}',
+                operation: 'put',
                 response: '415'
             }, callback);
         },
@@ -182,8 +182,8 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
-                operation: 'post',
+                path: '/settlements/{Id}',
+                operation: 'put',
                 response: 'default'
             }, callback);
         }
