@@ -1,48 +1,16 @@
-/*****
- License
- --------------
- Copyright © 2017 Bill & Melinda Gates Foundation
- The Mojaloop files are made available by the Bill & Melinda Gates Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, the Mojaloop files are distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-
- Contributors
- --------------
- This is the official list of the Mojaloop project contributors for this file.
- Names of the original copyright holders (individuals or organizations)
- should be listed with a '*' in the first column. People who have
- contributed from an organization can be listed under the organization
- that actually holds the copyright for their contributions (see the
- Gates Foundation organization for an example). Those individuals should have
- their names indented and be marked with a '-'. Email address can be added
- optionally within square brackets <email>.
-
- * Gates Foundation
- - Name Surname <name.surname@gatesfoundation.com>
-
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- * Miguel de Barros <miguel.debarros@modusbox.com>
-
- --------------
- ******/
-
 'use strict';
-var Mockgen = require('../mockgen.js');
+var Mockgen = require('../../../../../mockgen.js');
 /**
- * Operations on /settlementWindows/{settlementWindowId}
+ * Operations on /settlements/{settlementId}/participants/{participantId}/accounts/{accountId}
  */
 module.exports = {
     /**
-     * summary: Returns a Settlement Window as per Settlement Window Id.
+     * summary: Returns Settlement(s) as per filter criteria.
      * description: 
-     * parameters: settlementWindowId
+     * parameters: settlementId, participantId, accountId
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
-     * operationId: getSettlementWindowById
+     * operationId: getSettlementsBySettlementParticipantAccounts
      */
     get: {
         200: function (req, res, callback) {
@@ -51,7 +19,7 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
+                path: '/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}',
                 operation: 'get',
                 response: '200'
             }, callback);
@@ -62,7 +30,7 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
+                path: '/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}',
                 operation: 'get',
                 response: '400'
             }, callback);
@@ -73,7 +41,7 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
+                path: '/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}',
                 operation: 'get',
                 response: '401'
             }, callback);
@@ -84,7 +52,7 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
+                path: '/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}',
                 operation: 'get',
                 response: '404'
             }, callback);
@@ -95,7 +63,7 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
+                path: '/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}',
                 operation: 'get',
                 response: '415'
             }, callback);
@@ -106,29 +74,29 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
+                path: '/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}',
                 operation: 'get',
                 response: 'default'
             }, callback);
         }
     },
     /**
-     * summary: If the settlementWindow is open, it can be closed and a new window created. If it is already closed, return an error message. Returns the new settlement window.
+     * summary: Acknowledegement of settlement by updating thereason and state by Settlements Id, Participant Id and accounts Id
      * description: 
-     * parameters: settlementWindowId, settlementWindowClosurePayload
+     * parameters: settlementId, participantId, accountId, settlementUpdatePayload
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
-     * operationId: closeSettlementWindow
+     * operationId: updateSettlementBySettlementParticipantsAccounts
      */
-    post: {
+    put: {
         200: function (req, res, callback) {
             /**
              * Using mock data generator module.
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
-                operation: 'post',
+                path: '/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}',
+                operation: 'put',
                 response: '200'
             }, callback);
         },
@@ -138,8 +106,8 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
-                operation: 'post',
+                path: '/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}',
+                operation: 'put',
                 response: '400'
             }, callback);
         },
@@ -149,8 +117,8 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
-                operation: 'post',
+                path: '/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}',
+                operation: 'put',
                 response: '401'
             }, callback);
         },
@@ -160,8 +128,8 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
-                operation: 'post',
+                path: '/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}',
+                operation: 'put',
                 response: '404'
             }, callback);
         },
@@ -171,8 +139,8 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
-                operation: 'post',
+                path: '/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}',
+                operation: 'put',
                 response: '415'
             }, callback);
         },
@@ -182,8 +150,8 @@ module.exports = {
              * Replace this by actual data for the api.
              */
             Mockgen().responses({
-                path: '/settlementWindows/{settlementWindowId}',
-                operation: 'post',
+                path: '/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}',
+                operation: 'put',
                 response: 'default'
             }, callback);
         }
