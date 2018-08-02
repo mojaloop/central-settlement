@@ -34,6 +34,11 @@
 
 const dataAccess = require('../data/settlementWindows');
 const Boom = require('boom');
+const Logger = require('@mojaloop/central-services-shared').Logger
+const Path = require('path');
+
+Logger.info('path ', Path.basename(__filename));
+
 
 /**
  * Operations on /settlementWindows
