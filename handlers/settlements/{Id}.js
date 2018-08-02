@@ -33,7 +33,7 @@
 'use strict';
 
 const Boom = require('boom');
-const dataAccess = require('../../data/settlements/{id}');
+const dataAccess = require('../../data/settlements/{Id}');
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Path = require('path');
 
