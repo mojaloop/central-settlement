@@ -1,20 +1,20 @@
 'use strict';
 
+const dataAccess = require('../../data/settlementWindows/{id}');
 const Boom = require('boom');
-const dataAccess = require('../../../../../../data/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}');
 
 /**
- * Operations on /settlements/{settlementId}/participants/{participantId}/accounts/{accountId}
+ * Operations on /settlementWindows/{id}
  */
 module.exports = {
     /**
-     * summary: Returns Settlement(s) as per filter criteria.
+     * summary: Returns a Settlement Window as per id.
      * description: 
-     * parameters: settlementId, participantId, accountId
+     * parameters: id
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    get: async function getSettlementsBySettlementParticipantAccounts(request, h) {
+    get: async function getSettlementWindowById(request, h) {
         const getData = new Promise((resolve, reject) => {
             switch (request.server.app.responseCode) {
                 case 200:
@@ -43,16 +43,16 @@ module.exports = {
             return await getData
         } catch (e) {
             throw (Boom.boomify(e))
-        }
+        };
     },
     /**
-     * summary: Acknowledegement of settlement by updating the reason and state by Settlements Id, Participant Id and accounts Id.
+     * summary: If the settlementWindow is open, it can be closed and a new window created. If it is already closed, return an error message. Returns the new settlement window.
      * description: 
-     * parameters: settlementId, participantId, accountId, settlementParticipantAccountUpdate
+     * parameters: id, settlementWindowClosurePayload
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    put: async function updateSettlementBySettlementParticipantsAccounts(request, h) {
+    post: async function closeSettlementWindow(request, h) {
         const getData = new Promise((resolve, reject) => {
             switch (request.server.app.responseCode) {
                 case 200:
@@ -60,7 +60,7 @@ module.exports = {
                 case 401:
                 case 404:
                 case 415:
-                    dataAccess.put[`${request.server.app.responseCode}`](request, h, (error, mock) => {
+                    dataAccess.post[`${request.server.app.responseCode}`](request, h, (error, mock) => {
                         if (error) reject(error)
                         else if (!mock.responses) resolve()
                         else if (mock.responses && mock.responses.code) resolve(Boom.boomify(new Error(mock.responses.message), {statusCode: mock.responses.code}))
@@ -68,7 +68,7 @@ module.exports = {
                     })
                     break
                 default:
-                    dataAccess.put[`default`](request, h, (error, mock) => {
+                    dataAccess.post[`default`](request, h, (error, mock) => {
                         if (error) reject(error)
                         else if (!mock.responses) resolve()
                         else if (mock.responses && mock.responses.code) resolve(Boom.boomify(new Error(mock.responses.message), {statusCode: mock.responses.code}))
