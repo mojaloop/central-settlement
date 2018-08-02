@@ -7,10 +7,10 @@ module.exports = {
     /**
      * summary: Acknowledegement of settlement by updating with Settlements Id and Participant Id.
      * description: 
-     * parameters: settlementId, participantId, settlementUpdatePayload
+     * parameters: settlementId, participantId, settlementParticipantUpdatePayload
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
-     * operationId: updateSettlementBySettlementIdParticiapntId
+     * operationId: updateSettlementBySettlementIdParticipantId
      */
     put: {
         200: function (req, res, callback) {

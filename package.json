@@ -36,12 +36,12 @@
         "tapes": "4.1.0"
     },
     "scripts": {
-        "test": "tape 'tests/unit/**/*.js'",
+        "test": "tape 'tests/**/*.js'",
         "test:xunit": "tape 'tests/unit/**/*.js' | tap-xunit",
-        "cover": "istanbul cover tape -- 'tests/unit/**/*.js'",
+        "cover": "istanbul cover tape -- 'tests/**/*.js'",
         "lint": "eslint .",
         "test:coverage-check": "npm run test:coverage && istanbul check-coverage",
-        "test:coverage": "istanbul cover tape -- 'tests/unit/**/*.js'",
+        "test:coverage": "istanbul cover tape -- 'tests/**/*.js'",
         "regenerate": "yo swaggerize:test --framework hapi --apiPath './config/swagger.json'"
     },
     "generator-swaggerize": {

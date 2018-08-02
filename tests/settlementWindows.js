@@ -36,37 +36,37 @@ const Test = require('tape');
 const Hapi = require('hapi');
 const HapiOpenAPI = require('hapi-openapi');
 const Path = require('path');
-const Mockgen = require('../../data/mockgen.js');
+const Mockgen = require('../data/mockgen.js');
 const responseCodes = [200, 400, 401, 404, 415, 500];
 
 /**
- * Test for /settlements
+ * Test for /settlementWindows
  */
-Test('/settlements', function (t) {
+Test('/settlementWindows', function (t) {
 
     /**
-     * summary: Returns Settlement(s) as per parameter(s).
+     * summary: Returns a Settlement Window(s) as per parameter(s).
      * description:
-     * parameters: id, settlementWindowId, ledgerId, state, fromDateTime, toDateTime
+     * parameters: participantId, state, fromDateTime, toDateTime
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    t.test('test getSettlementsByParams get operation', async function (t) {
+    t.test('test getSettlementWindowByParams get operation', async function (t) {
 
         const server = new Hapi.Server();
         try {
             await server.register({
                 plugin: HapiOpenAPI,
                 options: {
-                    api: Path.resolve(__dirname, '../../config/swagger.json'),
-                    handlers: Path.join(__dirname, '../../handlers'),
+                    api: Path.resolve(__dirname, '../config/swagger.json'),
+                    handlers: Path.join(__dirname, '../handlers'),
                     outputvalidation: true
                 }
             });
 
             const requests = new Promise((resolve, reject) => {
                 Mockgen().requests({
-                    path: '/settlements',
+                    path: '/settlementWindows',
                     operation: 'get'
                 }, function (error, mock) {
                     return error ? reject(error) : resolve(mock);
@@ -101,11 +101,34 @@ Test('/settlements', function (t) {
             for (let responseCode of responseCodes) {
                 server.app.responseCode = responseCode
                 const response = await server.inject(options);
+
+                switch (responseCode) {
+                    case 200:
+                        responseCode = 200;
+                        break;
+                    case 400:
+                        responseCode = 500;
+                        break;
+                    case 401:
+                        responseCode = 500;
+                        break;
+                    case 404:
+                        responseCode = 500;
+                        break;
+                    case 415:
+                        responseCode = 500;
+                        break;
+                    default:
+                        responseCode = 500;
+                        break;
+                }
+
                 t.equal(response.statusCode, responseCode, 'Ok response status');
             }
+
             t.end();
         } catch (e) {
-            t.fail(e)
+            t.fail(e);
             t.end()
         }
     });

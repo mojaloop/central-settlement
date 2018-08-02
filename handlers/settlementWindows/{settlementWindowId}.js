@@ -32,23 +32,24 @@
 
 'use strict';
 
+/*
 const Boom = require('boom');
 const Path = require('path');
 const dataAccess = require('../../data/settlementWindows/{settlementWindowId}');
 const Logger = require('@mojaloop/central-services-shared').Logger
 
 Logger.info('path ', Path.basename(__filename));
-/**
+/!**
  * Operations on /settlementWindows/{settlementWindowId}
- */
+ *!/
 module.exports = {
-    /**
+    /!**
      * summary: Returns a Settlement Window as per Settlement Window Id.
      * description:
      * parameters: settlementWindowId
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
-     */
+     *!/
     get: async function getSettlementWindowById(request, h) {
         const getData = new Promise((resolve, reject) => {
             switch (request.server.app.responseCode) {
@@ -80,13 +81,13 @@ module.exports = {
         }
     },
 
-    /**
+    /!**
      * summary: If the settlementWindow is open, it can be closed and a new window created. If it is already closed, return an error message. Returns the new settlement window.
      * description:
      * parameters: settlementWindowId, settlementWindowClosurePayload
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
-     */
+     *!/
     post: async function closeSettlementWindow(request, h) {
         const getData = new Promise((resolve, reject) => {
             switch (request.server.app.responseCode) {
@@ -117,4 +118,4 @@ module.exports = {
             throw (Boom.boomify(e))
         }
     }
-};
+};*/
