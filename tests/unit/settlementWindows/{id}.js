@@ -4,7 +4,7 @@ const Test = require('tape');
 const Hapi = require('hapi');
 const HapiOpenAPI = require('hapi-openapi');
 const Path = require('path');
-const Mockgen = require('../../data/mockgen.js');
+const Mockgen = require('../../../data/mockgen.js');
 const responseCodes = [200, 400, 401, 404, 415, 500];
 
 /**
@@ -26,8 +26,8 @@ Test('/settlementWindows/{id}', function (t) {
             await server.register({
                 plugin: HapiOpenAPI,
                 options: {
-                    api: Path.resolve(__dirname, '../../config/swagger.json'),
-                    handlers: Path.join(__dirname, '../../handlers'),
+                    api: Path.resolve(__dirname, '../../../config/swagger.json'),
+                    handlers: Path.join(__dirname, '../../../handlers'),
                     outputvalidation: true
                 }
             });
@@ -115,8 +115,8 @@ Test('/settlementWindows/{id}', function (t) {
             await server.register({
                 plugin: HapiOpenAPI,
                 options: {
-                    api: Path.resolve(__dirname, '../../config/swagger.json'),
-                    handlers: Path.join(__dirname, '../../handlers'),
+                    api: Path.resolve(__dirname, '../../../config/swagger.json'),
+                    handlers: Path.join(__dirname, '../../../handlers'),
                     outputvalidation: true
                 }
             });

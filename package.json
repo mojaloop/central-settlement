@@ -1,5 +1,5 @@
 {
-    "name": "new-central-settlement",
+    "name": "central-settlement",
     "description": "Central settlements hosted by a scheme to record and settle settlements.",
     "version": "1.0.0",
     "license": "Apache-2.0",
@@ -36,12 +36,12 @@
         "tapes": "4.1.0"
     },
     "scripts": {
-        "test": "tape 'tests/**/*.js'",
+        "test": "tape 'tests/unit/**/*.js'",
         "test:xunit": "tape 'tests/unit/**/*.js' | tap-xunit",
-        "cover": "istanbul cover tape -- 'tests/**/*.js'",
+        "cover": "istanbul cover tape -- 'tests/unit/**/*.js'",
         "lint": "eslint .",
         "test:coverage-check": "npm run test:coverage && istanbul check-coverage",
-        "test:coverage": "istanbul cover tape -- 'tests/**/*.js'",
+        "test:coverage": "istanbul cover tape -- 'tests/unit/**/*.js'",
         "regenerate": "yo swaggerize:test --framework hapi --apiPath './config/swagger.json'"
     },
     "generator-swaggerize": {
