@@ -19,11 +19,11 @@ const defaultConfig = {
 
 async function connectDatabase () {
   try {
-    let db = await Db.connect(`mysql://central_ledger:password@localhost:3306/central_ledger`)
+    let db = await Db.connect(`mysql://central_ledger:password@localhost:3306/central_ledger`) // TODO add from ENV or common config}
     return db
   } catch (e) {
     throw e
-  } // TODO add from ENV or common config}
+  }
 }
 
 const init = async function(config = defaultConfig, openAPIPluginOptions = openAPIOptions) {
