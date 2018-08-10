@@ -32,12 +32,9 @@
 
 'use strict';
 
-const dataAccess = require('../../data/settlementWindows/{id}');
+const settlementWindowDAO = require('../../dataAccessObject/settlementWindow/facade');
 const Boom = require('boom');
-const Logger = require('@mojaloop/central-services-shared').Logger
 const Path = require('path');
-
-Logger.info('path ', Path.basename(__filename));
 
 /**
  * Operations on /settlementWindows/{id}
@@ -51,35 +48,15 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
     get: async function getSettlementWindowById(request, h) {
-        const getData = new Promise((resolve, reject) => {
-            switch (request.server.app.responseCode) {
-                case 200:
-                case 400:
-                case 401:
-                case 404:
-                case 415:
-                    dataAccess.get[`${request.server.app.responseCode}`](request, h, (error, mock) => {
-                        if (error) reject(error)
-                        else if (!mock.responses) resolve()
-                        else if (mock.responses && mock.responses.code) resolve(Boom.boomify(new Error(mock.responses.message), {statusCode: mock.responses.code}))
-                        else resolve(mock.responses)
-                    })
-                    break
-                default:
-                    dataAccess.get[`default`](request, h, (error, mock) => {
-                        if (error) reject(error)
-                        else if (!mock.responses) resolve()
-                        else if (mock.responses && mock.responses.code) resolve(Boom.boomify(new Error(mock.responses.message), {statusCode: mock.responses.code}))
-                        else resolve(mock.responses)
-                    })
-            }
-
-        })
-        try {
-            return await getData
-        } catch (e) {
-            throw (Boom.boomify(e))
-        };
+      const settlementWindowId = request.params.id
+      request.server.log('info', `get settlementwindow by Id requested with id ${settlementWindowId}`)
+      try {
+        let settlementWindowResult = await settlementWindowDAO.getById(settlementWindowId)
+        return h.response(settlementWindowResult)
+      } catch (e) {
+        request.server.log('info', `ERROR settlementWindowId: ${settlementWindowId} not found`)
+        return Boom.notFound(e.message)
+      }
     },
     /**
      * summary: If the settlementWindow is open, it can be closed and a new window created. If it is already closed, return an error message. Returns the new settlement window.

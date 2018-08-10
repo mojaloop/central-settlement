@@ -25,16 +25,8 @@
 
 'use strict'
 
-const Db = require('../../db')
-const Uuid = require('uuid4')
+const Db = require('../../dataAccessObject')
 const Enum = require('../lib/utilities').Enums
-const TransferExtensionModel = require('./transferExtension')
-const ParticipantFacade = require('../participant/facade')
-const _ = require('lodash')
-
-function helper () {
-
-}
 
 module.exports = {
   getById: async function (settlementWindowId) {

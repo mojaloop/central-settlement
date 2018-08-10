@@ -1,43 +1,52 @@
 'use strict';
 
-const Hapi = require('hapi');
-const HapiOpenAPI = require('hapi-openapi');
-const Path = require('path');
+const Hapi = require('hapi')
+const HapiOpenAPI = require('hapi-openapi')
+const Path = require('path')
 const Db = require('./dataAccessObject/index.js')
-const Logger = require('@mojaloop/central-services-shared').Logger
-
+// -- add them to common project config
 const openAPIOptions = {
     api: Path.resolve('./config/swagger.json'),
     handlers: Path.resolve('./handlers')
 }
 
+const defaultConfig = {
+    port: 8080
+}
+// --
+
 async function connectDatabase () {
-  return await Db.connect(`mysql://central_ledger:password@localhost:3306/central_ledger`)
+  try {
+    return await Db.connect(`mysql://central_ledger:password@localhost:3306/central_ledger`)
+  } catch (e) {
+    throw e
+  } // TODO add from ENV or common config}
 }
 
-const init = async function(config = {
-    port: 8080
-}, openAPIPluginOptions = openAPIOptions) {
+const init = async function(config = defaultConfig, openAPIPluginOptions = openAPIOptions) {
     const server = new Hapi.Server(config);
 
-    await server.register({
+    await server.register([{
         plugin: HapiOpenAPI,
-        options: {
-            api: Path.resolve('./config/swagger.json'),
-            handlers: Path.resolve('./handlers')
-        }
-    });
+        options: openAPIPluginOptions
+    },
+    {
+        plugin: require('./utils/logger-plugin')
+    }])
 
-    await server.start();
+    await server.start()
+    return server
+}
 
-    return server;
-};
-
-init().then((server) => {
+init().then(async (server) => {
+  try {
     await connectDatabase()
-    server.plugins.openapi.setHost(server.info.host + ':' + server.info.port);
-    Logger.info(`Server running on ${server.info.host}:${server.info.port}`);
-});
+    server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
+    server.log('info', `Server running on ${server.info.host}:${server.info.port}`)
+  } catch (e) {
+    server.log('error', e.message)
+  }
+})
 
 module.exports = {
     init
