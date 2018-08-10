@@ -6,7 +6,7 @@ module.exports.plugin = {
   register: async function (server) {
 
     server.events.on('log', function(event) {
-      if (event.tags.length === 1)
+      if (Array.isArray(event.tags) && event.tags.length === 1)
         Logger[`${event.tags[0]}`](event.data)
       else Logger.info(event.data)
     }) 

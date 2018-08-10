@@ -48,13 +48,15 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
     get: async function getSettlementWindowById(request, h) {
+      const enums = request.server.app.enums
       const settlementWindowId = request.params.id
+      
       request.server.log('info', `get settlementwindow by Id requested with id ${settlementWindowId}`)
       try {
-        let settlementWindowResult = await settlementWindowDAO.getById(settlementWindowId)
+        let settlementWindowResult = await settlementWindowDAO.getById({ settlementWindowId, enums })
         return h.response(settlementWindowResult)
       } catch (e) {
-        request.server.log('info', `ERROR settlementWindowId: ${settlementWindowId} not found`)
+        request.server.log('error', `ERROR settlementWindowId: ${settlementWindowId} not found`)
         return Boom.notFound(e.message)
       }
     },

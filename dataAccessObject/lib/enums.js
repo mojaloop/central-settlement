@@ -28,22 +28,30 @@
 const Db = require('../../dataAccessObject')
 
 module.exports = {
-  getById: async function ({settlementWindowId, enums}) {
+  settlementWindowStates: async function () {
     try {
-      return await Db.settlementWindow.query(async (builder) => {
-        return await builder
-          .where({
-            'settlementWindow.settlementWindowId': settlementWindowId,
-            'swsc.settlementWindowStateId': enums.settlementWindowStates.OPEN.settlementWindowStateId
-          })
-          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementSettlementWindowId', 'settlementWindow.settlementWindowId')
-          .select(
-            'settlementWindow.*',
-            'swsc.settlementWindowStateId AS state',
-          )
-          .orderBy('swsc.settlementWindowStateChangeId', 'desc')
-          .first()
-      })
+      let settlementWindowStateEnum = {}
+      let settlementWindowStateEnumsList = await Db.settlementWindowState.find({}, { order: 'settlementWindowStateId asc' })
+      if (settlementWindowStateEnumsList) {
+        for (let state of settlementWindowStateEnumsList) {
+          settlementWindowStateEnum[`${state.settlementWindowStateId}`] = state
+        }
+        return settlementWindowStateEnum
+      }
+    } catch (err) {
+        throw err
+    }
+  },
+  settlementStates: async function () {
+    try {
+      let settlementStateEnum = {}
+      let settlementStateEnumsList = await Db.settlementState.find({}, { order: 'settlementStateId asc' })
+      if (settlementStateEnumsList) {
+        for (let state of settlementStateEnumsList) {
+          settlementStateEnum[`${state.settlementStateId}`] = state
+        }
+        return settlementStateEnum
+      }
     } catch (err) {
         throw err
     }
