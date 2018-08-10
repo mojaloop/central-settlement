@@ -34,10 +34,6 @@
         "tap-xunit": "1.4.0",
         "tape": "4.6.2",
         "tapes": "4.1.0"
-<<<<<<< HEAD
-=======
-    
->>>>>>> 56ab11a81f16c8e9c936cd960a370fe7c14ec870
     },
     "scripts": {
         "test": "tape 'tests/unit/**/*.js'",
