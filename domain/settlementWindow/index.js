@@ -3,7 +3,7 @@ const centralLogger = require('@mojaloop/central-services-shared').Logger
 
 
 module.exports = {
-  getById: async function ({ params, options = {} }) {
+  getById: async function (params, options = {}) {
     let Logger = options.logger || centralLogger
     try { 
       return await settlementWindowModel.getById(params)

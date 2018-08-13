@@ -32,9 +32,9 @@
 
 'use strict';
 
-const settlementWindow = require('../../domain/settlementWindow/index');
-const Boom = require('boom');
-const Path = require('path');
+const settlementWindow = require('../../domain/settlementWindow/index')
+const Boom = require('boom')
+const Path = require('path')
 
 /**
  * Operations on /settlementWindows/{id}
@@ -53,10 +53,7 @@ module.exports = {
       
       request.server.log('info', `get settlementwindow by Id requested with id ${settlementWindowId}`)
       try {
-        let settlementWindowResult = await settlementWindow.getById({
-          params: { settlementWindowId, enums },
-          options: { logger: request.server.log }
-        })
+        let settlementWindowResult = await settlementWindow.getById({ settlementWindowId, enums }, { logger: request.server.log })
         return h.response(settlementWindowResult)
       } catch (e) {
         request.server.log('error', `ERROR settlementWindowId: ${settlementWindowId} not found`)
