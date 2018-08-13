@@ -32,7 +32,7 @@
 
 'use strict';
 
-const settlementWindowDAO = require('../../dataAccessObject/settlementWindow/facade');
+const settlementWindow = require('../../domain/settlementWindow/index');
 const Boom = require('boom');
 const Path = require('path');
 
@@ -53,7 +53,10 @@ module.exports = {
       
       request.server.log('info', `get settlementwindow by Id requested with id ${settlementWindowId}`)
       try {
-        let settlementWindowResult = await settlementWindowDAO.getById({ settlementWindowId, enums })
+        let settlementWindowResult = await settlementWindow.getById({
+          params: { settlementWindowId, enums },
+          options: { logger: request.server.log }
+        })
         return h.response(settlementWindowResult)
       } catch (e) {
         request.server.log('error', `ERROR settlementWindowId: ${settlementWindowId} not found`)

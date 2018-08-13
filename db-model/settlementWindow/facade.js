@@ -28,7 +28,7 @@
 const Db = require('../../dataAccessObject')
 
 module.exports = {
-  getById: async function ({settlementWindowId, enums}) {
+  getById: async function ({ settlementWindowId, enums }) {
     try {
       return await Db.settlementWindow.query(async (builder) => {
         return await builder
