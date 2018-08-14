@@ -25,7 +25,7 @@
 
 'use strict'
 
-const Db = require('../../dataAccessObject')
+const Db = require('../index')
 
 module.exports = {
   settlementWindowStates: async function () {

@@ -25,7 +25,7 @@
 
 'use strict'
 
-const Db = require('../../dataAccessObject')
+const Db = require('../index')
 
 module.exports = {
   getById: async function ({ settlementWindowId, enums }) {
@@ -36,7 +36,7 @@ module.exports = {
             'settlementWindow.settlementWindowId': settlementWindowId,
             'swsc.settlementWindowStateId': enums.settlementWindowStates.OPEN.settlementWindowStateId
           })
-          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementSettlementWindowId', 'settlementWindow.settlementWindowId')
+          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowId', 'settlementWindow.settlementWindowId')
           .select(
             'settlementWindow.*',
             'swsc.settlementWindowStateId AS state',
@@ -46,6 +46,27 @@ module.exports = {
       })
     } catch (err) {
         throw err
+    }
+  },
+
+  getByParams: async function ({enums, filters}) {
+    try {
+      let { participantId, state, fromDateTime, toDateTime } = filters
+      participantId = participantId ? `= ${participantId}` : 'IS NOT NULL'
+      state = state ? ` = ${state.toUpperCase()}` : 'IS NOT NULL'
+      return await Db.settlementWindow.query(async (builder) => {
+        return await builder
+          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
+          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
+          .select(
+            'settlementWindow.*',
+            'swsc.settlementWindowStateId AS state',
+          )
+          // .where({ settlementWindowStateId: state })
+          .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
+      })
+    } catch (err) {
+      throw err
     }
   }
 }

@@ -3,8 +3,8 @@
 const Hapi = require('hapi')
 const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
-const Db = require('./dataAccessObject/index.js')
-const Enums = require('./dataAccessObject/lib/enums')
+const Db = require('./db-model/index.js')
+const Enums = require('./db-model/lib/enums')
 
 // -- add them to common project config
 const openAPIOptions = {
@@ -13,7 +13,13 @@ const openAPIOptions = {
 }
 
 const defaultConfig = {
-  port: 8080
+  port: 8080,
+  cache: [
+    {
+      name: 'memCache',
+      engine: require('catbox-memory')
+    }
+  ]
 }
 // --
 

@@ -2,5 +2,6 @@ const settlementWindowFacade = require('./facade')
 const settlementWindowStateChange = require('./settlementWindowStateChange')
 
 module.exports = {
-    getById: settlementWindowFacade.getById
+  getById: settlementWindowFacade.getById,
+  getByParams: settlementWindowFacade.getByParams 
 }

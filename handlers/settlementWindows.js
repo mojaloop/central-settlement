@@ -32,13 +32,12 @@
 
 'use strict';
 
-const dataAccess = require('../data/settlementWindows');
 const Boom = require('boom');
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Path = require('path');
+const settlementWindows = require('./../domain/settlementWindow')
 
 Logger.info('path ', Path.basename(__filename));
-
 
 /**
  * Operations on /settlementWindows
@@ -52,34 +51,14 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
     get: async function getSettlementWindowByParams(request, h) {
-        const getData = new Promise((resolve, reject) => {
-            switch (request.server.app.responseCode) {
-                case 200:
-                case 400:
-                case 401:
-                case 404:
-                case 415:
-                    dataAccess.get[`${request.server.app.responseCode}`](request, h, (error, mock) => {
-                        if (error) reject(error)
-                        else if (!mock.responses) resolve()
-                        else if (mock.responses && mock.responses.code) resolve(Boom.boomify(new Error(mock.responses.message), {statusCode: mock.responses.code}))
-                        else resolve(mock.responses)
-                    })
-                    break
-                default:
-                    dataAccess.get[`default`](request, h, (error, mock) => {
-                        if (error) reject(error)
-                        else if (!mock.responses) resolve()
-                        else if (mock.responses && mock.responses.code) resolve(Boom.boomify(new Error(mock.responses.message), {statusCode: mock.responses.code}))
-                        else resolve(mock.responses)
-                    })
-            }
-
-        })
         try {
-            return await getData
+            const enums = request.server.app.enums
+            const params = {filters: request.query, enums }
+            let settlementWindowResult = await settlementWindows.getByParams(params, {})
+            return h.response(settlementWindowResult)
         } catch (e) {
-            throw (Boom.boomify(e))
+          request.server.log('error', e)
+          return Boom.notFound(e.message)
         }
-    }
+      }
 };
