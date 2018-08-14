@@ -12,13 +12,16 @@ module.exports = {
   },
   getByParams: async function (params, options = {}) {
     // 4 filters - at least one should be used
-    let { fromDateTime, toDateTime } = params.filters
-    fromDateTime = fromDateTime ? fromDateTime : new Date('01-01-1970').toISOString()
-    toDateTime = toDateTime ? toDateTime : new Date().toISOString()
-//    params.filters.participantId = '*'
-    params.filters = Object.assign(params.filters, {fromDateTime, toDateTime})
-
-    return await settlementWindowModel.getByParams(params)
+    if (Object.keys(params.filters).length && Object.keys(params.filters).length < 5) {
+      let { state, fromDateTime, toDateTime } = params.filters
+      fromDateTime = fromDateTime ? fromDateTime : new Date('01-01-1970').toISOString()
+      toDateTime = toDateTime ? toDateTime : new Date().toISOString()
+      state = state ? ` = ${state.toUpperCase()}` : 'IS NOT NULL'
+      params.filters = Object.assign(params.filters, {state, fromDateTime, toDateTime})
+      return await settlementWindowModel.getByParams(params)
+    } else {
+      throw new Error('use at least one parameter: participantId, state, fromDateTime, toDateTime')
+    }
     }
   }
 

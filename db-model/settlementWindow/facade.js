@@ -52,21 +52,38 @@ module.exports = {
   getByParams: async function ({enums, filters}) {
     try {
       let { participantId, state, fromDateTime, toDateTime } = filters
-      participantId = participantId ? `= ${participantId}` : 'IS NOT NULL'
-      state = state ? ` = ${state.toUpperCase()}` : 'IS NOT NULL'
       return await Db.settlementWindow.query(async (builder) => {
+        if (!participantId)        
         return await builder
-          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
           .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
           .select(
             'settlementWindow.*',
             'swsc.settlementWindowStateId AS state',
           )
-          // .where({ settlementWindowStateId: state })
           .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
+        else return await builder
+        .leftJoin('participantCurrency AS pc', 'pc.participantId', participantId)
+        .leftJoin('settlementTransferParticipant AS stp', 'stp.participantCurrencyId', 'pc.participantCurrencyId')
+        .leftJoin('settlementSettlementWindow AS ssw', 'ssw.settlementId', 'stp.settlementId')        
+        .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
+        .select(
+          'settlementWindow.*',
+          'swsc.settlementWindowStateId AS state',
+          'pc.participantId as participantId'
+        )
+        .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
       })
     } catch (err) {
       throw err
     }
   }
 }
+
+/*
+
+select *
+from participantCurrency pc
+join settlementTransferparticipant stp on pc.participantCurrencyId = stp.participantCurrencyId
+join settlementSettlementWindow ssw on stp.settlementId = ssw.settlementId
+where pc.participantId = @participantId
+*/
