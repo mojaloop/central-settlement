@@ -26,39 +26,48 @@
 'use strict'
 
 const Db = require('../index')
+const settlementWindowStateChange = require('./settlementWindowStateChange')
 
-module.exports = {
-  getById: async function ({ settlementWindowId, enums }) {
+const Facade = {
+  getById: async function ({ settlementWindowId }, enums = {}) {
     try {
-      return await Db.settlementWindow.query(async (builder) => {
+      let result = await Db.settlementWindow.query(async (builder) => {
         return await builder
           .where({
             'settlementWindow.settlementWindowId': settlementWindowId,
-            'swsc.settlementWindowStateId': enums.settlementWindowStates.OPEN.settlementWindowStateId
+            'swsc.settlementWindowStateId': enums.OPEN.settlementWindowStateId
           })
           .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowId', 'settlementWindow.settlementWindowId')
           .select(
             'settlementWindow.*',
-            'swsc.settlementWindowStateId AS state',
+            'swsc.settlementWindowStateId',
           )
           .orderBy('swsc.settlementWindowStateChangeId', 'desc')
           .first()
       })
+      if (!result) {
+        let err = new Error('2001')
+        throw err    
+      }
+      else return result
     } catch (err) {
         throw err
     }
   },
 
-  getByParams: async function ({enums, filters}) {
+  getByParams: async function ({ query }, enums = {} ) {
     try {
-      let { participantId, state, fromDateTime, toDateTime } = filters
-      return await Db.settlementWindow.query(async (builder) => {
+      let { participantId, state, fromDateTime, toDateTime } = query
+      state = state ? ` = "${state.toUpperCase()}"` : 'IS NOT NULL'
+      fromDateTime = fromDateTime ? fromDateTime : new Date('01-01-1970').toISOString()
+      toDateTime = toDateTime ? toDateTime : new Date().toISOString()
+      let result = await Db.settlementWindow.query(async (builder) => {
         if (!participantId)        
         return await builder
           .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
           .select(
             'settlementWindow.*',
-            'swsc.settlementWindowStateId AS state',
+            'swsc.settlementWindowStateId',
           )
           .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
         else return await builder
@@ -68,22 +77,67 @@ module.exports = {
         .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
         .select(
           'settlementWindow.*',
-          'swsc.settlementWindowStateId AS state',
-          'pc.participantId as participantId'
+          'swsc.settlementWindowStateId'
         )
         .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
       })
+      if (!result) {
+        let err = new Error('2001')
+        throw err    
+      }
+      else return result
     } catch (err) {
+      throw err
+    }
+  },
+  close: async function ({ settlementWindowId, state, reason }, enums = {}) {
+    try {
+      const knex = await Db.getKnex()
+      if (state === 'close' || state === 'CLOSE') state = 'CLOSED'
+      return await knex.transaction(async (trx) => {
+        try {
+          const transactionTimestamp = new Date()
+          const settlementWindowStateChange = await knex('settlementWindowStateChange').transacting(trx)
+            .where({ settlementWindowId })
+            .forUpdate()
+            .select('*')
+            .first()
+            if (!settlementWindowStateChange) {
+              await trx.rollback
+              let err = new Error('2001')
+              throw err          
+            }
+            let { settlementWindowStateChangeId, settlementWindowStateId  } = settlementWindowStateChange
+            if (settlementWindowStateId !== enums.OPEN.settlementWindowStateId) { 
+            await trx.rollback
+            let err = new Error('State not right')
+            throw err
+          } else {
+            await knex('settlementWindowStateChange').transacting(trx)
+              .update({ settlementWindowStateId: enums[state].settlementWindowStateId, reason })
+              .where({ settlementWindowStateChangeId })
+              let settlementWindowId = await knex('settlementWindow').transacting(trx).insert({ reason })
+            let newSettlementWindowId = await knex('settlementWindowStateChange').transacting(trx).insert({
+              settlementWindowId,
+              settlementWindowStateId: enums.OPEN.settlementWindowStateId
+            })
+            await trx.commit
+            return newSettlementWindowId[0]
+          }
+        } catch (err) {
+          await trx.rollback
+          throw err  
+        }
+    }).then(settlementWindowId => {
+    return settlementWindowId 
+    })
+    .catch((err) => {
+      throw err
+    })
+  } catch (err) {
       throw err
     }
   }
 }
 
-/*
-
-select *
-from participantCurrency pc
-join settlementTransferparticipant stp on pc.participantCurrencyId = stp.participantCurrencyId
-join settlementSettlementWindow ssw on stp.settlementId = ssw.settlementId
-where pc.participantId = @participantId
-*/
+module.exports = Facade

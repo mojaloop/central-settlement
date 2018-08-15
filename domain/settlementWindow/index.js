@@ -2,26 +2,70 @@ const settlementWindowModel = require('../../db-model/settlementWindow/index');
 const centralLogger = require('@mojaloop/central-services-shared').Logger
 
 module.exports = {
-  getById: async function (params, options = {}) {
+  getById: async function (params, enums, options = {}) {
     let Logger = options.logger || centralLogger
     try { 
-      return await settlementWindowModel.getById(params)
+      let settlementWindow = await settlementWindowModel.getById(params, enums)
+      if (settlementWindow) return {
+        settlementWindowId: settlementWindow.settlementWindowId,
+        state: settlementWindow.settlementWindowStateId,
+        reason: settlementWindow.reason,
+        createdDate: settlementWindow.createdDate
+        }
+      else {
+        let err = new Error('settlement window not found')
+        Logger('error', err)
+        throw err
+        }
     } catch (err) {
+      Logger('error', err)
       throw err
     }
   },
-  getByParams: async function (params, options = {}) {
+
+  getByParams: async function (params, enums, options = {}) {
     // 4 filters - at least one should be used
-    if (Object.keys(params.filters).length && Object.keys(params.filters).length < 5) {
-      let { state, fromDateTime, toDateTime } = params.filters
-      fromDateTime = fromDateTime ? fromDateTime : new Date('01-01-1970').toISOString()
-      toDateTime = toDateTime ? toDateTime : new Date().toISOString()
-      state = state ? ` = ${state.toUpperCase()}` : 'IS NOT NULL'
-      params.filters = Object.assign(params.filters, {state, fromDateTime, toDateTime})
-      return await settlementWindowModel.getByParams(params)
+    let Logger = options.logger || centralLogger
+    if (Object.keys(params.query).length && Object.keys(params.query).length < 5) {
+      try {
+        let result = []
+        let settlementWindows = await settlementWindowModel.getByParams(params, enums)
+        if (settlementWindows && settlementWindows.length > 0) {
+          for (let settlementWindow of settlementWindows) {
+            result.push({
+              settlementWindowId: settlementWindow.settlementWindowId,
+              state: settlementWindow.settlementWindowStateId,
+              reason: settlementWindow.reason,
+              createdDate: settlementWindow.createdDate
+            })
+          }
+          return result
+        }
+        else {
+          let err = new Error('settlement window not found')
+          Logger('error', err)
+          throw err
+          }
+        } catch (err) {
+        Logger('error', err)
+        throw err
+      }
     } else {
-      throw new Error('use at least one parameter: participantId, state, fromDateTime, toDateTime')
+      let err = new Error('use at least one parameter: participantId, state, fromDateTime, toDateTime')
+      Logger('error', err)
+      throw err
     }
+  },
+
+    close: async function (params, enums, options = {}) {
+      let Logger = options.logger || centralLogger
+      try {
+        let settlementWindowId = await settlementWindowModel.close(params, enums)
+        return await settlementWindowModel.getById({ settlementWindowId }, enums)
+      } catch (err) {
+        Logger('error', err)
+        throw err
+      }
     }
   }
 

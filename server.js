@@ -6,6 +6,7 @@ const Path = require('path')
 const Db = require('./db-model/index.js')
 const Enums = require('./db-model/lib/enums')
 
+
 // -- add them to common project config
 const openAPIOptions = {
   api: Path.resolve('./config/swagger.json'),
@@ -17,11 +18,16 @@ const defaultConfig = {
   cache: [
     {
       name: 'memCache',
-      engine: require('catbox-memory')
-    }
+      engine: require('catbox-memory'),
+      partition: 'cache'
+    } 
   ]
 }
 // --
+
+const getEnums = async (id) => {
+  return await Enums[id]()
+}
 
 async function connectDatabase () {
   try {
@@ -33,25 +39,33 @@ async function connectDatabase () {
 }
 
 const init = async function(config = defaultConfig, openAPIPluginOptions = openAPIOptions) {
-  const server = new Hapi.Server(config);
-  await connectDatabase()
-  await server.register([{
-    plugin: HapiOpenAPI,
-    options: openAPIPluginOptions
-  },
-  {
-    plugin: require('./utils/logger-plugin')
-  }])
+  try {
+    const server = new Hapi.Server(config);
+    await connectDatabase()
+    await server.register([{
+      plugin: HapiOpenAPI,
+      options: openAPIPluginOptions
+    },
+    {
+      plugin: require('./utils/logger-plugin')
+    }])
 
-  server.events.on('start', async () => {
-    server.app.enums = {
-      settlementWindowStates: await Enums.settlementWindowStates(),
-      settlementStates: await Enums.settlementStates(),
-    }
-  })
-
-  await server.start()
-  return server
+    server.method({
+      name: 'enums',
+      method: getEnums,
+      options: {
+        cache: {
+          cache: 'memCache',
+          expiresIn: 180 * 1000,
+          generateTimeout: 30 * 1000
+        }
+      }
+    })
+    await server.start()
+    return server
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 init().then(async (server) => {

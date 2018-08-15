@@ -48,12 +48,11 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
     get: async function getSettlementWindowById(request, h) {
-      const enums = request.server.app.enums
+      const Enums = await request.server.methods.enums('settlementWindowStates')
       const settlementWindowId = request.params.id
-      
-      request.server.log('info', `get settlementwindow by Id requested with id ${settlementWindowId}`)
       try {
-        let settlementWindowResult = await settlementWindow.getById({ settlementWindowId, enums }, { logger: request.server.log })
+        request.server.log('info', `get settlementwindow by Id requested with id ${settlementWindowId}`)
+        let settlementWindowResult = await settlementWindow.getById({ settlementWindowId }, Enums, { logger: request.server.log })
         return h.response(settlementWindowResult)
       } catch (e) {
         request.server.log('error', `ERROR settlementWindowId: ${settlementWindowId} not found`)
@@ -68,32 +67,11 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
     post: async function closeSettlementWindow(request, h) {
-        const getData = new Promise((resolve, reject) => {
-            switch (request.server.app.responseCode) {
-                case 200:
-                case 400:
-                case 401:
-                case 404:
-                case 415:
-                    dataAccess.post[`${request.server.app.responseCode}`](request, h, (error, mock) => {
-                        if (error) reject(error)
-                        else if (!mock.responses) resolve()
-                        else if (mock.responses && mock.responses.code) resolve(Boom.boomify(new Error(mock.responses.message), {statusCode: mock.responses.code}))
-                        else resolve(mock.responses)
-                    })
-                    break
-                default:
-                    dataAccess.post[`default`](request, h, (error, mock) => {
-                        if (error) reject(error)
-                        else if (!mock.responses) resolve()
-                        else if (mock.responses && mock.responses.code) resolve(Boom.boomify(new Error(mock.responses.message), {statusCode: mock.responses.code}))
-                        else resolve(mock.responses)
-                    })
-            }
-
-        })
+      const { state, reason } = request.payload
+      const settlementWindowId = request.params.id
+      const Enums = await request.server.methods.enums('settlementWindowStates')
         try {
-            return await getData
+            return await settlementWindow.close({ settlementWindowId, state, reason }, Enums, { logger: request.server.log })
         } catch (e) {
             throw (Boom.boomify(e))
         }

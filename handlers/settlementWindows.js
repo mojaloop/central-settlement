@@ -52,9 +52,8 @@ module.exports = {
      */
     get: async function getSettlementWindowByParams(request, h) {
         try {
-            const enums = request.server.app.enums
-            const params = {filters: request.query, enums }
-            let settlementWindowResult = await settlementWindows.getByParams(params, {})
+            const Enums = await request.server.methods.enums('settlementWindowStates')
+            let settlementWindowResult = await settlementWindows.getByParams({ query: request.query }, Enums, { logger: request.server.log })
             return h.response(settlementWindowResult)
         } catch (e) {
           request.server.log('error', e)
