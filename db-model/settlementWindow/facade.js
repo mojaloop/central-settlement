@@ -128,8 +128,6 @@ const Facade = {
           await trx.rollback
           throw err  
         }
-    }).then(settlementWindowId => {
-    return settlementWindowId 
     })
     .catch((err) => {
       throw err
