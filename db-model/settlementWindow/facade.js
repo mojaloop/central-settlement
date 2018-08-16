@@ -26,7 +26,6 @@
 'use strict'
 
 const Db = require('../index')
-const settlementWindowStateChange = require('./settlementWindowStateChange')
 
 const Facade = {
   getById: async function ({ settlementWindowId }, enums = {}) {
@@ -40,7 +39,7 @@ const Facade = {
           .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowId', 'settlementWindow.settlementWindowId')
           .select(
             'settlementWindow.*',
-            'swsc.settlementWindowStateId',
+            'swsc.settlementWindowStateId AS state',
           )
           .orderBy('swsc.settlementWindowStateChangeId', 'desc')
           .first()
@@ -77,7 +76,7 @@ const Facade = {
         .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
         .select(
           'settlementWindow.*',
-          'swsc.settlementWindowStateId'
+          'swsc.settlementWindowStateId AS state'
         )
         .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
       })
@@ -90,16 +89,15 @@ const Facade = {
       throw err
     }
   },
+
   close: async function ({ settlementWindowId, state, reason }, enums = {}) {
     try {
       const knex = await Db.getKnex()
-      if (state === 'close' || state === 'CLOSE') state = 'CLOSED'
       return await knex.transaction(async (trx) => {
         try {
           const transactionTimestamp = new Date()
           const settlementWindowStateChange = await knex('settlementWindowStateChange').transacting(trx)
             .where({ settlementWindowId })
-            .forUpdate()
             .select('*')
             .first()
             if (!settlementWindowStateChange) {
@@ -114,7 +112,11 @@ const Facade = {
             throw err
           } else {
             await knex('settlementWindowStateChange').transacting(trx)
-              .update({ settlementWindowStateId: enums[state].settlementWindowStateId, reason })
+            .where({ settlementWindowId })
+            .forShare()
+            .select('*')
+            await knex('settlementWindowStateChange').transacting(trx)
+              .update({ settlementWindowStateId: enums[state.toUpperCase()].settlementWindowStateId, reason })
               .where({ settlementWindowStateChangeId })
               let settlementWindowId = await knex('settlementWindow').transacting(trx).insert({ reason })
             let newSettlementWindowId = await knex('settlementWindowStateChange').transacting(trx).insert({
