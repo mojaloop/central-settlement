@@ -90,7 +90,7 @@ module.exports = {
       let transferParticipantRoleTypeEnumsList = await Db.transferParticipantRoleType.find({})
       if (transferParticipantRoleTypeEnumsList) {
         for (let state of transferParticipantRoleTypeEnumsList) {
-          transferParticipantRoleTypeEnum[`${state.enumeration}`] = state.transferParticipantRoleTypeId
+          transferParticipantRoleTypeEnum[`${state.name}`] = state.transferParticipantRoleTypeId
         }
         return transferParticipantRoleTypeEnum
       }

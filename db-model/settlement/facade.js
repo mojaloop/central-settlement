@@ -29,7 +29,7 @@ const Db = require('../index')
 const settlementWindowModel = require('../settlementWindow')
 
 const Facade = {
-  triggerEvent: async function ({ settlementId, settlementWindowsIdList }, enums = {}) {
+  triggerEvent: async function ({ settlementId, settlementWindowsIdList, reason }, enums = {}) {
     try {
       let settlementSettlementWindow = {}
       let settlementSettlementWindowList = []
@@ -127,9 +127,9 @@ const Facade = {
                 amount =
                   (ledgerEntryTypeId === enums.ledgerEntryTypes.INTERCHANGE_FEE)
                     ? (-amount)
-                    : ((ledgerEntryTypeId === enums.ledgerEntryTypes.PRINCIPLE_VALUE) && (transferParticipantRoleTypeId === enums.transferParticipantRoleType.PAYER_DFSP))
+                    : ((ledgerEntryTypeId === enums.ledgerEntryTypes.PRINCIPLE_VALUE) && (transferParticipantRoleTypeId === enums.transferParticipantRoleTypes.PAYER_DFSP))
                       ? amount
-                      : ((ledgerEntryTypeId === enums.ledgerEntryTypes.PRINCIPLE_VALUE) && (transferParticipantRoleTypeId === enums.transferParticipantRoleType.PAYEE_DFSP))
+                      : ((ledgerEntryTypeId === enums.ledgerEntryTypes.PRINCIPLE_VALUE) && (transferParticipantRoleTypeId === enums.transferParticipantRoleTypes.PAYEE_DFSP))
                         ? (-amount)
                         : null
                 let spc = {
@@ -159,15 +159,10 @@ const Facade = {
               ]) => {
                 let settlementParticipantCurrencyList = []
                 for (let settlementParticipantCurrency of settlementParticipantCurrencyIdList) {
-                  let {
-                    settlementParticipantCurrencyId
-
-                  } = settlementParticipantCurrency
                   settlementParticipantCurrencyList.push({
-                    settlementId,
-                    settlementParticipantCurrencyId,
+                    settlementParticipantCurrencyId: settlementParticipantCurrency,
                     reason,
-                    settlementSateId: enums.settlementStates.PENDING_SETTLEMENT 
+                    settlementStateId: enums.settlementStates.PENDING_SETTLEMENT 
                   })
                 }
                 await knex.batchInsert('settlementParticipantCurrencyStateChange', settlementParticipantCurrencyList).transacting(trx)
