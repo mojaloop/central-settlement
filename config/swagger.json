@@ -932,9 +932,7 @@
                 }
             },
             "required": [
-                "id",
-                "state",
-                "createdDate"
+                "id"
             ]
         },
         "SettlementWindows": {
