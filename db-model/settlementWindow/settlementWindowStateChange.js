@@ -31,7 +31,7 @@ module.exports.create = async ({ settlementWindowId, state, reason }, enums = {}
   try {
     return await Db.settlementWindowStateChange.insert({
       settlementWindowId,
-      settlementWindowStateId: enums.settlementWindowStateEnum[state.toUpperCase()].settlementWindowStateId,
+      settlementWindowStateId: enums[state.toUpperCase()].settlementWindowStateId,
       reason
     })
   } catch (err) {
