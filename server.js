@@ -23,7 +23,6 @@ const defaultConfig = {
     } 
   ]
 }
-// --
 
 const getEnums = async (id) => {
   return await Enums[id]()

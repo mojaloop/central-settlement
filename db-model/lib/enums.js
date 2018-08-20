@@ -45,7 +45,7 @@ module.exports = {
   settlementStates: async function () {
     try {
       let settlementStateEnum = {}
-      let settlementStateEnumsList = await Db.settlementState.find({}, { order: 'settlementStateId asc' })
+      let settlementStateEnumsList = await Db.settlementState.find()
       if (settlementStateEnumsList) {
         for (let state of settlementStateEnumsList) {
           settlementStateEnum[`${state.settlementStateId}`] = state
