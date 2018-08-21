@@ -1,7 +1,7 @@
 FROM mhart/alpine-node:8.9.4
 
 WORKDIR /opt/central-settlement
-COPY config /opt/central-settlement/config
+COPY interface /opt/central-settlement/interface
 COPY data /opt/central-settlement/data
 COPY handlers /opt/central-settlement/handlers
 COPY tests /opt/central-settlement/tests

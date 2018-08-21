@@ -44,7 +44,7 @@
         "lint": "eslint .",
         "test:coverage-check": "npm run test:coverage && istanbul check-coverage",
         "test:coverage": "istanbul cover tape -- 'tests/unit/**/*.js'",
-        "regenerate": "yo swaggerize:test --framework hapi --apiPath './config/swagger.json'"
+        "regenerate": "yo swaggerize:test --framework hapi --apiPath './interface/swagger.json'"
     },
     "generator-swaggerize": {
         "version": "4.1.0"
