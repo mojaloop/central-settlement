@@ -6,7 +6,8 @@
     "private": true,
     "author": "Valentin Genev <vgenev@gmail.com>",
     "contributors": [
-        "Deon Botha <deon.botha@modusbox.com>"
+        "Deon Botha <deon.botha@modusbox.com>",
+        "Miguel de Barros <miguel.debarros@modusbox.com>"
     ],
     "repository": {
         "type": "git",
