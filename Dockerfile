@@ -7,7 +7,6 @@ COPY handlers /opt/central-settlement/handlers
 COPY tests /opt/central-settlement/tests
 COPY package.json /opt/central-settlement
 COPY server.js /opt/central-settlement
-COPY settlementAPI.json /opt/central-settlement
 COPY README.md /opt/central-settlement
 
 RUN apk add --no-cache -t build-dependencies git make gcc g++ python libtool autoconf automake \
