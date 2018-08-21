@@ -25,7 +25,8 @@
         "boom": "^7.1.1",
         "hapi": "^17.0.0",
         "hapi-openapi": "^1.0.0",
-        "hapi-pagination": "^2.0.0"
+        "hapi-pagination": "^2.0.0",
+        "swagmock": "~0.0.2"
     },
     "devDependencies": {
         "eslint": "^2",
@@ -34,10 +35,6 @@
         "tap-xunit": "1.4.0",
         "tape": "4.6.2",
         "tapes": "4.1.0"
-<<<<<<< HEAD
-=======
-    
->>>>>>> 56ab11a81f16c8e9c936cd960a370fe7c14ec870
     },
     "scripts": {
         "test": "tape 'tests/unit/**/*.js'",
