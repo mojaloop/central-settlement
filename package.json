@@ -6,7 +6,8 @@
     "private": true,
     "author": "Valentin Genev <vgenev@gmail.com>",
     "contributors": [
-        "Deon Botha <deon.botha@modusbox.com>"
+        "Deon Botha <deon.botha@modusbox.com>",
+        "Miguel de Barros <miguel.debarros@modusbox.com>"
     ],
     "repository": {
         "type": "git",
@@ -25,7 +26,8 @@
         "boom": "^7.1.1",
         "hapi": "^17.0.0",
         "hapi-openapi": "^1.0.0",
-        "hapi-pagination": "^2.0.0"
+        "hapi-pagination": "^2.0.0",
+        "swagmock": "~0.0.2"
     },
     "devDependencies": {
         "eslint": "^2",
@@ -34,10 +36,6 @@
         "tap-xunit": "1.4.0",
         "tape": "4.6.2",
         "tapes": "4.1.0"
-<<<<<<< HEAD
-=======
-    
->>>>>>> 56ab11a81f16c8e9c936cd960a370fe7c14ec870
     },
     "scripts": {
         "test": "tape 'tests/unit/**/*.js'",
@@ -46,7 +44,7 @@
         "lint": "eslint .",
         "test:coverage-check": "npm run test:coverage && istanbul check-coverage",
         "test:coverage": "istanbul cover tape -- 'tests/unit/**/*.js'",
-        "regenerate": "yo swaggerize:test --framework hapi --apiPath './config/swagger.json'"
+        "regenerate": "yo swaggerize:test --framework hapi --apiPath './interface/swagger.json'"
     },
     "generator-swaggerize": {
         "version": "4.1.0"

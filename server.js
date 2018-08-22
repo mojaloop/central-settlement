@@ -5,7 +5,7 @@ const HapiOpenAPI = require('hapi-openapi');
 const Path = require('path');
 
 const openAPIOptions = {
-    api: Path.resolve('./config/swagger.json'),
+    api: Path.resolve('./interface/swagger.json'),
     handlers: Path.resolve('./handlers')
 }
 
@@ -18,7 +18,7 @@ const init = async function(config = {
     await server.register({
         plugin: HapiOpenAPI,
         options: {
-            api: Path.resolve('./config/swagger.json'),
+            api: Path.resolve('./interface/swagger.json'),
             handlers: Path.resolve('./handlers')
         }
     });

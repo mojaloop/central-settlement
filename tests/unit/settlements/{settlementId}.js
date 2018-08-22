@@ -26,7 +26,7 @@ Test('/settlements/{settlementId}', function (t) {
             await server.register({
                 plugin: HapiOpenAPI,
                 options: {
-                    api: Path.resolve(__dirname, '../../../config/swagger.json'),
+                    api: Path.resolve(__dirname, '../../../interface/swagger.json'),
                     handlers: Path.join(__dirname, '../../../handlers'),
                     outputvalidation: true
                 }
