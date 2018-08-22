@@ -27,7 +27,7 @@ Test('/settlementWindows/{id}', function (t) {
                 plugin: HapiOpenAPI,
                 options: {
                     api: Path.resolve(__dirname, '../../../interface/swagger.json'),
-                    handlers: Path.join(__dirname, '../../../handlers'),
+                    handlers: Path.join(__dirname, '../../../src/handlers'),
                     outputvalidation: true
                 }
             });

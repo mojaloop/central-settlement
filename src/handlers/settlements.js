@@ -31,10 +31,11 @@
  ******/
 
 'use strict';
-const dataAccess = require('../data/settlements');
+
 const Boom = require('boom');
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Path = require('path');
+const Settlements = require('./../domain/settlement')
 
 Logger.info('path ', Path.basename(__filename));
 
@@ -44,78 +45,44 @@ Logger.info('path ', Path.basename(__filename));
 module.exports = {
     /**
      * summary: Returns Settlement(s) as per parameter(s).
-     * description: 
+     * description:
      * parameters: currency, participantId, settlementWindowId, accountId, state, fromDateTime, toDateTime
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
     get: async function getSettlementsByParams(request, h) {
-        const getData = new Promise((resolve, reject) => {
-            switch (request.server.app.responseCode) {
-                case 200:
-                case 400:
-                case 401:
-                case 404:
-                case 415:
-                    dataAccess.get[`${request.server.app.responseCode}`](request, h, (error, mock) => {
-                        if (error) reject(error)
-                        else if (!mock.responses) resolve()
-                        else if (mock.responses && mock.responses.code) resolve(Boom.boomify(new Error(mock.responses.message), {statusCode: mock.responses.code}))
-                        else resolve(mock.responses)
-                    })
-                    break
-                default:
-                    dataAccess.get[`default`](request, h, (error, mock) => {
-                        if (error) reject(error)
-                        else if (!mock.responses) resolve()
-                        else if (mock.responses && mock.responses.code) resolve(Boom.boomify(new Error(mock.responses.message), {statusCode: mock.responses.code}))
-                        else resolve(mock.responses)
-                    })
-            }
-
-        })
+        Logger.info('Here')
         try {
-            return await getData
+            const Enums = await request.server.methods.enums('settlementStates')
+            let settlementResult = await Settlements.getSettlementsByParams({query: request.query}, Enums, {logger: request.server.log})
+            return h.response(settlementResult)
         } catch (e) {
-            throw (Boom.boomify(e))
+            Logger.info('error', e);
+            request.server.log('error', e)
+            return Boom.notFound(e.message)
         }
     },
     /**
      * summary: Trigger the creation of a settlement event, that does the calculation of the net settlement position per participant and marks all transfers in the affected windows as Pending settlement. Returned dataset is the net settlement report for the settlementwindow
-     * description: 
+     * description:
      * parameters: settlementEventPayload
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
     post: async function postSettlementEvent(request, h) {
-        const getData = new Promise((resolve, reject) => {
-            switch (request.server.app.responseCode) {
-                case 200:
-                case 400:
-                case 401:
-                case 404:
-                case 415:
-                    dataAccess.post[`${request.server.app.responseCode}`](request, h, (error, mock) => {
-                        if (error) reject(error)
-                        else if (!mock.responses) resolve()
-                        else if (mock.responses && mock.responses.code) resolve(Boom.boomify(new Error(mock.responses.message), {statusCode: mock.responses.code}))
-                        else resolve(mock.responses)
-                    })
-                    break
-                default:
-                    dataAccess.post[`default`](request, h, (error, mock) => {
-                        if (error) reject(error)
-                        else if (!mock.responses) resolve()
-                        else if (mock.responses && mock.responses.code) resolve(Boom.boomify(new Error(mock.responses.message), {statusCode: mock.responses.code}))
-                        else resolve(mock.responses)
-                    })
-            }
-
-        })
         try {
-            return await getData
+            const Enums = {
+                settlementStates: await request.server.methods.enums('settlementStates'),
+                settlementWindowStates: await request.server.methods.enums('settlementWindowStates'),
+                transferStates: await request.server.methods.enums('transferStates'),
+                transferParticipantRoleTypes: await request.server.methods.enums('transferParticipantRoleTypes'),
+                ledgerEntryTypes: await  request.server.methods.enums('ledgerEntryTypes')
+            }
+            let settlementResult = await Settlements.settlementEventTriger(request.payload, Enums, {logger: request.server.log})
+            return h.response(settlementResult)
         } catch (e) {
-            throw (Boom.boomify(e))
+            request.server.log('error', e)
+            return Boom.notFound(e.message)
         }
     }
-};
+}
