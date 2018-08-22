@@ -138,8 +138,8 @@ const Facade = {
               .forShare()
               .select('*')
             await knex('settlementWindowStateChange').transacting(trx)
-              .update({ settlementWindowStateId: enums[state.toUpperCase()], reason })
-              .where({ settlementWindowStateChangeId })
+              .insert({ settlementWindowStateId: enums[state.toUpperCase()], reason })
+            //  .where({ settlementWindowStateChangeId })
             let settlementWindow = await knex('settlementWindow').transacting(trx).insert({ reason })
             let newSettlementWindowId = await knex('settlementWindowStateChange').transacting(trx).insert({
               settlementWindowId: settlementWindow,

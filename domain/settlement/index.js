@@ -8,8 +8,13 @@ module.exports = {
       let reason = params.reason
       let Logger = options.logger || centralLogger
       try {
-        let settlementWindowId = await settlementModel.triggerEvent({ settlementId, settlementWindowsIdList, reason }, enums)
-        return settlementWindowId // TODO RETURN CORRECT RESPONSE
+        let settlementEventAmountList = await settlementModel.triggerEvent({ settlementId, settlementWindowsIdList, reason }, enums)
+        let netSettlementAmount = await settlementModel.settlelmentParticipantCurrency.getByListOfIds(settlementEventAmountList, enums)
+        return {
+          settlementId,
+          reason,
+          netSettlementAmount
+        }
       } catch (err) {
         Logger('error', err)
         throw err
