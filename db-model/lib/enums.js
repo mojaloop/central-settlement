@@ -31,10 +31,10 @@ module.exports = {
   settlementWindowStates: async function () {
     try {
       let settlementWindowStateEnum = {}
-      let settlementWindowStateEnumsList = await Db.settlementWindowState.find({}, { order: 'settlementWindowStateId asc' })
+      let settlementWindowStateEnumsList = await Db.settlementWindowState.find({})
       if (settlementWindowStateEnumsList) {
         for (let state of settlementWindowStateEnumsList) {
-          settlementWindowStateEnum[`${state.settlementWindowStateId}`] = state
+          settlementWindowStateEnum[`${state.enumeration}`] = state.settlementWindowStateId
         }
         return settlementWindowStateEnum
       }
@@ -45,15 +45,58 @@ module.exports = {
   settlementStates: async function () {
     try {
       let settlementStateEnum = {}
-      let settlementStateEnumsList = await Db.settlementState.find()
+
+      let settlementStateEnumsList = await Db.settlementState.find({})
       if (settlementStateEnumsList) {
         for (let state of settlementStateEnumsList) {
-          settlementStateEnum[`${state.settlementStateId}`] = state
+          settlementStateEnum[`${state.enumeration}`] = state.settlementStateId
         }
         return settlementStateEnum
       }
     } catch (err) {
         throw err
     }
-  }
+  },
+  transferStates: async function () {
+    try {
+      let transferStateEnum = {}
+      let transferStateEnumsList = await Db.transferState.find({})
+      if (transferStateEnumsList) {
+        for (let state of transferStateEnumsList) {
+          transferStateEnum[`${state.enumeration}`] = state.transferStateId
+        }
+        return transferStateEnum
+      }
+    } catch (err) {
+        throw err
+    }
+  },
+  ledgerEntryTypes: async function () {
+    try {
+      let ledgerEntryTypeEnum = {}
+      let ledgerEntryTypeEnumsList = await Db.ledgerEntryType.find({})
+      if (ledgerEntryTypeEnumsList) {
+        for (let state of ledgerEntryTypeEnumsList) {
+          ledgerEntryTypeEnum[`${state.name}`] = state.ledgerEntryTypeId
+        }
+        return ledgerEntryTypeEnum
+      }
+    } catch (err) {
+        throw err
+    }
+  },
+  transferParticipantRoleTypes: async function () {
+    try {
+      let transferParticipantRoleTypeEnum = {}
+      let transferParticipantRoleTypeEnumsList = await Db.transferParticipantRoleType.find({})
+      if (transferParticipantRoleTypeEnumsList) {
+        for (let state of transferParticipantRoleTypeEnumsList) {
+          transferParticipantRoleTypeEnum[`${state.name}`] = state.transferParticipantRoleTypeId
+        }
+        return transferParticipantRoleTypeEnum
+      }
+    } catch (err) {
+        throw err
+    }
+  } 
 }

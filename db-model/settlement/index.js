@@ -35,5 +35,7 @@
 const settlementsFacade = require('./facade')
 
 module.exports = {
-    getByParams: settlementsFacade.getByParams
+    getByParams: settlementsFacade.getByParams,
+    //triggerEvent: settlementsFacade.triggerEvent
+    triggerEvent: settlementsFacade.knexTriggerEvent
 }

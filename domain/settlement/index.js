@@ -36,28 +36,53 @@ const settlementsModel = require('../../db-model/settlement/index');
 const centralLogger = require('@mojaloop/central-services-shared').Logger
 
 module.exports = {
-    getSettlementsByParams: async function (params, options = {}) {
+    getSettlementsByParams: async function (params, enums, options = {}) {
         // 7 filters - at least one should be used
-        if (Object.keys(params.filters).length && Object.keys(params.filters).length < 8) {
-            let {accountId, settlementWindowId, currency, participantId, state, fromDateTime, toDateTime} = params.filters
-            accountId = accountId ? accountId : 'IS NOT NULL'
-            settlementWindowId = settlementWindowId ? settlementWindowId : 'IS NOT NULL'
-            currency = currency ? currency : 'IS NOT NULL'
-            fromDateTime = fromDateTime ? fromDateTime : new Date('01-01-1970').toISOString()
-            toDateTime = toDateTime ? toDateTime : new Date().toISOString()
-            state = state ? ` = ${state.toUpperCase()}` : 'IS NOT NULL'
-            params.filters = Object.assign(params.filters, {
-                accountId,
-                settlementWindowId,
-                currency,
-                participantId,
-                state,
-                fromDateTime,
-                toDateTime
-            })
-            return await settlementsModel.getByParams(params)
+        let Logger = options.logger || centralLogger
+        if (Object.keys(params.query).length && Object.keys(params.query).length < 8) {
+            try {
+                let result = []
+                let settlements = await settlementsModel.getByParams(params, enums)
+                if (settlements && settlements.length > 0) {
+                    for (let settlement of settlements) {
+                        result.push({
+                            accountId: settlement.accountId,
+                            currency: settlement.currency,
+                            participantId: settlement.participantId,
+                            //state: settlement.state, //Not sure
+                            fromDateTime: settlement.fromDateTime,
+                            toDateTime: settlement.toDateTime
+                        })
+                    }
+                    return result
+                }
+                else {
+                    let err = new Error('settlement not found')
+                    Logger('error', err)
+                    throw err
+                }
+            } catch (err) {
+                Logger('error', err)
+                throw err
+            }
         } else {
-            throw new Error('at least one parameter must be provided : accountId, settlementWindowId, currency, participantId, state, fromDateTime, toDateTime')
+            let err = new Error('use at least one parameter: accountId, settlementWindowId, currency, participantId, state, fromDateTime, toDateTime')
+            Logger('error', err)
+            throw err
         }
-    }
+    },
+
+    settlementEventTriger: async function (params, enums, options = {}) {
+        let settlementId = params.id
+        let settlementWindowsIdList = params.settlementWindows
+        let reason = params.reason
+        let Logger = options.logger || centralLogger
+        try {
+            let settlementWindowId = await settlementsModel.triggerEvent({ settlementId, settlementWindowsIdList, reason }, enums)
+            return settlementWindowId // TODO RETURN CORRECT RESPONSE
+        } catch (err) {
+            Logger('error', err)
+            throw err
+        }
+    },
 }

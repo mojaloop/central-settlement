@@ -34,7 +34,7 @@ const Facade = {
         return await builder
           .where({
             'settlementWindow.settlementWindowId': settlementWindowId,
-            'swsc.settlementWindowStateId': enums.OPEN.settlementWindowStateId
+            'swsc.settlementWindowStateId': enums.OPEN
           })
           .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowId', 'settlementWindow.settlementWindowId')
           .select(
@@ -46,43 +46,65 @@ const Facade = {
       })
       if (!result) {
         let err = new Error('2001')
-        throw err    
+        throw err
       }
       else return result
     } catch (err) {
-        throw err
+      throw err
     }
   },
 
-  getByParams: async function ({ query }, enums = {} ) {
+  getByListOfIds: async function (listOfIds, enums = {}) {
+    try {
+      let result = await Db.settlementWindow.query(async (builder) => {
+        return await builder
+          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowId', 'settlementWindow.settlementWindowId')
+          .select(
+            'settlementWindow.*',
+            'swsc.settlementWindowStateId AS state',
+          )
+          .whereIn('settlementWindow.settlementWindowId', listOfIds)
+      })
+      if (!result.length) {
+        let err = new Error('2001')
+        throw err
+      } else {
+        return result
+      }
+    } catch (err) {
+      throw err
+    }
+  },
+
+  getByParams: async function ({ query }, enums = {}) {
     try {
       let { participantId, state, fromDateTime, toDateTime } = query
       state = state ? ` = "${state.toUpperCase()}"` : 'IS NOT NULL'
       fromDateTime = fromDateTime ? fromDateTime : new Date('01-01-1970').toISOString()
       toDateTime = toDateTime ? toDateTime : new Date().toISOString()
       let result = await Db.settlementWindow.query(async (builder) => {
-        if (!participantId)        
-        return await builder
+        if (!participantId)
+          return await builder
+            .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
+            .select(
+              'settlementWindow.*',
+              'swsc.settlementWindowStateId',
+            )
+            .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
+        else return await builder
+          .leftJoin('participantCurrency AS pc', 'pc.participantId', participantId)
+          .leftJoin('settlementTransferParticipant AS stp', 'stp.participantCurrencyId', 'pc.participantCurrencyId')
+          .leftJoin('settlementSettlementWindow AS ssw', 'ssw.settlementId', 'stp.settlementId')
           .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
           .select(
             'settlementWindow.*',
-            'swsc.settlementWindowStateId',
+            'swsc.settlementWindowStateId AS state'
           )
           .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
-        else return await builder
-        .leftJoin('participantCurrency AS pc', 'pc.participantId', participantId)
-        .leftJoin('settlementTransferParticipant AS stp', 'stp.participantCurrencyId', 'pc.participantCurrencyId')
-        .leftJoin('settlementSettlementWindow AS ssw', 'ssw.settlementId', 'stp.settlementId')        
-        .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
-        .select(
-          'settlementWindow.*',
-          'swsc.settlementWindowStateId AS state'
-        )
-        .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
       })
       if (!result) {
         let err = new Error('2001')
-        throw err    
+        throw err
       }
       else return result
     } catch (err) {
@@ -100,41 +122,41 @@ const Facade = {
             .where({ settlementWindowId })
             .select('*')
             .first()
-            if (!settlementWindowStateChange) {
-              await trx.rollback
-              let err = new Error('2001')
-              throw err          
-            }
-            let { settlementWindowStateChangeId, settlementWindowStateId  } = settlementWindowStateChange
-            if (settlementWindowStateId !== enums.OPEN.settlementWindowStateId) { 
+          if (!settlementWindowStateChange) {
+            await trx.rollback
+            let err = new Error('2001')
+            throw err
+          }
+          let { settlementWindowStateChangeId, settlementWindowStateId } = settlementWindowStateChange
+          if (settlementWindowStateId !== enums.OPEN) {
             await trx.rollback
             let err = new Error('State not right')
             throw err
           } else {
             await knex('settlementWindowStateChange').transacting(trx)
-            .where({ settlementWindowId })
-            .forShare()
-            .select('*')
+              .where({ settlementWindowId })
+              .forShare()
+              .select('*')
             await knex('settlementWindowStateChange').transacting(trx)
-              .update({ settlementWindowStateId: enums[state.toUpperCase()].settlementWindowStateId, reason })
+              .update({ settlementWindowStateId: enums[state.toUpperCase()], reason })
               .where({ settlementWindowStateChangeId })
-              let settlementWindowId = await knex('settlementWindow').transacting(trx).insert({ reason })
+            let settlementWindow = await knex('settlementWindow').transacting(trx).insert({ reason })
             let newSettlementWindowId = await knex('settlementWindowStateChange').transacting(trx).insert({
-              settlementWindowId,
-              settlementWindowStateId: enums.OPEN.settlementWindowStateId
+              settlementWindowId: settlementWindow,
+              settlementWindowStateId: enums.OPEN
             })
             await trx.commit
-            return newSettlementWindowId[0]
+            return settlementWindow[0]
           }
         } catch (err) {
           await trx.rollback
-          throw err  
+          throw err
         }
-    })
-    .catch((err) => {
-      throw err
-    })
-  } catch (err) {
+      })
+        .catch((err) => {
+          throw err
+        })
+    } catch (err) {
       throw err
     }
   }
