@@ -1,3 +1,3 @@
 # central-settlement
 
-Swagger api [location](interface/swagger.json)
+Swagger api [location](src/interface/swagger.json)

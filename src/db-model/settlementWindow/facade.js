@@ -63,7 +63,7 @@ const Facade = {
             'settlementWindow.*',
             'swsc.settlementWindowStateId AS state',
           )
-          .whereIn('settlementWindow.settlementWindowId', listOfIds)
+          .whereRaw(`settlementWindow.settlementWindowId IN (${listOfIds}) AND swsc.createdDate > settlementWindow.createdDate`)
       })
       if (!result.length) {
         let err = new Error('2001')
