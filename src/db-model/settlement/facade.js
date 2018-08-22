@@ -143,7 +143,7 @@ const Facade = {
                       'tp.ledgerEntryTypeId as ledgerEntryTypeId',
                       'tp.amount as amount'
                     )
-                    .whereIn('sw.settlementWindowId', idLists)]).then(([
+                    .whereIn('sw.settlementWindowId', idLists)]).then(async ([
                       settlementId,
                       transferParticipantList
                     ]) => {

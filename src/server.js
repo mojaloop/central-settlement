@@ -9,8 +9,8 @@ const Enums = require('./db-model/lib/enums')
 
 // -- add them to common project config
 const openAPIOptions = {
-  api: Path.resolve('./interface/swagger.json'),
-  handlers: Path.resolve('./handlers')
+  api: Path.resolve(__dirname, './interface/swagger.json'),
+  handlers: Path.resolve(__dirname, './handlers')
 }
 
 const defaultConfig = {
