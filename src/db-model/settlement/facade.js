@@ -63,13 +63,12 @@ const Facade = {
 
   knexTriggerEvent: async function ({ settlementIdInput, settlementWindowsIdList, reason }, enums = {}) {
     try {
-      let settlementSettlementWindow = {}
       let settlementSettlementWindowList = []
       let settlementWindowStateList = []
       let idLists = settlementWindowsIdList.map(v => v.id)
       // insert new settlement
       const settlementId = await settlementModel.create({ settlementIdInput, reason })
-      // validate window state
+      // validate windows state
       const settlementWindowStates = await settlementWindowModel.getByListOfIds(idLists, enums.settlementWindowStates)
       if (!settlementWindowStates.length) {
         await trx.rollback
@@ -97,7 +96,7 @@ const Facade = {
       return await knex.transaction(async (trx) => {
         try {
           await knex.batchInsert('settlementSettlementWindow', settlementSettlementWindowList).transacting(trx)
-          let a = await knex
+          let settlementTransferParticipantIdList = knex
             .from(knex.raw('settlementTransferParticipant (settlementId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, amount)'))
             .insert(function () {
               this.from('transferFulfilment AS tf')
@@ -116,12 +115,55 @@ const Facade = {
                     .whereRaw('settlementId = ?', [settlementId])
                 })
                 .groupBy('tp.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId')
-                .select(knex.raw('? AS ??', ['8765', 'settlementId']), 'tp.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId')
+                .select(knex.raw('? AS ??', [settlementId, 'settlementId']), 'tp.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId')
                 .sum('tp.amount')
-                .transacting(trx)
-            });
-          console.log('SQL result ' + a)
+            })
+            .transacting(trx)
+          let settlementParticipantCurrencyIdList = knex
+            .from(knex.raw('settlementParticipantCurrency (settlementId, participantCurrencyId, netAmount)'))
+            .insert(function () {
+              this.from('settlementTransferParticipant AS stp')
+                .whereRaw('stp.settlementId = ?', [settlementId])
+                .groupBy('stp.settlementId', 'stp.participantCurrencyId')
+                .select('stp.settlementId', 'stp.participantCurrencyId')
+                .sum(knex.raw(`CASE 
+                                WHEN stp.transferParticipantRoleTypeId = ${enums.transferParticipantRoleTypes.PAYER_DFSP} AND stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.PRINCIPLE_VALUE} THEN amount 
+                                WHEN stp.transferParticipantRoleTypeId = ${enums.transferParticipantRoleTypes.PAYEE_DFSP} AND stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.PRINCIPLE_VALUE} THEN -amount
+                                WHEN stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.INTERCHANGE_FEE} THEN -amount
+                              end`))
+            }, 'settlementParticipantCurrencyId')
+            .transacting(trx)
+          // await Promise.all([
+          //   // change states
+          //   await knex
+          //   .from(knex.raw('settlementParticipantCurrencyStateChange (settlementParticipantCurrencyId, settlementStateId, reason )'))
+          //   .insert(function () {
+          //     this.from('settlementParticipantCurrency as spc')
+          //       .whereRaw('spc.settlementId = ?', [settlementId])
+          //       .select('spc.settlementParticipantCurrencyId', knex.raw('?', [`${enums.settlementStates.PENDING_SETTLEMENT}`]), knex.raw('?', `${reason}`))
+          //   }),
+          //   await knex.batchInsert('settlementWindowStateChange', settlementWindowStateList).transacting(trx),
+          //   await knex('settlementStateChange').transacting(trx)
+          //     .insert({
+          //       settlementId,
+          //       settlementStateId: enums.settlementStates.PENDING_SETTLEMENT
+          //     }, 'settlementStateChangeId'),
+          // ]).then(async ([
+          //   settlementParticipantCurrencyStateChangeIdList,
+          //   settlementWindowStateChangeIdList,
+          //   settlementStateChangeId
+          // ]) => {
+            trx.commit
+            // return Promise.resolve({
+              // settlementTransferParticipantIdList,
+              // settlementParticipantCurrencyIdList,
+              // settlementParticipantCurrencyStateChangeIdList,
+              // settlementWindowStateChangeIdList,
+              // settlementStateChangeId  
+          //   })
+          // })
         } catch (err) {
+          await trx.rollback
           throw err
         }
       })
