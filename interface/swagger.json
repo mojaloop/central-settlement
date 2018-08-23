@@ -17,7 +17,7 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Returns a Settlement Window as per id.",
+                "summary": "Returns a Settlement Window by id.",
                 "operationId": "getSettlementWindowById",
                 "parameters": [
                     {
@@ -35,7 +35,7 @@
                     "200": {
                         "description": "A settlement window's data returned.",
                         "schema": {
-                            "$ref": "#/definitions/SettlementWindows"
+                            "$ref": "#/definitions/SettlementWindow"
                         }
                     },
                     "400": {
@@ -78,7 +78,7 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "If the settlementWindow is open, it can be closed and a new window created. If it is already closed, return an error message. Returns the new settlement window.",
+                "summary": "If the settlementWindow is open, it can be closed and a new window is created. If it is already closed, return an error message. Returns the new settlement window.",
                 "operationId": "closeSettlementWindow",
                 "parameters": [
                     {
@@ -89,7 +89,7 @@
                     },
                     {
                         "in": "body",
-                        "name": "settlementWindowClosurePayload",
+                        "name": "payload",
                         "description": "A JSON object containing settlement window closure info.",
                         "schema": {
                             "$ref": "#/definitions/SettlementWindowClosurePayload"
@@ -146,8 +146,8 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Returns a Settlement Window(s) as per parameter(s).",
-                "operationId": "getSettlementWindowByParams",
+                "summary": "Returns Settlement Windows as per parameter(s).",
+                "operationId": "getSettlementWindowsByParams",
                 "parameters": [
                     {
                         "in": "query",
@@ -185,7 +185,7 @@
                     }
                 ],
                 "tags": [
-                    "getSettlementWindowByParams"
+                    "getSettlementWindowsByParams"
                 ],
                 "responses": {
                     "200": {
@@ -233,7 +233,7 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Returns Settlement(s) as per parameter(s).",
+                "summary": "Returns Settlements as per parameter(s).",
                 "operationId": "getSettlementsByParams",
                 "parameters": [
                     {
@@ -280,12 +280,28 @@
                         "name": "fromDateTime",
                         "type": "string",
                         "format": "date-time",
-                        "description": "The start date for query (relates to central-ledger.settlementWindow.createdDate). Can be used together with `toDateTime'. eg 2017-07-20T17:32:28Z\n",
+                        "description": "The start date for query (relates to central-ledger.settlement.createdDate). Can be used together with `toDateTime'. eg 2017-07-20T17:32:28Z\n",
                         "required": false
                     },
                     {
                         "in": "query",
                         "name": "toDateTime",
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The end date for query (relates to central-ledger.settlement.createdDate). Can be used together with `fromDateTime'. eg 2017-07-21T17:32:28Z\n",
+                        "required": false
+                    },
+                    {
+                        "in": "query",
+                        "name": "fromSettlementWindowDateTime",
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The start date for query (relates to central-ledger.settlementWindow.createdDate). Can be used together with `toDateTime'. eg 2017-07-20T17:32:28Z\n",
+                        "required": false
+                    },
+                    {
+                        "in": "query",
+                        "name": "toSettlementWindowDateTime",
                         "type": "string",
                         "format": "date-time",
                         "description": "The end date for query (relates to central-ledger.settlementWindow.createdDate). Can be used together with `fromDateTime'. eg 2017-07-21T17:32:28Z\n",
@@ -342,13 +358,13 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Trigger the creation of a settlement event, that does the calculation of the net settlement position per participant and marks all transfers in the affected windows as Pending settlement. Returned dataset is the net settlement report for the settlementwindow",
-                "operationId": "postSettlementEvent",
+                "summary": "Trigger the creation of a settlement, that does the calculation of the net settlement position per participant and marks all transfers in the affected windows as PENDING_SETTLEMENT. Returned dataset is the net settlement report for the settlementWindow",
+                "operationId": "createSettlement",
                 "parameters": [
                     {
                         "in": "body",
-                        "name": "settlementEventPayload",
-                        "description": "A JSON object containing settlement event info.",
+                        "name": "payload",
+                        "description": "A JSON object containing settlement windows to be included.",
                         "schema": {
                             "$ref": "#/definitions/SettlementEventPayload"
                         },
@@ -356,13 +372,13 @@
                     }
                 ],
                 "tags": [
-                    "postSettlementEvent"
+                    "createSettlement"
                 ],
                 "responses": {
                     "200": {
-                        "description": "Settlement window(s) returned by the filtering parameters.",
+                        "description": "Created settlement with all windows and accounts.",
                         "schema": {
-                            "$ref": "#/definitions/Account"
+                            "$ref": "#/definitions/Settlement"
                         }
                     },
                     "400": {
@@ -405,14 +421,14 @@
                 ],
                 "deprecated": false,
                 "summary": "Returns Settlement(s) as per filter criteria.",
-                "operationId": "getSettlementsBySettlementParticipantAccounts",
+                "operationId": "getSettlementBySettlementParticipantAccount",
                 "parameters": [
                     {
                         "in": "path",
                         "name": "settlementId",
                         "required": true,
                         "type": "integer",
-                        "description": "A valid settlement Id.\n"
+                        "description": "A valid Settlement Id.\n"
                     },
                     {
                         "in": "path",
@@ -430,13 +446,13 @@
                     }
                 ],
                 "tags": [
-                    "getSettlementsBySettlementParticipantAccounts"
+                    "getSettlementBySettlementParticipantAccount"
                 ],
                 "responses": {
                     "200": {
-                        "description": "Settlement window(s) returned by the filtering parameters.",
+                        "description": "Settlement, settlement windows and settlement accounts returned by the filtering parameters.",
                         "schema": {
-                            "$ref": "#/definitions/Account"
+                            "$ref": "#/definitions/Settlement"
                         }
                     },
                     "400": {
@@ -480,47 +496,47 @@
                 ],
                 "deprecated": false,
                 "summary": "Acknowledegement of settlement by updating the reason and state by Settlements Id, Participant Id and accounts Id.",
-                "operationId": "updateSettlementBySettlementParticipantsAccounts",
+                "operationId": "updateSettlementBySettlementParticipantAccount",
                 "parameters": [
                     {
                         "in": "path",
                         "name": "settlementId",
-                        "description": "settlements Id",
+                        "description": "A valid Settlement Id.",
                         "required": true,
                         "type": "integer"
                     },
                     {
                         "in": "path",
                         "name": "participantId",
-                        "description": "participant Id",
+                        "description": "A valid Participant Id.",
                         "required": true,
                         "type": "integer"
                     },
                     {
                         "in": "path",
                         "name": "accountId",
-                        "description": "accounts Id",
+                        "description": "A valid Account Id.",
                         "required": true,
                         "type": "integer"
                     },
                     {
                         "in": "body",
-                        "name": "settlementParticipantAccountUpdate",
+                        "name": "payload",
                         "description": "A JSON object containing settlement update info.",
                         "schema": {
-                            "$ref": "#/definitions/SettlementUpdateBySettlementParticipantsAccounts"
+                            "$ref": "#/definitions/SettlementUpdateBySettlementParticipantAccount"
                         },
                         "required": true
                     }
                 ],
                 "tags": [
-                    "updateSettlementBySettlementParticipantsAccounts"
+                    "updateSettlementBySettlementParticipantAccount"
                 ],
                 "responses": {
                     "200": {
                         "description": "Settlements updated.",
                         "schema": {
-                            "$ref": "#/definitions/Settlements"
+                            "$ref": "#/definitions/Settlement"
                         }
                     },
                     "400": {
@@ -563,24 +579,24 @@
                 ],
                 "deprecated": false,
                 "summary": "Returns Settlement(s) as per parameters/filter criteria.",
-                "operationId": "getSettsettlementsById",
+                "operationId": "getSettlementById",
                 "parameters": [
                     {
                         "in": "path",
                         "name": "id",
                         "required": true,
                         "type": "integer",
-                        "description": "A valid settlement Id.\n"
+                        "description": "A valid Settlement Id.\n"
                     }
                 ],
                 "tags": [
-                    "getSettsettlementsById"
+                    "getSettlementById"
                 ],
                 "responses": {
                     "200": {
                         "description": "Settlement successfully returned by the filtering/Query parameters.",
                         "schema": {
-                            "$ref": "#/definitions/Settlements"
+                            "$ref": "#/definitions/Settlement"
                         }
                     },
                     "400": {
@@ -623,19 +639,19 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Acknowledegement of settlement by updating with Settlements Id.",
+                "summary": "Acknowledegement of settlement by updating with Settlement Id.",
                 "operationId": "updateSettlementById",
                 "parameters": [
                     {
                         "in": "path",
                         "name": "id",
-                        "description": "settlements Id",
+                        "description": "A valid Settlement Id.",
                         "required": true,
                         "type": "integer"
                     },
                     {
                         "in": "body",
-                        "name": "settlementUpdatePayload",
+                        "name": "payload",
                         "description": "A JSON object containing settlement update info.",
                         "schema": {
                             "$ref": "#/definitions/SettlementUpdatebySettlementIdPayload"
@@ -650,7 +666,7 @@
                     "200": {
                         "description": "Settlements updated.",
                         "schema": {
-                            "$ref": "#/definitions/Settlements"
+                            "$ref": "#/definitions/Settlement"
                         }
                     },
                     "400": {
@@ -696,40 +712,40 @@
                 ],
                 "deprecated": false,
                 "summary": "Acknowledegement of settlement by updating with Settlements Id and Participant Id.",
-                "operationId": "updateSettlementBySettlementIdParticipantId",
+                "operationId": "updateSettlementBySettlementParticipant",
                 "parameters": [
                     {
                         "in": "path",
                         "name": "settlementId",
-                        "description": "settlements Id",
+                        "description": "A valid Settlement Id.",
                         "required": true,
                         "type": "integer"
                     },
                     {
                         "in": "path",
                         "name": "participantId",
-                        "description": "participant Id",
+                        "description": "A valid Participant Id.",
                         "required": true,
                         "type": "integer"
                     },
                     {
                         "in": "body",
-                        "name": "settlementParticipantUpdatePayload",
+                        "name": "payload",
                         "description": "A JSON object containing settlement update info.",
                         "schema": {
-                            "$ref": "#/definitions/SettlementUpdateBySettlementIDPartricipantIdPayload"
+                            "$ref": "#/definitions/SettlementUpdateBySettlementPartricipantPayload"
                         },
                         "required": true
                     }
                 ],
                 "tags": [
-                    "updateSettlementBySettlementIdParticipantId"
+                    "updateSettlementBySettlementParticipant"
                 ],
                 "responses": {
                     "200": {
                         "description": "Settlements updated.",
                         "schema": {
-                            "$ref": "#/definitions/Settlements"
+                            "$ref": "#/definitions/Settlement"
                         }
                     },
                     "400": {
@@ -780,7 +796,7 @@
                 },
                 "state": {
                     "type": "string",
-                    "example": "PENDING-SETTLEMENT"
+                    "example": "PENDING_SETTLEMENT"
                 },
                 "netSettlementAmount": {
                     "$ref": "#/definitions/netSettlementAmount"
@@ -808,35 +824,35 @@
                 "accounts": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/SettlementUpdateBySettlementIDInnerPayload"
+                        "$ref": "#/definitions/SettlementUpdateBySettlementIdInnerPayload"
                     }
                 }
             }
         },
-        "SettlementUpdateBySettlementIDInnerPayload": {
+        "SettlementUpdateBySettlementIdInnerPayload": {
             "type": "object",
             "properties": {
                 "id": {
                     "type": "integer",
-                    "description": "A uuid."
+                    "description": "Participant Currency Id"
                 },
                 "reason": {
                     "type": "string",
-                    "example": "motivation for closure"
+                    "example": "reason"
                 },
                 "state": {
                     "type": "string",
-                    "example": "closed."
+                    "example": "CLOSED"
                 }
             }
         },
-        "SettlementUpdateBySettlementIDPartricipantIdPayload": {
+        "SettlementUpdateBySettlementPartricipantPayload": {
             "type": "object",
             "properties": {
                 "accounts": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/SettlementUpdateBySettlementIDInnerPayload"
+                        "$ref": "#/definitions/SettlementUpdateBySettlementIdInnerPayload"
                     }
                 }
             }
@@ -846,7 +862,7 @@
             "properties": {
                 "id": {
                     "description": "Paricipant Currency Id",
-                    "type": "string"
+                    "type": "integer"
                 },
                 "reason": {
                     "description": "TBD",
@@ -854,7 +870,7 @@
                 },
                 "state": {
                     "type": "string",
-                    "example": "PENDING-SETTLEMENT"
+                    "example": "PENDING_SETTLEMENT"
                 },
                 "netSettlementAmount": {
                     "$ref": "#/definitions/netSettlementAmount"
@@ -866,11 +882,11 @@
             "properties": {
                 "state": {
                     "type": "string",
-                    "example": "closed"
+                    "example": "CLOSED"
                 },
                 "reason": {
                     "type": "string",
-                    "example": "motivation for closure."
+                    "example": "string"
                 }
             },
             "required": [
@@ -878,16 +894,16 @@
                 "reason"
             ]
         },
-        "SettlementUpdateBySettlementParticipantsAccounts": {
+        "SettlementUpdateBySettlementParticipantAccount": {
             "type": "object",
             "properties": {
                 "state": {
                     "type": "string",
-                    "example": "closed"
+                    "example": "CLOSED"
                 },
                 "reason": {
                     "type": "string",
-                    "example": "motivation for closure"
+                    "example": "string"
                 }
             },
             "required": [
@@ -898,19 +914,27 @@
         "SettlementEventPayload": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
                 "reason": {
                     "type": "string"
                 },
                 "settlementWindows": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/SettlementWindow"
+                        "$ref": "#/definitions/SettlementWindowId"
                     }
                 }
             }
+        },
+        "SettlementWindowId": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "id"
+            ]
         },
         "SettlementWindow": {
             "type": "object",
@@ -977,10 +1001,10 @@
         "Settlement": {
             "type": "object",
             "properties": {
-                "Id": {
+                "id": {
                     "type": "integer"
                 },
-                "State": {
+                "state": {
                     "type": "string"
                 },
                 "settlementWindows": {
@@ -989,7 +1013,7 @@
                         "$ref": "#/definitions/SettlementWindows"
                     }
                 },
-                "Participants": {
+                "participants": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/Participant"
@@ -999,23 +1023,43 @@
         },
         "Error": {
             "required": [
-                "status",
-                "code",
-                "message"
+                "errorInformation"
             ],
             "properties": {
-                "status": {
-                    "type": "integer"
+                "errorInformation": {
+                    "type": "object",
+                    "properties": {
+                        "errorCode": {
+                            "type": "integer"
+                        },
+                        "errorDescription": {
+                            "type": "string"
+                        },
+                        "extensionList": {
+                            "type": "object",
+                            "properties": {
+                                "extension": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Extension"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "Extension": {
+            "required": [
+                "key",
+                "value"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string"
                 },
-                "code": {
-                    "type": "string",
-                    "enum": [
-                        "MISSING_REQUIRED_PARAMETER",
-                        "INVALID_INPUT",
-                        "OTHER"
-                    ]
-                },
-                "message": {
+                "value": {
                     "type": "string"
                 }
             }
