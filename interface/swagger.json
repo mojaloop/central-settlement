@@ -358,13 +358,13 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Trigger the creation of a settlement event, that does the calculation of the net settlement position per participant and marks all transfers in the affected windows as Pending settlement. Returned dataset is the net settlement report for the settlementwindow",
+                "summary": "Trigger the creation of a settlement, that does the calculation of the net settlement position per participant and marks all transfers in the affected windows as PENDING_SETTLEMENT. Returned dataset is the net settlement report for the settlementWindow",
                 "operationId": "createSettlement",
                 "parameters": [
                     {
                         "in": "body",
                         "name": "payload",
-                        "description": "A JSON object containing settlement event info.",
+                        "description": "A JSON object containing settlement windows to be included.",
                         "schema": {
                             "$ref": "#/definitions/SettlementEventPayload"
                         },
@@ -376,9 +376,9 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Settlement window(s) returned by the filtering parameters.",
+                        "description": "Created settlement with all windows and accounts.",
                         "schema": {
-                            "$ref": "#/definitions/Account"
+                            "$ref": "#/definitions/Settlement"
                         }
                     },
                     "400": {
@@ -914,19 +914,27 @@
         "SettlementEventPayload": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
                 "reason": {
                     "type": "string"
                 },
                 "settlementWindows": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/SettlementWindow"
+                        "$ref": "#/definitions/SettlementWindowId"
                     }
                 }
             }
+        },
+        "SettlementWindowId": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "id"
+            ]
         },
         "SettlementWindow": {
             "type": "object",
