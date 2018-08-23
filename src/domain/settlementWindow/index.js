@@ -23,18 +23,9 @@ module.exports = {
     let Logger = options.logger || centralLogger
     if (Object.keys(params.query).length && Object.keys(params.query).length < 5) {
       try {
-        let result = []
         let settlementWindows = await settlementWindowModel.getByParams(params, enums)
         if (settlementWindows && settlementWindows.length > 0) {
-          for (let settlementWindow of settlementWindows) {
-            result.push({
-              settlementWindowId: settlementWindow.settlementWindowId,
-              state: settlementWindow.settlementWindowStateId,
-              reason: settlementWindow.reason,
-              createdDate: settlementWindow.createdDate
-            })
-          }
-          return result
+          return settlementWindows
         }
         else {
           let err = new Error('settlement window not found')

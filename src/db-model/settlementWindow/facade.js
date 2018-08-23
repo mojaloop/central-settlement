@@ -38,7 +38,7 @@ const Facade = {
           })
           .join('currentStatePointer AS csp', function () {
             this.on('csp.entityName', '=', knex.raw('?', ['settlementWindow']))
-            .on('csp.entityId', '=', 'settlementWindow.settlementWindowId')
+              .on('csp.entityId', '=', 'settlementWindow.settlementWindowId')
           })
           .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'csp.stateChangeId')
           .select(
@@ -46,7 +46,7 @@ const Facade = {
             'swsc.settlementWindowStateId as state',
             'swsc.reason as reason',
             'settlementWindow.createdDate as createdDate',
-            'swsc.createdDate as changedDate' 
+            'swsc.createdDate as changedDate'
           )
           .first()
       })
@@ -62,12 +62,20 @@ const Facade = {
 
   getByListOfIds: async function (listOfIds, enums = {}) {
     try {
+      let knex = Db.getKnex()
       let result = await Db.settlementWindow.query(async (builder) => {
         return await builder
-          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowId', 'settlementWindow.settlementWindowId')
+          .join('currentStatePointer AS csp', function () {
+            this.on('csp.entityName', '=', knex.raw('?', ['settlementWindow']))
+              .on('csp.entityId', '=', 'settlementWindow.settlementWindowId')
+          })
+          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'csp.stateChangeId')
           .select(
-            'settlementWindow.*',
-            'swsc.settlementWindowStateId AS state',
+            'settlementWindow.settlementWindowId',
+            'swsc.settlementWindowStateId as state',
+            'swsc.reason as reason',
+            'settlementWindow.createdDate as createdDate',
+            'swsc.createdDate as changedDate'
           )
           .whereRaw(`settlementWindow.settlementWindowId IN (${listOfIds}) AND swsc.createdDate > settlementWindow.createdDate`)
       })
@@ -84,6 +92,8 @@ const Facade = {
 
   getByParams: async function ({ query }, enums = {}) {
     try {
+      let knex = Db.getKnex()
+
       let { participantId, state, fromDateTime, toDateTime } = query
       state = state ? ` = "${state.toUpperCase()}"` : 'IS NOT NULL'
       fromDateTime = fromDateTime ? fromDateTime : new Date('01-01-1970').toISOString()
@@ -91,24 +101,38 @@ const Facade = {
       let result = await Db.settlementWindow.query(async (builder) => {
         if (!participantId)
           return await builder
-            .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
+            .join('currentStatePointer AS csp', function () {
+              this.on('csp.entityName', '=', knex.raw('?', ['settlementWindow']))
+                .on('csp.entityId', '=', 'settlementWindow.settlementWindowId')
+            })
+            .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'csp.stateChangeId')
             .select(
-              'settlementWindow.*',
-              'swsc.settlementWindowStateId',
-              'swsc.createdDate as updatedDate'
+              'settlementWindow.settlementWindowId',
+              'swsc.settlementWindowStateId as state',
+              'swsc.reason as reason',
+              'settlementWindow.createdDate as createdDate',
+              'swsc.createdDate as changedDate'
             )
             .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}' AND swsc.createdDate >= settlementWindow.createdDate`)
-            .orderBy('updatedDate', 'desc')
+            .orderBy('changedDate', 'desc')
         else return await builder
-          .leftJoin('participantCurrency AS pc', 'pc.participantId', participantId)
-          .leftJoin('settlementTransferParticipant AS stp', 'stp.participantCurrencyId', 'pc.participantCurrencyId')
-          .leftJoin('settlementSettlementWindow AS ssw', 'ssw.settlementId', 'stp.settlementId')
-          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
+          .join('currentStatePointer AS csp', function () {
+            this.on('csp.entityName', '=', knex.raw('?', ['settlementWindow']))
+              .on('csp.entityId', '=', 'settlementWindow.settlementWindowId')
+          })
+          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'csp.stateChangeId')
+          .leftJoin('transferFulfilment AS tf', 'tf.settlementWindowId', 'settlementWindow.settlementWindowId')
+          .leftJoin('transferParticipant AS tp', 'tp.transferId', 'tf.transferId')
+          .leftJoin('participantCurrency AS pc', 'pc.participantCurrencyId', 'tp.participantCurrencyId')
           .select(
-            'settlementWindow.*',
-            'swsc.settlementWindowStateId AS state'
+            'settlementWindow.settlementWindowId',
+            'swsc.settlementWindowStateId as state',
+            'swsc.reason as reason',
+            'settlementWindow.createdDate as createdDate',
+            'swsc.createdDate as changedDate'
           )
-          .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}' AND swsc.createdDate >= settlementWindow.createdDate`)
+          .whereRaw(`pc.participantId = ${participantId} AND swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
+          .orderBy('changedDate', 'desc')
         })
       if (!result) {
         let err = new Error('2001')
