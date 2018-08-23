@@ -30,18 +30,24 @@ const Db = require('../index')
 const Facade = {
   getById: async function ({ settlementWindowId }, enums = {}) {
     try {
+      let knex = Db.getKnex()
       let result = await Db.settlementWindow.query(async (builder) => {
         return await builder
           .where({
-            'settlementWindow.settlementWindowId': settlementWindowId,
-            'swsc.settlementWindowStateId': enums.OPEN
+            'settlementWindow.settlementWindowId': settlementWindowId
           })
-          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowId', 'settlementWindow.settlementWindowId')
+          .join('currentStatePointer AS csp', function () {
+            this.on('csp.entityName', '=', knex.raw('?', ['settlementWindow']))
+            .on('csp.entityId', '=', 'settlementWindow.settlementWindowId')
+          })
+          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'csp.stateChangeId')
           .select(
-            'settlementWindow.*',
-            'swsc.settlementWindowStateId AS state',
+            'settlementWindow.settlementWindowId',
+            'swsc.settlementWindowStateId as state',
+            'swsc.reason as reason',
+            'settlementWindow.createdDate as createdDate',
+            'swsc.createdDate as changedDate' 
           )
-          .orderBy('swsc.settlementWindowStateChangeId', 'desc')
           .first()
       })
       if (!result) {

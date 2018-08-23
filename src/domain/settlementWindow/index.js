@@ -6,12 +6,7 @@ module.exports = {
     let Logger = options.logger || centralLogger
     try { 
       let settlementWindow = await settlementWindowModel.getById(params, enums)
-      if (settlementWindow) return {
-        settlementWindowId: settlementWindow.settlementWindowId,
-        state: settlementWindow.settlementWindowStateId,
-        reason: settlementWindow.reason,
-        createdDate: settlementWindow.createdDate
-        }
+      if (settlementWindow) return settlementWindow
       else {
         let err = new Error('settlement window not found')
         Logger('error', err)
