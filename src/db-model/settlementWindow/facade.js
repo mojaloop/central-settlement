@@ -93,7 +93,6 @@ const Facade = {
   getByParams: async function ({ query }, enums = {}) {
     try {
       let knex = Db.getKnex()
-
       let { participantId, state, fromDateTime, toDateTime } = query
       state = state ? ` = "${state.toUpperCase()}"` : 'IS NOT NULL'
       fromDateTime = fromDateTime ? fromDateTime : new Date('01-01-1970').toISOString()
@@ -155,10 +154,10 @@ const Facade = {
         return await knex.transaction(async (trx) => {
           try {
             const transactionTimestamp = new Date()
-              await knex('settlementWindowStateChange').transacting(trx)
-                .where({ settlementWindowId })
-                .forShare()
-                .select('*')
+              // await knex('settlementWindowStateChange').transacting(trx)
+              //   .where({ settlementWindowId })
+              //   .forShare()
+              //   .select('*')
               let settlmentWindowStateChangeId = await knex('settlementWindowStateChange').transacting(trx)
                 .insert({
                   settlementWindowStateId: enums[state.toUpperCase()],
@@ -175,12 +174,13 @@ const Facade = {
                   reason,
                   createdDate: transactionTimestamp
                 })
-              let newSettlementWindowStateChangeId = await knex('settlementWindowStateChange').transacting(trx).insert({
-                settlementWindowId: newSettlementWindowId[0],
-                settlementWindowStateId: enums.OPEN,
-                reason,
-                createdDate: transactionTimestamp
-              })
+              let newSettlementWindowStateChangeId = await knex('settlementWindowStateChange').transacting(trx)
+                .insert({
+                  settlementWindowId: newSettlementWindowId[0],
+                  settlementWindowStateId: enums.OPEN,
+                  reason,
+                  createdDate: transactionTimestamp
+                })
               await knex('currentStatePointer').transacting(trx)
                 .insert({
                   entityName: 'settlementWindow',
