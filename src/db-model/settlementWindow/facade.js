@@ -33,14 +33,7 @@ const Facade = {
       let knex = Db.getKnex()
       let result = await Db.settlementWindow.query(async (builder) => {
         return await builder
-          .where({
-            'settlementWindow.settlementWindowId': settlementWindowId
-          })
-          .join('currentStatePointer AS csp', function () {
-            this.on('csp.entityName', '=', knex.raw('?', ['settlementWindow']))
-              .on('csp.entityId', '=', 'settlementWindow.settlementWindowId')
-          })
-          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'csp.stateChangeId')
+          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
           .select(
             'settlementWindow.settlementWindowId',
             'swsc.settlementWindowStateId as state',
@@ -65,11 +58,7 @@ const Facade = {
       let knex = Db.getKnex()
       let result = await Db.settlementWindow.query(async (builder) => {
         return await builder
-          .join('currentStatePointer AS csp', function () {
-            this.on('csp.entityName', '=', knex.raw('?', ['settlementWindow']))
-              .on('csp.entityId', '=', 'settlementWindow.settlementWindowId')
-          })
-          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'csp.stateChangeId')
+          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
           .select(
             'settlementWindow.settlementWindowId',
             'swsc.settlementWindowStateId as state',
@@ -96,15 +85,11 @@ const Facade = {
       let { participantId, state, fromDateTime, toDateTime } = query
       state = state ? ` = "${state.toUpperCase()}"` : 'IS NOT NULL'
       fromDateTime = fromDateTime ? fromDateTime : new Date('01-01-1970').toISOString()
-      toDateTime = toDateTime ? toDateTime : new Date().toLocaleString()      
+      toDateTime = toDateTime ? toDateTime : new Date().toLocaleString()
       let result = await Db.settlementWindow.query(async (builder) => {
         if (!participantId)
           return await builder
-            .join('currentStatePointer AS csp', function () {
-              this.on('csp.entityName', '=', knex.raw('?', ['settlementWindow']))
-                .on('csp.entityId', '=', 'settlementWindow.settlementWindowId')
-            })
-            .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'csp.stateChangeId')
+            .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
             .select(
               'settlementWindow.settlementWindowId',
               'swsc.settlementWindowStateId as state',
@@ -115,11 +100,7 @@ const Facade = {
             .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
             .orderBy('changedDate', 'desc')
         else return await builder
-          .join('currentStatePointer AS csp', function () {
-            this.on('csp.entityName', '=', knex.raw('?', ['settlementWindow']))
-              .on('csp.entityId', '=', 'settlementWindow.settlementWindowId')
-          })
-          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'csp.stateChangeId')
+          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
           .leftJoin('transferFulfilment AS tf', 'tf.settlementWindowId', 'settlementWindow.settlementWindowId')
           .leftJoin('transferParticipant AS tp', 'tp.transferId', 'tf.transferId')
           .leftJoin('participantCurrency AS pc', 'pc.participantCurrencyId', 'tp.participantCurrencyId')
@@ -154,41 +135,39 @@ const Facade = {
         return await knex.transaction(async (trx) => {
           try {
             const transactionTimestamp = new Date()
-              // await knex('settlementWindowStateChange').transacting(trx)
-              //   .where({ settlementWindowId })
-              //   .forShare()
-              //   .select('*')
-              let settlmentWindowStateChangeId = await knex('settlementWindowStateChange').transacting(trx)
-                .insert({
-                  settlementWindowStateId: enums[state.toUpperCase()],
-                  reason,
-                  settlementWindowId,
-                  createdDate: transactionTimestamp
-                 })
-              await knex('currentStatePointer').transacting(trx)
-                .update({stateChangeId: settlmentWindowStateChangeId})
-                .where('entityName', knex.raw('?', ['settlementWindow']))
-                .andWhere('entityId', settlementWindowId)
-              let newSettlementWindowId = await knex('settlementWindow').transacting(trx)
-                .insert({
-                  reason,
-                  createdDate: transactionTimestamp
-                })
-              let newSettlementWindowStateChangeId = await knex('settlementWindowStateChange').transacting(trx)
-                .insert({
-                  settlementWindowId: newSettlementWindowId[0],
-                  settlementWindowStateId: enums.OPEN,
-                  reason,
-                  createdDate: transactionTimestamp
-                })
-              await knex('currentStatePointer').transacting(trx)
-                .insert({
-                  entityName: 'settlementWindow',
-                  entityId: newSettlementWindowId[0],
-                  stateChangeId: newSettlementWindowStateChangeId
-                })
-              await trx.commit
-              return newSettlementWindowId[0]
+            let settlmentWindowStateChangeId = await knex('settlementWindowStateChange').transacting(trx)
+              .insert({
+                settlementWindowStateId: enums[state.toUpperCase()],
+                reason,
+                settlementWindowId,
+                createdDate: transactionTimestamp
+              })
+            await knex('settlementWindow').transacting(trx)
+              .where({ settlementWindowId })
+              .update({
+                currentStateChangeId: settlmentWindowStateChangeId
+              })
+            let newSettlementWindowId = await knex('settlementWindow').transacting(trx)
+              .insert({
+                reason,
+                createdDate: transactionTimestamp
+              })
+            let newSettlementWindowStateChangeId = await knex('settlementWindowStateChange').transacting(trx)
+              .insert({
+                settlementWindowId: newSettlementWindowId[0],
+                settlementWindowStateId: enums.OPEN,
+                reason,
+                createdDate: transactionTimestamp
+              })
+            await knex('settlementWindow').transacting(trx)
+              .where({
+                settlementWindowId: newSettlementWindowId
+              })
+              .update({
+                currentStateChangeId: newSettlementWindowStateChangeId
+              })
+            await trx.commit
+            return newSettlementWindowId[0]
           } catch (err) {
             await trx.rollback
             throw err
