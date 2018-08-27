@@ -52,6 +52,22 @@ module.exports = {
         }
     },
 
+    putById: async function (settlementId, payload, enums, options = {}) {
+        let Logger = options.logger || centralLogger
+        try {
+            let settlement = await settlementsModel.putById(settlementId, payload, enums)
+            if (settlement) return settlement
+            else {
+                let err = new Error('settlement window not found')
+                Logger('error', err)
+                throw err
+            }
+        } catch (err) {
+            Logger('error', err)
+            throw err
+        }
+    },
+
     getSettlementsByParams: async function (params, enums, options = {}) {
         // 7 filters - at least one should be used
         let Logger = options.logger || centralLogger

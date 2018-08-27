@@ -32,36 +32,56 @@ module.exports = {}
 const settlementModel = require('./settlement')
 
 const Facade = {
-    getById: async function ({settlementId}, enums = {}) {
-        //try {
-        let knex = Db.getKnex()
-        /*let result = await Db.settlementWindow.query(async (builder) => {
-            return await builder
-                .where({
-                    'settlementWindow.settlementWindowId': settlementWindowId
-                })
-                .join('currentStatePointer AS csp', function () {
-                    this.on('csp.entityName', '=', knex.raw('?', ['settlementWindow']))
-                        .on('csp.entityId', '=', 'settlementWindow.settlementWindowId')
-                })
-                .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'csp.stateChangeId')
-                .select(
-                    'settlementWindow.settlementWindowId',
-                    'swsc.settlementWindowStateId as state',
-                    'swsc.reason as reason',
-                    'settlementWindow.createdDate as createdDate',
-                    'swsc.createdDate as changedDate'
-                )
-                .first()
-        })
-        if (!result) {
-            let err = new Error('2001')
+
+    putById: async function ({settlementId}, payLoad, enums = {}) {
+        try {
+            let knex = Db.getKnex()
+            let result = await Db.settlement.query(async (builder) => {
+                return await builder
+
+                //To Do
+
+            })
+            if (!result) {
+                let err = new Error('2001')
+                throw err
+            }
+            else return result
+        } catch (err) {
             throw err
         }
-        else return result
-    } catch (err) {
-        throw err
-    }*/
+    },
+
+    getById: async function ({settlementId}, enums = {}) {
+        try {
+            let knex = Db.getKnex()
+            let result = await Db.settlement.query(async (builder) => {
+                return await builder
+                    /*.where({
+                        'settlementWindow.settlementWindowId': settlementWindowId
+                    })
+                    .join('currentStatePointer AS csp', function () {
+                        this.on('csp.entityName', '=', knex.raw('?', ['settlementWindow']))
+                            .on('csp.entityId', '=', 'settlementWindow.settlementWindowId')
+                    })
+                    .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'csp.stateChangeId')
+                    .select(
+                        'settlementWindow.settlementWindowId',
+                        'swsc.settlementWindowStateId as state',
+                        'swsc.reason as reason',
+                        'settlementWindow.createdDate as createdDate',
+                        'swsc.createdDate as changedDate'
+                    )
+                    .first()*/
+            })
+            if (!result) {
+                let err = new Error('2001')
+                throw err
+            }
+            else return result
+        } catch (err) {
+            throw err
+        }
     },
 
     getByParams: async function ({accountId, settlementWindowId, currency, participantId, state, fromDateTime, toDateTime}, enums = {}) {

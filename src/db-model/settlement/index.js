@@ -35,10 +35,10 @@
 const settlementFacade = require('./facade')
 const settlementModel = require('./settlement')
 module.exports = {
-  // triggerEvent: settlementsFacade.triggerEvent,
-  triggerEvent: settlementFacade.knexTriggerEvent,
-  settlelmentParticipantCurrency: settlementFacade.settlementParticipantCurrency,
-  getByParams: settlementFacade.getByParams,
-  create: settlementModel.create,
-  getById: settlementFacade.getById
+    triggerEvent: settlementFacade.knexTriggerEvent,
+    settlelmentParticipantCurrency: settlementFacade.settlementParticipantCurrency,
+    getByParams: settlementFacade.getByParams,
+    create: settlementModel.create,
+    getById: settlementFacade.getById,
+    putById: settlementFacade.putById
 }
