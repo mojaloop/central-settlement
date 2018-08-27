@@ -180,6 +180,32 @@ const Facade = {
     } catch (err) {
       throw err
     }
+  },
+  getBySettlementId: async function ({ settlementId }, enums = {}) {
+    try {
+      let result = await Db.settlementWindow.query(async (builder) => {
+        return await builder
+          .join('settlementSettlementWindow AS ssw', 'ssw.settlementWindowId', 'settlementWindow.settlementWindowId')
+          .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
+          .select(
+            'settlementWindow.settlementWindowId',
+            'swsc.settlementWindowStateId as state',
+            'swsc.reason as reason',
+            'settlementWindow.createdDate as createdDate',
+            'swsc.createdDate as changedDate'
+          )
+          .where('ssw.settlementId', settlementId)
+          .first()
+      })
+      if (!result) {
+        let err = new Error('2001')
+        throw err
+      }
+      else return result
+    
+    } catch (err) {
+      throw err
+    }
   }
 }
 
