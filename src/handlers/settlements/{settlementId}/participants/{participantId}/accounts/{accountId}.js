@@ -14,7 +14,7 @@ module.exports = {
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    get: async function getSettlementsBySettlementParticipantAccounts(request, h) {
+    get: async function getSettlementBySettlementParticipantAccount(request, h) {
         const getData = new Promise((resolve, reject) => {
             switch (request.server.app.responseCode) {
                 case 200:
@@ -52,7 +52,7 @@ module.exports = {
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    put: async function updateSettlementBySettlementParticipantsAccounts(request, h) {
+    put: async function updateSettlementBySettlementParticipantAccount(request, h) {
         const getData = new Promise((resolve, reject) => {
             switch (request.server.app.responseCode) {
                 case 200:

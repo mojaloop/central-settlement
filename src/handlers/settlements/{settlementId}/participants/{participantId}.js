@@ -50,7 +50,7 @@ module.exports = {
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    put: async function updateSettlementBySettlementIdParticipantId(request, h) {
+    put: async function updateSettlementBySettlementParticipant(request, h) {
         const getData = new Promise((resolve, reject) => {
             switch (request.server.app.responseCode) {
                 case 200:

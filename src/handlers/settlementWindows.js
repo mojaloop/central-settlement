@@ -50,7 +50,7 @@ module.exports = {
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    get: async function getSettlementWindowByParams(request, h) {
+    get: async function getSettlementWindowsByParams(request, h) {
         try {
             const Enums = await request.server.methods.enums('settlementWindowStates')
             let settlementWindowResult = await settlementWindows.getByParams({ query: request.query }, Enums, { logger: request.server.log })

@@ -69,7 +69,7 @@ module.exports = {
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    post: async function postSettlementEvent(request, h) {
+    post: async function createSettlement(request, h) {
         try {
             const Enums = {
                 settlementStates: await request.server.methods.enums('settlementStates'),
