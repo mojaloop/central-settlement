@@ -32,10 +32,26 @@
 
 'use strict';
 
-const settlementsModel = require('../../db-model/settlement/index');
+const settlementsModel = require('../../db-model/settlement/index')
 const centralLogger = require('@mojaloop/central-services-shared').Logger
 
 module.exports = {
+    getById: async function (params, enums, options = {}) {
+        let Logger = options.logger || centralLogger
+        try {
+            let settlement = await settlementsModel.getById(params, enums)
+            if (settlement) return settlement
+            else {
+                let err = new Error('settlement window not found')
+                Logger('error', err)
+                throw err
+            }
+        } catch (err) {
+            Logger('error', err)
+            throw err
+        }
+    },
+
     getSettlementsByParams: async function (params, enums, options = {}) {
         // 7 filters - at least one should be used
         let Logger = options.logger || centralLogger

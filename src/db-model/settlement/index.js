@@ -39,5 +39,6 @@ module.exports = {
   triggerEvent: settlementFacade.knexTriggerEvent,
   settlelmentParticipantCurrency: settlementFacade.settlementParticipantCurrency,
   getByParams: settlementFacade.getByParams,
-  create: settlementModel.create
+  create: settlementModel.create,
+  getById: settlementFacade.getById
 }
