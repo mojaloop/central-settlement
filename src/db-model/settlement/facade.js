@@ -39,7 +39,7 @@ const Facade = {
       let result = await Db.settlement.query(async (builder) => {
         return await builder
 
-        //To Do
+        //To Do Complete DAO logic
 
       })
       if (!result) {
@@ -58,15 +58,22 @@ const Facade = {
       let settlementResult = await Db.settlement.query(async (builder) => {
         return await builder
           .join('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 'settlement.currentStateChangeId')
-          .where({ settlementId })
+          .select('settlement.settlementId',
+            'ssc.settlementstateId',
+            'settlement.reason',
+            'settlement.createdDate')
+          .whereRaw('settlement.settlementId = ?', [settlementId])
           .first()
       })
+
       if (!settlementResult) {
         let err = new Error('2001')
+        console.log('here2')
         throw err
       }
       else return settlementResult
     } catch (err) {
+      console.log('here')
       throw err
     }
   },
