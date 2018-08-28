@@ -44,5 +44,7 @@ module.exports = {
     getById: settlementFacade.getById,
     putById: settlementFacade.putById,
     getSettlementTransferParticipantBySettlementId: settlementTransferParticipantModel.getBySettlementId,
-    getParticipantCurrencyBySettlementId: settlementFacade.getParticipantCurrencyBySettlementId
+    getParticipantCurrencyBySettlementId: settlementFacade.getParticipantCurrencyBySettlementId,
+    getParticipantInSettlementByIds: settlementFacade.getParticipantInSettlementByIds
+
 }

@@ -148,4 +148,16 @@ module.exports = {
       throw err
     }
   },
+  getByIdParticipantAccnt: async function ({ settlementId, participantId, accountId = null }, enums, options = {}) {
+    let Logger = options.logger || centralLogger
+    try {
+      let settlement = await settlementsModel.getById({ settlementId }, enums)
+      let settlementParticipantCurrencyId = await settlementsModel.getParticipantInSettlementByIds({ settlementId, participantId }, enums)
+      
+      
+    } catch (err) {
+      Logger('error', err)
+      throw err
+    }
+  }, 
 }

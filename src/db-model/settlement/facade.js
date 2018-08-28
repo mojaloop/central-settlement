@@ -210,7 +210,7 @@ const Facade = {
     }
   },
 
-  getParticipantCurrencyBySettlementId:  async function ({ settlementId }, enums = {}) {
+  getParticipantCurrencyBySettlementId: async function ({ settlementId }, enums = {}) {
     try {
       return await Db.settlementParticipantCurrency.query(async (builder) => {
         return await builder
@@ -230,6 +230,20 @@ const Facade = {
       throw err
     }
 
+  },
+
+  getParticipantInSettlementByIds: async function ({ settlementId, participantId }, enums = {}) {
+    try {
+      return await Db.settlementParticipantCurrency.query(async (builder) => {
+        return await builder
+          .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
+          .select('settlementParticipantCurrencyId')
+          .where({ settlementId })
+          .andWhere('pc.participantId', participantId)
+      })
+    } catch (err) {
+      throw err
+    }
   },
 
   triggerEvent: async function ({ settlementId, settlementWindowsIdList, reason }, enums = {}) {

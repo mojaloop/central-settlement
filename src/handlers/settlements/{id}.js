@@ -74,6 +74,7 @@ module.exports = {
      */
 
     put: async function updateSettlementById(request, h) {
+        // TODO
         const settlementId = request.params.id
         const Enums = await request.server.methods.enums('settlementStates')
         try {
