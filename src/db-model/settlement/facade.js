@@ -217,42 +217,6 @@ const Facade = {
     }
   },
 
-  getParticipantCurrencyBySettlementId: async function ({ settlementId }, enums = {}) {
-    try {
-      return await Db.settlementParticipantCurrency.query(async (builder) => {
-        return await builder
-          .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
-          .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
-          .select(
-            'pc.participantId AS participantId',
-            'settlementParticipantCurrency.participantCurrencyId',
-            'spcsc.settlementStateId AS state',
-            'spcsc.reason AS reason',
-            'settlementParticipantCurrency.netAmount as netAmount',
-            'pc.currencyId AS currency'
-          )
-          .where({ settlementId })
-      })
-    } catch (err) {
-      throw err
-    }
-
-  },
-
-  getParticipantInSettlementByIds: async function ({ settlementId, participantId }, enums = {}) {
-    try {
-      return await Db.settlementParticipantCurrency.query(async (builder) => {
-        return await builder
-          .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
-          .select('settlementParticipantCurrencyId')
-          .where({ settlementId })
-          .andWhere('pc.participantId', participantId)
-      })
-    } catch (err) {
-      throw err
-    }
-  },
-
   triggerEvent: async function ({ settlementId, settlementWindowsIdList, reason }, enums = {}) {
     try {
       let settlementSettlementWindow = {}
@@ -461,7 +425,136 @@ const Facade = {
         throw err
       }
     },
+
+    getAccountsInSettlementByIds: async function ({ settlementId, participantId }, enums = {}) {
+      try {
+        return await Db.settlementParticipantCurrency.query(async (builder) => {
+          return await builder
+            .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
+            .select('settlementParticipantCurrencyId')
+            .where({ settlementId })
+            .andWhere('pc.participantId', participantId)
+        })
+      } catch (err) {
+        throw err
+      }
+    },
+
+    getParticipantCurrencyBySettlementId: async function ({ settlementId }, enums = {}) {
+      try {
+        return await Db.settlementParticipantCurrency.query(async (builder) => {
+          return await builder
+            .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
+            .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
+            .select(
+              'pc.participantId AS participantId',
+              'settlementParticipantCurrency.participantCurrencyId',
+              'spcsc.settlementStateId AS state',
+              'spcsc.reason AS reason',
+              'settlementParticipantCurrency.netAmount as netAmount',
+              'pc.currencyId AS currency'
+            )
+            .where({ settlementId })
+        })
+      } catch (err) {
+        throw err
+      }
+    },
+
+    getAccountById: async function ({ settlementParticipantCurrencyId }, enums = {}) {
+      try {
+        return await Db.settlementParticipantCurrency.query(async (builder) => {
+          return await builder
+            .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
+            .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
+            .select(
+              'pc.participantId AS participantId',
+              'settlementParticipantCurrency.participantCurrencyId',
+              'spcsc.settlementStateId AS state',
+              'spcsc.reason AS reason',
+              'settlementParticipantCurrency.netAmount as netAmount',
+              'pc.currencyId AS currency'
+            )
+            .where({ settlementParticipantCurrencyId })
+        })
+      } catch (err) {
+        throw err
+      }
+    },
+    
+    getAccountsByListOfIds: async function (settlementParticipantCurrencyIdList, enums = {}) {
+      try {
+        return await Db.settlementParticipantCurrency.query(async (builder) => {
+          return await builder
+            .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
+            .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
+            .select(
+              'pc.participantId AS participantId',
+              'settlementParticipantCurrency.participantCurrencyId',
+              'spcsc.settlementStateId AS state',
+              'spcsc.reason AS reason',
+              'settlementParticipantCurrency.netAmount as netAmount',
+              'pc.currencyId AS currency'
+            )
+            .whereIn('settlementParticipantCurrencyId', settlementParticipantCurrencyIdList)
+        })
+      } catch (err) {
+        throw err
+      }
+    } 
+  },
+  settlementSettlementWindow: {
+    getWindowsBySettlementIdAndAccountId: async function ({ settlementId, accountId }, enums = {}) {
+      try {
+        return await Db.settlementSettlementWindow.query(async (builder) => {
+          return await builder
+            .join('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
+            .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
+            .join('settlementTransferParticipant AS stp', function () {
+              this
+                .on('stp.settlementWindowId', 'sw.settlementWindowId')
+                .on('stp.participantCurrencyId', accountId)
+            })
+            .distinct(
+              'settlementWindow.settlementWindowId',
+              'swsc.settlementWindowStateId as state',
+              'swsc.reason as reason',
+              'settlementWindow.createdDate as createdDate',
+              'swsc.createdDate as changedDate'
+            )
+            .select()
+            .where({ settlementId })
+        })
+      } catch (err) {
+        throw err
+      }
+    },
+    getWindowsBySettlementIdAndParticipantId: async function ({ settlementId, participantId }, enums = {}) {
+      try {
+        return await Db.settlementSettlementWindow.query(async (builder) => {
+          return await builder
+            .join('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
+            .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
+            .join('settlementTransferParticipant AS stp', async function () {
+              this
+                .on('stp.settlementWindowId', 'sw.settlementWindowId')
+                .onIn('stp.participantCurrencyId', await Db.participantCurrency.find({ participantId }))
+            })
+            .distinct(
+              'settlementWindow.settlementWindowId',
+              'swsc.settlementWindowStateId as state',
+              'swsc.reason as reason',
+              'settlementWindow.createdDate as createdDate',
+              'swsc.createdDate as changedDate'
+            )
+            .select()
+            .where({ settlementId })
+        })
+      } catch (err) {
+        throw err
+      }
   }
+}
 
 } // Facade
 

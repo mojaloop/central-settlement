@@ -206,7 +206,7 @@ const Facade = {
     } catch (err) {
       throw err
     }
-  }
+  },
 }
 
 module.exports = Facade
