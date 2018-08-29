@@ -24,7 +24,7 @@ module.exports = {
       return h.response(result)
 
     } catch (e) {
-
+      return Boom.boomify(e)
     }
   },
   /**
