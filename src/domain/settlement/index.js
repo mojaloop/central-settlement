@@ -144,12 +144,27 @@ module.exports = {
   },
 
   settlementEventTriger: async function (params, enums, options = {}) {
-    let settlementId = params.id
     let settlementWindowsIdList = params.settlementWindows
     let reason = params.reason
     let Logger = options.logger || centralLogger
     try {
-      let settlementWindowId = await settlementsModel.triggerEvent({ settlementId, settlementWindowsIdList, reason }, enums)
+        let idList = settlementWindowsIdList.map(v => v.id)
+        // validate windows state
+        const settlementWindows = await settlementWindowModel.getByListOfIds(idList, enums.settlementWindowStates)
+        if ((!settlementWindows.length) && (settlementWindows.length != idList.length)) {
+            let err = new Error('2001')
+            throw err
+        }
+
+        for (let settlementWindow of settlementWindows) {
+            let { state } = settlementWindow
+            if (state !== enums.settlementWindowStates.CLOSED) {
+                let err = new Error('2001')
+                throw err
+            } else {
+            let settlementWindowId = await settlementsModel.triggerEvent({ idList, reason }, enums)
+            }
+        }
       return settlementWindowId // TODO RETURN CORRECT RESPONSE
     } catch (err) {
       Logger('error', err)
