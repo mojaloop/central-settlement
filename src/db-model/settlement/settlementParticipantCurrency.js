@@ -36,12 +36,7 @@ module.exports.getAccountInSettlement = async ({ settlementId, accountId  }, enu
         .where({ settlementId })
         .andWhere('settlementParticipantCurrencyId', accountId)
     })
-    if (!result) {
-      let err = new Error('2001')
-      throw err
-    } else {
       return result
-    }
   } catch (err) {
     throw err
   }

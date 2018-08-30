@@ -30,7 +30,6 @@ const Db = require('../index')
 const Facade = {
   getById: async function ({ settlementWindowId }, enums = {}) {
     try {
-      let knex = Db.getKnex()
       let result = await Db.settlementWindow.query(async (builder) => {
         return await builder
           .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
@@ -42,6 +41,7 @@ const Facade = {
             'swsc.createdDate as changedDate'
           )
           .first()
+          .where({settlementWindowId})
       })
       if (!result) {
         let err = new Error('2001')
@@ -55,7 +55,6 @@ const Facade = {
 
   getByListOfIds: async function (listOfIds, enums = {}) {
     try {
-      let knex = Db.getKnex()
       let result = await Db.settlementWindow.query(async (builder) => {
         return await builder
           .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
@@ -68,12 +67,7 @@ const Facade = {
           )
           .whereRaw(`settlementWindow.settlementWindowId IN (${listOfIds}) AND swsc.createdDate > settlementWindow.createdDate`)
       })
-      if (!result.length) {
-        let err = new Error('2001')
-        throw err
-      } else {
-        return result
-      }
+      return result
     } catch (err) {
       throw err
     }
@@ -81,7 +75,6 @@ const Facade = {
 
   getByParams: async function ({ query }, enums = {}) {
     try {
-      let knex = Db.getKnex()
       let { participantId, state, fromDateTime, toDateTime } = query
       state = state ? ` = "${state.toUpperCase()}"` : 'IS NOT NULL'
       fromDateTime = fromDateTime ? fromDateTime : new Date('01-01-1970').toISOString()
@@ -114,11 +107,7 @@ const Facade = {
           .whereRaw(`pc.participantId = ${participantId} AND swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
           .orderBy('changedDate', 'desc')
       })
-      if (!result) {
-        let err = new Error('2001')
-        throw err
-      }
-      else return result
+      return result
     } catch (err) {
       throw err
     }
@@ -197,12 +186,7 @@ const Facade = {
           .where('ssw.settlementId', settlementId)
           .first()
       })
-      if (!result) {
-        let err = new Error('2001')
-        throw err
-      }
-      else return result
-    
+      return result
     } catch (err) {
       throw err
     }

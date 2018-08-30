@@ -80,6 +80,10 @@ module.exports = {
         }).catch((err) => {
           throw err
         })
+      } else {
+        let err = new Error('2001 TODO')
+        Logger('error', err)
+        throw err
       }
     } catch (err) {
       Logger('error', err)
@@ -176,7 +180,7 @@ module.exports = {
           throw new Error('TODO')
         }
       } else {
-        settlementWindows = await settlementsModel.settlementSettlementWindow.getWindowsBySettlementIdAndParticipantId({ settlementId, accountId }, enums)
+        settlementWindows = await settlementsModel.settlementSettlementWindow.getWindowsBySettlementIdAndParticipantId({ settlementId, participantId }, enums)
         accounts = await settlementsModel.settlementParticipantCurrency.getAccountsByListOfIds(settlementParticipantCurrencyIdList, enums)
         participants = prepareParticipantsResult(accounts)
       }

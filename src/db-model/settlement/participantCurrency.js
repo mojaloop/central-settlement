@@ -36,12 +36,7 @@ module.exports.checkParticipantAccountExists = async ({ participantId, accountId
         .where({ participantId })
         .andWhere('participantCurrencyId', accountId)
     })
-    if (!result) {
-      let err = new Error('2001')
-      throw err
-    } else {
-      return true
-    }
+      return result
   } catch (err) {
     throw err
   }
