@@ -162,15 +162,25 @@ module.exports = {
                 let err = new Error('2001')
                 throw err
             } else {
-            let settlementWindowId = await settlementsModel.triggerEvent({ idList, reason }, enums)
+            let settlementId = await settlementsModel.triggerEvent({ idList, reason }, enums)
+            let settlement = await settlementsModel.getById({settlementId})
+            let settlementWindowsList = await settlementWindowModel.getBySettlementId({settlementId})
+            let participantCurrenciesList = await settlementsModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({settlementId})
+            let participants = prepareParticipantsResult(participantCurrenciesList)
+            return {
+              id: settlement.settlementId,
+              state: settlement.state,
+              settlementWindows: settlementWindowsList,
+              participants
+              }
             }
         }
-      return settlementWindowId // TODO RETURN CORRECT RESPONSE
     } catch (err) {
       Logger('error', err)
       throw err
     }
   },
+
   getByIdParticipantAccount: async function ({ settlementId, participantId, accountId = null }, enums, options = {}) {
     let Logger = options.logger || centralLogger
     try {
