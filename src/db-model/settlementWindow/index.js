@@ -6,5 +6,6 @@ module.exports = {
   close: Facade.close,
   getByListOfIds: Facade.getByListOfIds,
   getBySettlementId: Facade.getBySettlementId,
-  createSettlementWindow: settlementWindowStateChange.create
+  createSettlementWindow: settlementWindowStateChange.create,
+  getBySettlementId: Facade.getBySettlementId
 }

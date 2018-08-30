@@ -14,7 +14,7 @@ const openAPIOptions = {
 }
 
 const defaultConfig = {
-  port: 3005,
+  port: 3007,
   cache: [
     {
       name: 'memCache',

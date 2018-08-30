@@ -1,11 +1,11 @@
 {
     "swagger": "2.0",
     "info": {
-        "version": "1.0.0",
+        "version": "1.0.1",
         "title": "MOJALOOP Central Settlements",
         "description": "Mojaloop API for Settlements."
     },
-    "basePath": "/v1",
+    "basePath": "/v1.0.1",
     "schemes": [
         "http",
         "https"
@@ -358,13 +358,13 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Trigger the creation of a settlement, that does the calculation of the net settlement position per participant and marks all transfers in the affected windows as PENDING_SETTLEMENT. Returned dataset is the net settlement report for the settlementWindow",
-                "operationId": "createSettlement",
+                "summary": "Trigger the creation of a settlement event, that does the calculation of the net settlement position per participant and marks all transfers in the affected windows as Pending settlement. Returned dataset is the net settlement report for the settlementwindow",
+                "operationId": "createSettlementEvent",
                 "parameters": [
                     {
                         "in": "body",
                         "name": "payload",
-                        "description": "A JSON object containing settlement windows to be included.",
+                        "description": "A JSON object containing settlement event info.",
                         "schema": {
                             "$ref": "#/definitions/SettlementEventPayload"
                         },
@@ -372,13 +372,13 @@
                     }
                 ],
                 "tags": [
-                    "createSettlement"
+                    "createSettlementEvent"
                 ],
                 "responses": {
                     "200": {
-                        "description": "Created settlement with all windows and accounts.",
+                        "description": "Settlement window(s) returned by the filtering parameters.",
                         "schema": {
-                            "$ref": "#/definitions/Settlement"
+                            "$ref": "#/definitions/Account"
                         }
                     },
                     "400": {
@@ -914,27 +914,19 @@
         "SettlementEventPayload": {
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "integer"
+                },
                 "reason": {
                     "type": "string"
                 },
                 "settlementWindows": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/SettlementWindowId"
+                        "$ref": "#/definitions/SettlementWindow"
                     }
                 }
             }
-        },
-        "SettlementWindowId": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "id"
-            ]
         },
         "SettlementWindow": {
             "type": "object",
@@ -956,7 +948,9 @@
                 }
             },
             "required": [
-                "id"
+                "id",
+                "state",
+                "createdDate"
             ]
         },
         "SettlementWindows": {
