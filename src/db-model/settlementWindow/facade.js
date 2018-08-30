@@ -41,13 +41,9 @@ const Facade = {
             'swsc.createdDate as changedDate'
           )
           .first()
-          .where({settlementWindowId})
+          .where('settlementWindow.settlementWindowId', settlementWindowId)
       })
-      if (!result) {
-        let err = new Error('2001')
-        throw err
-      }
-      else return result
+      return result
     } catch (err) {
       throw err
     }
