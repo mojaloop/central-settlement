@@ -50,17 +50,16 @@ const Facade = {
 
   getById: async function ({ settlementId }, enums = {}) {
     try {
-      let result = await Db.settlement.query(async (builder) => {
+      return await Db.settlement.query(async (builder) => {
         return await builder
           .join('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 'settlement.currentStateChangeId')
           .select('settlement.settlementId',
-            'ssc.settlementstateId',
+            'ssc.settlementStateId',
             'settlement.reason',
             'settlement.createdDate')
-          .whereRaw('settlement.settlementId = ?', [settlementId])
+          .where('settlement.settlementId', settlementId)
           .first()
       })
-      return result
     } catch (err) {
       console.log('here')
       throw err
@@ -282,7 +281,7 @@ const Facade = {
         throw err
       }
     },
-    
+
     getAccountsByListOfIds: async function (settlementParticipantCurrencyIdList, enums = {}) {
       try {
         let result = await Db.settlementParticipantCurrency.query(async (builder) => {
@@ -303,7 +302,7 @@ const Facade = {
       } catch (err) {
         throw err
       }
-    } 
+    }
   },
   settlementSettlementWindow: {
     getWindowsBySettlementIdAndAccountId: async function ({ settlementId, accountId }, enums = {}) {

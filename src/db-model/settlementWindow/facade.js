@@ -168,21 +168,19 @@ const Facade = {
   },
   getBySettlementId: async function ({ settlementId }, enums = {}) {
     try {
-      let result = await Db.settlementWindow.query(async (builder) => {
+      return await Db.settlementSettlementWindow.query(async (builder) => {
         return await builder
-          .join('settlementSettlementWindow AS ssw', 'ssw.settlementWindowId', 'settlementWindow.settlementWindowId')
-          .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
+          .join('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
+          .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'sw.currentStateChangeId')
           .select(
-            'settlementWindow.settlementWindowId',
+            'sw.settlementWindowId',
             'swsc.settlementWindowStateId as state',
             'swsc.reason as reason',
-            'settlementWindow.createdDate as createdDate',
+            'sw.createdDate as createdDate',
             'swsc.createdDate as changedDate'
           )
-          .where('ssw.settlementId', settlementId)
-          .first()
+          .where('settlementSettlementWindow.settlementId', settlementId)
       })
-      return result
     } catch (err) {
       throw err
     }

@@ -63,13 +63,8 @@ module.exports = {
     try {
       let settlement = await settlementsModel.getById({ settlementId }, enums)
       if (settlement) {
-        await Promise.all([
-          await settlementWindowModel.getBySettlementId({ settlementId }, enums),
-          await settlementsModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({ settlementId }, enums)
-        ]).then(([
-          settlementWindowsList,
-          participantCurrenciesList
-        ]) => {
+          let settlementWindowsList = await settlementWindowModel.getBySettlementId({ settlementId }, enums)
+          let participantCurrenciesList = await settlementsModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({ settlementId }, enums)
           let participants = prepareParticipantsResult(participantCurrenciesList)
           return {
             id: settlement.settlementId,
@@ -77,11 +72,8 @@ module.exports = {
             settlementWindows: settlementWindowsList,
             participants
           }
-        }).catch((err) => {
-          throw err
-        })
       } else {
-        let err = new Error('2001 TODO')
+        let err = new Error('2001 TODO Settlement not found')
         Logger('error', err)
         throw err
       }
