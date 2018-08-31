@@ -33,50 +33,52 @@
 'use strict';
 
 const Boom = require('boom');
-const dataAccess = require('../../../../data/settlements/{settlementId}/participants/{participantId}');
+
+const settlement = require('../../domain/settlement/index')
+const dataAccess = require('../../../tests/data/settlements/{id}');
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Path = require('path');
 
 Logger.info('path ', Path.basename(__filename));
 
 /**
- * Operations on /settlements/{settlementId}/participants/{participantId}
+ * Operations on /settlements/{id}
  */
 module.exports = {
     /**
-     * summary: Acknowledegement of settlement by updating with Settlements Id and Participant Id.
-     * description: 
-     * parameters: settlementId, participantId, settlementParticipantUpdatePayload
+     * summary: Returns Settlement(s) as per parameters/filter criteria.
+     * description:
+     * parameters: id
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    put: async function updateSettlementBySettlementIdParticipantId(request, h) {
-        const getData = new Promise((resolve, reject) => {
-            switch (request.server.app.responseCode) {
-                case 200:
-                case 400:
-                case 401:
-                case 404:
-                case 415:
-                    dataAccess.put[`${request.server.app.responseCode}`](request, h, (error, mock) => {
-                        if (error) reject(error)
-                        else if (!mock.responses) resolve()
-                        else if (mock.responses && mock.responses.code) resolve(Boom.boomify(new Error(mock.responses.message), {statusCode: mock.responses.code}))
-                        else resolve(mock.responses)
-                    })
-                    break
-                default:
-                    dataAccess.put[`default`](request, h, (error, mock) => {
-                        if (error) reject(error)
-                        else if (!mock.responses) resolve()
-                        else if (mock.responses && mock.responses.code) resolve(Boom.boomify(new Error(mock.responses.message), {statusCode: mock.responses.code}))
-                        else resolve(mock.responses)
-                    })
-            }
-
-        })
+    get: async function getSettlementById(request, h) {
+        const Enums = await request.server.methods.enums('settlementStates')
+        const settlementId = request.params.id
         try {
-            return await getData
+            request.server.log('info', `get settlement by Id requested with id ${settlementId}`)
+            let settlementResult = await settlement.getById({settlementId}, Enums, {logger: request.server.log})
+            return h.response(settlementResult)
+        } catch (e) {
+            request.server.log('error', `ERROR settlementWindowId: ${settlementId} not found`)
+            return Boom.notFound(e.message)
+        }
+
+    },
+    /**
+     * summary: Acknowledegement of settlement by updating with Settlements Id.
+     * description:
+     * parameters: id, settlementUpdatePayload
+     * produces: application/json
+     * responses: 200, 400, 401, 404, 415, default
+     */
+
+    put: async function updateSettlementById(request, h) {
+        // TODO
+        const settlementId = request.params.id
+        const Enums = await request.server.methods.enums('settlementStates')
+        try {
+            return await settlement.putById(settlementId, request.payload, Enums, {logger: request.server.log})
         } catch (e) {
             throw (Boom.boomify(e))
         }
