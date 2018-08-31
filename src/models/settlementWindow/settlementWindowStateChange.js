@@ -23,20 +23,17 @@
  --------------
  ******/
 
-
 'use strict'
 
 const Db = require('../index')
 
-module.exports.getAccountInSettlement = async ({ settlementId, accountId  }, enums = {}) => {
+module.exports.create = async ({ settlementWindowId, state, reason }, enums = {}) => {
   try {
-    let result = await Db.settlementParticipantCurrency.query(async (builder) => {
-      return await builder
-        .select('settlementParticipantCurrencyId')
-        .where({ settlementId })
-        .andWhere('settlementParticipantCurrencyId', accountId)
+    return await Db.settlementWindowStateChange.insert({
+      settlementWindowId,
+      settlementWindowStateId: enums[state.toUpperCase()],
+      reason
     })
-      return result
   } catch (err) {
     throw err
   }

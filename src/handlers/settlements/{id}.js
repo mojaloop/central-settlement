@@ -30,42 +30,41 @@
  --------------
  ******/
 
-'use strict';
+'use strict'
 
-const Boom = require('boom');
+const Boom = require('boom')
 
 const settlement = require('../../domain/settlement/index')
-const dataAccess = require('../../../tests/data/settlements/{id}');
+// const dataAccess = require('../../../tests/data/settlements/{id}')
 const Logger = require('@mojaloop/central-services-shared').Logger
-const Path = require('path');
+const Path = require('path')
 
-Logger.info('path ', Path.basename(__filename));
+Logger.info('path ', Path.basename(__filename))
 
 /**
  * Operations on /settlements/{id}
  */
 module.exports = {
-    /**
+  /**
      * summary: Returns Settlement(s) as per parameters/filter criteria.
      * description:
      * parameters: id
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    get: async function getSettlementById(request, h) {
-        const Enums = await request.server.methods.enums('settlementStates')
-        const settlementId = request.params.id
-        try {
-            request.server.log('info', `get settlement by Id requested with id ${settlementId}`)
-            let settlementResult = await settlement.getById({settlementId}, Enums, {logger: request.server.log})
-            return h.response(settlementResult)
-        } catch (e) {
-            request.server.log('error', `ERROR settlementWindowId: ${settlementId} not found`)
-            return Boom.notFound(e.message)
-        }
-
-    },
-    /**
+  get: async function getSettlementById (request, h) {
+    const Enums = await request.server.methods.enums('settlementStates')
+    const settlementId = request.params.id
+    try {
+      request.server.log('info', `get settlement by Id requested with id ${settlementId}`)
+      let settlementResult = await settlement.getById({settlementId}, Enums, {logger: request.server.log})
+      return h.response(settlementResult)
+    } catch (e) {
+      request.server.log('error', `ERROR settlementWindowId: ${settlementId} not found`)
+      return Boom.notFound(e.message)
+    }
+  },
+  /**
      * summary: Acknowledegement of settlement by updating with Settlements Id.
      * description:
      * parameters: id, settlementUpdatePayload
@@ -73,14 +72,14 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
 
-    put: async function updateSettlementById(request, h) {
-        // TODO
-        const settlementId = request.params.id
-        const Enums = await request.server.methods.enums('settlementStates')
-        try {
-            return await settlement.putById(settlementId, request.payload, Enums, {logger: request.server.log})
-        } catch (e) {
-            throw (Boom.boomify(e))
-        }
+  put: async function updateSettlementById (request, h) {
+    // TODO
+    const settlementId = request.params.id
+    const Enums = await request.server.methods.enums('settlementStates')
+    try {
+      return await settlement.putById(settlementId, request.payload, Enums, {logger: request.server.log})
+    } catch (e) {
+      throw (Boom.boomify(e))
     }
-};
+  }
+}
