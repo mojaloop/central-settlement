@@ -3,8 +3,8 @@
 const Hapi = require('hapi')
 const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
-const Db = require('./db-model/index.js')
-const Enums = require('./db-model/lib/enums')
+const Db = require('./models/index.js')
+const Enums = require('./models/lib/enums')
 
 // -- add them to common project config
 const openAPIOptions = {

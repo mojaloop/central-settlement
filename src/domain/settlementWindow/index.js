@@ -1,4 +1,4 @@
-const settlementWindowModel = require('../../db-model/settlementWindow/index')
+const settlementWindowModel = require('../../models/settlementWindow/index')
 const centralLogger = require('@mojaloop/central-services-shared').Logger
 
 module.exports = {

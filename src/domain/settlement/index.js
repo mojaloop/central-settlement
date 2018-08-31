@@ -32,9 +32,9 @@
 
 'use strict'
 
-const settlementsModel = require('../../db-model/settlement/index')
+const settlementsModel = require('../../models/settlement/index')
 const centralLogger = require('@mojaloop/central-services-shared').Logger
-const settlementWindowModel = require('../../db-model/settlementWindow')
+const settlementWindowModel = require('../../models/settlementWindow')
 
 const prepareParticipantsResult = function (participantCurrenciesList) {
   try {
