@@ -39,14 +39,14 @@ const participantCurrencyModel = require('./participantCurrency')
 const settlementParticipantCurrencyModel = require('./settlementParticipantCurrency')
 
 module.exports = {
-    create: settlementModel.create,
-    triggerEvent: settlementFacade.knexTriggerEvent,
-    getByParams: settlementFacade.getByParams,
-    getById: settlementFacade.getById,
-    putById: settlementFacade.putById,
-    getSettlementTransferParticipantBySettlementId: settlementTransferParticipantModel.getBySettlementId,
-    settlementParticipantCurrency: settlementFacade.settlementParticipantCurrency,
-    settlementSettlementWindow: settlementFacade.settlementSettlementWindow,
-    checkParticipantAccountExists: participantCurrencyModel.checkParticipantAccountExists,
-    getAccountInSettlement: settlementParticipantCurrencyModel.getAccountInSettlement 
+  create: settlementModel.create,
+  triggerEvent: settlementFacade.knexTriggerEvent,
+  getByParams: settlementFacade.getByParams,
+  getById: settlementFacade.getById,
+  putById: settlementFacade.putById,
+  getSettlementTransferParticipantBySettlementId: settlementTransferParticipantModel.getBySettlementId,
+  settlementParticipantCurrency: settlementFacade.settlementParticipantCurrency,
+  settlementSettlementWindow: settlementFacade.settlementSettlementWindow,
+  checkParticipantAccountExists: participantCurrencyModel.checkParticipantAccountExists,
+  getAccountInSettlement: settlementParticipantCurrencyModel.getAccountInSettlement
 }

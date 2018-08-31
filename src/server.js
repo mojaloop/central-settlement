@@ -1,11 +1,10 @@
-'use strict';
+'use strict'
 
 const Hapi = require('hapi')
 const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
 const Db = require('./db-model/index.js')
 const Enums = require('./db-model/lib/enums')
-
 
 // -- add them to common project config
 const openAPIOptions = {
@@ -20,7 +19,7 @@ const defaultConfig = {
       name: 'memCache',
       engine: require('catbox-memory'),
       partition: 'cache'
-    } 
+    }
   ]
 }
 
@@ -37,9 +36,9 @@ async function connectDatabase () {
   }
 }
 
-const init = async function(config = defaultConfig, openAPIPluginOptions = openAPIOptions) {
+const init = async function (config = defaultConfig, openAPIPluginOptions = openAPIOptions) {
   try {
-    const server = new Hapi.Server(config);
+    const server = new Hapi.Server(config)
     await connectDatabase()
     await server.register([{
       plugin: HapiOpenAPI,
@@ -77,5 +76,5 @@ init().then(async (server) => {
 })
 
 module.exports = {
-    init
+  init
 }

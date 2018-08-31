@@ -39,7 +39,7 @@ module.exports = {
         return settlementWindowStateEnum
       }
     } catch (err) {
-        throw err
+      throw err
     }
   },
   settlementStates: async function () {
@@ -54,7 +54,7 @@ module.exports = {
         return settlementStateEnum
       }
     } catch (err) {
-        throw err
+      throw err
     }
   },
   transferStates: async function () {
@@ -68,7 +68,7 @@ module.exports = {
         return transferStateEnum
       }
     } catch (err) {
-        throw err
+      throw err
     }
   },
   ledgerEntryTypes: async function () {
@@ -82,7 +82,7 @@ module.exports = {
         return ledgerEntryTypeEnum
       }
     } catch (err) {
-        throw err
+      throw err
     }
   },
   transferParticipantRoleTypes: async function () {
@@ -96,7 +96,7 @@ module.exports = {
         return transferParticipantRoleTypeEnum
       }
     } catch (err) {
-        throw err
+      throw err
     }
-  } 
+  }
 }

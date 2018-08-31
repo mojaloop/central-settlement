@@ -1,17 +1,17 @@
-const settlementWindowModel = require('../../db-model/settlementWindow/index');
+const settlementWindowModel = require('../../db-model/settlementWindow/index')
 const centralLogger = require('@mojaloop/central-services-shared').Logger
 
 module.exports = {
   getById: async function (params, enums, options = {}) {
     let Logger = options.logger || centralLogger
-    try { 
+    try {
       let settlementWindow = await settlementWindowModel.getById(params, enums)
       if (settlementWindow) return settlementWindow
       else {
         let err = new Error('settlement window not found')
         Logger('error', err)
         throw err
-        }
+      }
     } catch (err) {
       Logger('error', err)
       throw err
@@ -26,13 +26,12 @@ module.exports = {
         let settlementWindows = await settlementWindowModel.getByParams(params, enums)
         if (settlementWindows && settlementWindows.length > 0) {
           return settlementWindows
-        }
-        else {
+        } else {
           let err = new Error('settlement window not found')
           Logger('error', err)
           throw err
-          }
-        } catch (err) {
+        }
+      } catch (err) {
         Logger('error', err)
         throw err
       }
@@ -43,24 +42,24 @@ module.exports = {
     }
   },
 
-    close: async function (params, enums, options = {}) {
-      let Logger = options.logger || centralLogger
-      try {
-        let settlementWindowId = await settlementWindowModel.close(params, enums)
-        return await settlementWindowModel.getById({ settlementWindowId }, enums)
-      } catch (err) {
-        Logger('error', err)
-        throw err
-      }
+  close: async function (params, enums, options = {}) {
+    let Logger = options.logger || centralLogger
+    try {
+      let settlementWindowId = await settlementWindowModel.close(params, enums)
+      return await settlementWindowModel.getById({ settlementWindowId }, enums)
+    } catch (err) {
+      Logger('error', err)
+      throw err
     }
   }
+}
 
 /*
- 
+
   {
     participantId: 2
     state: open
-    fromDateTime: 12.02.2018 
+    fromDateTime: 12.02.2018
     toDateTime: 12.06.2018
   }
 

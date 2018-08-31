@@ -30,34 +30,34 @@
  --------------
  ******/
 
-'use strict';
+'use strict'
 
-const Boom = require('boom');
+const Boom = require('boom')
 const Logger = require('@mojaloop/central-services-shared').Logger
-const Path = require('path');
+const Path = require('path')
 const settlementWindows = require('./../domain/settlementWindow')
 
-Logger.info('path ', Path.basename(__filename));
+Logger.info('path ', Path.basename(__filename))
 
 /**
  * Operations on /settlementWindows
  */
 module.exports = {
-    /**
+  /**
      * summary: Returns a Settlement Window(s) as per parameter(s).
-     * description: 
+     * description:
      * parameters: participantId, state, fromDateTime, toDateTime
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    get: async function getSettlementWindowsByParams(request, h) {
-        try {
-            const Enums = await request.server.methods.enums('settlementWindowStates')
-            let settlementWindowResult = await settlementWindows.getByParams({ query: request.query }, Enums, { logger: request.server.log })
-            return h.response(settlementWindowResult)
-        } catch (e) {
-          request.server.log('error', e)
-          return Boom.notFound(e.message)
-        }
-      }
-};
+  get: async function getSettlementWindowsByParams (request, h) {
+    try {
+      const Enums = await request.server.methods.enums('settlementWindowStates')
+      let settlementWindowResult = await settlementWindows.getByParams({ query: request.query }, Enums, { logger: request.server.log })
+      return h.response(settlementWindowResult)
+    } catch (e) {
+      request.server.log('error', e)
+      return Boom.notFound(e.message)
+    }
+  }
+}
