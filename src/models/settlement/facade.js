@@ -71,30 +71,41 @@ const Facade = {
     }
   },
 
-  getByParams: async function ({accountId, settlementWindowId, currency, participantId, state, fromDateTime, toDateTime}, enums = {}) {
+  getByParams: async function ({state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId}, enums = {}) {
     try {
       let result = await Db.settlement.query(builder => {
-        if (!participantId) {
-          return builder
-            .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
-            .select(
-              'settlementWindow.*',
-              'swsc.settlementWindowStateId AS state'
-            )
-            .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
-        } else {
-          return builder
-            .leftJoin('participantCurrency AS pc', 'pc.participantId', participantId)
-            .leftJoin('settlementTransferParticipant AS stp', 'stp.participantCurrencyId', 'pc.participantCurrencyId')
-            .leftJoin('settlementSettlementWindow AS ssw', 'ssw.settlementId', 'stp.settlementId')
-            .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
-            .select(
-              'settlementWindow.*',
-              'swsc.settlementWindowStateId AS state',
-              'pc.participantId as participantId'
-            )
-            .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
-        }
+        let isWhere = true
+        let b = builder
+          .innerJoin('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 'settlement.currentStateChangeId')
+          .innerJoin('settlementSettlementWindow AS ssw', 'ssw.settlementId', 'settlement.settlementId')
+          .innerJoin('settlementWindow AS sw', 'sw.settlementWindowId', 'ssw.settlementWindowId')
+          .innerJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'sw.currentStateChangeId')
+          .innerJoin('settlementTransferParticipant AS stp', function () {
+            this.on('stp.settlementWindowId', 'settlement.settlementId')
+              .andOn('stp.settlementWindowId', 'sw.settlementWindowId')
+          })
+          .innerJoin('settlementParticipantCurrency AS spc', function () {
+            this.on('spc.settlementId', 'stp.settlementId')
+              .andOn('spc.participantCurrencyId', 'stp.participantCurrencyId')
+          })
+          .innerJoin('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'spc.currentStateChangeId')
+          .innerJoin('participantCurrency AS pc', 'pc.participantCurrencyId', 'spc.participantCurrencyId')
+          .distinct('settlement.settlementId', 'ssc.settlementStateId', 'ssw.settlementWindowId',
+            'swsc.settlementWindowStateId', 'swsc.reason AS settlementWindowReason', 'sw.createdDate',
+            'swsc.createdDate AS changedDate', 'pc.participantId', 'spc.participantCurrencyId',
+            'spcsc.reason AS accountReason', 'spcsc.settlementStateId AS accountState',
+            'spc.netAmount AS accountAmount', 'pc.currencyId AS accountCurrency')
+          .select()
+        if (state) { b = isWhere ? b.where('ssc.settlementStateId', state) : b.andWhere('ssc.settlementStateId', state); isWhere = false }
+        if (fromDateTime) { b = isWhere ? b.where('settlement.createdDate', '>=', fromDateTime) : b.andWhere('settlement.createdDate', '>=', fromDateTime); isWhere = false }
+        if (toDateTime) { b = isWhere ? b.where('settlement.createdDate', '<=', toDateTime) : b.andWhere('settlement.createdDate', '<=', toDateTime); isWhere = false }
+        if (currency) { b = isWhere ? b.where('pc.currencyId', currency) : b.andWhere('pc.currencyId', currency); isWhere = false }
+        if (settlementWindowId) { b = isWhere ? b.where('ssw.settlementWindowId', settlementWindowId) : b.andWhere('ssw.settlementWindowId', settlementWindowId); isWhere = false }
+        if (fromSettlementWindowDateTime) { b = isWhere ? b.where('sw.createdDate', '>=', fromSettlementWindowDateTime) : b.andWhere('sw.createdDate', '>=', fromSettlementWindowDateTime); isWhere = false }
+        if (toSettlementWindowDateTime) { b = isWhere ? b.where('sw.createdDate', '<=', toSettlementWindowDateTime) : b.andWhere('sw.createdDate', '<=', toSettlementWindowDateTime); isWhere = false }
+        if (participantId) { b = isWhere ? b.where('pc.participantId', participantId) : b.andWhere('pc.participantId', participantId); isWhere = false }
+        if (accountId) { b = isWhere ? b.where('spc.participantCurrencyId', accountId) : b.andWhere('spc.participantCurrencyId', accountId); isWhere = false }
+        return b
       })
       return result
     } catch (err) {
