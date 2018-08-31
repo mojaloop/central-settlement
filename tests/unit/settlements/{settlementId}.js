@@ -26,8 +26,8 @@ Test('/settlements/{settlementId}', function (t) {
             await server.register({
                 plugin: HapiOpenAPI,
                 options: {
-                    api: Path.resolve(__dirname, '../../../interface/swagger.json'),
-                    handlers: Path.join(__dirname, '../../../handlers'),
+                    api: Path.resolve(__dirname, '../../../src/interface/swagger.json'),
+                    handlers: Path.join(__dirname, '../../../src/handlers'),
                     outputvalidation: true
                 }
             });
