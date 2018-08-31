@@ -155,7 +155,7 @@ const Facade = {
                 .sum('tp.amount')
             })
             .transacting(trx)
-          let settlementParticipantCurrencyIdList = await knex
+          await knex
             .from(knex.raw('settlementParticipantCurrency (settlementId, participantCurrencyId, netAmount)'))
             .insert(function () {
               this.from('settlementTransferParticipant AS stp')
@@ -163,13 +163,16 @@ const Facade = {
                 .groupBy('stp.settlementId', 'stp.participantCurrencyId')
                 .select('stp.settlementId', 'stp.participantCurrencyId')
                 .sum(knex.raw(`CASE 
-                                WHEN stp.transferParticipantRoleTypeId = ${enums.transferParticipantRoleTypes.PAYER_DFSP} AND stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.PRINCIPLE_VALUE} THEN amount 
-                                WHEN stp.transferParticipantRoleTypeId = ${enums.transferParticipantRoleTypes.PAYEE_DFSP} AND stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.PRINCIPLE_VALUE} THEN -amount
-                                WHEN stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.INTERCHANGE_FEE} THEN -amount
-                                WHEN stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.HUB_FEE} THEN amount
-                              end`))
+                            WHEN stp.transferParticipantRoleTypeId = ${enums.transferParticipantRoleTypes.PAYER_DFSP} AND stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.PRINCIPLE_VALUE} THEN amount 
+                            WHEN stp.transferParticipantRoleTypeId = ${enums.transferParticipantRoleTypes.PAYEE_DFSP} AND stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.PRINCIPLE_VALUE} THEN -amount
+                            WHEN stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.INTERCHANGE_FEE} THEN -amount
+                            WHEN stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.HUB_FEE} THEN amount
+                          end`))
             }, 'settlementParticipantCurrencyId')
             .transacting(trx)
+          //const settlementParticipantCurrencyIdList = await knex('settlementParticipantCurrency').select('settlementParticipantCurrencyId').where('settlementId', settlementId)
+          const settlementParticipantCurrencyIdList = await Db.settlementParticipantCurrency.find({settlementId})
+
           const settlementParticipantCurrencyStateChangeList = settlementParticipantCurrencyIdList.map(settlementParticipantCurrencyId => {
             return {
               settlementParticipantCurrencyId,
@@ -181,8 +184,9 @@ const Facade = {
           const settlementParticipantCurrencyStateChangeIdList = await knex.batchInsert('settlementParticipantCurrencyStateChange', settlementParticipantCurrencyStateChangeList).transacting(trx)
           let updatePromises = []
           for (let index in settlementParticipantCurrencyIdList) {
-            updatePromises.push(await knex('settlementParticipantCurrency').transacting(trx)
-              .where('settlementId', settlementId)
+            updatePromises.push
+            (await knex('settlementParticipantCurrency').transacting(trx)
+              .whereIn('settlementParticipantCurrencyId', settlementParticipantCurrencyIdList)
               .update({
                 currentStateChangeId: settlementParticipantCurrencyStateChangeIdList[index]
               }))
