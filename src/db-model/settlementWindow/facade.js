@@ -173,7 +173,7 @@ const Facade = {
           .join('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
           .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'sw.currentStateChangeId')
           .select(
-            'sw.settlementWindowId',
+            'sw.settlementWindowId AS settlementWindowId',
             'swsc.settlementWindowStateId as state',
             'swsc.reason as reason',
             'sw.createdDate as createdDate',
