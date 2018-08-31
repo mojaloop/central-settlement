@@ -30,33 +30,53 @@
  --------------
  ******/
 
-'use strict';
+'use strict'
 
 const settlementsModel = require('../../db-model/settlement/index')
 const centralLogger = require('@mojaloop/central-services-shared').Logger
 const settlementWindowModel = require('../../db-model/settlementWindow')
 
 const prepareParticipantsResult = function (participantCurrenciesList) {
-    let participantAccounts = {}
-    for (account of participantCurrenciesList) {
-        let {participantId} = account
-        if (participantId in participantAccounts) {
-            let accountList = participantAccounts.account
-            accountList.push(account)
-            participantAccounts[participantId] = {
-                id: participantId,
-                account: accountList
+    try {
+        let participantAccounts = {}
+        for (let account of participantCurrenciesList) {
+            let {id} = account
+            let formattedAccount = {
+                id: account.id,
+                state: account.state,
+                reason: account.reason,
+                netSettlementAmount: {
+                    amount: account.netAmount,
+                    currency: account.currency
+                }
             }
-        } else {
-            participantAccounts[participantId] = {
-                id: participantId,
-                account: [account]
+            if (id in participantAccounts) {
+                let accountList = participantAccounts.accounts
+                accountList.push(formattedAccount)
+                participantAccounts[id] = {
+                    id: id,
+                    accounts: accountList
+                }
+            } else {
+                participantAccounts[id] = {
+                    id: id,
+                    accounts: [formattedAccount]
+                }
             }
         }
+        return Array.from(Object.keys(participantAccounts).map(participantId => participantAccounts[participantId]))
+    } catch (e) {
+        console.log(e)
+        throw e
     }
-    return Array.from(Object.keys(participantAccounts).map(participantId => participantAccounts[participantId]))
 }
-
+// "id": accountData.participantCurrencyId,
+// "state": "PENDING_SETTLEMENT",
+// "reason": payload.reason,
+// "netSettlementAmount": {
+//     "amount": accountData.netAmount,
+//     "currency": accountData.currencyId
+// }
 module.exports = {
     getById: async function ({settlementId}, enums, options = {}) {
         let Logger = options.logger || centralLogger
@@ -198,7 +218,7 @@ module.exports = {
                                 state: allAccounts[accountPayload.id].state,
                                 reason: allAccounts[accountPayload.id].reason,
                                 createdDate: allAccounts[accountPayload.id].createdDate,
-                                netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount
+                                netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount,
                                 errorInformation: {
                                     errorCode: 3000,
                                     errorDescription: 'Account already processed once'
@@ -254,7 +274,7 @@ module.exports = {
                                 state: allAccounts[accountPayload.id].state,
                                 reason: allAccounts[accountPayload.id].reason,
                                 createdDate: allAccounts[accountPayload.id].createdDate,
-                                netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount
+                                netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount,
                                 errorInformation: {
                                     errorCode: 3000,
                                     errorDescription: 'State change not allowed'
@@ -313,7 +333,7 @@ module.exports = {
         }
     },
 
-    settlementEventTriger: async function (params, enums, options = {}) {
+    settlementEventTrigger: async function (params, enums, options = {}) {
         let settlementWindowsIdList = params.settlementWindows
         let reason = params.reason
         let Logger = options.logger || centralLogger
@@ -321,7 +341,7 @@ module.exports = {
             let idList = settlementWindowsIdList.map(v => v.id)
             // validate windows state
             const settlementWindows = await settlementWindowModel.getByListOfIds(idList, enums.settlementWindowStates)
-            if ((!settlementWindows.length) && (settlementWindows.length != idList.length)) {
+            if ((!settlementWindows.length) && (settlementWindows.length !== idList.length)) {
                 let err = new Error('2001')
                 throw err
             }
@@ -331,19 +351,18 @@ module.exports = {
                 if (state !== enums.settlementWindowStates.CLOSED) {
                     let err = new Error('2001')
                     throw err
-                } else {
-                    let settlementId = await settlementsModel.triggerEvent({idList, reason}, enums)
-                    let settlement = await settlementsModel.getById({settlementId})
-                    let settlementWindowsList = await settlementWindowModel.getBySettlementId({settlementId})
-                    let participantCurrenciesList = await settlementsModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({settlementId})
-                    let participants = prepareParticipantsResult(participantCurrenciesList)
-                    return {
-                        id: settlement.settlementId,
-                        state: settlement.state,
-                        settlementWindows: settlementWindowsList,
-                        participants
-                    }
                 }
+            }
+            let settlementId = await settlementsModel.triggerEvent({idList, reason}, enums)
+            let settlement = await settlementsModel.getById({settlementId})
+            let settlementWindowsList = await settlementWindowModel.getBySettlementId({settlementId})
+            let participantCurrenciesList = await settlementsModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({settlementId})
+            let participants = prepareParticipantsResult(participantCurrenciesList)
+            return {
+                id: settlement.settlementId,
+                state: settlement.settlementStateId,
+                settlementWindows: settlementWindowsList,
+                participants
             }
         } catch (err) {
             Logger('error', err)
@@ -404,5 +423,5 @@ module.exports = {
             Logger('error', err)
             throw err
         }
-    },
+    }
 }

@@ -23,168 +23,168 @@
  --------------
  ******/
 
-'use strict'
+'use strict';
 
-const Db = require('../index')
+const Db = require('../index');
 
 const Facade = {
-  getById: async function ({ settlementWindowId }, enums = {}) {
-    try {
-      let result = await Db.settlementWindow.query(async (builder) => {
-        return await builder
-          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
-          .select(
-            'settlementWindow.settlementWindowId',
-            'swsc.settlementWindowStateId as state',
-            'swsc.reason as reason',
-            'settlementWindow.createdDate as createdDate',
-            'swsc.createdDate as changedDate'
-          )
-          .first()
-          .where('settlementWindow.settlementWindowId', settlementWindowId)
-      })
-      return result
-    } catch (err) {
-      throw err
-    }
-  },
+    getById: async function ({settlementWindowId}, enums = {}) {
+        try {
+            let result = await Db.settlementWindow.query(async (builder) => {
+                return await builder
+                    .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
+                    .select(
+                        'settlementWindow.settlementWindowId',
+                        'swsc.settlementWindowStateId as state',
+                        'swsc.reason as reason',
+                        'settlementWindow.createdDate as createdDate',
+                        'swsc.createdDate as changedDate'
+                    )
+                    .first()
+                    .where('settlementWindow.settlementWindowId', settlementWindowId);
+            });
+            return result;
+        } catch (err) {
+            throw err;
+        }
+    },
 
-  getByListOfIds: async function (listOfIds, enums = {}) {
-    try {
-      let result = await Db.settlementWindow.query(async (builder) => {
-        return await builder
-          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
-          .select(
-            'settlementWindow.settlementWindowId',
-            'swsc.settlementWindowStateId as state',
-            'swsc.reason as reason',
-            'settlementWindow.createdDate as createdDate',
-            'swsc.createdDate as changedDate'
-          )
-          .whereRaw(`settlementWindow.settlementWindowId IN (${listOfIds}) AND swsc.createdDate > settlementWindow.createdDate`)
-      })
-      return result
-    } catch (err) {
-      throw err
-    }
-  },
+    getByListOfIds: async function (listOfIds, enums = {}) {
+        try {
+            let result = await Db.settlementWindow.query(async (builder) => {
+                return await builder
+                    .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
+                    .select(
+                        'settlementWindow.settlementWindowId',
+                        'swsc.settlementWindowStateId as state',
+                        'swsc.reason as reason',
+                        'settlementWindow.createdDate as createdDate',
+                        'swsc.createdDate as changedDate'
+                    )
+                    .whereRaw(`settlementWindow.settlementWindowId IN (${listOfIds}) AND swsc.createdDate > settlementWindow.createdDate`);
+            });
+            return result;
+        } catch (err) {
+            throw err;
+        }
+    },
 
-  getByParams: async function ({ query }, enums = {}) {
-    try {
-      let { participantId, state, fromDateTime, toDateTime } = query
-      state = state ? ` = "${state.toUpperCase()}"` : 'IS NOT NULL'
-      fromDateTime = fromDateTime ? fromDateTime : new Date('01-01-1970').toISOString()
-      toDateTime = toDateTime ? toDateTime : new Date().toLocaleString()
-      let result = await Db.settlementWindow.query(async (builder) => {
-        if (!participantId)
-          return await builder
-            .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
-            .select(
-              'settlementWindow.settlementWindowId',
-              'swsc.settlementWindowStateId as state',
-              'swsc.reason as reason',
-              'settlementWindow.createdDate as createdDate',
-              'swsc.createdDate as changedDate'
-            )
-            .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
-            .orderBy('changedDate', 'desc')
-        else return await builder
-          .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
-          .leftJoin('transferFulfilment AS tf', 'tf.settlementWindowId', 'settlementWindow.settlementWindowId')
-          .leftJoin('transferParticipant AS tp', 'tp.transferId', 'tf.transferId')
-          .leftJoin('participantCurrency AS pc', 'pc.participantCurrencyId', 'tp.participantCurrencyId')
-          .select(
-            'settlementWindow.settlementWindowId',
-            'swsc.settlementWindowStateId as state',
-            'swsc.reason as reason',
-            'settlementWindow.createdDate as createdDate',
-            'swsc.createdDate as changedDate'
-          )
-          .whereRaw(`pc.participantId = ${participantId} AND swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
-          .orderBy('changedDate', 'desc')
-      })
-      return result
-    } catch (err) {
-      throw err
-    }
-  },
+    getByParams: async function ({query}, enums = {}) {
+        try {
+            let {participantId, state, fromDateTime, toDateTime} = query;
+            state = state ? ` = "${state.toUpperCase()}"` : 'IS NOT NULL';
+            fromDateTime = fromDateTime ? fromDateTime : new Date('01-01-1970').toISOString();
+            toDateTime = toDateTime ? toDateTime : new Date().toLocaleString();
+            let result = await Db.settlementWindow.query(async (builder) => {
+                if (!participantId)
+                    return await builder
+                        .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
+                        .select(
+                            'settlementWindow.settlementWindowId',
+                            'swsc.settlementWindowStateId as state',
+                            'swsc.reason as reason',
+                            'settlementWindow.createdDate as createdDate',
+                            'swsc.createdDate as changedDate'
+                        )
+                        .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
+                        .orderBy('changedDate', 'desc');
+                else return await builder
+                    .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
+                    .leftJoin('transferFulfilment AS tf', 'tf.settlementWindowId', 'settlementWindow.settlementWindowId')
+                    .leftJoin('transferParticipant AS tp', 'tp.transferId', 'tf.transferId')
+                    .leftJoin('participantCurrency AS pc', 'pc.participantCurrencyId', 'tp.participantCurrencyId')
+                    .select(
+                        'settlementWindow.settlementWindowId',
+                        'swsc.settlementWindowStateId as state',
+                        'swsc.reason as reason',
+                        'settlementWindow.createdDate as createdDate',
+                        'swsc.createdDate as changedDate'
+                    )
+                    .whereRaw(`pc.participantId = ${participantId} AND swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
+                    .orderBy('changedDate', 'desc');
+            });
+            return result;
+        } catch (err) {
+            throw err;
+        }
+    },
 
-  close: async function ({ settlementWindowId, state, reason }, enums = {}) {
-    try {
-      const knex = await Db.getKnex()
-      let settlementWindowCurrentState = await Facade.getById({ settlementWindowId })
-      if (settlementWindowCurrentState && settlementWindowCurrentState.state !== enums.OPEN) {
-        let err = new Error('2001')
-        throw err
-      } else {
-        return await knex.transaction(async (trx) => {
-          try {
-            const transactionTimestamp = new Date()
-            let settlmentWindowStateChangeId = await knex('settlementWindowStateChange').transacting(trx)
-              .insert({
-                settlementWindowStateId: enums[state.toUpperCase()],
-                reason,
-                settlementWindowId,
-                createdDate: transactionTimestamp
-              })
-            await knex('settlementWindow').transacting(trx)
-              .where({ settlementWindowId })
-              .update({
-                currentStateChangeId: settlmentWindowStateChangeId
-              })
-            let newSettlementWindowId = await knex('settlementWindow').transacting(trx)
-              .insert({
-                reason,
-                createdDate: transactionTimestamp
-              })
-            let newSettlementWindowStateChangeId = await knex('settlementWindowStateChange').transacting(trx)
-              .insert({
-                settlementWindowId: newSettlementWindowId[0],
-                settlementWindowStateId: enums.OPEN,
-                reason,
-                createdDate: transactionTimestamp
-              })
-            await knex('settlementWindow').transacting(trx)
-              .where({
-                settlementWindowId: newSettlementWindowId
-              })
-              .update({
-                currentStateChangeId: newSettlementWindowStateChangeId
-              })
-            await trx.commit
-            return newSettlementWindowId[0]
-          } catch (err) {
-            await trx.rollback
-            throw err
-          }
-        })
-          .catch((err) => {
-            throw err
-          })
-      }
-    } catch (err) {
-      throw err
+    close: async function ({settlementWindowId, state, reason}, enums = {}) {
+        try {
+            const knex = await Db.getKnex();
+            let settlementWindowCurrentState = await Facade.getById({settlementWindowId});
+            if (settlementWindowCurrentState && settlementWindowCurrentState.state !== enums.OPEN) {
+                let err = new Error('2001');
+                throw err;
+            } else {
+                return await knex.transaction(async (trx) => {
+                    try {
+                        const transactionTimestamp = new Date();
+                        let settlmentWindowStateChangeId = await knex('settlementWindowStateChange').transacting(trx)
+                            .insert({
+                                settlementWindowStateId: enums[state.toUpperCase()],
+                                reason,
+                                settlementWindowId,
+                                createdDate: transactionTimestamp
+                            });
+                        await knex('settlementWindow').transacting(trx)
+                            .where({settlementWindowId})
+                            .update({
+                                currentStateChangeId: settlmentWindowStateChangeId
+                            });
+                        let newSettlementWindowId = await knex('settlementWindow').transacting(trx)
+                            .insert({
+                                reason,
+                                createdDate: transactionTimestamp
+                            });
+                        let newSettlementWindowStateChangeId = await knex('settlementWindowStateChange').transacting(trx)
+                            .insert({
+                                settlementWindowId: newSettlementWindowId[0],
+                                settlementWindowStateId: enums.OPEN,
+                                reason,
+                                createdDate: transactionTimestamp
+                            });
+                        await knex('settlementWindow').transacting(trx)
+                            .where({
+                                settlementWindowId: newSettlementWindowId
+                            })
+                            .update({
+                                currentStateChangeId: newSettlementWindowStateChangeId
+                            });
+                        await trx.commit;
+                        return newSettlementWindowId[0];
+                    } catch (err) {
+                        await trx.rollback;
+                        throw err;
+                    }
+                })
+                    .catch((err) => {
+                        throw err;
+                    });
+            }
+        } catch (err) {
+            throw err;
+        }
+    },
+    getBySettlementId: async function ({settlementId}, enums = {}) {
+        try {
+            return await Db.settlementSettlementWindow.query(async (builder) => {
+                return await builder
+                    .join('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
+                    .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'sw.currentStateChangeId')
+                    .select(
+                        'sw.settlementWindowId AS id',
+                        'swsc.settlementWindowStateId as state',
+                        'swsc.reason as reason',
+                        'sw.createdDate as createdDate',
+                        'swsc.createdDate as changedDate'
+                    )
+                    .where('settlementSettlementWindow.settlementId', settlementId);
+            });
+        } catch (err) {
+            throw err;
+        }
     }
-  },
-  getBySettlementId: async function ({ settlementId }, enums = {}) {
-    try {
-      return await Db.settlementSettlementWindow.query(async (builder) => {
-        return await builder
-          .join('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
-          .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'sw.currentStateChangeId')
-          .select(
-            'sw.settlementWindowId AS settlementWindowId',
-            'swsc.settlementWindowStateId as state',
-            'swsc.reason as reason',
-            'sw.createdDate as createdDate',
-            'swsc.createdDate as changedDate'
-          )
-          .where('settlementSettlementWindow.settlementId', settlementId)
-      })
-    } catch (err) {
-      throw err
-    }
-  },
-}
+};
 
-module.exports = Facade
+module.exports = Facade;

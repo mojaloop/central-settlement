@@ -60,7 +60,7 @@ const Facade = {
                 return await builder
                     .join('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 'settlement.currentStateChangeId')
                     .select('settlement.settlementId',
-                        'ssc.settlementStateId',
+                        'ssc.settlementStateId AS state',
                         'settlement.reason',
                         'settlement.createdDate')
                     .where('settlement.settlementId', settlementId)
@@ -256,10 +256,10 @@ const Facade = {
             try {
                 let result = await Db.settlementParticipantCurrency.query(async (builder) => {
                     return await builder
-                        .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
+                        .leftJoin('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
                         .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
                         .select(
-                            'pc.participantId AS participantId',
+                            'pc.participantId AS id',
                             'settlementParticipantCurrency.participantCurrencyId AS participantCurrencyId',
                             'spcsc.settlementStateId AS state',
                             'spcsc.reason AS reason',
