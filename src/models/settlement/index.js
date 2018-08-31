@@ -31,15 +31,22 @@
  ******/
 
 'use strict'
-var Swagmock = require('swagmock')
-var Path = require('path')
-var apiPath = Path.resolve(__dirname, '../interface/swagger.json')
-var mockgen
 
-module.exports = function () {
-  /**
-     * Cached mock generator
-     */
-  mockgen = mockgen || Swagmock(apiPath)
-  return mockgen
+const settlementFacade = require('./facade')
+const settlementModel = require('./settlement')
+const settlementTransferParticipantModel = require('./settlementTransferParticipant')
+const participantCurrencyModel = require('./participantCurrency')
+const settlementParticipantCurrencyModel = require('./settlementParticipantCurrency')
+
+module.exports = {
+  create: settlementModel.create,
+  triggerEvent: settlementFacade.knexTriggerEvent,
+  getByParams: settlementFacade.getByParams,
+  getById: settlementFacade.getById,
+  putById: settlementFacade.putById,
+  getSettlementTransferParticipantBySettlementId: settlementTransferParticipantModel.getBySettlementId,
+  settlementParticipantCurrency: settlementFacade.settlementParticipantCurrency,
+  settlementSettlementWindow: settlementFacade.settlementSettlementWindow,
+  checkParticipantAccountExists: participantCurrencyModel.checkParticipantAccountExists,
+  getAccountInSettlement: settlementParticipantCurrencyModel.getAccountInSettlement
 }

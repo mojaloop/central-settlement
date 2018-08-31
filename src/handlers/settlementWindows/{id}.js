@@ -30,23 +30,38 @@
  --------------
  ******/
 
+<<<<<<< HEAD
 'use strict';
 
 const settlementWindow = require('../../domain/settlementWindow/index')
 const Boom = require('boom')
 const Path = require('path')
+=======
+'use strict'
+
+const settlementWindow = require('../../domain/settlementWindow/index')
+const Boom = require('boom')
+// const Path = require('path')
+>>>>>>> 67cf69aed3e0f62fbcc77eca0e478d66f6248ca3
 
 /**
  * Operations on /settlementWindows/{id}
  */
 module.exports = {
+<<<<<<< HEAD
     /**
      * summary: Returns a Settlement Window as per id.
      * description: 
+=======
+  /**
+     * summary: Returns a Settlement Window as per id.
+     * description:
+>>>>>>> 67cf69aed3e0f62fbcc77eca0e478d66f6248ca3
      * parameters: id
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
+<<<<<<< HEAD
     get: async function getSettlementWindowById(request, h) {
       const Enums = await request.server.methods.enums('settlementWindowStates')
       const settlementWindowId = request.params.id
@@ -62,10 +77,28 @@ module.exports = {
     /**
      * summary: If the settlementWindow is open, it can be closed and a new window created. If it is already closed, return an error message. Returns the new settlement window.
      * description: 
+=======
+  get: async function getSettlementWindowById (request, h) {
+    const Enums = await request.server.methods.enums('settlementWindowStates')
+    const settlementWindowId = request.params.id
+    try {
+      request.server.log('info', `get settlementwindow by Id requested with id ${settlementWindowId}`)
+      let settlementWindowResult = await settlementWindow.getById({ settlementWindowId }, Enums, { logger: request.server.log })
+      return h.response(settlementWindowResult)
+    } catch (e) {
+      request.server.log('error', `ERROR settlementWindowId: ${settlementWindowId} not found`)
+      return Boom.notFound(e.message)
+    }
+  },
+  /**
+     * summary: If the settlementWindow is open, it can be closed and a new window created. If it is already closed, return an error message. Returns the new settlement window.
+     * description:
+>>>>>>> 67cf69aed3e0f62fbcc77eca0e478d66f6248ca3
      * parameters: id, settlementWindowClosurePayload
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
+<<<<<<< HEAD
     post: async function closeSettlementWindow(request, h) {
       const { state, reason } = request.payload
       const settlementWindowId = request.params.id
@@ -77,3 +110,16 @@ module.exports = {
         }
     }
 };
+=======
+  post: async function closeSettlementWindow (request, h) {
+    const { state, reason } = request.payload
+    const settlementWindowId = request.params.id
+    const Enums = await request.server.methods.enums('settlementWindowStates')
+    try {
+      return await settlementWindow.close({ settlementWindowId, state, reason }, Enums, { logger: request.server.log })
+    } catch (e) {
+      throw (Boom.boomify(e))
+    }
+  }
+}
+>>>>>>> 67cf69aed3e0f62fbcc77eca0e478d66f6248ca3
