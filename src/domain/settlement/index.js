@@ -306,24 +306,78 @@ module.exports = {
   getSettlementsByParams: async function (params, enums, options = {}) {
     // 7 filters - at least one should be used
     let Logger = options.logger || centralLogger
-    if (Object.keys(params.query).length && Object.keys(params.query).length < 8) {
+    Object.keys(params.query).forEach(key => params.query[key] === undefined && delete params.query[key])
+    if (Object.keys(params.query).length && Object.keys(params.query).length < 10) {
       try {
-        let result = []
-        let settlements = await settlementsModel.getByParams(params, enums)
-        if (settlements && settlements.length > 0) {
-          for (let settlement of settlements) {
-            result.push({
-              accountId: settlement.accountId,
-              currency: settlement.currency,
-              participantId: settlement.participantId,
-              // state: settlement.state, //Not sure
-              fromDateTime: settlement.fromDateTime,
-              toDateTime: settlement.toDateTime
-            })
+        let settlements = {}
+        let settlement
+        let participant
+        let settlementsData = await settlementsModel.getByParams(params.query, enums)
+        if (settlementsData && settlementsData.length > 0) {
+          for (let s of settlementsData) {
+            if (!settlements[s.settlementId]) {
+              settlements[s.settlementId] = {
+                id: s.settlementId,
+                state: s.settlementStateId
+              }
+            }
+            settlement = settlements[s.settlementId]
+            if (!settlement.settlementWindows) {
+              settlement.settlementWindows = {}
+            }
+            if (!settlement.settlementWindows[s.settlementWindowId]) {
+              settlement.settlementWindows[s.settlementWindowId] = {
+                id: s.settlementWindowId,
+                state: s.settlementWindowStateId,
+                reason: s.settlementWindowReason,
+                createdDate: s.createdDate,
+                changedDate: s.changedDate
+              }
+            }
+            if (!settlement.participants) {
+              settlement.participants = {}
+            }
+            if (!settlement.participants[s.participantId]) {
+              settlement.participants[s.participantId] = {
+                id: s.participantId
+              }
+            }
+            participant = settlement.participants[s.participantId]
+            if (!participant.accounts) {
+              participant.accounts = {}
+            }
+            participant.accounts[s.participantCurrencyId] = {
+              id: s.participantCurrencyId,
+              state: s.accountState,
+              reason: s.accountReason,
+              netSettlementAmount: {
+                amount: s.accountAmount,
+                currency: s.accountCurrency
+              }
+            }
           }
+          // transform settlements map to result array
+          let result = Object.keys(settlements).map((i) => {
+            let settlementWindows = settlements[i].settlementWindows
+            settlementWindows = Object.keys(settlementWindows).map((j) => {
+              return settlementWindows[j]
+            })
+            settlements[i].settlementWindows = settlementWindows
+            let participants = settlements[i].participants
+            participants = Object.keys(participants).map((j) => {
+              let accounts = participants[j].accounts
+              accounts = Object.keys(accounts).map((k) => {
+                return accounts[k]
+              })
+              participants[j].accounts = accounts
+              return participants[j]
+            })
+            settlements[i].participants = participants
+            return settlements[i]
+          })
           return result
         } else {
-          let err = new Error('settlement not found')
+          let err = new Error('Settlements not found')
           Logger('error', err)
           throw err
         }
@@ -332,7 +386,7 @@ module.exports = {
         throw err
       }
     } else {
-      let err = new Error('use at least one parameter: accountId, settlementWindowId, currency, participantId, state, fromDateTime, toDateTime')
+      let err = new Error('Use at least one parameter: state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId')
       Logger('error', err)
       throw err
     }

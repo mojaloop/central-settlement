@@ -269,8 +269,9 @@
                         "name": "state",
                         "type": "string",
                         "enum": [
-                            "open",
-                            "closed"
+                            "PENDING_SETTLEMENT",
+                            "SETTLED",
+                            "NOT_SETTLED"
                         ],
                         "description": "A settlement state to filter on.  \n",
                         "required": false
