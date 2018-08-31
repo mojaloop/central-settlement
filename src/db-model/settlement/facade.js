@@ -39,7 +39,7 @@ const Facade = {
             // Open transaction
             return await knex.transaction(async (trx) => {
                 const settlementParticipantCurrencyStateChangeIdList = await knex.batchInsert('settlementParticipantCurrencyStateChange', settlementParticipantCurrencyStateChange).transacting(trx)
-                if(settlementParticipantCurrencyStateChangeIdList){
+                if (settlementParticipantCurrencyStateChangeIdList) {
                     for (let id of settlementParticipantCurrencyStateChangeIdList) {
                         let temp = settlementParticipantCurrencyStateChange[id]
                         temp.settlementParticipantCurrencyStateChangeId = id
@@ -80,7 +80,7 @@ const Facade = {
                         .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
                         .select(
                             'settlementWindow.*',
-                            'swsc.settlementWindowStateId AS state',
+                            'swsc.settlementWindowStateId AS state'
                         )
                         .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
                 else return await builder
@@ -171,7 +171,7 @@ const Facade = {
                     for (let index in settlementParticipantCurrencyIdList) {
                         updatePromises.push
                         (await knex('settlementParticipantCurrency').transacting(trx)
-                            .where('settlementParticipantCurrencyId', settlementParticipantCurrencyIdList[index])
+                            .where('settlementId', settlementId)
                             .update({
                                 currentStateChangeId: settlementParticipantCurrencyStateChangeIdList[index]
                             }))
