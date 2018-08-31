@@ -51,7 +51,7 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
     get: async function getSettlementsByParams(request, h) {
-        // TODO 
+        // TODO
         Logger.info('Here')
         try {
             const Enums = await request.server.methods.enums('settlementStates')
@@ -70,7 +70,7 @@ module.exports = {
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-    post: async function createSettlement(request, h) {
+    post: async function createSettlementEvent(request, h) {
         try {
             // TODO
             const Enums = {
@@ -80,7 +80,7 @@ module.exports = {
                 transferParticipantRoleTypes: await request.server.methods.enums('transferParticipantRoleTypes'),
                 ledgerEntryTypes: await  request.server.methods.enums('ledgerEntryTypes')
             }
-            let settlementResult = await Settlements.settlementEventTriger(request.payload, Enums, {logger: request.server.log})
+            let settlementResult = await Settlements.settlementEventTrigger(request.payload, Enums, {logger: request.server.log})
             return h.response(settlementResult)
         } catch (e) {
             request.server.log('error', e)
