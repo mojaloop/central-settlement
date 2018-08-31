@@ -263,7 +263,7 @@ module.exports = {
                         }
                     }
                 }
-                let settlementId = await settlementsModel.putById(settlementId, payload, enums)
+                let settlementId = await settlementsModel.putById(settlementParticipantCurrencyStateChange, payload, enums)
                 // TODO the transaction insert for everything
                 return true
             } else {

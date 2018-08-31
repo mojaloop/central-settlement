@@ -33,16 +33,22 @@ const settlementModel = require('./settlement')
 
 const Facade = {
 
-    putById: async function ({settlementId}, payLoad, enums = {}) {
+    putById: async function (settlementParticipantCurrencyStateChange, enums = {}) {
         try {
-            let knex = Db.getKnex()
-            let result = await Db.settlement.query(async (builder) => {
-                return await builder
+            const knex = await Db.getKnex()
+            // Open transaction
+            return await knex.transaction(async (trx) => {
+                const settlementParticipantCurrencyStateChangeIdList = await knex.batchInsert('settlementParticipantCurrencyStateChange', settlementParticipantCurrencyStateChange).transacting(trx)
+                if(settlementParticipantCurrencyStateChangeIdList){
+                    for (let id of settlementParticipantCurrencyStateChangeIdList) {
+                        let temp = settlementParticipantCurrencyStateChange[id]
+                        temp.settlementParticipantCurrencyStateChangeId = id
+                    }
 
-                //To Do Complete DAO logic
-
+                } else {
+                    throw new Error('insert failed')
+                }
             })
-            return result
         } catch (err) {
             throw err
         }
