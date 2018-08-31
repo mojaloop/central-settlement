@@ -30,7 +30,7 @@
  --------------
  ******/
 
-'use strict';
+'use strict'
 
 const settlementFacade = require('./facade')
 const settlementModel = require('./settlement')
