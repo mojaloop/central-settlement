@@ -264,7 +264,7 @@ module.exports = {
                     }
                 }
                 let settlementId = await settlementsModel.putById(settlementId, payload, enums)
-
+                // TODO the transaction insert for everything
                 return true
             } else {
                 let err = new Error('settlement window not found')
