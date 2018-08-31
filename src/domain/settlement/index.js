@@ -111,7 +111,10 @@ module.exports = {
         let settlementAccountList = await settlementsModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({settlementId}, enums)
         let windowsList = await settlementWindowModel.getBySettlementId({settlementId}, enums)
         let windowsAccountsList = await settlementsModel.getSettlementTransferParticipantBySettlementId({settlementId}, enums)
-        let pendingSettlementCount, settledCount, notSettledCount, unknownCount = 0
+        let pendingSettlementCount = 0
+        let settledCount = 0
+        let notSettledCount = 0
+        // let unknownCount = 0
         let allAccounts = new Map()
         let allWindows = new Map()
         let windowsAccounts = new Map()
@@ -142,7 +145,7 @@ module.exports = {
               break
             }
             default: {
-              unknownCount++
+              // unknownCount++
               break
             }
           }
@@ -152,7 +155,7 @@ module.exports = {
           settledCount: settledCount,
           notSettledCount: notSettledCount
         }
-        let settlementAccountsInit = Object.assign({}, settlementAccounts)
+        // let settlementAccountsInit = Object.assign({}, settlementAccounts)
         for (let window of windowsList) {
           allWindows[window.settlementWindowId] = {
             id: window.settlementWindowId,
@@ -194,8 +197,11 @@ module.exports = {
             }
           }
         }
-        let windowsAccountsInit = Object.assign({}, windowsAccounts)
-        let participants, settlementParticipantCurrencyStateChange, processedAccounts, affectedWindows = []
+        // let windowsAccountsInit = Object.assign({}, windowsAccounts)
+        let participants = []
+        let settlementParticipantCurrencyStateChange = []
+        let processedAccounts = []
+        let affectedWindows = []
         let transactionTimestamp = new Date()
         for (let participant of payload.participants) {
           let participantPayload = payload.participants[participant]
@@ -283,7 +289,7 @@ module.exports = {
             }
           }
         }
-        let settlementId = await settlementsModel.putById(settlementParticipantCurrencyStateChange, payload, enums)
+        settlementId = await settlementsModel.putById(settlementParticipantCurrencyStateChange, payload, enums)
         // TODO the transaction insert for everything
         return true
       } else {

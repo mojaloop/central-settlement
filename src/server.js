@@ -3,7 +3,7 @@
 const Hapi = require('hapi')
 const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
-const Db = require('./models/index.js')
+const Db = require('./models')
 const Enums = require('./models/lib/enums')
 
 // -- add them to common project config
@@ -23,8 +23,8 @@ const defaultConfig = {
   ]
 }
 
-const getEnums = async (id) => {
-  return await Enums[id]()
+const getEnums = (id) => {
+  return Enums[id]()
 }
 
 async function connectDatabase () {

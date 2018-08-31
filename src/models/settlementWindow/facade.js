@@ -30,8 +30,8 @@ const Db = require('../index')
 const Facade = {
   getById: async function ({settlementWindowId}, enums = {}) {
     try {
-      let result = await Db.settlementWindow.query(async (builder) => {
-        return await builder
+      let result = await Db.settlementWindow.query(builder => {
+        return builder
           .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
           .select(
             'settlementWindow.settlementWindowId',
@@ -51,8 +51,8 @@ const Facade = {
 
   getByListOfIds: async function (listOfIds, enums = {}) {
     try {
-      let result = await Db.settlementWindow.query(async (builder) => {
-        return await builder
+      let result = await Db.settlementWindow.query(builder => {
+        return builder
           .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
           .select(
             'settlementWindow.settlementWindowId',
@@ -75,9 +75,9 @@ const Facade = {
       state = state ? ` = "${state.toUpperCase()}"` : 'IS NOT NULL'
       fromDateTime = fromDateTime || new Date('01-01-1970').toISOString()
       toDateTime = toDateTime || new Date().toLocaleString()
-      let result = await Db.settlementWindow.query(async (builder) => {
+      let result = await Db.settlementWindow.query(builder => {
         if (!participantId) {
-          return await builder
+          return builder
             .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
             .select(
               'settlementWindow.settlementWindowId',
@@ -89,7 +89,7 @@ const Facade = {
             .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
             .orderBy('changedDate', 'desc')
         } else {
-          return await builder
+          return builder
             .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
             .leftJoin('transferFulfilment AS tf', 'tf.settlementWindowId', 'settlementWindow.settlementWindowId')
             .leftJoin('transferParticipant AS tp', 'tp.transferId', 'tf.transferId')
@@ -170,8 +170,8 @@ const Facade = {
   },
   getBySettlementId: async function ({settlementId}, enums = {}) {
     try {
-      return await Db.settlementSettlementWindow.query(async (builder) => {
-        return await builder
+      return await Db.settlementSettlementWindow.query(builder => {
+        return builder
           .join('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
           .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'sw.currentStateChangeId')
           .select(

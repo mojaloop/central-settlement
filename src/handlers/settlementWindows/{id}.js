@@ -34,7 +34,7 @@
 
 const settlementWindow = require('../../domain/settlementWindow/index')
 const Boom = require('boom')
-const Path = require('path')
+// const Path = require('path')
 
 /**
  * Operations on /settlementWindows/{id}

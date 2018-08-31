@@ -55,8 +55,8 @@ const Facade = {
 
   getById: async function ({settlementId}, enums = {}) {
     try {
-      return await Db.settlement.query(async (builder) => {
-        return await builder
+      return await Db.settlement.query(builder => {
+        return builder
           .join('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 'settlement.currentStateChangeId')
           .select('settlement.settlementId',
             'ssc.settlementStateId AS state',
@@ -73,9 +73,9 @@ const Facade = {
 
   getByParams: async function ({accountId, settlementWindowId, currency, participantId, state, fromDateTime, toDateTime}, enums = {}) {
     try {
-      let result = await Db.settlement.query(async (builder) => {
+      let result = await Db.settlement.query(builder => {
         if (!participantId) {
-          return await builder
+          return builder
             .leftJoin('settlementWindowStateChange AS swsc', 'swsc.SettlementWindowId', 'settlementWindow.settlementWindowId')
             .select(
               'settlementWindow.*',
@@ -83,7 +83,7 @@ const Facade = {
             )
             .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
         } else {
-          return await builder
+          return builder
             .leftJoin('participantCurrency AS pc', 'pc.participantId', participantId)
             .leftJoin('settlementTransferParticipant AS stp', 'stp.participantCurrencyId', 'pc.participantCurrencyId')
             .leftJoin('settlementSettlementWindow AS ssw', 'ssw.settlementId', 'stp.settlementId')
@@ -119,7 +119,7 @@ const Facade = {
             }
           })
           await knex.batchInsert('settlementSettlementWindow', settlementSettlementWindowList).transacting(trx)
-          let settlementTransferParticipantIdList = await knex
+          /* let settlementTransferParticipantIdList = */await knex
             .from(knex.raw('settlementTransferParticipant (settlementId, settlementWindowId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, createdDate, amount)'))
             .insert(function () {
               this.from('settlementSettlementWindow AS ssw')
@@ -170,8 +170,7 @@ const Facade = {
           const settlementParticipantCurrencyStateChangeIdList = await knex.batchInsert('settlementParticipantCurrencyStateChange', settlementParticipantCurrencyStateChangeList).transacting(trx)
           let updatePromises = []
           for (let index in settlementParticipantCurrencyIdList) {
-            updatePromises.push
-            (await knex('settlementParticipantCurrency').transacting(trx)
+            updatePromises.push(await knex('settlementParticipantCurrency').transacting(trx)
               .where('settlementId', settlementId)
               .update({
                 currentStateChangeId: settlementParticipantCurrencyStateChangeIdList[index]
@@ -189,8 +188,7 @@ const Facade = {
           const settlementWindowStateChangeIdList = await knex.batchInsert('settlementWindowStateChange', settlementWindowStateChangeList).transacting(trx)
           updatePromises = []
           for (let index in settlementWindowStateChangeIdList) {
-            updatePromises.push
-            (await knex('settlementWindow').transacting(trx)
+            updatePromises.push(await knex('settlementWindow').transacting(trx)
               .where('settlementWindowId', idList[index])
               .update({
                 currentStateChangeId: settlementWindowStateChangeIdList[index]
@@ -221,8 +219,8 @@ const Facade = {
   settlementParticipantCurrency: {
     getByListOfIds: async function (listOfIds, enums = {}) {
       try {
-        let result = await Db.settlementParticipantCurrency.query(async (builder) => {
-          return await builder
+        let result = await Db.settlementParticipantCurrency.query(builder => {
+          return builder
             .leftJoin('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
             .leftJoin('participant as p', 'p.participantCurrencyId', 'pc.participantCurrencyId')
             .select(
@@ -240,8 +238,8 @@ const Facade = {
 
     getAccountsInSettlementByIds: async function ({settlementId, participantId}, enums = {}) {
       try {
-        let result = await Db.settlementParticipantCurrency.query(async (builder) => {
-          return await builder
+        let result = await Db.settlementParticipantCurrency.query(builder => {
+          return builder
             .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
             .select('settlementParticipantCurrencyId')
             .where({settlementId})
@@ -255,8 +253,8 @@ const Facade = {
 
     getParticipantCurrencyBySettlementId: async function ({settlementId}, enums = {}) {
       try {
-        let result = await Db.settlementParticipantCurrency.query(async (builder) => {
-          return await builder
+        let result = await Db.settlementParticipantCurrency.query(builder => {
+          return builder
             .leftJoin('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
             .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
             .select(
@@ -278,8 +276,8 @@ const Facade = {
 
     getAccountById: async function ({settlementParticipantCurrencyId}, enums = {}) {
       try {
-        let result = await Db.settlementParticipantCurrency.query(async (builder) => {
-          return await builder
+        let result = await Db.settlementParticipantCurrency.query(builder => {
+          return builder
             .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
             .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
             .select(
@@ -300,8 +298,8 @@ const Facade = {
 
     getAccountsByListOfIds: async function (settlementParticipantCurrencyIdList, enums = {}) {
       try {
-        let result = await Db.settlementParticipantCurrency.query(async (builder) => {
-          return await builder
+        let result = await Db.settlementParticipantCurrency.query(builder => {
+          return builder
             .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
             .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
             .select(
@@ -323,8 +321,8 @@ const Facade = {
   settlementSettlementWindow: {
     getWindowsBySettlementIdAndAccountId: async function ({settlementId, accountId}, enums = {}) {
       try {
-        let result = await Db.settlementSettlementWindow.query(async (builder) => {
-          return await builder
+        let result = await Db.settlementSettlementWindow.query(builder => {
+          return builder
             .join('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
             .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
             .join('settlementTransferParticipant AS stp', function () {
@@ -349,8 +347,8 @@ const Facade = {
     },
     getWindowsBySettlementIdAndParticipantId: async function ({settlementId, participantId}, enums = {}) {
       try {
-        let result = await Db.settlementSettlementWindow.query(async (builder) => {
-          return await builder
+        let result = await Db.settlementSettlementWindow.query(builder => {
+          return builder
             .join('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
             .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
             .join('settlementTransferParticipant AS stp', async function () {
