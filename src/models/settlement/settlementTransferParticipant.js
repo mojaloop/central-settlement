@@ -18,26 +18,24 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
  --------------
  ******/
-
 
 'use strict'
 
 const Db = require('../index')
 
-module.exports.checkParticipantAccountExists = async ({ participantId, accountId  }, enums = {}) => {
-  try {
-    let result = await Db.participantCurrency.query(async (builder) => {
-      return await builder
-        .select('participantCurrencyId')
-        .where({ participantId })
-        .andWhere('participantCurrencyId', accountId)
-    })
-      return result
-  } catch (err) {
-    throw err
+module.exports = {
+  getBySettlementId: async function ({settlementId}, enums = {}) {
+    try {
+      return await Db.settlementTransferParticipant.query(builder => {
+        return builder
+          .select()
+          .distinct('settlementWindowId', 'participantCurrencyId')
+          .where({settlementId})
+      })
+    } catch (err) {
+      throw err
+    }
   }
 }
