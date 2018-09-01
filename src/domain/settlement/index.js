@@ -419,7 +419,7 @@ module.exports = {
       let participants = prepareParticipantsResult(participantCurrenciesList)
       return {
         id: settlement.settlementId,
-        state: settlement.settlementStateId,
+        state: settlement.state,
         settlementWindows: settlementWindowsList,
         participants
       }
