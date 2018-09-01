@@ -209,10 +209,9 @@ const Facade = {
             .transacting(trx)
             .select('settlementWindowStateChangeId')
             .whereIn('settlementWindowId', idList)
-            //TODO SELECT ONLY THE LATEST INSERTED WINDOW
-            .whereRaw('GREATEST(settlementWindowStateChangeId)')
+            .andWhere('settlementWindowStateId', enums.settlementStates.PENDING_SETTLEMENT)
             updatePromises = []
-          for (let index in settlementWindowStateChangeIdList) {
+          for (let index in idList) {
             updatePromises.push(await knex('settlementWindow').transacting(trx)
               .where('settlementWindowId', idList[index])
               .update({
