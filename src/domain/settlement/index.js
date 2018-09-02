@@ -22,6 +22,7 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
  * Valentin Genev <valentin.genev@modusbox.com>
  * Deon Botha <deon.botha@modusbox.com>
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
@@ -111,27 +112,29 @@ module.exports = {
         let settlementAccountList = await settlementsModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({settlementId}, enums)
         let windowsList = await settlementWindowModel.getBySettlementId({settlementId}, enums)
         let windowsAccountsList = await settlementsModel.getSettlementTransferParticipantBySettlementId({settlementId}, enums)
+
+        // seq-settlement-6.2.5, step 19
         let pendingSettlementCount = 0
         let settledCount = 0
         let notSettledCount = 0
-        // let unknownCount = 0
+        let unknownCount = 0
         let allAccounts = new Map()
         let allWindows = new Map()
         let windowsAccounts = new Map()
         let accountsWindows = new Map()
-        for (let data of settlementAccountList) {
-          allAccounts[data.participantCurrencyId] = {
-            id: data.participantCurrencyId,
-            state: data.state,
-            reason: data.reason,
-            createDate: data.createdDate,
+        for (let account of settlementAccountList) {
+          allAccounts[account.participantCurrencyId] = {
+            id: account.participantCurrencyId,
+            state: account.state,
+            reason: account.reason,
+            createDate: account.createdDate,
             netSettlementAmount: {
-              amount: data.netAmount,
-              currency: data.currency
+              amount: account.netAmount,
+              currency: account.currency
             },
-            key: data.key
+            key: account.key
           }
-          switch (data.state) {
+          switch (account.state) {
             case 'PENDING_SETTLEMENT': {
               pendingSettlementCount++
               break
@@ -145,25 +148,30 @@ module.exports = {
               break
             }
             default: {
-              // unknownCount++
+              unknownCount++
               break
             }
           }
         }
         let settlementAccounts = {
-          pendingSettlementCount: pendingSettlementCount,
-          settledCount: settledCount,
-          notSettledCount: notSettledCount
+          pendingSettlementCount,
+          settledCount,
+          notSettledCount,
+          unknownCount
         }
-        // let settlementAccountsInit = Object.assign({}, settlementAccounts)
+        let settlementAccountsInit = Object.assign({}, settlementAccounts)
+
+        // seq-settlement-6.2.5, step 23
         for (let window of windowsList) {
-          allWindows[window.settlementWindowId] = {
-            id: window.settlementWindowId,
+          allWindows[window.id] = {
+            id: window.id,
             state: window.state,
             reason: window.reason,
             createDate: window.createdDate
           }
         }
+
+        // seq-settlement-6.2.5, step 24
         for (let record of windowsAccountsList) {
           let wid = record.settlementWindowId
           let aid = record.participantCurrencyId
@@ -197,18 +205,21 @@ module.exports = {
             }
           }
         }
-        // let windowsAccountsInit = Object.assign({}, windowsAccounts)
+        let windowsAccountsInit = JSON.parse(JSON.stringify(windowsAccounts)) // TODO: switch to lodash cloneDeep
         let participants = []
         let settlementParticipantCurrencyStateChange = []
         let processedAccounts = []
         let affectedWindows = []
         let transactionTimestamp = new Date()
-        for (let participant of payload.participants) {
+
+        // seq-settlement-6.2.5, step 26
+        for (let participant in payload.participants) {
           let participantPayload = payload.participants[participant]
           participants.push({id: participantPayload.id, accounts: []})
           let pi = participants.length - 1
           participant = participants[pi]
-          for (let account of participant.accounts) {
+          // seq-settlement-6.2.5, step 27
+          for (let account in participantPayload.accounts) {
             let accountPayload = participantPayload.accounts[account]
             if (allAccounts[accountPayload.id] === undefined) {
               participant.accounts.push({
@@ -230,7 +241,7 @@ module.exports = {
                   errorDescription: 'Account already processed once'
                 }
               })
-            } else if (allAccounts[account.id].state === accountPayload.state) {
+            } else if (allAccounts[accountPayload.id].state === accountPayload.state) {
               processedAccounts.push(accountPayload.id)
               participant.accounts.push({
                 id: accountPayload.id,
@@ -245,8 +256,8 @@ module.exports = {
                 reason: accountPayload.reason
               })
               allAccounts[accountPayload.id].reason = accountPayload.reason
-              allAccounts[accountPayload.id].createdDate = new Date()
-            } else if (allAccounts[account.id].state === 'PENDING_SETTLEMENT' && accountPayload.state === 'SETTLED') {
+              allAccounts[accountPayload.id].createdDate = transactionTimestamp
+            } else if (allAccounts[accountPayload.id].state === 'PENDING_SETTLEMENT' && accountPayload.state === 'SETTLED') {
               processedAccounts.push(accountPayload.id)
               participant.accounts.push({
                 id: accountPayload.id,
@@ -264,9 +275,9 @@ module.exports = {
               settlementAccounts.settledCount++
               allAccounts[accountPayload.id].state = accountPayload.state
               allAccounts[accountPayload.id].reason = accountPayload.reason
-              allAccounts[accountPayload.id].createdDate = new Date()
+              allAccounts[accountPayload.id].createdDate = transactionTimestamp
               let settlementWindowId
-              for (let aw of accountsWindows[accountPayload.id].windows) {
+              for (let aw in accountsWindows[accountPayload.id].windows) {
                 settlementWindowId = accountsWindows[accountPayload.id].windows[aw]
                 windowsAccounts[settlementWindowId].pendingSettlementCount--
                 windowsAccounts[settlementWindowId].settledCount++
@@ -289,9 +300,27 @@ module.exports = {
             }
           }
         }
-        settlementId = await settlementsModel.putById(settlementParticipantCurrencyStateChange, payload, enums)
-        // TODO the transaction insert for everything
-        return true
+
+        let inputObj = {
+          settlementParticipantCurrencyStateChange,
+          affectedWindows,
+          windowsAccountsInit,
+          windowsAccounts,
+          allWindows,
+          settlementAccounts,
+          settlementAccountsInit,
+          settlementData,
+          transactionTimestamp
+        }
+        // seq-settlement-6.2.5, steps 33-47
+        let result = await settlementsModel.putById(inputObj, enums)
+        return {
+          id: settlementId,
+          state: result.settlementData.state,
+          createdDate: result.settlementData.createdDate,
+          settlementWindows: result.settlementWindows,
+          participants
+        }
       } else {
         let err = new Error('settlement window not found')
         Logger('error', err)
