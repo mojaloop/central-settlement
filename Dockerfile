@@ -1,7 +1,7 @@
 FROM mhart/alpine-node:8.9.4
 
 WORKDIR /opt/central-settlement
-COPY src /opt/src
+COPY src /opt/central-settlement/src
 COPY tests /opt/central-settlement/tests
 COPY package.json /opt/central-settlement
 COPY README.md /opt/central-settlement
