@@ -27,6 +27,7 @@
         "hapi": "^17.0.0",
         "hapi-openapi": "^1.0.0",
         "hapi-pagination": "^2.0.0",
+        "rc": "^1.2.8",
         "swagmock": "~0.0.2"
     },
     "devDependencies": {

@@ -28,6 +28,7 @@ const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
 const Db = require('./models')
 const Enums = require('./models/lib/enums')
+const Config = require('./lib/config')
 
 // -- add them to common project config
 const openAPIOptions = {
@@ -36,7 +37,7 @@ const openAPIOptions = {
 }
 
 const defaultConfig = {
-  port: 3007,
+  port: Config.PORT,
   cache: [
     {
       name: 'memCache',
@@ -52,7 +53,7 @@ const getEnums = (id) => {
 
 async function connectDatabase () {
   try {
-    let db = await Db.connect(`mysql://central_ledger:password@localhost:3306/central_ledger`) // TODO add from ENV or common config}
+    let db = await Db.connect(Config.DATABASE_URI) // TODO add from ENV or common config}
     return db
   } catch (e) {
     throw e
