@@ -52,7 +52,7 @@ const Facade = {
   getByListOfIds: async function (listOfIds, enums = {}) {
     try {
       let result = await Db.settlementWindow.query(builder => {
-        return builder
+        var build = builder
           .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
           .select(
             'settlementWindow.settlementWindowId',
@@ -61,7 +61,8 @@ const Facade = {
             'settlementWindow.createdDate as createdDate',
             'swsc.createdDate as changedDate'
           )
-          .whereRaw(`settlementWindow.settlementWindowId IN (${listOfIds}) AND swsc.createdDate > settlementWindow.createdDate`)
+          .whereRaw(`settlementWindow.settlementWindowId IN (${listOfIds}) AND swsc.createdDate >= settlementWindow.createdDate`)
+          return build
       })
       return result
     } catch (err) {
