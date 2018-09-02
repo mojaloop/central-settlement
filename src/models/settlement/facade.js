@@ -18,6 +18,7 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
  * Valentin Genev <valentin.genev@modusbox.com>
  * Deon Botha <deon.botha@modusbox.com>
  --------------
@@ -29,23 +30,114 @@ const Db = require('../index')
 
 module.exports = {}
 
-const settlementModel = require('./settlement')
+// const settlementModel = require('./settlement')
 
 const Facade = {
 
-  putById: async function (settlementParticipantCurrencyStateChange, enums = {}) {
+  putById: async function (obj, enums = {}) {
     try {
+      let insertPromises
+      let updatePromises
       const knex = await Db.getKnex()
-      // Open transaction
       return await knex.transaction(async (trx) => {
-        const settlementParticipantCurrencyStateChangeIdList = await knex.batchInsert('settlementParticipantCurrencyStateChange', settlementParticipantCurrencyStateChange).transacting(trx)
-        if (settlementParticipantCurrencyStateChangeIdList) {
-          for (let id of settlementParticipantCurrencyStateChangeIdList) {
-            let temp = settlementParticipantCurrencyStateChange[id]
-            temp.settlementParticipantCurrencyStateChangeId = id
+        try {
+          // seq-settlement-6.2.5, step 33
+          insertPromises = []
+          for (let cpcsc of obj.settlementParticipantCurrencyStateChange) {
+            // Switched to insert from batchInsert because only last id is returned
+            insertPromises.push(
+              knex('settlementParticipantCurrencyStateChange')
+                .insert(cpcsc).returning('settlementParticipantCurrencyStateChangeId')
+                .transacting(trx)
+            )
           }
-        } else {
-          throw new Error('insert failed')
+          let settlementParticipantCurrencyStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
+          if (settlementParticipantCurrencyStateChangeIdList) {
+            updatePromises = []
+            for (let i in settlementParticipantCurrencyStateChangeIdList) {
+              updatePromises.push(
+                knex('settlementParticipantCurrency')
+                  .where('settlementParticipantCurrencyId', obj.settlementParticipantCurrencyStateChange[i].settlementParticipantCurrencyId)
+                  .update({currentStateChangeId: settlementParticipantCurrencyStateChangeIdList[i]})
+                  .transacting(trx)
+              )
+            }
+            await Promise.all(updatePromises)
+          }
+
+          // seq-settlement-6.2.5, step 38
+          let settlementWindowStateChange = []
+          obj.settlementWindows = [] // response object
+          let windowAccountsInit
+          let windowAccounts
+          for (let aw in obj.affectedWindows) {
+            windowAccountsInit = obj.windowsAccountsInit[obj.affectedWindows[aw]]
+            windowAccounts = obj.windowsAccounts[obj.affectedWindows[aw]]
+            if (windowAccounts.pendingSettlementCount !== windowAccountsInit.pendingSettlementCount ||
+              windowAccounts.settledCount !== windowAccountsInit.settledCount) {
+              if (windowAccounts.pendingSettlementCount === 0 &&
+                windowAccounts.notSettledCount === 0 &&
+                windowAccounts.settledCount > 0) {
+                obj.allWindows[obj.affectedWindows[aw]].settlementWindowStateId = 'SETTLED'
+                obj.allWindows[obj.affectedWindows[aw]].reason = 'All setlement accounts are settled'
+                obj.allWindows[obj.affectedWindows[aw]].createdDate = obj.transactionTimestamp
+                settlementWindowStateChange.push(obj.allWindows[obj.affectedWindows[aw]])
+              }
+              obj.settlementWindows.push(obj.allWindows[obj.affectedWindows[aw]])
+            }
+          }
+          if (settlementWindowStateChange.length) {
+            insertPromises = []
+            for (let swsc of settlementWindowStateChange) {
+              swsc.settlementWindowId = swsc.id
+              delete swsc.id // TODO: remote deletes
+              delete swsc.createDate
+              delete swsc.state
+              insertPromises.push(
+                knex('settlementWindowStateChange')
+                  .insert(swsc).returning('settlementWindowStateChangeId')
+                  .transacting(trx)
+              )
+            }
+            let settlementWindowStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
+            if (settlementWindowStateChangeIdList) {
+              updatePromises = []
+              for (let i in settlementWindowStateChangeIdList) {
+                updatePromises.push(
+                  knex('settlementWindow')
+                    .where('settlementWindowId', settlementWindowStateChange[i].settlementWindowId)
+                    .update({currentStateChangeId: settlementWindowStateChangeIdList[i]})
+                    .transacting(trx)
+                )
+              }
+              await Promise.all(updatePromises)
+            }
+          }
+          // seq-settlement-6.2.5, step 43
+          let settlementStateChange = []
+          if (obj.settlementAccounts.settledCount !== obj.settlementAccountsInit.settledCount &&
+            obj.settlementAccounts.pendingSettlementCount === 0 &&
+            obj.settlementAccounts.notSettledCount === 0) {
+            obj.settlementData.settlementStateId = 'SETTLED'
+            obj.settlementData.reason = 'All setlement accounts are settled'
+            obj.settlementData.createdDate = obj.transactionTimestamp
+            settlementStateChange.push(obj.settlementData)
+          }
+          if (settlementStateChange.length) {
+            delete settlementStateChange[0].state
+            let settlementStateChangeId = await knex('settlementStateChange')
+              .insert(settlementStateChange).returning('settlementStateChangeId')
+              .transacting(trx)
+            await knex('settlement')
+              .where('settlementId', settlementStateChange[0].settlementId)
+              .update({currentStateChangeId: settlementStateChangeId[0]})
+              .transacting(trx)
+          }
+          await trx.commit
+          return obj
+        } catch (err) {
+          await trx.rollback
+          throw err
         }
       })
     } catch (err) {
@@ -130,7 +222,7 @@ const Facade = {
             }
           })
           await knex.batchInsert('settlementSettlementWindow', settlementSettlementWindowList).transacting(trx)
-          let settlementTransferParticipantIdList = await knex
+          /* let settlementTransferParticipantIdList = */await knex
             .from(knex.raw('settlementTransferParticipant (settlementId, settlementWindowId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, createdDate, amount)'))
             .insert(function () {
               this.from('settlementSettlementWindow AS ssw')
@@ -210,7 +302,7 @@ const Facade = {
             .select('settlementWindowStateChangeId')
             .whereIn('settlementWindowId', idList)
             .andWhere('settlementWindowStateId', enums.settlementStates.PENDING_SETTLEMENT)
-            updatePromises = []
+          updatePromises = []
           for (let index in idList) {
             updatePromises.push(await knex('settlementWindow').transacting(trx)
               .where('settlementWindowId', idList[index])

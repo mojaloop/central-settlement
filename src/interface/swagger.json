@@ -161,10 +161,13 @@
                         "name": "state",
                         "type": "string",
                         "enum": [
-                            "open",
-                            "closed"
+                            "OPEN",
+                            "CLOSED",
+                            "PENDING_SETTLEMENT",
+                            "SETTLED",
+                            "NOT_SETTLED"
                         ],
-                        "description": "A settlement window state (open or closed) to filter on.  \n",
+                        "description": "A settlement window state to filter on.\n",
                         "required": false
                     },
                     {

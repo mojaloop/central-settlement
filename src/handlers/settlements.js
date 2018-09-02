@@ -22,6 +22,7 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
  * Valentin Genev <valentin.genev@modusbox.com>
  * Deon Botha <deon.botha@modusbox.com>
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
@@ -51,7 +52,6 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
   get: async function getSettlementsByParams (request, h) {
-    // TODO
     Logger.info('Here')
     try {
       const Enums = await request.server.methods.enums('settlementStates')
