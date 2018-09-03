@@ -27,24 +27,267 @@
 'use strict'
 
 const Db = require('../index')
-
-module.exports = {}
-
-// const settlementModel = require('./settlement')
+const deepClone = require('../../utils/deepClone')
 
 const Facade = {
-
-  putById: async function (obj, enums = {}) {
+  putById: async function (settlementId, payload, enums, options = {}) {
     try {
-      let insertPromises
-      let updatePromises
       const knex = await Db.getKnex()
       return await knex.transaction(async (trx) => {
         try {
-          // seq-settlement-6.2.5, step 33
-          insertPromises = []
-          for (let cpcsc of obj.settlementParticipantCurrencyStateChange) {
-            // Switched to insert from batchInsert because only last id is returned
+          // seq-settlement-6.2.5, step 3
+          let settlementData = await knex('settlement AS s')
+            .join('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 's.currentStateChangeId')
+            .select('s.settlementId', 'ssc.settlementStateId', 'ssc.reason', 'ssc.createdDate')
+            .where('s.settlementId', settlementId)
+            .first()
+            .transacting(trx)
+            .forUpdate()
+          if (!settlementData) {
+            throw new Error('Settlement window not found')
+          }
+
+          // seq-settlement-6.2.5, step 5
+          let settlementAccountList = await knex('settlementParticipantCurrency AS spc')
+            .leftJoin('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'spc.currentStateChangeId')
+            .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'spc.participantCurrencyId')
+            .select('pc.participantId', 'spc.participantCurrencyId', 'spcsc.settlementStateId', 'spcsc.reason', 'spc.netAmount', 'pc.currencyId', 'spc.settlementParticipantCurrencyId AS key'
+            )
+            .where('spc.settlementId', settlementId)
+            .transacting(trx)
+            .forUpdate()
+
+          // seq-settlement-6.2.5, step 7
+          let windowsList = await knex('settlementSettlementWindow AS ssw')
+            .join('settlementWindow AS sw', 'sw.settlementWindowId', 'ssw.settlementWindowId')
+            .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'sw.currentStateChangeId')
+            .select('sw.settlementWindowId', 'swsc.settlementWindowStateId', 'swsc.reason', 'sw.createdDate')
+            .where('ssw.settlementId', settlementId)
+            .transacting(trx)
+            .forUpdate()
+
+          // seq-settlement-6.2.5, step 9
+          let windowsAccountsList = await knex('settlementTransferParticipant')
+            .select()
+            .distinct('settlementWindowId', 'participantCurrencyId')
+            .where({settlementId})
+            .transacting(trx)
+            .forUpdate()
+
+          let transactionTimestamp = new Date()
+
+          // seq-settlement-6.2.5, step 11
+          let settlementAccounts = {
+            pendingSettlementCount: 0,
+            settledCount: 0,
+            notSettledCount: 0,
+            unknownCount: 0
+          }
+          let allAccounts = new Map()
+          let pid // participantId
+          let aid // accountId
+          let state
+
+          // seq-settlement-6.2.5, step 12
+          for (let account of settlementAccountList) {
+            pid = account.participantId
+            aid = account.participantCurrencyId
+            state = account.settlementStateId
+            allAccounts[aid] = {
+              id: aid,
+              state,
+              reason: account.reason,
+              createDate: account.createdDate,
+              netSettlementAmount: {
+                amount: account.netAmount,
+                currency: account.currencyId
+              },
+              participantId: pid,
+              key: account.key
+            }
+            switch (state) {
+              case 'PENDING_SETTLEMENT': {
+                settlementAccounts.pendingSettlementCount++
+                break
+              }
+              case 'SETTLED': {
+                settlementAccounts.settledCount++
+                break
+              }
+              case 'NOT_SETTLED': {
+                settlementAccounts.notSettledCount++
+                break
+              }
+              default: {
+                settlementAccounts.unknownCount++
+                break
+              }
+            }
+          }
+          let settlementAccountsInit = Object.assign({}, settlementAccounts)
+
+          // seq-settlement-6.2.5, step 15
+          let allWindows = new Map()
+          for (let window of windowsList) {
+            allWindows[window.settlementWindowId] = {
+              settlementWindowId: window.settlementWindowId,
+              settlementWindowStateId: window.settlementWindowStateId,
+              reason: window.reason,
+              createdDate: window.createdDate
+            }
+          }
+
+          // seq-settlement-6.2.5, step 16
+          let windowsAccounts = new Map()
+          let accountsWindows = new Map()
+          for (let record of windowsAccountsList) {
+            let wid = record.settlementWindowId
+            let aid = record.participantCurrencyId
+            let state = allAccounts[aid].state
+            accountsWindows[aid] = accountsWindows[aid] ? accountsWindows[aid] : {
+              id: aid,
+              windows: []
+            }
+            accountsWindows[aid].windows.push(wid)
+            windowsAccounts[wid] = windowsAccounts[wid] ? windowsAccounts[wid] : {
+              id: wid,
+              pendingSettlementCount: 0,
+              settledCount: 0,
+              notSettledCount: 0
+            }
+            switch (state) {
+              case 'PENDING_SETTLEMENT': {
+                windowsAccounts[wid].pendingSettlementCount++
+                break
+              }
+              case 'SETTLED': {
+                windowsAccounts[wid].settledCount++
+                break
+              }
+              case 'NOT_SETTLED': {
+                windowsAccounts[wid].notSettledCount++
+                break
+              }
+              default: {
+                break
+              }
+            }
+          }
+
+          // seq-settlement-6.2.5, step 17
+          let windowsAccountsInit = deepClone(windowsAccounts)
+          let participants = []
+          let affectedWindows = []
+          let settlementParticipantCurrencyStateChange = []
+          let processedAccounts = []
+          // seq-settlement-6.2.5, step 18
+          for (let participant in payload.participants) {
+            let participantPayload = payload.participants[participant]
+            participants.push({id: participantPayload.id, accounts: []})
+            let pi = participants.length - 1
+            participant = participants[pi]
+            // seq-settlement-6.2.5, step 19
+            for (let account in participantPayload.accounts) {
+              let accountPayload = participantPayload.accounts[account]
+              if (allAccounts[accountPayload.id] === undefined) {
+                participant.accounts.push({
+                  id: accountPayload.id,
+                  errorInformation: {
+                    errorCode: 3000,
+                    errorDescription: 'Account not found'
+                  }
+                })
+              // seq-settlement-6.2.5, step 21
+              } else if (participantPayload.id !== allAccounts[accountPayload.id].participantId) {
+                processedAccounts.push(accountPayload.id)
+                participant.accounts.push({
+                  id: accountPayload.id,
+                  errorInformation: {
+                    errorCode: 3000,
+                    errorDescription: 'Participant and account mismatch'
+                  }
+                })
+              // seq-settlement-6.2.5, step 22
+              } else if (processedAccounts.indexOf(accountPayload.id) > -1) {
+                participant.accounts.push({
+                  id: accountPayload.id,
+                  state: allAccounts[accountPayload.id].state,
+                  reason: allAccounts[accountPayload.id].reason,
+                  createdDate: allAccounts[accountPayload.id].createdDate,
+                  netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount,
+                  errorInformation: {
+                    errorCode: 3000,
+                    errorDescription: 'Account already processed once'
+                  }
+                })
+              // seq-settlement-6.2.5, step 23
+              } else if (allAccounts[accountPayload.id].state === accountPayload.state) {
+                processedAccounts.push(accountPayload.id)
+                participant.accounts.push({
+                  id: accountPayload.id,
+                  state: accountPayload.state,
+                  reason: accountPayload.reason,
+                  createdDate: transactionTimestamp,
+                  netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount
+                })
+                settlementParticipantCurrencyStateChange.push({
+                  settlementParticipantCurrencyId: allAccounts[accountPayload.id].key,
+                  settlementStateId: accountPayload.state,
+                  reason: accountPayload.reason
+                })
+                allAccounts[accountPayload.id].reason = accountPayload.reason
+                allAccounts[accountPayload.id].createdDate = transactionTimestamp
+              // seq-settlement-6.2.5, step 24
+              } else if (allAccounts[accountPayload.id].state === 'PENDING_SETTLEMENT' && accountPayload.state === 'SETTLED') {
+                processedAccounts.push(accountPayload.id)
+                participant.accounts.push({
+                  id: accountPayload.id,
+                  state: accountPayload.state,
+                  reason: accountPayload.reason,
+                  createdDate: transactionTimestamp,
+                  netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount
+                })
+                settlementParticipantCurrencyStateChange.push({
+                  settlementParticipantCurrencyId: allAccounts[accountPayload.id].key,
+                  settlementStateId: accountPayload.state,
+                  reason: accountPayload.reason
+                })
+                settlementAccounts.pendingSettlementCount--
+                settlementAccounts.settledCount++
+                allAccounts[accountPayload.id].state = accountPayload.state
+                allAccounts[accountPayload.id].reason = accountPayload.reason
+                allAccounts[accountPayload.id].createdDate = transactionTimestamp
+                let settlementWindowId
+                for (let aw in accountsWindows[accountPayload.id].windows) {
+                  settlementWindowId = accountsWindows[accountPayload.id].windows[aw]
+                  windowsAccounts[settlementWindowId].pendingSettlementCount--
+                  windowsAccounts[settlementWindowId].settledCount++
+                  if (affectedWindows.indexOf(settlementWindowId) < 0) {
+                    affectedWindows.push(settlementWindowId)
+                  }
+                }
+              // seq-settlement-6.2.5, step 25
+              } else {
+                participant.accounts.push({
+                  id: accountPayload.id,
+                  state: allAccounts[accountPayload.id].state,
+                  reason: allAccounts[accountPayload.id].reason,
+                  createdDate: allAccounts[accountPayload.id].createdDate,
+                  netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount,
+                  errorInformation: {
+                    errorCode: 3000,
+                    errorDescription: 'State change not allowed'
+                  }
+                })
+              }
+            }
+          }
+          let insertPromises = []
+          let updatePromises = []
+          // seq-settlement-6.2.5, step 26
+          for (let cpcsc of settlementParticipantCurrencyStateChange) {
+            // Switched to insert from batchInsert because only LAST_INSERT_ID is returned
+            // TODO: PoC - batchInsert + select inserted ids vs multiple inserts without select
             insertPromises.push(
               knex('settlementParticipantCurrencyStateChange')
                 .insert(cpcsc).returning('settlementParticipantCurrencyStateChangeId')
@@ -53,11 +296,11 @@ const Facade = {
           }
           let settlementParticipantCurrencyStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
           if (settlementParticipantCurrencyStateChangeIdList) {
-            updatePromises = []
+            // seq-settlement-6.2.5, step 29
             for (let i in settlementParticipantCurrencyStateChangeIdList) {
               updatePromises.push(
                 knex('settlementParticipantCurrency')
-                  .where('settlementParticipantCurrencyId', obj.settlementParticipantCurrencyStateChange[i].settlementParticipantCurrencyId)
+                  .where('settlementParticipantCurrencyId', settlementParticipantCurrencyStateChange[i].settlementParticipantCurrencyId)
                   .update({currentStateChangeId: settlementParticipantCurrencyStateChangeIdList[i]})
                   .transacting(trx)
               )
@@ -65,31 +308,30 @@ const Facade = {
             await Promise.all(updatePromises)
           }
 
-          // seq-settlement-6.2.5, step 38
           let settlementWindowStateChange = []
-          obj.settlementWindows = [] // response object
+          let settlementWindows = [] // response object
           let windowAccountsInit
           let windowAccounts
-          for (let aw in obj.affectedWindows) {
-            windowAccountsInit = obj.windowsAccountsInit[obj.affectedWindows[aw]]
-            windowAccounts = obj.windowsAccounts[obj.affectedWindows[aw]]
+          for (let aw in affectedWindows) {
+            windowAccountsInit = windowsAccountsInit[affectedWindows[aw]]
+            windowAccounts = windowsAccounts[affectedWindows[aw]]
             if (windowAccounts.pendingSettlementCount !== windowAccountsInit.pendingSettlementCount ||
               windowAccounts.settledCount !== windowAccountsInit.settledCount) {
               if (windowAccounts.pendingSettlementCount === 0 &&
                 windowAccounts.notSettledCount === 0 &&
                 windowAccounts.settledCount > 0) {
-                obj.allWindows[obj.affectedWindows[aw]].settlementWindowStateId = 'SETTLED'
-                obj.allWindows[obj.affectedWindows[aw]].reason = 'All setlement accounts are settled'
-                obj.allWindows[obj.affectedWindows[aw]].createdDate = obj.transactionTimestamp
-                settlementWindowStateChange.push(obj.allWindows[obj.affectedWindows[aw]])
+                allWindows[affectedWindows[aw]].settlementWindowStateId = 'SETTLED'
+                allWindows[affectedWindows[aw]].reason = 'All setlement accounts are settled'
+                allWindows[affectedWindows[aw]].createdDate = transactionTimestamp
+                settlementWindowStateChange.push(allWindows[affectedWindows[aw]])
               }
-              obj.settlementWindows.push(obj.allWindows[obj.affectedWindows[aw]])
+              settlementWindows.push(allWindows[affectedWindows[aw]])
             }
           }
+          // seq-settlement-6.2.5, step 30
           if (settlementWindowStateChange.length) {
             insertPromises = []
             for (let swsc of settlementWindowStateChange) {
-              swsc.settlementWindowId = swsc.id
               insertPromises.push(
                 knex('settlementWindowStateChange')
                   .insert(swsc).returning('settlementWindowStateChangeId')
@@ -97,6 +339,7 @@ const Facade = {
               )
             }
             let settlementWindowStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
+            // seq-settlement-6.2.5, step 33
             if (settlementWindowStateChangeIdList) {
               updatePromises = []
               for (let i in settlementWindowStateChangeIdList) {
@@ -110,24 +353,31 @@ const Facade = {
               await Promise.all(updatePromises)
             }
           }
-          // seq-settlement-6.2.5, step 43
-          if (obj.settlementAccounts.settledCount !== obj.settlementAccountsInit.settledCount &&
-            obj.settlementAccounts.pendingSettlementCount === 0 &&
-            obj.settlementAccounts.notSettledCount === 0) {
-            obj.settlementData.settlementStateId = 'SETTLED'
-            obj.settlementData.reason = 'All setlement accounts are settled'
-            obj.settlementData.createdDate = obj.transactionTimestamp
 
+          if (settlementAccounts.settledCount !== settlementAccountsInit.settledCount &&
+            settlementAccounts.pendingSettlementCount === 0 &&
+            settlementAccounts.notSettledCount === 0) {
+            settlementData.settlementStateId = 'SETTLED'
+            settlementData.reason = 'All setlement accounts are settled'
+            settlementData.createdDate = transactionTimestamp
+            // seq-settlement-6.2.5, step 34
             let settlementStateChangeId = await knex('settlementStateChange')
-              .insert(obj.settlementData).returning('settlementStateChangeId')
+              .insert(settlementData).returning('settlementStateChangeId')
               .transacting(trx)
+            // seq-settlement-6.2.5, step 36
             await knex('settlement')
-              .where('settlementId', obj.settlementData.settlementId)
+              .where('settlementId', settlementData.settlementId)
               .update({currentStateChangeId: settlementStateChangeId})
               .transacting(trx)
           }
           await trx.commit
-          return obj
+          return {
+            id: settlementId,
+            state: settlementData.settlementStateId,
+            createdDate: settlementData.createdDate,
+            settlementWindows: settlementWindows,
+            participants
+          }
         } catch (err) {
           await trx.rollback
           throw err
