@@ -90,9 +90,6 @@ const Facade = {
             insertPromises = []
             for (let swsc of settlementWindowStateChange) {
               swsc.settlementWindowId = swsc.id
-              delete swsc.id // TODO: remote deletes
-              delete swsc.createDate
-              delete swsc.state
               insertPromises.push(
                 knex('settlementWindowStateChange')
                   .insert(swsc).returning('settlementWindowStateChangeId')
@@ -114,23 +111,19 @@ const Facade = {
             }
           }
           // seq-settlement-6.2.5, step 43
-          let settlementStateChange = []
           if (obj.settlementAccounts.settledCount !== obj.settlementAccountsInit.settledCount &&
             obj.settlementAccounts.pendingSettlementCount === 0 &&
             obj.settlementAccounts.notSettledCount === 0) {
             obj.settlementData.settlementStateId = 'SETTLED'
             obj.settlementData.reason = 'All setlement accounts are settled'
             obj.settlementData.createdDate = obj.transactionTimestamp
-            settlementStateChange.push(obj.settlementData)
-          }
-          if (settlementStateChange.length) {
-            delete settlementStateChange[0].state
+
             let settlementStateChangeId = await knex('settlementStateChange')
-              .insert(settlementStateChange).returning('settlementStateChangeId')
+              .insert(obj.settlementData).returning('settlementStateChangeId')
               .transacting(trx)
             await knex('settlement')
-              .where('settlementId', settlementStateChange[0].settlementId)
-              .update({currentStateChangeId: settlementStateChangeId[0]})
+              .where('settlementId', obj.settlementData.settlementId)
+              .update({currentStateChangeId: settlementStateChangeId})
               .transacting(trx)
           }
           await trx.commit

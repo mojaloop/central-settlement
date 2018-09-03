@@ -36,6 +36,7 @@
 const settlementsModel = require('../../models/settlement/index')
 const centralLogger = require('@mojaloop/central-services-shared').Logger
 const settlementWindowModel = require('../../models/settlementWindow')
+const deepClone = require('../../utils/deepClone')
 
 const prepareParticipantsResult = function (participantCurrenciesList) {
   try {
@@ -107,7 +108,13 @@ module.exports = {
   putById: async function (settlementId, payload, enums, options = {}) {
     let Logger = options.logger || centralLogger
     try {
-      let settlementData = await settlementsModel.getById({settlementId}, enums)
+      let res = await settlementsModel.getById({settlementId}, enums)
+      let settlementData = {
+        settlementId: res.settlementId,
+        settlementStateId: res.state,
+        reason: res.reason,
+        createdDate: res.createdDate
+      }
       if (settlementData) {
         let settlementAccountList = await settlementsModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({settlementId}, enums)
         let windowsList = await settlementWindowModel.getBySettlementId({settlementId}, enums)
@@ -132,6 +139,7 @@ module.exports = {
               amount: account.netAmount,
               currency: account.currency
             },
+            participantId: account.id,
             key: account.key
           }
           switch (account.state) {
@@ -164,10 +172,10 @@ module.exports = {
         // seq-settlement-6.2.5, step 23
         for (let window of windowsList) {
           allWindows[window.id] = {
-            id: window.id,
-            state: window.state,
+            settlementWindowId: window.id,
+            settlementWindowStateId: window.state,
             reason: window.reason,
-            createDate: window.createdDate
+            createdDate: window.createdDate
           }
         }
 
@@ -205,7 +213,7 @@ module.exports = {
             }
           }
         }
-        let windowsAccountsInit = JSON.parse(JSON.stringify(windowsAccounts)) // TODO: switch to lodash cloneDeep
+        let windowsAccountsInit = deepClone(windowsAccounts)
         let participants = []
         let settlementParticipantCurrencyStateChange = []
         let processedAccounts = []
@@ -227,6 +235,15 @@ module.exports = {
                 errorInformation: {
                   errorCode: 3000,
                   errorDescription: 'Account not found'
+                }
+              })
+            } else if (participantPayload.id !== allAccounts[accountPayload.id].participantId) {
+              processedAccounts.push(accountPayload.id)
+              participant.accounts.push({
+                id: accountPayload.id,
+                errorInformation: {
+                  errorCode: 3000,
+                  errorDescription: 'Participant and account mismatch'
                 }
               })
             } else if (processedAccounts.indexOf(accountPayload.id) > -1) {
@@ -316,7 +333,7 @@ module.exports = {
         let result = await settlementsModel.putById(inputObj, enums)
         return {
           id: settlementId,
-          state: result.settlementData.state,
+          state: result.settlementData.settlementStateId,
           createdDate: result.settlementData.createdDate,
           settlementWindows: result.settlementWindows,
           participants
