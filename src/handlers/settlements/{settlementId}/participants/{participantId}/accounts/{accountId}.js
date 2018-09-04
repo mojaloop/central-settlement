@@ -24,7 +24,7 @@
 'use strict'
 
 const Boom = require('boom')
-const dataAccess = require('../../../../../../../tests/data/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}')
+const dataAccess = require('../../../../../../../test/data/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}')
 const Settlements = require('../../../../../../domain/settlement')
 
 /**

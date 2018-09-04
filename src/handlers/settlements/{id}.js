@@ -36,7 +36,7 @@
 const Boom = require('boom')
 
 const settlement = require('../../domain/settlement/index')
-// const dataAccess = require('../../../tests/data/settlements/{id}')
+// const dataAccess = require('../../../test/data/settlements/{id}')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Path = require('path')
 
