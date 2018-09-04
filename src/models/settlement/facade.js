@@ -27,7 +27,7 @@
 'use strict'
 
 const Db = require('../index')
-const deepClone = require('../../utils/deepClone')
+const cloneDeep = require('../../utils/cloneDeep')
 
 const Facade = {
   putById: async function (settlementId, payload, enums, options = {}) {
@@ -175,7 +175,7 @@ const Facade = {
           }
 
           // seq-settlement-6.2.5, step 17
-          let windowsAccountsInit = deepClone(windowsAccounts)
+          let windowsAccountsInit = cloneDeep(windowsAccounts)
           let participants = []
           let affectedWindows = []
           let settlementParticipantCurrencyStateChange = []
