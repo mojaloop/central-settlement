@@ -40,13 +40,14 @@
     },
     "scripts": {
         "start": "node src/server.js",
-        "test": "tape 'tests/unit/**/*.js'",
-        "test:xunit": "tape 'tests/unit/**/*.js' | tap-xunit",
-        "cover": "istanbul cover tape -- 'tests/unit/**/*.js'",
+        "test": "npm run test:unit | faucet",
+        "test:unit": "tape 'test/unit/**/*.js'",
+        "test:xunit": "tape 'test/unit/**/*.js' | tap-xunit",
+        "cover": "istanbul cover tape -- 'test/unit/**/*.js'",
         "lint": "eslint .",
         "test:coverage-check": "npm run test:coverage && istanbul check-coverage",
-        "test:coverage": "istanbul cover tape -- 'tests/unit/**/*.js'",
-        "regenerate": "yo swaggerize:test --framework hapi --apiPath './interface/swagger.json'"
+        "test:coverage": "istanbul cover tape -- 'test/unit/**/*.js'",
+        "regenerate": "yo swaggerize:test --framework hapi --apiPath './src/interface/swagger.json'"
     },
     "generator-swaggerize": {
         "version": "4.1.0"
