@@ -22,7 +22,6 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Georgi Georgiev <georgi.georgiev@modusbox.com>
  * Valentin Genev <valentin.genev@modusbox.com>
  * Deon Botha <deon.botha@modusbox.com>
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
@@ -36,52 +35,26 @@
 const Boom = require('boom')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Path = require('path')
-const Settlements = require('./../domain/settlement')
+const settlementWindows = require('./../domain/settlementWindow')
 
 Logger.info('path ', Path.basename(__filename))
 
 /**
- * Operations on /settlements
+ * Operations on /settlementWindows
  */
 module.exports = {
   /**
-     * summary: Returns Settlement(s) as per parameter(s).
+     * summary: Returns a Settlement Window(s) as per parameter(s).
      * description:
-     * parameters: currency, participantId, settlementWindowId, accountId, state, fromDateTime, toDateTime
+     * parameters: participantId, state, fromDateTime, toDateTime
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-  get: async function getSettlementsByParams (request, h) {
-    Logger.info('Here')
+  get: async function getSettlementWindowsByParams (request, h) {
     try {
-      const Enums = await request.server.methods.enums('settlementStates')
-      let settlementResult = await Settlements.getSettlementsByParams({query: request.query}, Enums, {logger: request.server.log})
-      return h.response(settlementResult)
-    } catch (e) {
-      Logger.info('error', e)
-      request.server.log('error', e)
-      return Boom.notFound(e.message)
-    }
-  },
-  /**
-     * summary: Trigger the creation of a settlement event, that does the calculation of the net settlement position per participant and marks all transfers in the affected windows as Pending settlement. Returned dataset is the net settlement report for the settlementwindow
-     * description:
-     * parameters: settlementEventPayload
-     * produces: application/json
-     * responses: 200, 400, 401, 404, 415, default
-     */
-  post: async function createSettlementEvent (request, h) {
-    try {
-      // TODO
-      const Enums = {
-        settlementStates: await request.server.methods.enums('settlementStates'),
-        settlementWindowStates: await request.server.methods.enums('settlementWindowStates'),
-        transferStates: await request.server.methods.enums('transferStates'),
-        transferParticipantRoleTypes: await request.server.methods.enums('transferParticipantRoleTypes'),
-        ledgerEntryTypes: await request.server.methods.enums('ledgerEntryTypes')
-      }
-      let settlementResult = await Settlements.settlementEventTrigger(request.payload, Enums, {logger: request.server.log})
-      return h.response(settlementResult)
+      const Enums = await request.server.methods.enums('settlementWindowStates')
+      let settlementWindowResult = await settlementWindows.getByParams({ query: request.query }, Enums, { logger: request.server.log })
+      return h.response(settlementWindowResult)
     } catch (e) {
       request.server.log('error', e)
       return Boom.notFound(e.message)

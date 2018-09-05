@@ -1,7 +1,7 @@
 {
     "name": "central-settlement",
     "description": "Central settlements hosted by a scheme to record and settle settlements.",
-    "version": "1.0.0",
+    "version": "3.5.1-snapshot",
     "license": "Apache-2.0",
     "private": true,
     "author": "Valentin Genev <vgenev@gmail.com>",
@@ -27,11 +27,13 @@
         "hapi": "^17.0.0",
         "hapi-openapi": "^1.0.0",
         "hapi-pagination": "^2.0.0",
+        "rc": "^1.2.8",
         "swagmock": "~0.0.2"
     },
     "devDependencies": {
         "eslint": "^2",
-        "istanbul": "~0.4.3",
+        "istanbul": "1.1.0-alpha.1",
+        "sinon": "^6.1.5",
         "swagmock": "~0.0.2",
         "tap-xunit": "1.4.0",
         "tape": "4.6.2",
@@ -39,13 +41,14 @@
     },
     "scripts": {
         "start": "node src/server.js",
-        "test": "tape 'tests/unit/**/*.js'",
-        "test:xunit": "tape 'tests/unit/**/*.js' | tap-xunit",
-        "cover": "istanbul cover tape -- 'tests/unit/**/*.js'",
+        "test": "npm run test:unit | faucet",
+        "test:unit": "tape 'test/unit/**/*.js'",
+        "test:xunit": "tape 'test/unit/**/*.js' | tap-xunit",
+        "cover": "istanbul cover tape -- 'test/unit/**/*.js'",
         "lint": "eslint .",
         "test:coverage-check": "npm run test:coverage && istanbul check-coverage",
-        "test:coverage": "istanbul cover tape -- 'tests/unit/**/*.js'",
-        "regenerate": "yo swaggerize:test --framework hapi --apiPath './interface/swagger.json'"
+        "test:coverage": "istanbul cover tape -- 'test/unit/**/*.js'",
+        "regenerate": "yo swaggerize:test --framework hapi --apiPath './src/interface/swagger.json'"
     },
     "generator-swaggerize": {
         "version": "4.1.0"
