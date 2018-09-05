@@ -32,7 +32,7 @@
 
 'use strict'
 
-const settlementWindow = require('../../domain/settlementWindow/index')
+const settlementWindow = require('../../../../src/domain/settlementWindow/index')
 const Boom = require('boom')
 // const Path = require('path')
 

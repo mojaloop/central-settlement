@@ -36,7 +36,7 @@
 const Boom = require('boom')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Path = require('path')
-const Settlements = require('./../domain/settlement')
+const Settlements = require('./../../../src/domain/settlement')
 
 Logger.info('path ', Path.basename(__filename))
 
