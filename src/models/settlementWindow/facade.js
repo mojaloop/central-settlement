@@ -61,7 +61,9 @@ const Facade = {
             'settlementWindow.createdDate as createdDate',
             'swsc.createdDate as changedDate'
           )
-          .whereRaw(`settlementWindow.settlementWindowId IN (${listOfIds}) AND swsc.createdDate >= settlementWindow.createdDate`)
+          .whereRaw(`settlementWindow.settlementWindowId IN (${listOfIds})`)
+/*          .whereRaw(`settlementWindow.settlementWindowId IN (${listOfIds}) AND swsc.createdDate >= settlementWindow.createdDate`)
+*/
         return build
       })
       return result
