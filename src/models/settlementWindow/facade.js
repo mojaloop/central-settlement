@@ -62,8 +62,6 @@ const Facade = {
             'swsc.createdDate as changedDate'
           )
           .whereRaw(`settlementWindow.settlementWindowId IN (${listOfIds})`)
-/*          .whereRaw(`settlementWindow.settlementWindowId IN (${listOfIds}) AND swsc.createdDate >= settlementWindow.createdDate`)
-*/
         return build
       })
       return result
