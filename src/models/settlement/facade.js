@@ -465,7 +465,7 @@ const Facade = {
             }
           })
           await knex.batchInsert('settlementSettlementWindow', settlementSettlementWindowList).transacting(trx)
-          /* let settlementTransferParticipantIdList = */await knex
+          let settlementTransferParticipantIdList = await knex
             .from(knex.raw('settlementTransferParticipant (settlementId, settlementWindowId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, createdDate, amount)'))
             .insert(function () {
               this.from('settlementSettlementWindow AS ssw')
