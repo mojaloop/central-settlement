@@ -36,7 +36,6 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
   settlementFacadeTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
-    // Db.participant = { query: sandbox.stub() }
     clock = Sinon.useFakeTimers(now.getTime())
     test.end()
   })
@@ -294,9 +293,10 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       ]
     }
   ]
+
   await settlementFacadeTest.test('putById should', async putById => {
     try {
-      await putById.test('throw error if no settlement is not found', async test => {
+      await putById.test('throw error if settlement is not found', async test => {
         try {
           let settlementData
 
@@ -510,6 +510,158 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
       putById.fail()
       putById.end()
+    }
+  })
+
+  await settlementFacadeTest.test('getById should', async getById => {
+    try {
+      await getById.test('retrieve settlement data by id', async test => {
+        try {
+          const settlementId = 1
+          const settlementResultStub = {id: 1}
+
+          Db.settlement = {query: sandbox.stub()}
+          let builderStub = sandbox.stub()
+          Db.settlement.query.callsArgWith(0, builderStub)
+          builderStub.join = sandbox.stub()
+          let selectStub = sandbox.stub()
+          let whereStub = sandbox.stub()
+          let firstStub = sandbox.stub()
+          builderStub.join.returns({
+            select: selectStub.returns({
+              where: whereStub.returns({
+                first: firstStub
+              })
+            })
+          })
+          Db.settlement.query.returns(Promise.resolve(settlementResultStub))
+
+          await SettlementFacade.getById({settlementId})
+          test.ok(builderStub.join.withArgs('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 'settlement.currentStateChangeId').calledOnce)
+          test.ok(selectStub.withArgs('settlement.settlementId',
+            'ssc.settlementStateId AS state',
+            'settlement.reason',
+            'settlement.createdDate').calledOnce)
+          test.ok(whereStub.withArgs('settlement.settlementId', settlementId).calledOnce)
+          test.ok(firstStub.calledOnce)
+          test.end()
+        } catch (err) {
+          Logger.error(`getById failed with error - ${err}`)
+          test.fail('Error thrown')
+          test.end()
+        }
+      })
+
+      await getById.test('throw error if query is wrong', async test => {
+        try {
+          const settlementId = 1
+          Db.settlement = {query: sandbox.stub()}
+          let builderStub = sandbox.stub()
+          Db.settlement.query.callsArgWith(0, builderStub)
+          await SettlementFacade.getById({settlementId})
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`getById failed with error - ${err}`)
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+
+      await getById.end()
+    } catch (err) {
+      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      getById.fail()
+      getById.end()
+    }
+  })
+
+  await settlementFacadeTest.test('getByParams should', async getByParams => {
+    try {
+      await getByParams.test('retrieve settlement data by params', async test => {
+        try {
+          let state = 'PENDING_SETTLEMENT'
+          let fromDateTime = new Date() - 3600
+          let toDateTime = new Date()
+          let currency = 'USD'
+          let settlementWindowId = 1
+          let fromSettlementWindowDateTime = new Date() - 3600
+          let toSettlementWindowDateTime = new Date()
+          let participantId = 1
+          let accountId = 1
+          let query = { state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId }
+
+          Db.settlement = {query: sandbox.stub()}
+          let builderStub = sandbox.stub()
+          Db.settlement.query.callsArgWith(0, builderStub)
+          builderStub.innerJoin = sandbox.stub()
+          let context = sandbox.stub()
+          context.on = sandbox.stub()
+          context.on.returns({
+            andOn: sandbox.stub()
+          })
+          let innerJoin5 = sandbox.stub()
+          innerJoin5.callsArgOn(1, context)
+          let innerJoin6 = sandbox.stub()
+          innerJoin6.callsArgOn(1, context)
+
+          builderStub.innerJoin.returns({
+            innerJoin: sandbox.stub().returns({
+              innerJoin: sandbox.stub().returns({
+                innerJoin: sandbox.stub().returns({
+                  innerJoin: innerJoin5.returns({
+                    innerJoin: innerJoin6.returns({
+                      innerJoin: sandbox.stub().returns({
+                        innerJoin: sandbox.stub().returns({
+                          distinct: sandbox.stub().returns({
+                            select: sandbox.stub().returns({
+                              where: sandbox.stub()
+                            })
+                          })
+                        })
+                      })
+                    })
+                  })
+                })
+              })
+            })
+          })
+          Db.settlement.query.returns(Promise.resolve({id: 1}))
+          const res1 = await SettlementFacade.getByParams(query)
+          Db.settlement.query.returns(Promise.resolve({id: 2}))
+          const res2 = await SettlementFacade.getByParams({})
+          test.equal(res1.id, 1, 'First query returns settlement id 1')
+          test.equal(res2.id, 2, 'Second query returns settlement id 2')
+          test.equal(Db.settlement.query.callCount, 2, 'settlement query by params executed twice')
+          test.end()
+        } catch (err) {
+          Logger.error(`getByParams failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await getByParams.test('throw error if query is wrong', async test => {
+        try {
+          const settlementId = 1
+          Db.settlement = {query: sandbox.stub()}
+          let builderStub = sandbox.stub()
+          Db.settlement.query.callsArgWith(0, builderStub)
+          await SettlementFacade.getByParams({settlementId})
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`getByParams failed with error - ${err}`)
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+
+      await getByParams.end()
+    } catch (err) {
+      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      getByParams.fail()
+      getByParams.end()
     }
   })
 

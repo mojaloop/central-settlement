@@ -390,7 +390,6 @@ const Facade = {
           .first()
       })
     } catch (err) {
-      console.log('here')
       throw err
     }
   },
@@ -398,7 +397,6 @@ const Facade = {
   getByParams: async function ({state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId}, enums = {}) {
     try {
       let result = await Db.settlement.query(builder => {
-        let isWhere = true
         let b = builder
           .innerJoin('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 'settlement.currentStateChangeId')
           .innerJoin('settlementSettlementWindow AS ssw', 'ssw.settlementId', 'settlement.settlementId')
@@ -420,15 +418,15 @@ const Facade = {
             'spcsc.reason AS accountReason', 'spcsc.settlementStateId AS accountState',
             'spc.netAmount AS accountAmount', 'pc.currencyId AS accountCurrency')
           .select()
-        if (state) { b = isWhere ? b.where('ssc.settlementStateId', state) : b.andWhere('ssc.settlementStateId', state); isWhere = false }
-        if (fromDateTime) { b = isWhere ? b.where('settlement.createdDate', '>=', fromDateTime) : b.andWhere('settlement.createdDate', '>=', fromDateTime); isWhere = false }
-        if (toDateTime) { b = isWhere ? b.where('settlement.createdDate', '<=', toDateTime) : b.andWhere('settlement.createdDate', '<=', toDateTime); isWhere = false }
-        if (currency) { b = isWhere ? b.where('pc.currencyId', currency) : b.andWhere('pc.currencyId', currency); isWhere = false }
-        if (settlementWindowId) { b = isWhere ? b.where('ssw.settlementWindowId', settlementWindowId) : b.andWhere('ssw.settlementWindowId', settlementWindowId); isWhere = false }
-        if (fromSettlementWindowDateTime) { b = isWhere ? b.where('sw.createdDate', '>=', fromSettlementWindowDateTime) : b.andWhere('sw.createdDate', '>=', fromSettlementWindowDateTime); isWhere = false }
-        if (toSettlementWindowDateTime) { b = isWhere ? b.where('sw.createdDate', '<=', toSettlementWindowDateTime) : b.andWhere('sw.createdDate', '<=', toSettlementWindowDateTime); isWhere = false }
-        if (participantId) { b = isWhere ? b.where('pc.participantId', participantId) : b.andWhere('pc.participantId', participantId); isWhere = false }
-        if (accountId) { b = isWhere ? b.where('spc.participantCurrencyId', accountId) : b.andWhere('spc.participantCurrencyId', accountId); isWhere = false }
+        if (state) { b.where('ssc.settlementStateId', state) }
+        if (fromDateTime) { b.where('settlement.createdDate', '>=', fromDateTime) }
+        if (toDateTime) { b.where('settlement.createdDate', '<=', toDateTime) }
+        if (currency) { b.where('pc.currencyId', currency) }
+        if (settlementWindowId) { b.where('ssw.settlementWindowId', settlementWindowId) }
+        if (fromSettlementWindowDateTime) { b.where('sw.createdDate', '>=', fromSettlementWindowDateTime) }
+        if (toSettlementWindowDateTime) { b.where('sw.createdDate', '<=', toSettlementWindowDateTime) }
+        if (participantId) { b.where('pc.participantId', participantId) }
+        if (accountId) { b.where('spc.participantCurrencyId', accountId) }
         return b
       })
       return result
