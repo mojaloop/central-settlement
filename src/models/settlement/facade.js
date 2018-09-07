@@ -453,18 +453,17 @@ const Facade = {
           })
           await knex.batchInsert('settlementSettlementWindow', settlementSettlementWindowList).transacting(trx)
           /* let settlementTransferParticipantIdList = */await knex
-            .from(knex.raw('settlementTransferParticipant (settlementId, settlementWindowId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, createdDate, amount)'))
+            .from(
+              knex.raw('settlementTransferParticipant (settlementId, settlementWindowId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, createdDate, amount)'))
             .insert(function () {
               this.from('settlementSettlementWindow AS ssw')
                 .join('transferFulfilment AS tf', 'tf.settlementWindowId', 'ssw.settlementWindowId')
                 .join('transferStateChange AS tsc', function () {
-                  this
-                    .on('tsc.transferId', 'tf.transferId')
+                  this.on('tsc.transferId', 'tf.transferId')
                     .on('tsc.transferStateId', knex.raw('?', [enums.transferStates.COMMITTED]))
                 })
                 .join('transferParticipant AS tp', function () {
-                  this
-                    .on('tp.transferId', 'tf.transferId')
+                  this.on('tp.transferId', 'tf.transferId')
                 })
                 .where('ssw.settlementId', settlementId)
                 .groupBy('ssw.settlementWindowId', 'tp.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId')
@@ -484,12 +483,15 @@ const Facade = {
                 .whereRaw('stp.settlementId = ?', [settlementId])
                 .groupBy('stp.settlementId', 'stp.participantCurrencyId')
                 .select('stp.settlementId', 'stp.participantCurrencyId')
-                .sum(knex.raw(`CASE 
-                            WHEN stp.transferParticipantRoleTypeId = ${enums.transferParticipantRoleTypes.PAYER_DFSP} AND stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.PRINCIPLE_VALUE} THEN amount 
-                            WHEN stp.transferParticipantRoleTypeId = ${enums.transferParticipantRoleTypes.PAYEE_DFSP} AND stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.PRINCIPLE_VALUE} THEN -amount
-                            WHEN stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.INTERCHANGE_FEE} THEN -amount
-                            WHEN stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.HUB_FEE} THEN amount
-                          end`))
+                .sum(knex.raw(
+                  `CASE 
+                    WHEN stp.transferParticipantRoleTypeId = ${enums.transferParticipantRoleTypes.PAYER_DFSP}
+                      AND stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.PRINCIPLE_VALUE} THEN amount 
+                    WHEN stp.transferParticipantRoleTypeId = ${enums.transferParticipantRoleTypes.PAYEE_DFSP}
+                      AND stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.PRINCIPLE_VALUE} THEN -amount
+                    WHEN stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.INTERCHANGE_FEE} THEN -amount
+                    WHEN stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.HUB_FEE} THEN amount
+                  END`))
             }, 'settlementParticipantCurrencyId')
             .transacting(trx)
           const settlementParticipantCurrencyList = await knex('settlementParticipantCurrency').select('settlementParticipantCurrencyId').where('settlementId', settlementId).transacting(trx)
@@ -671,8 +673,7 @@ const Facade = {
             .join('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
             .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
             .join('settlementTransferParticipant AS stp', function () {
-              this
-                .on('stp.settlementWindowId', 'sw.settlementWindowId')
+              this.on('stp.settlementWindowId', 'sw.settlementWindowId')
                 .on('stp.participantCurrencyId', accountId)
             })
             .distinct(
@@ -697,8 +698,7 @@ const Facade = {
             .join('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
             .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
             .join('settlementTransferParticipant AS stp', async function () {
-              this
-                .on('stp.settlementWindowId', 'sw.settlementWindowId')
+              this.on('stp.settlementWindowId', 'sw.settlementWindowId')
                 .onIn('stp.participantCurrencyId', await Db.participantCurrency.find({participantId}))
             })
             .distinct(
