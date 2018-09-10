@@ -33,9 +33,9 @@
 
 'use strict'
 
-const settlementsModel = require('../../models/settlement/index')
-const centralLogger = require('@mojaloop/central-services-shared').Logger
-const settlementWindowModel = require('../../models/settlementWindow')
+const SettlementModel = require('../../models/settlement')
+const SettlementWindowModel = require('../../models/settlementWindow')
+const CentralLogger = require('@mojaloop/central-services-shared').Logger
 
 const prepareParticipantsResult = function (participantCurrenciesList) {
   try {
@@ -43,7 +43,7 @@ const prepareParticipantsResult = function (participantCurrenciesList) {
     for (let account of participantCurrenciesList) {
       let {id} = account
       let formattedAccount = {
-        id: account.id,
+        id: account.participantCurrencyId,
         state: account.state,
         reason: account.reason,
         netSettlementAmount: {
@@ -52,7 +52,7 @@ const prepareParticipantsResult = function (participantCurrenciesList) {
         }
       }
       if (id in participantAccounts) {
-        let accountList = participantAccounts.accounts
+        let accountList = participantAccounts[id].accounts
         accountList.push(formattedAccount)
         participantAccounts[id] = {
           id: id,
@@ -67,25 +67,19 @@ const prepareParticipantsResult = function (participantCurrenciesList) {
     }
     return Array.from(Object.keys(participantAccounts).map(participantId => participantAccounts[participantId]))
   } catch (e) {
-    console.log(e)
+    CentralLogger.info(e)
     throw e
   }
 }
-// "id": accountData.participantCurrencyId,
-// "state": "PENDING_SETTLEMENT",
-// "reason": payload.reason,
-// "netSettlementAmount": {
-//     "amount": accountData.netAmount,
-//     "currency": accountData.currencyId
-// }
+
 module.exports = {
   getById: async function ({settlementId}, enums, options = {}) {
-    let Logger = options.logger || centralLogger
+    let Logger = options.logger || CentralLogger
     try {
-      let settlement = await settlementsModel.getById({settlementId}, enums)
+      let settlement = await SettlementModel.getById({settlementId}, enums)
       if (settlement) {
-        let settlementWindowsList = await settlementWindowModel.getBySettlementId({settlementId}, enums)
-        let participantCurrenciesList = await settlementsModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({settlementId}, enums)
+        let settlementWindowsList = await SettlementWindowModel.getBySettlementId({settlementId}, enums)
+        let participantCurrenciesList = await SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({settlementId}, enums)
         let participants = prepareParticipantsResult(participantCurrenciesList)
         return {
           id: settlement.settlementId,
@@ -95,27 +89,27 @@ module.exports = {
         }
       } else {
         let err = new Error('2001 TODO Settlement not found')
-        Logger('error', err)
+        Logger.info('error', err)
         throw err
       }
     } catch (err) {
-      Logger('error', err)
+      Logger.info('error', err)
       throw err
     }
   },
 
-  putById: settlementsModel.putById,
+  putById: SettlementModel.putById,
 
   getSettlementsByParams: async function (params, enums, options = {}) {
     // 7 filters - at least one should be used
-    let Logger = options.logger || centralLogger
+    let Logger = options.logger || CentralLogger
     Object.keys(params.query).forEach(key => params.query[key] === undefined && delete params.query[key])
     if (Object.keys(params.query).length && Object.keys(params.query).length < 10) {
       try {
         let settlements = {}
         let settlement
         let participant
-        let settlementsData = await settlementsModel.getByParams(params.query, enums)
+        let settlementsData = await SettlementModel.getByParams(params.query, enums)
         if (settlementsData && settlementsData.length > 0) {
           for (let s of settlementsData) {
             if (!settlements[s.settlementId]) {
@@ -181,16 +175,16 @@ module.exports = {
           return result
         } else {
           let err = new Error('Settlements not found')
-          Logger('error', err)
+          Logger.info('error', err)
           throw err
         }
       } catch (err) {
-        Logger('error', err)
+        Logger.info('error', err)
         throw err
       }
     } else {
       let err = new Error('Use at least one parameter: state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId')
-      Logger('error', err)
+      Logger.info('error', err)
       throw err
     }
   },
@@ -198,12 +192,12 @@ module.exports = {
   settlementEventTrigger: async function (params, enums, options = {}) {
     let settlementWindowsIdList = params.settlementWindows
     let reason = params.reason
-    let Logger = options.logger || centralLogger
+    let Logger = options.logger || CentralLogger
     try {
       let idList = settlementWindowsIdList.map(v => v.id)
       // validate windows state
-      const settlementWindows = await settlementWindowModel.getByListOfIds(idList, enums.settlementWindowStates)
-      if ((!settlementWindows.length) && (settlementWindows.length !== idList.length)) {
+      const settlementWindows = await SettlementWindowModel.getByListOfIds(idList, enums.settlementWindowStates)
+      if (settlementWindows.length && settlementWindows.length !== idList.length) {
         let err = new Error('2001')
         throw err
       }
@@ -215,10 +209,10 @@ module.exports = {
           throw err
         }
       }
-      let settlementId = await settlementsModel.triggerEvent({idList, reason}, enums)
-      let settlement = await settlementsModel.getById({settlementId})
-      let settlementWindowsList = await settlementWindowModel.getBySettlementId({settlementId})
-      let participantCurrenciesList = await settlementsModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({settlementId})
+      let settlementId = await SettlementModel.triggerEvent({idList, reason}, enums)
+      let settlement = await SettlementModel.getById({settlementId})
+      let settlementWindowsList = await SettlementWindowModel.getBySettlementId({settlementId})
+      let participantCurrenciesList = await SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({settlementId})
       let participants = prepareParticipantsResult(participantCurrenciesList)
       return {
         id: settlement.settlementId,
@@ -227,16 +221,16 @@ module.exports = {
         participants
       }
     } catch (err) {
-      Logger('error', err)
+      Logger.info('error', err)
       throw err
     }
   },
 
   getByIdParticipantAccount: async function ({settlementId, participantId, accountId = null}, enums, options = {}) {
-    let Logger = options.logger || centralLogger
+    let Logger = options.logger || CentralLogger
     try {
-      let settlement = await settlementsModel.getById({settlementId}, enums) // 3
-      let settlementParticipantCurrencyIdList = await settlementsModel.settlementParticipantCurrency.getAccountsInSettlementByIds({
+      let settlement = await SettlementModel.getById({settlementId}, enums) // 3
+      let settlementParticipantCurrencyIdList = await SettlementModel.settlementParticipantCurrency.getAccountsInSettlementByIds({
         settlementId,
         participantId
       }, enums) // 6
@@ -244,22 +238,22 @@ module.exports = {
       let accounts
       let participants
       if (accountId) {
-        let participantAndAccountMatched = await settlementsModel.checkParticipantAccountExists({
+        let participantAndAccountMatched = await SettlementModel.checkParticipantAccountExists({
           participantId,
           accountId
         }, enums) // 9
         let settlementParticipantCurrencyId
         if (participantAndAccountMatched) {
-          settlementParticipantCurrencyId = await settlementsModel.getAccountInSettlement({
+          settlementParticipantCurrencyId = await SettlementModel.getAccountInSettlement({
             settlementId,
             accountId
           }, enums) // 12
           if (settlementParticipantCurrencyId) {
-            settlementWindows = await settlementsModel.settlementSettlementWindow.getWindowsBySettlementIdAndAccountId({
+            settlementWindows = await SettlementModel.settlementSettlementWindow.getWindowsBySettlementIdAndAccountId({
               settlementId,
               accountId
             }, enums)
-            accounts = await settlementsModel.settlementParticipantCurrency.getAccountById({settlementParticipantCurrencyId}, enums)
+            accounts = await SettlementModel.settlementParticipantCurrency.getAccountById({settlementParticipantCurrencyId}, enums)
             participants = prepareParticipantsResult(accounts)
           } else {
             throw new Error('TODO')
@@ -268,11 +262,11 @@ module.exports = {
           throw new Error('TODO')
         }
       } else {
-        settlementWindows = await settlementsModel.settlementSettlementWindow.getWindowsBySettlementIdAndParticipantId({
+        settlementWindows = await SettlementModel.settlementSettlementWindow.getWindowsBySettlementIdAndParticipantId({
           settlementId,
           participantId
         }, enums)
-        accounts = await settlementsModel.settlementParticipantCurrency.getAccountsByListOfIds(settlementParticipantCurrencyIdList, enums)
+        accounts = await SettlementModel.settlementParticipantCurrency.getAccountsByListOfIds(settlementParticipantCurrencyIdList, enums)
         participants = prepareParticipantsResult(accounts)
       }
       return {
@@ -282,7 +276,7 @@ module.exports = {
         participants
       }
     } catch (err) {
-      Logger('error', err)
+      Logger.info('error', err)
       throw err
     }
   }

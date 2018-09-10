@@ -18,6 +18,7 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
 
@@ -337,9 +338,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       }
     ]
   }
-  await settlementFacadeTest.test('putById should', async putById => {
+  await settlementFacadeTest.test('putById should', async putByIdTest => {
     try {
-      await putById.test('throw error if settlement is not found', async test => {
+      await putByIdTest.test('throw error if settlement is not found', async test => {
         try {
           let settlementData
 
@@ -376,7 +377,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await putById.test('process payload as defined in specification', async test => {
+      await putByIdTest.test('process payload as defined in specification', async test => {
         try {
           sandbox.stub(Db, 'getKnex')
           const knexStub = sandbox.stub()
@@ -483,7 +484,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await putById.test('SETTLE settlement when all accounts are SETTLED', async test => {
+      await putByIdTest.test('SETTLE settlement when all accounts are SETTLED', async test => {
         try {
           sandbox.stub(Db, 'getKnex')
           const knexStub = sandbox.stub()
@@ -574,17 +575,17 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await putById.end()
+      await putByIdTest.end()
     } catch (err) {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
-      putById.fail()
-      putById.end()
+      putByIdTest.fail()
+      putByIdTest.end()
     }
   })
 
-  await settlementFacadeTest.test('getById should', async getById => {
+  await settlementFacadeTest.test('getById should', async getByIdTest => {
     try {
-      await getById.test('retrieve settlement data by id', async test => {
+      await getByIdTest.test('retrieve settlement data by id', async test => {
         try {
           const settlementId = 1
           const settlementResultStub = {id: 1}
@@ -621,7 +622,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getById.test('throw error if query is wrong', async test => {
+      await getByIdTest.test('throw error if query is wrong', async test => {
         try {
           const settlementId = 1
           Db.settlement = {query: sandbox.stub()}
@@ -637,17 +638,17 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getById.end()
+      await getByIdTest.end()
     } catch (err) {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
-      getById.fail()
-      getById.end()
+      getByIdTest.fail()
+      getByIdTest.end()
     }
   })
 
-  await settlementFacadeTest.test('getByParams should', async getByParams => {
+  await settlementFacadeTest.test('getByParams should', async getByParamsTest => {
     try {
-      await getByParams.test('retrieve settlement data by params', async test => {
+      await getByParamsTest.test('retrieve settlement data by params', async test => {
         try {
           let state = 'PENDING_SETTLEMENT'
           let fromDateTime = new Date() - 3600
@@ -710,7 +711,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getByParams.test('throw error if query is wrong', async test => {
+      await getByParamsTest.test('throw error if query is wrong', async test => {
         try {
           const settlementId = 1
           Db.settlement = {query: sandbox.stub()}
@@ -726,17 +727,17 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getByParams.end()
+      await getByParamsTest.end()
     } catch (err) {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
-      getByParams.fail()
-      getByParams.end()
+      getByParamsTest.fail()
+      getByParamsTest.end()
     }
   })
 
-  await settlementFacadeTest.test('knexTriggerEvent should', async knexTriggerEvent => {
+  await settlementFacadeTest.test('knexTriggerEvent should', async knexTriggerEventTest => {
     try {
-      await knexTriggerEvent.test('create new settlement', async test => {
+      await knexTriggerEventTest.test('create new settlement', async test => {
         try {
           sandbox.stub(Db, 'getKnex')
           const knexStub = sandbox.stub()
@@ -829,7 +830,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await knexTriggerEvent.test('throw error if settlement insert fails', async test => {
+      await knexTriggerEventTest.test('throw error if settlement insert fails', async test => {
         try {
           sandbox.stub(Db, 'getKnex')
           const knexStub = sandbox.stub()
@@ -855,17 +856,17 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await knexTriggerEvent.end()
+      await knexTriggerEventTest.end()
     } catch (err) {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
-      knexTriggerEvent.fail()
-      knexTriggerEvent.end()
+      knexTriggerEventTest.fail()
+      knexTriggerEventTest.end()
     }
   })
 
-  await settlementFacadeTest.test('settlementParticipantCurrency.getByListOfIds should', async getByListOfIds => {
+  await settlementFacadeTest.test('settlementParticipantCurrency.getByListOfIds should', async getByListOfIdsTest => {
     try {
-      await getByListOfIds.test('retrieve settlementParticipantCurrency data by listOfIds', async test => {
+      await getByListOfIdsTest.test('retrieve settlementParticipantCurrency data by listOfIds', async test => {
         try {
           const listOfIds = [1]
           Db.settlementParticipantCurrency = {query: sandbox.stub()}
@@ -898,7 +899,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getByListOfIds.test('throw error if query is wrong', async test => {
+      await getByListOfIdsTest.test('throw error if query is wrong', async test => {
         try {
           const listOfIds = [1]
           Db.settlementParticipantCurrency = {query: sandbox.stub()}
@@ -914,17 +915,17 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getByListOfIds.end()
+      await getByListOfIdsTest.end()
     } catch (err) {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
-      getByListOfIds.fail()
-      getByListOfIds.end()
+      getByListOfIdsTest.fail()
+      getByListOfIdsTest.end()
     }
   })
 
-  await settlementFacadeTest.test('settlementParticipantCurrency.getAccountsInSettlementByIds should', async getAccountsInSettlementByIds => {
+  await settlementFacadeTest.test('settlementParticipantCurrency.getAccountsInSettlementByIds should', async getAccountsInSettlementByIdsTest => {
     try {
-      await getAccountsInSettlementByIds.test('retrieve accounts in settlement data by ids', async test => {
+      await getAccountsInSettlementByIdsTest.test('retrieve accounts in settlement data by ids', async test => {
         try {
           const params = {settlementId: 1, participantId: 1}
           Db.settlementParticipantCurrency = {query: sandbox.stub()}
@@ -954,7 +955,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getAccountsInSettlementByIds.test('throw error if query is wrong', async test => {
+      await getAccountsInSettlementByIdsTest.test('throw error if query is wrong', async test => {
         try {
           const params = {settlementId: 1, participantId: 1}
           Db.settlementParticipantCurrency = {query: sandbox.stub()}
@@ -970,17 +971,17 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getAccountsInSettlementByIds.end()
+      await getAccountsInSettlementByIdsTest.end()
     } catch (err) {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
-      getAccountsInSettlementByIds.fail()
-      getAccountsInSettlementByIds.end()
+      getAccountsInSettlementByIdsTest.fail()
+      getAccountsInSettlementByIdsTest.end()
     }
   })
 
-  await settlementFacadeTest.test('settlementParticipantCurrency.getParticipantCurrencyBySettlementId should', async getParticipantCurrencyBySettlementId => {
+  await settlementFacadeTest.test('settlementParticipantCurrency.getParticipantCurrencyBySettlementId should', async getParticipantCurrencyBySettlementIdTest => {
     try {
-      await getParticipantCurrencyBySettlementId.test('retrieve participant currency data by settlement id', async test => {
+      await getParticipantCurrencyBySettlementIdTest.test('retrieve participant currency data by settlement id', async test => {
         try {
           const params = {settlementId: 1}
           Db.settlementParticipantCurrency = {query: sandbox.stub()}
@@ -1016,7 +1017,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getParticipantCurrencyBySettlementId.test('throw error if query is wrong', async test => {
+      await getParticipantCurrencyBySettlementIdTest.test('throw error if query is wrong', async test => {
         try {
           const params = {settlementId: 1}
           Db.settlementParticipantCurrency = {query: sandbox.stub()}
@@ -1032,17 +1033,17 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getParticipantCurrencyBySettlementId.end()
+      await getParticipantCurrencyBySettlementIdTest.end()
     } catch (err) {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
-      getParticipantCurrencyBySettlementId.fail()
-      getParticipantCurrencyBySettlementId.end()
+      getParticipantCurrencyBySettlementIdTest.fail()
+      getParticipantCurrencyBySettlementIdTest.end()
     }
   })
 
-  await settlementFacadeTest.test('settlementParticipantCurrency.getAccountById should', async getAccountById => {
+  await settlementFacadeTest.test('settlementParticipantCurrency.getAccountById should', async getAccountByIdTest => {
     try {
-      await getAccountById.test('retrieve account by id', async test => {
+      await getAccountByIdTest.test('retrieve account by id', async test => {
         try {
           const params = {settlementParticipantCurrencyId: 1}
           Db.settlementParticipantCurrency = {query: sandbox.stub()}
@@ -1077,7 +1078,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getAccountById.test('throw error if query is wrong', async test => {
+      await getAccountByIdTest.test('throw error if query is wrong', async test => {
         try {
           const params = {settlementId: 1}
           Db.settlementParticipantCurrency = {query: sandbox.stub()}
@@ -1093,17 +1094,17 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getAccountById.end()
+      await getAccountByIdTest.end()
     } catch (err) {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
-      getAccountById.fail()
-      getAccountById.end()
+      getAccountByIdTest.fail()
+      getAccountByIdTest.end()
     }
   })
 
-  await settlementFacadeTest.test('settlementParticipantCurrency.getAccountsByListOfIds should', async getAccountsByListOfIds => {
+  await settlementFacadeTest.test('settlementParticipantCurrency.getAccountsByListOfIds should', async getAccountsByListOfIdsTest => {
     try {
-      await getAccountsByListOfIds.test('retrieve accounts by list of ids', async test => {
+      await getAccountsByListOfIdsTest.test('retrieve accounts by list of ids', async test => {
         try {
           const settlementParticipantCurrencyIdList = [1]
           Db.settlementParticipantCurrency = {query: sandbox.stub()}
@@ -1138,7 +1139,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getAccountsByListOfIds.test('throw error if query is wrong', async test => {
+      await getAccountsByListOfIdsTest.test('throw error if query is wrong', async test => {
         try {
           const settlementParticipantCurrencyIdList = {settlementId: 1}
           Db.settlementParticipantCurrency = {query: sandbox.stub()}
@@ -1154,17 +1155,17 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getAccountsByListOfIds.end()
+      await getAccountsByListOfIdsTest.end()
     } catch (err) {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
-      getAccountsByListOfIds.fail()
-      getAccountsByListOfIds.end()
+      getAccountsByListOfIdsTest.fail()
+      getAccountsByListOfIdsTest.end()
     }
   })
 
-  await settlementFacadeTest.test('settlementSettlementWindow.getWindowsBySettlementIdAndAccountId should', async getWindowsBySettlementIdAndAccountId => {
+  await settlementFacadeTest.test('settlementSettlementWindow.getWindowsBySettlementIdAndAccountId should', async getWindowsBySettlementIdAndAccountIdTest => {
     try {
-      await getWindowsBySettlementIdAndAccountId.test('retrieve settlement window by settlement id and account id', async test => {
+      await getWindowsBySettlementIdAndAccountIdTest.test('retrieve settlement window by settlement id and account id', async test => {
         try {
           const params = {settlementId: 1, accountId: 1}
           Db.settlementSettlementWindow = {query: sandbox.stub()}
@@ -1215,7 +1216,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getWindowsBySettlementIdAndAccountId.test('throw error if query is wrong', async test => {
+      await getWindowsBySettlementIdAndAccountIdTest.test('throw error if query is wrong', async test => {
         try {
           const params = {settlementId: 1}
           Db.settlementSettlementWindow = {query: sandbox.stub()}
@@ -1231,17 +1232,17 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getWindowsBySettlementIdAndAccountId.end()
+      await getWindowsBySettlementIdAndAccountIdTest.end()
     } catch (err) {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
-      getWindowsBySettlementIdAndAccountId.fail()
-      getWindowsBySettlementIdAndAccountId.end()
+      getWindowsBySettlementIdAndAccountIdTest.fail()
+      getWindowsBySettlementIdAndAccountIdTest.end()
     }
   })
 
-  await settlementFacadeTest.test('settlementSettlementWindow.getWindowsBySettlementIdAndParticipantId should', async getWindowsBySettlementIdAndParticipantId => {
+  await settlementFacadeTest.test('settlementSettlementWindow.getWindowsBySettlementIdAndParticipantId should', async getWindowsBySettlementIdAndParticipantIdTest => {
     try {
-      await getWindowsBySettlementIdAndParticipantId.test('retrieve settlement window by settlement id and account id', async test => {
+      await getWindowsBySettlementIdAndParticipantIdTest.test('retrieve settlement window by settlement id and account id', async test => {
         try {
           const params = {settlementId: 1, accountId: 1}
           Db.settlementSettlementWindow = {query: sandbox.stub()}
@@ -1293,7 +1294,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getWindowsBySettlementIdAndParticipantId.test('throw error if query is wrong', async test => {
+      await getWindowsBySettlementIdAndParticipantIdTest.test('throw error if query is wrong', async test => {
         try {
           const params = {settlementId: 1}
           Db.settlementSettlementWindow = {query: sandbox.stub()}
@@ -1309,11 +1310,11 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
-      await getWindowsBySettlementIdAndParticipantId.end()
+      await getWindowsBySettlementIdAndParticipantIdTest.end()
     } catch (err) {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
-      getWindowsBySettlementIdAndParticipantId.fail()
-      getWindowsBySettlementIdAndParticipantId.end()
+      getWindowsBySettlementIdAndParticipantIdTest.fail()
+      getWindowsBySettlementIdAndParticipantIdTest.end()
     }
   })
 
