@@ -18,10 +18,88 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
 
 'use strict'
 
-// const Test = require('tapes')(require('tape'))
-// const Sinon = require('sinon')
+const Test = require('tapes')(require('tape'))
+const Sinon = require('sinon')
+const Logger = require('@mojaloop/central-services-shared').Logger
+const SettlementTransferParticipantModel = require('../../../../src/models/settlement/settlementTransferParticipant')
+const Db = require('../../../../src/models')
+
+Test('SettlementTransferParticipantModel', async (settlementTransferParticipantModelTest) => {
+  let sandbox
+
+  settlementTransferParticipantModelTest.beforeEach(test => {
+    sandbox = Sinon.createSandbox()
+    test.end()
+  })
+
+  settlementTransferParticipantModelTest.afterEach(test => {
+    sandbox.restore()
+    test.end()
+  })
+
+  await settlementTransferParticipantModelTest.test('settlementTransferParticipantModel should', async getBySettlementIdTest => {
+    try {
+      await getBySettlementIdTest.test('return distinct settlementWindowId and participantCurrencyId by settlementId', async test => {
+        try {
+          const settlementId = 1
+          const params = {settlementId}
+          const enums = {}
+          const settlementTransferParticipantMock = [{
+            settlementWindowId: 1,
+            participantCurrencyId: 1
+          }, {
+            settlementWindowId: 1,
+            participantCurrencyId: 2
+          }]
+
+          const builderStub = sandbox.stub()
+          Db.settlementTransferParticipant = {
+            query: sandbox.stub()
+          }
+          Db.settlementTransferParticipant.query.callsArgWith(0, builderStub)
+          const distinctStub = sandbox.stub()
+          const whereStub = sandbox.stub()
+          builderStub.select = sandbox.stub().returns({
+            distinct: distinctStub.returns({
+              where: whereStub.returns(settlementTransferParticipantMock)
+            })
+          })
+
+          let result = await SettlementTransferParticipantModel.getBySettlementId(params, enums)
+          test.ok(result, 'Result returned')
+          test.ok(builderStub.select.withArgs().calledOnce, 'select with args ... called once')
+          test.ok(distinctStub.withArgs('settlementWindowId', 'participantCurrencyId').calledOnce, 'distinct with args ... called once')
+          test.ok(whereStub.withArgs(params).calledOnce, 'where with args ... called once')
+          test.deepEqual(result, settlementTransferParticipantMock, 'Result matched')
+
+          Db.settlementTransferParticipant.query = sandbox.stub().throws(new Error('Error occured'))
+          try {
+            result = await SettlementTransferParticipantModel.getBySettlementId(params)
+            test.fail('Error expected, but not thrown!')
+          } catch (err) {
+            test.equal(err.message, 'Error occured', `Error "${err.message}" thrown as expected`)
+          }
+          test.end()
+        } catch (err) {
+          Logger.error(`getBySettlementIdTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await getBySettlementIdTest.end()
+    } catch (err) {
+      Logger.error(`settlementTransferParticipantModelTest failed with error - ${err}`)
+      getBySettlementIdTest.fail()
+      getBySettlementIdTest.end()
+    }
+  })
+
+  await settlementTransferParticipantModelTest.end()
+})

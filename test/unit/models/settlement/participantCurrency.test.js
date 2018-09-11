@@ -47,10 +47,9 @@ Test('ParticipantCurrencyModel', async (participantCurrencyModelTest) => {
     try {
       await checkParticipantAccountExistsTest.test('return participant currency id if matched', async test => {
         try {
-          const params = {
-            participantId: 1,
-            accountId: 1
-          }
+          const participantId = 1
+          const accountId = 1
+          const params = {participantId, accountId}
           const enums = {}
           const participantCurrecyIdMock = 1
 
@@ -70,8 +69,8 @@ Test('ParticipantCurrencyModel', async (participantCurrencyModelTest) => {
           let result = await ParticipantCurrencyModel.checkParticipantAccountExists(params, enums)
           test.ok(result, 'Result returned')
           test.ok(builderStub.select.withArgs('participantCurrencyId').calledOnce, 'select with args ... called once')
-          test.ok(whereStub.withArgs({participantId: params.participantId}).calledOnce, 'where with args ... called once')
-          test.ok(andWhereStub.withArgs('participantCurrencyId', params.accountId).calledOnce, 'where with args ... called once')
+          test.ok(whereStub.withArgs({participantId}).calledOnce, 'where with args ... called once')
+          test.ok(andWhereStub.withArgs('participantCurrencyId', accountId).calledOnce, 'where with args ... called once')
           test.equal(result, participantCurrecyIdMock, 'Result matched')
 
           Db.participantCurrency.query = sandbox.stub().throws(new Error('Error occured'))

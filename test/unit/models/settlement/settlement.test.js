@@ -43,9 +43,9 @@ Test('SettlementModel', async (settlementModelTest) => {
     test.end()
   })
 
-  await settlementModelTest.test('settlementModel should', async checkParticipantAccountExistsTest => {
+  await settlementModelTest.test('settlementModel should', async createTest => {
     try {
-      await checkParticipantAccountExistsTest.test('return insert settlement into database', async test => {
+      await createTest.test('return insert settlement into database', async test => {
         try {
           const settlement = {
             reason: 'reason text',
@@ -73,17 +73,17 @@ Test('SettlementModel', async (settlementModelTest) => {
           }
           test.end()
         } catch (err) {
-          Logger.error(`checkParticipantAccountExistsTest failed with error - ${err}`)
+          Logger.error(`createTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
       })
 
-      await checkParticipantAccountExistsTest.end()
+      await createTest.end()
     } catch (err) {
       Logger.error(`settlementModelTest failed with error - ${err}`)
-      checkParticipantAccountExistsTest.fail()
-      checkParticipantAccountExistsTest.end()
+      createTest.fail()
+      createTest.end()
     }
   })
 
