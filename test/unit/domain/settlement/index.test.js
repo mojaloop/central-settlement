@@ -355,51 +355,159 @@ Test('SettlementService', async (settlementServiceTest) => {
     }
   })
 
-  // await settlementServiceTest.test('getByIdParticipantAccount should', async getByIdParticipantAccountTest => {
-  //   try {
-  //     const params = {
-  //       query: {
-  //         state: 1,
-  //         invalidParam: undefined
-  //       }
-  //     }
-  //     const enums = {}
-  //     const options = {
-  //       logger: Logger
-  //     }
+  await settlementServiceTest.test('getByIdParticipantAccount should', async getByIdParticipantAccountTest => {
+    try {
+      const settlementId = 1
+      const participantId = 1
+      const accountId = 1
+      let params = {settlementId, participantId, accountId}
+      const enums = {}
+      const options = {
+        logger: Logger
+      }
 
-  //     await getByIdParticipantAccountTest.test('return settlement participant accounts', async test => {
-  //       try {
-  //         let result = await SettlementService.getByIdParticipantAccount(params, enums, options)
-  //         test.ok(result, 'Result returned')
-  //         test.end()
-  //       } catch (err) {
-  //         Logger.error(`getByIdParticipantAccountTest failed with error - ${err}`)
-  //         test.fail()
-  //         test.end()
-  //       }
-  //     })
+      const settlementMock = {
+        settlementId,
+        state: 'PENDING_SETTLEMENT'
+      }
+      const settlementParticipantCurrencyIdListMock = [{
+        settlementParticipantCurrencyId: 1
+      }, {
+        settlementParticipantCurrencyId: 2
+      }]
+      const settlementWindowsMock = [{
+        settlementWindowId: 1,
+        state: 'PENDING_SETTLEMENT',
+        reason: 'window 1 reason text',
+        createdDate: new Date(new Date() - 3600 * 1000),
+        changedDate: new Date(new Date() - 1800 * 1000)
+      }, {
+        settlementWindowId: 2,
+        state: 'SETTLED',
+        reason: 'window 2 reason text',
+        createdDate: new Date(new Date() - 3600 * 1000),
+        changedDate: new Date(new Date() - 1800 * 1000)
+      }]
+      const accountsMock = [{
+        participantId: 1,
+        participantCurrencyId: 1,
+        state: 'PENDING_SETTLEMENT',
+        reason: 'account 1 reason text',
+        netAmount: 112,
+        currency: 'USD'
+      }, {
+        participantId: 1,
+        participantCurrencyId: 2,
+        state: 'SETTLED',
+        reason: 'account 2 reason text',
+        netAmount: 56,
+        currency: 'USD'
+      }]
+      let participantCurrencyIdMock = 1
+      let settlementParticipantCurrencyId = 1
 
-  //     await getByIdParticipantAccountTest.test('throw', async test => {
-  //       try {
-  //         SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId = sandbox.stub()
-  //         await SettlementService.getByIdParticipantAccount(params, enums)
-  //         test.fail('Error not thrown!')
-  //         test.end()
-  //       } catch (err) {
-  //         Logger.error(`getByIdParticipantAccountTest failed with error - ${err}`)
-  //         test.equal(err.message, 'participantCurrenciesList is not iterable', `Error "${err.message}" thrown`)
-  //         test.end()
-  //       }
-  //     })
+      await getByIdParticipantAccountTest.test('return settlement participant accounts', async test => {
+        try {
+          SettlementModel.getById = sandbox.stub().returns(settlementMock)
+          SettlementModel.settlementParticipantCurrency = {
+            getAccountsInSettlementByIds: sandbox.stub().returns(settlementParticipantCurrencyIdListMock),
+            getAccountById: sandbox.stub().returns(accountsMock),
+            getAccountsByListOfIds: sandbox.stub().returns(accountsMock)
+          }
+          SettlementModel.checkParticipantAccountExists = sandbox.stub().returns(participantCurrencyIdMock)
+          SettlementModel.getAccountInSettlement = sandbox.stub().returns(settlementParticipantCurrencyId)
+          SettlementModel.settlementSettlementWindow = {
+            getWindowsBySettlementIdAndAccountId: sandbox.stub().returns(settlementWindowsMock),
+            getWindowsBySettlementIdAndParticipantId: sandbox.stub().returns(settlementWindowsMock)
+          }
+          let result = await SettlementService.getByIdParticipantAccount(params, enums, options)
+          test.ok(result, 'Result returned')
+          test.ok(SettlementModel.getById.withArgs({settlementId}, enums).calledOnce, 'SettlementModel.getById with args ... called once')
+          test.ok(SettlementModel.settlementParticipantCurrency.getAccountsInSettlementByIds.withArgs({settlementId, participantId}, enums).calledOnce, 'SettlementModel.spc.getAccountsInSettlementByIds with args ... called once')
+          test.ok(SettlementModel.checkParticipantAccountExists.withArgs({participantId, accountId}, enums).calledOnce, 'SettlementModel.checkParticipantAccountExists with args ... called once')
+          test.ok(SettlementModel.getAccountInSettlement.withArgs({settlementId, accountId}, enums).calledOnce, 'SettlementModel.getAccountInSettlement with args ... called once')
+          test.ok(SettlementModel.settlementSettlementWindow.getWindowsBySettlementIdAndAccountId.withArgs({settlementId, accountId}, enums).calledOnce, 'SettlementModel.ssw.getWindowsBySettlementIdAndAccountId with args ... called once')
+          test.ok(SettlementModel.settlementParticipantCurrency.getAccountById.withArgs({settlementParticipantCurrencyId}, enums).calledOnce, 'SettlementModel.spc.getAccountById with args ... called once')
+          test.equal(result.id, settlementMock.settlementId)
+          test.equal(result.state, settlementMock.state)
+          test.equal(result.settlementWindows.length, settlementWindowsMock.length)
+          test.equal(result.settlementWindows[0].settlementWindowId, settlementWindowsMock[0].settlementWindowId)
+          test.equal(result.settlementWindows[0].state, settlementWindowsMock[0].state)
+          test.equal(result.settlementWindows[1].reason, settlementWindowsMock[1].reason)
+          test.equal(result.participants.length, 1)
+          test.equal(result.participants[0].accounts.length, accountsMock.length)
+          test.equal(result.participants[0].accounts[0].id, accountsMock[0].participantCurrencyId)
+          test.equal(result.participants[0].accounts[0].state, accountsMock[0].state)
+          test.equal(result.participants[0].accounts[0].reason, accountsMock[0].reason)
+          test.equal(result.participants[0].accounts[1].netSettlementAmount.amount, accountsMock[1].netAmount)
+          test.equal(result.participants[0].accounts[1].netSettlementAmount.currency, accountsMock[1].currency)
 
-  //     await getByIdParticipantAccountTest.end()
-  //   } catch (err) {
-  //     Logger.error(`settlementServiceTest failed with error - ${err}`)
-  //     getByIdParticipantAccountTest.fail()
-  //     getByIdParticipantAccountTest.end()
-  //   }
-  // })
+          params = {settlementId, participantId}
+          result = await SettlementService.getByIdParticipantAccount(params, enums)
+          test.ok(result, 'Result returned')
+          test.ok(SettlementModel.getById.withArgs({settlementId}, enums).calledTwice, 'SettlementModel.getById with args ... called twice')
+          test.ok(SettlementModel.settlementParticipantCurrency.getAccountsInSettlementByIds.withArgs({settlementId, participantId}, enums).calledTwice, 'SettlementModel.spc.getAccountsInSettlementByIds with args ... called twice')
+          test.ok(SettlementModel.checkParticipantAccountExists.withArgs({participantId, accountId}, enums).calledOnce, 'SettlementModel.checkParticipantAccountExists with args ... called once')
+          test.ok(SettlementModel.getAccountInSettlement.withArgs({settlementId, accountId}, enums).calledOnce, 'SettlementModel.getAccountInSettlement with args ... called once')
+          test.ok(SettlementModel.settlementSettlementWindow.getWindowsBySettlementIdAndAccountId.withArgs({settlementId, accountId}, enums).calledOnce, 'SettlementModel.ssw.getWindowsBySettlementIdAndAccountId with args ... called once')
+          test.ok(SettlementModel.settlementParticipantCurrency.getAccountById.withArgs({settlementParticipantCurrencyId}, enums).calledOnce, 'SettlementModel.spc.getAccountById with args ... called once')
+
+          params = {settlementId, participantId, accountId}
+          SettlementModel.getAccountInSettlement = sandbox.stub().returns()
+          try {
+            result = await SettlementService.getByIdParticipantAccount(params, enums)
+            test.fail('Error expected, but not thrown!')
+          } catch (err) {
+            test.equal(err.message, 'TODO', `Error "${err.message}" thrown as expected`)
+            test.ok(SettlementModel.getById.withArgs({settlementId}, enums).calledThrice, 'SettlementModel.getById with args ... called thrice')
+            test.ok(SettlementModel.settlementParticipantCurrency.getAccountsInSettlementByIds.withArgs({settlementId, participantId}, enums).calledThrice, 'SettlementModel.spc.getAccountsInSettlementByIds with args ... called thrice')
+            test.ok(SettlementModel.checkParticipantAccountExists.withArgs({participantId, accountId}, enums).calledTwice, 'SettlementModel.checkParticipantAccountExists with args ... called twice')
+            test.ok(SettlementModel.getAccountInSettlement.withArgs({settlementId, accountId}, enums).calledOnce, 'SettlementModel.getAccountInSettlement with args ... called once')
+            test.ok(SettlementModel.settlementSettlementWindow.getWindowsBySettlementIdAndAccountId.withArgs({settlementId, accountId}, enums).calledOnce, 'SettlementModel.ssw.getWindowsBySettlementIdAndAccountId with args ... called once')
+            test.ok(SettlementModel.settlementParticipantCurrency.getAccountById.withArgs({settlementParticipantCurrencyId}, enums).calledOnce, 'SettlementModel.spc.getAccountById with args ... called once')
+          }
+
+          SettlementModel.checkParticipantAccountExists = sandbox.stub().returns()
+          try {
+            result = await SettlementService.getByIdParticipantAccount(params, enums)
+            test.fail('Error expected, but not thrown!')
+          } catch (err) {
+            test.equal(err.message, 'TODO', `Error "${err.message}" thrown as expected`)
+            test.equal(SettlementModel.getById.withArgs({settlementId}, enums).callCount, 4, 'SettlementModel.getById with args ... called four times')
+            test.equal(SettlementModel.settlementParticipantCurrency.getAccountsInSettlementByIds.withArgs({settlementId, participantId}, enums).callCount, 4, 'SettlementModel.spc.getAccountsInSettlementByIds with args ... called four times')
+            test.ok(SettlementModel.checkParticipantAccountExists.withArgs({participantId, accountId}, enums).calledOnce, 'SettlementModel.checkParticipantAccountExists with args ... called once')
+            test.ok(SettlementModel.getAccountInSettlement.withArgs({settlementId, accountId}, enums).calledOnce, 'SettlementModel.getAccountInSettlement with args ... called once')
+            test.ok(SettlementModel.settlementSettlementWindow.getWindowsBySettlementIdAndAccountId.withArgs({settlementId, accountId}, enums).calledOnce, 'SettlementModel.ssw.getWindowsBySettlementIdAndAccountId with args ... called once')
+            test.ok(SettlementModel.settlementParticipantCurrency.getAccountById.withArgs({settlementParticipantCurrencyId}, enums).calledOnce, 'SettlementModel.spc.getAccountById with args ... called once')
+          }
+          test.end()
+        } catch (err) {
+          Logger.error(`getByIdParticipantAccountTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      // await getByIdParticipantAccountTest.test('throw', async test => {
+      //   try {
+      //     SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId = sandbox.stub()
+      //     await SettlementService.getByIdParticipantAccount(params, enums)
+      //     test.fail('Error not thrown!')
+      //     test.end()
+      //   } catch (err) {
+      //     Logger.error(`getByIdParticipantAccountTest failed with error - ${err}`)
+      //     test.equal(err.message, 'participantCurrenciesList is not iterable', `Error "${err.message}" thrown`)
+      //     test.end()
+      //   }
+      // })
+
+      await getByIdParticipantAccountTest.end()
+    } catch (err) {
+      Logger.error(`settlementServiceTest failed with error - ${err}`)
+      getByIdParticipantAccountTest.fail()
+      getByIdParticipantAccountTest.end()
+    }
+  })
 
   await settlementServiceTest.end()
 })
