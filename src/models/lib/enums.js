@@ -18,6 +18,7 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
  * Valentin Genev <valentin.genev@modusbox.com>
  * Deon Botha <deon.botha@modusbox.com>
  --------------
@@ -63,7 +64,7 @@ module.exports = {
       let transferStateEnumsList = await Db.transferState.find({})
       if (transferStateEnumsList) {
         for (let state of transferStateEnumsList) {
-          transferStateEnum[`${state.enumeration}`] = state.transferStateId
+          transferStateEnum[`${state.transferStateId}`] = state.transferStateId
         }
         return transferStateEnum
       }
