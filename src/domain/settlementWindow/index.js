@@ -18,10 +18,11 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
 
-const settlementWindowModel = require('../../models/settlementWindow/index')
+const settlementWindowModel = require('../../models/settlementWindow')
 const centralLogger = require('@mojaloop/central-services-shared').Logger
 
 module.exports = {
@@ -31,12 +32,12 @@ module.exports = {
       let settlementWindow = await settlementWindowModel.getById(params, enums)
       if (settlementWindow) return settlementWindow
       else {
-        let err = new Error('settlement window not found')
-        Logger('error', err)
+        let err = new Error('Settlement Window Not Found')
+        Logger.info('error', err)
         throw err
       }
     } catch (err) {
-      Logger('error', err)
+      Logger.info('error', err)
       throw err
     }
   },
@@ -50,17 +51,17 @@ module.exports = {
         if (settlementWindows && settlementWindows.length > 0) {
           return settlementWindows
         } else {
-          let err = new Error('settlement window not found')
-          Logger('error', err)
+          let err = new Error('Settlement Window Not Found')
+          Logger.info('error', err)
           throw err
         }
       } catch (err) {
-        Logger('error', err)
+        Logger.info('error', err)
         throw err
       }
     } else {
-      let err = new Error('use at least one parameter: participantId, state, fromDateTime, toDateTime')
-      Logger('error', err)
+      let err = new Error('Use at least one parameter: participantId, state, fromDateTime, toDateTime')
+      Logger.info('error', err)
       throw err
     }
   },
@@ -69,27 +70,10 @@ module.exports = {
     let Logger = options.logger || centralLogger
     try {
       let settlementWindowId = await settlementWindowModel.close(params, enums)
-      return await settlementWindowModel.getById({ settlementWindowId }, enums)
+      return await settlementWindowModel.getById({settlementWindowId}, enums)
     } catch (err) {
-      Logger('error', err)
+      Logger.info('error', err)
       throw err
     }
   }
 }
-
-/*
-
-  {
-    participantId: 2
-    state: open
-    fromDateTime: 12.02.2018
-    toDateTime: 12.06.2018
-  }
-
-  {
-    participantId: 2
-    state: open
-    fromDateTime: [..]
-    toDateTime: [..]
-  }
-*/

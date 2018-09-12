@@ -18,10 +18,65 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
 
 'use strict'
 
-// const Test = require('tapes')(require('tape'))
-// const Sinon = require('sinon')
+const Test = require('tapes')(require('tape'))
+const Sinon = require('sinon')
+const Logger = require('@mojaloop/central-services-shared').Logger
+const SettlementModel = require('../../../../src/models/settlement')
+const Proxyquire = require('proxyquire')
+
+Test('Settlement service', async (settlementServiceTest) => {
+  let sandbox
+
+  settlementServiceTest.beforeEach(test => {
+    sandbox = Sinon.createSandbox()
+    test.end()
+  })
+
+  settlementServiceTest.afterEach(test => {
+    sandbox.restore()
+    test.end()
+  })
+
+  await settlementServiceTest.test('create should', async createTest => {
+    try {
+      SettlementModel.create = sandbox.stub()
+      const SettlementModelProxy = Proxyquire('../../../../src/models/settlement', {
+        './settlement': {
+          create: sandbox.stub()
+        }
+      })
+
+      await createTest.test('be called', async test => {
+        try {
+          const settlement = {
+            reason: 'Create new settlement',
+            createdDate: new Date()
+          }
+          await SettlementModel.create(settlement)
+          await SettlementModelProxy.create(settlement)
+          test.ok(SettlementModel.create.withArgs(settlement).calledOnce, 'once with settlement service create stub')
+          test.ok(SettlementModelProxy.create.withArgs(settlement).calledOnce, 'once with settlement model create proxy')
+          test.end()
+        } catch (err) {
+          Logger.error(`create failed with error - ${err}`)
+          test.fail('Error thrown')
+          test.end()
+        }
+      })
+
+      await createTest.end()
+    } catch (err) {
+      Logger.error(`settlementServiceTest failed with error - ${err}`)
+      createTest.fail()
+      createTest.end()
+    }
+  })
+
+  await settlementServiceTest.end()
+})
