@@ -27,7 +27,7 @@
 
 const Db = require('../index')
 
-module.exports.create = async ({ settlementWindowId, state, reason }, enums = {}) => {
+const create = async ({settlementWindowId, state, reason}, enums = {}) => {
   try {
     return await Db.settlementWindowStateChange.insert({
       settlementWindowId,
@@ -37,4 +37,8 @@ module.exports.create = async ({ settlementWindowId, state, reason }, enums = {}
   } catch (err) {
     throw err
   }
+}
+
+module.exports = {
+  create
 }
