@@ -54,8 +54,8 @@ Test('cloneDeep utility', (cloneDeepTest) => {
       test.notOk(result.prop5.notOwn, 'not own property not copied')
       test.end()
     } catch (err) {
-      Logger.error(`create failed with error - ${err}`)
-      test.fail('Error thrown')
+      Logger.error(`cloneDeep failed with error - ${err}`)
+      test.fail()
       test.end()
     }
   })

@@ -87,21 +87,26 @@ const createServer = async function (config, openAPIPluginOptions) {
     await server.start()
     return server
   } catch (e) {
-    console.log(e)
+    console.error(e)
   }
 }
 
 const initialize = async (config = defaultConfig, openAPIPluginOptions = openAPIOptions) => {
   const server = await createServer(config, openAPIPluginOptions)
-  try {
-    server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
-    server.log('info', `Server running on ${server.info.host}:${server.info.port}`)
-    return server
-  } catch (e) {
-    server.log('error', e.message)
+  if (server) {
+    try {
+      server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
+      server.log('info', `Server running on ${server.info.host}:${server.info.port}`)
+      return server
+    } catch (e) {
+      server.log('error', e.message)
+    }
   }
 }
 
 module.exports = {
-  initialize
+  initialize,
+  __testonly__: {
+    getEnums
+  }
 }

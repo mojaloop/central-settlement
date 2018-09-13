@@ -31,7 +31,7 @@ const Proxyquire = require('proxyquire')
 const Path = require('path')
 const Config = require('../../src/lib/config')
 
-Test('Server', async serverTest => {
+Test('Server Setup', async setupTest => {
   let sandbox
   let serverStub
   let HapiStub
@@ -41,10 +41,9 @@ Test('Server', async serverTest => {
   let EnumsStub
   let ConfigStub
   let EngineStub
+  let SetupProxy
 
-  let ServerProxy
-
-  serverTest.beforeEach(test => {
+  setupTest.beforeEach(test => {
     try {
       sandbox = Sinon.createSandbox()
 
@@ -71,11 +70,11 @@ Test('Server', async serverTest => {
       }
       HapiOpenAPIStub = sandbox.stub()
       PathStub = Path
-      EnumsStub = sandbox.stub()
+      EnumsStub = [sandbox.stub()]
       ConfigStub = Config
       EngineStub = sandbox.stub()
 
-      ServerProxy = Proxyquire('../../src/setup', {
+      SetupProxy = Proxyquire('../../src/setup', {
         'hapi': HapiStub,
         'hapi-openapi': HapiOpenAPIStub,
         'path': PathStub,
@@ -85,38 +84,86 @@ Test('Server', async serverTest => {
         'catbox-memory': EngineStub
       })
     } catch (err) {
-      Logger.error(`serverTest failed with error - ${err}`)
-      console.log(err.message)
+      Logger.error(`setupTest failed with error - ${err}`)
+      console.error(err.message)
     }
     test.end()
   })
 
-  serverTest.afterEach(test => {
+  setupTest.afterEach(test => {
     sandbox.restore()
     test.end()
   })
 
-  await serverTest.test('init should', async initTest => {
+  await setupTest.test('init should', async initTest => {
     try {
       await initTest.test('test 1', async test => {
         try {
-          let server = await ServerProxy.initialize()
-          test.ok(server, 'server object')
+          let server = await SetupProxy.initialize()
+          test.ok(server, 'return server object')
+          test.ok(HapiStub.Server.calledOnce, 'Hapi.Server called once')
+          test.ok(DbStub.connect.calledOnce, 'Db.connect called once')
+          test.ok(serverStub.register.calledOnce, 'server.register called once')
+          test.ok(serverStub.method.calledOnce, 'server.method called once')
+          test.ok(serverStub.start.calledOnce, 'server.start called once')
+          test.ok(serverStub.plugins.openapi.setHost.calledOnce, 'server.plugins.openapi.setHost called once')
           test.end()
         } catch (err) {
           Logger.error(`init failed with error - ${err}`)
-          test.fail('Error thrown')
+          test.fail()
+          test.end()
+        }
+      })
+
+      await initTest.test('should catch errors and console.error output', async test => {
+        try {
+          const e = new Error('Database unavailable')
+          DbStub.connect = sandbox.stub().throws(e)
+          let consoleErrorStub = sandbox.stub(console, 'error')
+          await SetupProxy.initialize()
+          test.ok(consoleErrorStub.withArgs(e).calledOnce)
+          consoleErrorStub.restore()
+          test.end()
+        } catch (err) {
+          Logger.error(`init failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await initTest.test('should catch errors after createServer and use server.log', async test => {
+        try {
+          const e = new Error('setHost error')
+          serverStub.plugins.openapi.setHost = sandbox.stub().throws(e)
+          await SetupProxy.initialize()
+          test.ok(serverStub.log.withArgs('error', e.message).calledOnce)
+          test.end()
+        } catch (err) {
+          Logger.error(`init failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await initTest.test('invoke server method enums', async test => {
+        try {
+          await SetupProxy.__testonly__.getEnums(0)
+          test.ok(EnumsStub[0].withArgs().calledOnce)
+          test.end()
+        } catch (err) {
+          Logger.error(`init failed with error - ${err}`)
+          test.fail()
           test.end()
         }
       })
 
       await initTest.end()
     } catch (err) {
-      Logger.error(`serverTest failed with error - ${err}`)
+      Logger.error(`setupTest failed with error - ${err}`)
       initTest.fail()
       initTest.end()
     }
   })
 
-  await serverTest.end()
+  await setupTest.end()
 })

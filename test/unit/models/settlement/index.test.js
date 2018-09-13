@@ -65,7 +65,7 @@ Test('Settlement Model Index', async (settlementIndexTest) => {
           test.end()
         } catch (err) {
           Logger.error(`create failed with error - ${err}`)
-          test.fail('Error thrown')
+          test.fail()
           test.end()
         }
       })

@@ -18,6 +18,7 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
  * Valentin Genev <valentin.genev@modusbox.com>
  * Deon Botha <deon.botha@modusbox.com>
  --------------
@@ -75,7 +76,7 @@ const Facade = {
       let {participantId, state, fromDateTime, toDateTime} = query
       state = state ? ` = "${state.toUpperCase()}"` : 'IS NOT NULL'
       fromDateTime = fromDateTime || new Date('01-01-1970').toISOString()
-      toDateTime = toDateTime || new Date().toLocaleString()
+      toDateTime = toDateTime || new Date().toISOString()
       let result = await Db.settlementWindow.query(builder => {
         if (!participantId) {
           return builder
@@ -132,14 +133,9 @@ const Facade = {
               })
             await knex('settlementWindow').transacting(trx)
               .where({settlementWindowId})
-              .update({
-                currentStateChangeId: settlmentWindowStateChangeId
-              })
+              .update({currentStateChangeId: settlmentWindowStateChangeId})
             let newSettlementWindowId = await knex('settlementWindow').transacting(trx)
-              .insert({
-                reason,
-                createdDate: transactionTimestamp
-              })
+              .insert({reason, createdDate: transactionTimestamp})
             let newSettlementWindowStateChangeId = await knex('settlementWindowStateChange').transacting(trx)
               .insert({
                 settlementWindowId: newSettlementWindowId[0],
@@ -148,12 +144,8 @@ const Facade = {
                 createdDate: transactionTimestamp
               })
             await knex('settlementWindow').transacting(trx)
-              .where({
-                settlementWindowId: newSettlementWindowId
-              })
-              .update({
-                currentStateChangeId: newSettlementWindowStateChangeId
-              })
+              .where({settlementWindowId: newSettlementWindowId})
+              .update({currentStateChangeId: newSettlementWindowStateChangeId})
             await trx.commit
             return newSettlementWindowId[0]
           } catch (err) {

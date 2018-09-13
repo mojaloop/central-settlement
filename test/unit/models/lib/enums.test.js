@@ -63,7 +63,7 @@ Test('Enums', async (enumsTest) => {
           test.end()
         } catch (err) {
           Logger.error(`settlementWindowStates failed with error - ${err}`)
-          test.fail('Error thrown')
+          test.fail()
           test.end()
         }
       })
@@ -106,7 +106,7 @@ Test('Enums', async (enumsTest) => {
           test.end()
         } catch (err) {
           Logger.error(`settlementStates failed with error - ${err}`)
-          test.fail('Error thrown')
+          test.fail()
           test.end()
         }
       })
@@ -155,7 +155,7 @@ Test('Enums', async (enumsTest) => {
           test.end()
         } catch (err) {
           Logger.error(`transferStates failed with error - ${err}`)
-          test.fail('Error thrown')
+          test.fail()
           test.end()
         }
       })
@@ -198,7 +198,7 @@ Test('Enums', async (enumsTest) => {
           test.end()
         } catch (err) {
           Logger.error(`ledgerEntryTypes failed with error - ${err}`)
-          test.fail('Error thrown')
+          test.fail()
           test.end()
         }
       })
@@ -241,7 +241,7 @@ Test('Enums', async (enumsTest) => {
           test.end()
         } catch (err) {
           Logger.error(`transferParticipantRoleTypes failed with error - ${err}`)
-          test.fail('Error thrown')
+          test.fail()
           test.end()
         }
       })
