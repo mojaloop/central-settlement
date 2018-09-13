@@ -975,7 +975,8 @@
             "type": "object",
             "properties": {
                 "amount": {
-                    "type": "number"
+                    "type": "number",
+                    "minimum": 0.001
                 },
                 "currency": {
                     "type": "string"
