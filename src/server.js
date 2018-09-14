@@ -63,7 +63,6 @@ async function connectDatabase () {
 const init = async function (config = defaultConfig, openAPIPluginOptions = openAPIOptions) {
   try {
     const server = new Hapi.Server(config)
-    await connectDatabase()
     await server.register([{
       plugin: HapiOpenAPI,
       options: openAPIPluginOptions
@@ -83,7 +82,12 @@ const init = async function (config = defaultConfig, openAPIPluginOptions = open
         }
       }
     })
-    await server.start()
+    if (!module.parent) {
+      await server.start()
+      await connectDatabase()
+    } else {
+      await server.initialize()
+    }
     return server
   } catch (e) {
     console.log(e)
