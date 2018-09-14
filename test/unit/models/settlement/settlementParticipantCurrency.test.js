@@ -18,10 +18,83 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
 
 'use strict'
 
-// const Test = require('tapes')(require('tape'))
-// const Sinon = require('sinon')
+const Test = require('tapes')(require('tape'))
+const Sinon = require('sinon')
+const Logger = require('@mojaloop/central-services-shared').Logger
+const SettlementParticipantCurrencyModel = require('../../../../src/models/settlement/settlementParticipantCurrency')
+const Db = require('../../../../src/models')
+
+Test('SettlementParticipantCurrencyModel', async (settlementParticipantCurrencyModelTest) => {
+  let sandbox
+
+  settlementParticipantCurrencyModelTest.beforeEach(test => {
+    sandbox = Sinon.createSandbox()
+    test.end()
+  })
+
+  settlementParticipantCurrencyModelTest.afterEach(test => {
+    sandbox.restore()
+    test.end()
+  })
+
+  await settlementParticipantCurrencyModelTest.test('settlementParticipantCurrencyModel should', async getAccountInSettlementTest => {
+    try {
+      await getAccountInSettlementTest.test('return settlement participant account id if matched', async test => {
+        try {
+          const settlementId = 1
+          const accountId = 1
+          const params = {settlementId, accountId}
+          const enums = {}
+          const settlementParticipantCurrencyIdMock = 1
+
+          const builderStub = sandbox.stub()
+          Db.settlementParticipantCurrency = {
+            query: sandbox.stub()
+          }
+          Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
+          const whereStub = sandbox.stub()
+          const andWhereStub = sandbox.stub()
+          builderStub.select = sandbox.stub().returns({
+            where: whereStub.returns({
+              andWhere: andWhereStub.returns(settlementParticipantCurrencyIdMock)
+            })
+          })
+
+          let result = await SettlementParticipantCurrencyModel.getAccountInSettlement(params, enums)
+          test.ok(result, 'Result returned')
+          test.ok(builderStub.select.withArgs('settlementParticipantCurrencyId').calledOnce, 'select with args ... called once')
+          test.ok(whereStub.withArgs({settlementId}).calledOnce, 'where with args ... called once')
+          test.ok(andWhereStub.withArgs('settlementParticipantCurrencyId', accountId).calledOnce, 'where with args ... called once')
+          test.equal(result, settlementParticipantCurrencyIdMock, 'Result matched')
+
+          Db.settlementParticipantCurrency.query = sandbox.stub().throws(new Error('Error occured'))
+          try {
+            result = await SettlementParticipantCurrencyModel.getAccountInSettlement(params)
+            test.fail('Error expected, but not thrown!')
+          } catch (err) {
+            test.equal(err.message, 'Error occured', `Error "${err.message}" thrown as expected`)
+          }
+          test.end()
+        } catch (err) {
+          Logger.error(`getAccountInSettlementTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await getAccountInSettlementTest.end()
+    } catch (err) {
+      Logger.error(`settlementParticipantCurrencyModelTest failed with error - ${err}`)
+      getAccountInSettlementTest.fail()
+      getAccountInSettlementTest.end()
+    }
+  })
+
+  await settlementParticipantCurrencyModelTest.end()
+})

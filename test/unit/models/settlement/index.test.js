@@ -30,20 +30,20 @@ const Logger = require('@mojaloop/central-services-shared').Logger
 const SettlementModel = require('../../../../src/models/settlement')
 const Proxyquire = require('proxyquire')
 
-Test('Settlement service', async (settlementServiceTest) => {
+Test('Settlement Model Index', async (settlementIndexTest) => {
   let sandbox
 
-  settlementServiceTest.beforeEach(test => {
+  settlementIndexTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
     test.end()
   })
 
-  settlementServiceTest.afterEach(test => {
+  settlementIndexTest.afterEach(test => {
     sandbox.restore()
     test.end()
   })
 
-  await settlementServiceTest.test('create should', async createTest => {
+  await settlementIndexTest.test('create should', async createTest => {
     try {
       SettlementModel.create = sandbox.stub()
       const SettlementModelProxy = Proxyquire('../../../../src/models/settlement', {
@@ -65,18 +65,18 @@ Test('Settlement service', async (settlementServiceTest) => {
           test.end()
         } catch (err) {
           Logger.error(`create failed with error - ${err}`)
-          test.fail('Error thrown')
+          test.fail()
           test.end()
         }
       })
 
       await createTest.end()
     } catch (err) {
-      Logger.error(`settlementServiceTest failed with error - ${err}`)
+      Logger.error(`settlementIndexTest failed with error - ${err}`)
       createTest.fail()
       createTest.end()
     }
   })
 
-  await settlementServiceTest.end()
+  await settlementIndexTest.end()
 })

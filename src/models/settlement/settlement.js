@@ -28,7 +28,7 @@
 
 const Db = require('../index')
 
-module.exports.create = async (settlement, enums = {}) => {
+const create = async (settlement, enums = {}) => {
   try {
     return await Db.settlement.insert({
       reason: settlement.reason,
@@ -37,4 +37,8 @@ module.exports.create = async (settlement, enums = {}) => {
   } catch (err) {
     throw err
   }
+}
+
+module.exports = {
+  create
 }

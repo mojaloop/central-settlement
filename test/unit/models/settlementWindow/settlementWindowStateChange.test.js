@@ -18,10 +18,76 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+  * Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
 
 'use strict'
 
-// const Test = require('tapes')(require('tape'))
-// const Sinon = require('sinon')
+const Test = require('tapes')(require('tape'))
+const Sinon = require('sinon')
+const Logger = require('@mojaloop/central-services-shared').Logger
+const SettlementWindowStateChangeModel = require('../../../../src/models/settlementWindow/settlementWindowStateChange')
+const Db = require('../../../../src/models')
+
+Test('SettlementModel', async (settlementWindowStateChangeModelTest) => {
+  let sandbox
+
+  settlementWindowStateChangeModelTest.beforeEach(test => {
+    sandbox = Sinon.createSandbox()
+    test.end()
+  })
+
+  settlementWindowStateChangeModelTest.afterEach(test => {
+    sandbox.restore()
+    test.end()
+  })
+
+  await settlementWindowStateChangeModelTest.test('settlementWindowStateChangeModel should', async createTest => {
+    try {
+      await createTest.test('return insert settlement into database', async test => {
+        try {
+          const settlementWindowId = 1
+          const state = 'PENDING_SETTLEMENT'
+          const reason = 'reason text'
+          const enums = {
+            PENDING_SETTLEMENT: 'PENDING_SETTLEMENT'
+          }
+
+          Db.settlementWindowStateChange = {
+            insert: sandbox.stub().returns(true)
+          }
+
+          let result = await SettlementWindowStateChangeModel.create({settlementWindowId, state, reason}, enums)
+          test.ok(result, 'Result returned and matched')
+          test.ok(Db.settlementWindowStateChange.insert.withArgs({
+            settlementWindowId,
+            settlementWindowStateId: enums[state.toUpperCase()],
+            reason
+          }).calledOnce, 'insert with args ... called once')
+
+          Db.settlementWindowStateChange.insert = sandbox.stub().throws(new Error('Error occured'))
+          try {
+            result = await SettlementWindowStateChangeModel.create({settlementWindowId, state, reason})
+            test.fail('Error expected, but not thrown!')
+          } catch (err) {
+            test.equal(err.message, 'Error occured', `Error "${err.message}" thrown as expected`)
+          }
+          test.end()
+        } catch (err) {
+          Logger.error(`createTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await createTest.end()
+    } catch (err) {
+      Logger.error(`settlementWindowStateChangeModelTest failed with error - ${err}`)
+      createTest.fail()
+      createTest.end()
+    }
+  })
+
+  await settlementWindowStateChangeModelTest.end()
+})
