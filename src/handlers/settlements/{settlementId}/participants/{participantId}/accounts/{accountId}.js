@@ -16,15 +16,14 @@
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
  * Gates Foundation
- - Name Surname <name.surname@gatesfoundation.com>
-
+ * Valentin Genev <valentin.genev@modusbox.com>
+ * Deon Botha <deon.botha@modusbox.com>
  --------------
  ******/
 
 'use strict'
 
 const Boom = require('boom')
-const dataAccess = require('../../../../../../../test/data/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}')
 const Settlements = require('../../../../../../domain/settlement')
 
 /**
@@ -48,7 +47,7 @@ module.exports = {
     } catch (e) {
       return Boom.boomify(e)
     }
-  },
+  }
   /**
    * summary: Acknowledegement of settlement by updating the reason and state by Settlements Id, Participant Id and accounts Id.
    * description:

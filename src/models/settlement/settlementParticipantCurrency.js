@@ -27,7 +27,7 @@
 
 const Db = require('../index')
 
-module.exports.getAccountInSettlement = async ({ settlementId, accountId }, enums = {}) => {
+const getAccountInSettlement = async ({ settlementId, accountId }, enums = {}) => {
   try {
     let result = await Db.settlementParticipantCurrency.query(builder => {
       return builder
@@ -39,4 +39,8 @@ module.exports.getAccountInSettlement = async ({ settlementId, accountId }, enum
   } catch (err) {
     throw err
   }
+}
+
+module.exports = {
+  getAccountInSettlement
 }

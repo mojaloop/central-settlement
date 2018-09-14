@@ -20,8 +20,6 @@
  optionally within square brackets <email>.
 
  * Gates Foundation
- - Name Surname <name.surname@gatesfoundation.com>
-
  * Valentin Genev <valentin.genev@modusbox.com>
  * Deon Botha <deon.botha@modusbox.com>
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
@@ -34,7 +32,7 @@
 
 // const Test = require('tapes')(require('tape'))
 // const Mockgen = require('../../../../../data/mockgen.js')
-// const InitServer = require('./../../../../../../src/server').init
+// const InitServer = require('./../../../../../../src/setup').initialize
 // const responseCodes = [200, 400, 401, 404, 415, 500]
 
 // /**

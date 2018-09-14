@@ -15,9 +15,13 @@
  Gates Foundation organization for an example). Those individuals should have
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
- * Gates Foundation
- - Name Surname <name.surname@gatesfoundation.com>
 
+ * Gates Foundation
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
+ * Valentin Genev <valentin.genev@modusbox.com>
+ * Deon Botha <deon.botha@modusbox.com>
+ * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * Miguel de Barros <miguel.debarros@modusbox.com>
  --------------
  ******/
 
@@ -26,13 +30,13 @@
 const Db = require('../index')
 
 module.exports = {
-  getBySettlementId: async function ({settlementId}, enums = {}) {
+  getBySettlementId: async function ({ settlementId }, enums = {}) {
     try {
       return await Db.settlementTransferParticipant.query(builder => {
         return builder
           .select()
           .distinct('settlementWindowId', 'participantCurrencyId')
-          .where({settlementId})
+          .where({ settlementId })
       })
     } catch (err) {
       throw err

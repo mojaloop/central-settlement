@@ -16,8 +16,7 @@
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
  * Gates Foundation
- - Name Surname <name.surname@gatesfoundation.com>
- - Valentin Genev <valentin.genev@modusbox.com>
+ * Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
 
@@ -26,7 +25,7 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Mockgen = require('../../data/mockgen.js')
-const InitServer = require('./../../../src/server').init
+const InitServer = require('./../../../src/setup').initialize
 const Enums = require('./../../../src/models/lib/enums')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const settlementWindows = require('./../../../src/domain/settlementWindow')

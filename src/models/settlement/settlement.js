@@ -18,6 +18,7 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
  * Valentin Genev <valentin.genev@modusbox.com>
  * Deon Botha <deon.botha@modusbox.com>
  --------------
@@ -27,7 +28,7 @@
 
 const Db = require('../index')
 
-module.exports.create = async (settlement, enums = {}) => {
+const create = async (settlement, enums = {}) => {
   try {
     return await Db.settlement.insert({
       reason: settlement.reason,
@@ -37,14 +38,7 @@ module.exports.create = async (settlement, enums = {}) => {
     throw err
   }
 }
-/* module.exports.create = async ({ settlementId, reason }, enums = {}) => {
-    try {
-        return await Db.settlement.insert({
-            settlementId,
-            reason
-        })
-    } catch (err) {
-        throw err
-    }
+
+module.exports = {
+  create
 }
-*/
