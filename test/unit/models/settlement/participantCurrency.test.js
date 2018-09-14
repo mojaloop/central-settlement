@@ -18,10 +18,83 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
 
 'use strict'
 
-// const Test = require('tapes')(require('tape'))
-// const Sinon = require('sinon')
+const Test = require('tapes')(require('tape'))
+const Sinon = require('sinon')
+const Logger = require('@mojaloop/central-services-shared').Logger
+const ParticipantCurrencyModel = require('../../../../src/models/settlement/participantCurrency')
+const Db = require('../../../../src/models')
+
+Test('ParticipantCurrencyModel', async (participantCurrencyModelTest) => {
+  let sandbox
+
+  participantCurrencyModelTest.beforeEach(test => {
+    sandbox = Sinon.createSandbox()
+    test.end()
+  })
+
+  participantCurrencyModelTest.afterEach(test => {
+    sandbox.restore()
+    test.end()
+  })
+
+  await participantCurrencyModelTest.test('participantCurrencyModel should', async checkParticipantAccountExistsTest => {
+    try {
+      await checkParticipantAccountExistsTest.test('return participant currency id if matched', async test => {
+        try {
+          const participantId = 1
+          const accountId = 1
+          const params = {participantId, accountId}
+          const enums = {}
+          const participantCurrecyIdMock = 1
+
+          const builderStub = sandbox.stub()
+          Db.participantCurrency = {
+            query: sandbox.stub()
+          }
+          Db.participantCurrency.query.callsArgWith(0, builderStub)
+          const whereStub = sandbox.stub()
+          const andWhereStub = sandbox.stub()
+          builderStub.select = sandbox.stub().returns({
+            where: whereStub.returns({
+              andWhere: andWhereStub.returns(participantCurrecyIdMock)
+            })
+          })
+
+          let result = await ParticipantCurrencyModel.checkParticipantAccountExists(params, enums)
+          test.ok(result, 'Result returned')
+          test.ok(builderStub.select.withArgs('participantCurrencyId').calledOnce, 'select with args ... called once')
+          test.ok(whereStub.withArgs({participantId}).calledOnce, 'where with args ... called once')
+          test.ok(andWhereStub.withArgs('participantCurrencyId', accountId).calledOnce, 'where with args ... called once')
+          test.equal(result, participantCurrecyIdMock, 'Result matched')
+
+          Db.participantCurrency.query = sandbox.stub().throws(new Error('Error occured'))
+          try {
+            result = await ParticipantCurrencyModel.checkParticipantAccountExists(params)
+            test.fail('Error expected, but not thrown!')
+          } catch (err) {
+            test.equal(err.message, 'Error occured', `Error "${err.message}" thrown as expected`)
+          }
+          test.end()
+        } catch (err) {
+          Logger.error(`checkParticipantAccountExistsTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await checkParticipantAccountExistsTest.end()
+    } catch (err) {
+      Logger.error(`participantCurrencyModelTest failed with error - ${err}`)
+      checkParticipantAccountExistsTest.fail()
+      checkParticipantAccountExistsTest.end()
+    }
+  })
+
+  await participantCurrencyModelTest.end()
+})

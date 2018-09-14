@@ -18,10 +18,64 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
 
 'use strict'
 
-// const Test = require('tapes')(require('tape'))
-// const Sinon = require('sinon')
+const Test = require('tapes')(require('tape'))
+const Sinon = require('sinon')
+let Logger = require('@mojaloop/central-services-shared').Logger
+const Proxyquire = require('proxyquire')
+
+Test('loggerPlugin utility', async (loggerPluginTest) => {
+  let sandbox
+
+  loggerPluginTest.beforeEach(test => {
+    sandbox = Sinon.createSandbox()
+    test.end()
+  })
+
+  loggerPluginTest.afterEach(test => {
+    sandbox.restore()
+    test.end()
+  })
+
+  await loggerPluginTest.test('should register logger-plugin', async test => {
+    try {
+      let serverStub = sandbox.stub()
+      serverStub.events = {
+        on: sandbox.stub()
+      }
+      let eventMock = {
+        tags: ['tagged'],
+        data: 'data'
+      }
+      const loggerTaggedStub = sandbox.stub()
+      const loggerInfoStub = sandbox.stub()
+      const loggerPluginProxy = Proxyquire('../../../src/utils/logger-plugin', {
+        '@mojaloop/central-services-shared': {
+          Logger: {
+            tagged: loggerTaggedStub,
+            info: loggerInfoStub
+          }
+        }
+      })
+      serverStub.events.on.callsArgWith(1, eventMock)
+      await loggerPluginProxy.plugin.register(serverStub)
+      delete eventMock.tags
+      await loggerPluginProxy.plugin.register(serverStub)
+      test.ok(serverStub.events.on.calledTwice, 'server.events.on is called twice')
+      test.ok(loggerTaggedStub.withArgs(eventMock.data).calledOnce, 'Logger[event.tags[0]] with arg event.data is called once')
+      test.ok(loggerInfoStub.withArgs(eventMock.data).calledOnce, 'Logger.info with arg event.data is called once')
+      test.end()
+    } catch (err) {
+      Logger.error(`create failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
+
+  loggerPluginTest.end()
+})

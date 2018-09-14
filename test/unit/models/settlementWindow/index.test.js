@@ -18,10 +18,58 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
 
 'use strict'
 
-// const Test = require('tapes')(require('tape'))
-// const Sinon = require('sinon')
+const Test = require('tapes')(require('tape'))
+const Sinon = require('sinon')
+const Logger = require('@mojaloop/central-services-shared').Logger
+const Proxyquire = require('proxyquire')
+
+Test('Settlement Window Model Index', async (settlementWindowIndexTest) => {
+  let sandbox
+
+  settlementWindowIndexTest.beforeEach(test => {
+    sandbox = Sinon.createSandbox()
+    test.end()
+  })
+
+  settlementWindowIndexTest.afterEach(test => {
+    sandbox.restore()
+    test.end()
+  })
+
+  await settlementWindowIndexTest.test('getById should', async getByIdTest => {
+    try {
+      const SettlementWindowModelProxy = Proxyquire('../../../../src/models/settlementWindow', {
+        './facade': {
+          getById: sandbox.stub()
+        }
+      })
+
+      await getByIdTest.test('be called', async test => {
+        try {
+          const settlementWindowId = 1
+          await SettlementWindowModelProxy.getById({settlementWindowId})
+          test.ok(SettlementWindowModelProxy.getById.withArgs({settlementWindowId}).calledOnce, 'once with settlement window model getById proxy')
+          test.end()
+        } catch (err) {
+          Logger.error(`getById failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await getByIdTest.end()
+    } catch (err) {
+      Logger.error(`settlementWindowIndexTest failed with error - ${err}`)
+      getByIdTest.fail()
+      getByIdTest.end()
+    }
+  })
+
+  await settlementWindowIndexTest.end()
+})

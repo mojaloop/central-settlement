@@ -617,7 +617,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.end()
         } catch (err) {
           Logger.error(`getById failed with error - ${err}`)
-          test.fail('Error thrown')
+          test.fail()
           test.end()
         }
       })
