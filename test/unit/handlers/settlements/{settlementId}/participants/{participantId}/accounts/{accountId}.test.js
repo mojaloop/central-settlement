@@ -29,6 +29,8 @@ const InitServer = require('./../../../../../../../../src/setup').initialize
 const Enums = require('./../../../../../../../../src/models/lib/enums')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const settlement = require('./../../../../../../../../src/domain/settlement')
+const Db = require('./../../../../../../../../src/models')
+
 // const responseCodes = [200, 400, 401, 404, 415, 500]
 
 /**
@@ -47,6 +49,7 @@ Test('/settlements/{settlementId}/participants/{participantId}/account/{accountI
   let sandbox
   settlementTest.beforeEach(async t => {
     sandbox = Sinon.createSandbox()
+    sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     server = await InitServer()
     t.end()
   })

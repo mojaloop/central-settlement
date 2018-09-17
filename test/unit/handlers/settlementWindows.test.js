@@ -29,6 +29,7 @@ const InitServer = require('./../../../src/setup').initialize
 const Enums = require('./../../../src/models/lib/enums')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const settlementWindows = require('./../../../src/domain/settlementWindow')
+const Db = require('./../../../src/models')
 /**
  * Test for /settlementWindows
  */
@@ -45,6 +46,7 @@ Test('/settlementWindows', async (settlementWindowTest) => {
   let sandbox
   settlementWindowTest.beforeEach(async t => {
     sandbox = Sinon.createSandbox()
+    sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     server = await InitServer()
     t.end()
   })
