@@ -19,7 +19,11 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * Georgi Georgiev <georgi.georgiev@modusbox.com>
- --------------
+ * Valentin Genev <valentin.genev@modusbox.com>
+ * Deon Botha <deon.botha@modusbox.com>
+ * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * Miguel de Barros <miguel.debarros@modusbox.com>
+--------------
  ******/
 
 const settlementWindowModel = require('../../models/settlementWindow')
@@ -70,7 +74,7 @@ module.exports = {
     let Logger = options.logger || centralLogger
     try {
       let settlementWindowId = await settlementWindowModel.close(params, enums)
-      return await settlementWindowModel.getById({settlementWindowId}, enums)
+      return await settlementWindowModel.getById({ settlementWindowId }, enums)
     } catch (err) {
       Logger.info('error', err)
       throw err

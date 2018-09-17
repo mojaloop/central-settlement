@@ -48,7 +48,7 @@ Test('SettlementTransferParticipantModel', async (settlementTransferParticipantM
       await getBySettlementIdTest.test('return distinct settlementWindowId and participantCurrencyId by settlementId', async test => {
         try {
           const settlementId = 1
-          const params = {settlementId}
+          const params = { settlementId }
           const enums = {}
           const settlementTransferParticipantMock = [{
             settlementWindowId: 1,

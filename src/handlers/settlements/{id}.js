@@ -57,7 +57,7 @@ module.exports = {
     const settlementId = request.params.id
     try {
       request.server.log('info', `get settlement by Id requested with id ${settlementId}`)
-      let settlementResult = await settlement.getById({settlementId}, Enums, {logger: request.server.log})
+      let settlementResult = await settlement.getById({ settlementId }, Enums, { logger: request.server.log })
       return h.response(settlementResult)
     } catch (e) {
       request.server.log('error', `ERROR settlementWindowId: ${settlementId} not found`)
@@ -76,7 +76,7 @@ module.exports = {
     const settlementId = request.params.id
     const Enums = await request.server.methods.enums('settlementStates')
     try {
-      return await settlement.putById(settlementId, request.payload, Enums, {logger: request.server.log})
+      return await settlement.putById(settlementId, request.payload, Enums, { logger: request.server.log })
     } catch (e) {
       throw (Boom.boomify(e))
     }

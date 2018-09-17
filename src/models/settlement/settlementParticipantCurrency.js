@@ -27,12 +27,12 @@
 
 const Db = require('../index')
 
-const getAccountInSettlement = async ({settlementId, accountId}, enums = {}) => {
+const getAccountInSettlement = async ({ settlementId, accountId }, enums = {}) => {
   try {
     let result = await Db.settlementParticipantCurrency.query(builder => {
       return builder
         .select('settlementParticipantCurrencyId')
-        .where({settlementId})
+        .where({ settlementId })
         .andWhere('settlementParticipantCurrencyId', accountId)
     })
     return result

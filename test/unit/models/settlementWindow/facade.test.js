@@ -99,14 +99,14 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
     try {
       const settlementWindowId = 1
       const enums = {}
-      const settlementWindowResultStub = {settlementWindowId: 1, state: 'SETTLED'}
+      const settlementWindowResultStub = { settlementWindowId: 1, state: 'SETTLED' }
       let e
 
       await getByIdTest.test('retrieve settlement window data by id', async test => {
         try {
           Db.settlementWindow.query.returns(Promise.resolve(settlementWindowResultStub))
 
-          let result = await SettlementWindowFacade.getById({settlementWindowId}, enums)
+          let result = await SettlementWindowFacade.getById({ settlementWindowId }, enums)
           test.ok(result, 'Result returned')
           test.ok(builderStub.leftJoin.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce)
           test.ok(selectStub.withArgs('settlementWindow.settlementWindowId',
@@ -129,7 +129,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           e = new Error('Database unavailable')
           Db.settlementWindow.query.throws(e)
 
-          await SettlementWindowFacade.getById({settlementWindowId})
+          await SettlementWindowFacade.getById({ settlementWindowId })
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
@@ -209,7 +209,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
       const state = 'PENDING_SETTLEMENT'
       const fromDateTime = new Date('01-01-1970').toISOString()
       const toDateTime = new Date().toISOString()
-      let query = {participantId, state, fromDateTime, toDateTime}
+      let query = { participantId, state, fromDateTime, toDateTime }
       const settlementWindowResultStub = [{
         settlementWindowId: 1,
         state: 'PENDING_SETTLEMENT'
@@ -224,7 +224,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
         try {
           Db.settlementWindow.query.returns(Promise.resolve(settlementWindowResultStub))
 
-          let result = await SettlementWindowFacade.getByParams({query}, enums)
+          let result = await SettlementWindowFacade.getByParams({ query }, enums)
           test.ok(result, 'Result returned')
           test.ok(builderStub.leftJoin.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce)
           test.ok(leftJoin2Stub.withArgs('transferFulfilment AS tf', 'tf.settlementWindowId', 'settlementWindow.settlementWindowId').calledOnce)
@@ -250,7 +250,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           query = {}
           Db.settlementWindow.query.returns(Promise.resolve(settlementWindowResultStub))
 
-          let result = await SettlementWindowFacade.getByParams({query})
+          let result = await SettlementWindowFacade.getByParams({ query })
           test.ok(result, 'Result returned')
           test.ok(builderStub.leftJoin.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce)
           test.ok(selectStub.withArgs('settlementWindow.settlementWindowId',
@@ -272,7 +272,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
         try {
           e = new Error('Database unavailable')
           Db.settlementWindow.query.throws(e)
-          await SettlementWindowFacade.getByParams({query})
+          await SettlementWindowFacade.getByParams({ query })
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
@@ -292,12 +292,12 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
 
   await settlementWindowFacadeTest.test('close should', async closeTest => {
     try {
-      let settlementWindowCurrentStateMock = {state: 'OPEN'}
+      let settlementWindowCurrentStateMock = { state: 'OPEN' }
       const settlementWindowId = 1
       const state = 'CLOSED'
       const reason = 'close reason text'
-      const params = {settlementWindowId, state, reason}
-      let enums = {OPEN: 'OPEN'}
+      const params = { settlementWindowId, state, reason }
+      let enums = { OPEN: 'OPEN' }
 
       await closeTest.test('close the specified open window and open a new one', async test => {
         try {
@@ -329,7 +329,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
           let result = await SettlementWindowFacade.close(params, enums)
           test.ok(result, 'Result returned')
-          test.ok(SettlementWindowFacade.getById.withArgs({settlementWindowId}).calledOnce)
+          test.ok(SettlementWindowFacade.getById.withArgs({ settlementWindowId }).calledOnce)
           test.ok(knexStub.withArgs('settlementWindowStateChange').calledTwice)
           test.equal(transactingStub.withArgs(trxStub).callCount, 5)
           test.ok(insertStub.withArgs({
@@ -339,9 +339,9 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
             createdDate: now
           }).calledOnce)
           test.ok(knexStub.withArgs('settlementWindow').calledThrice)
-          test.ok(whereStub.withArgs({settlementWindowId}).calledOnce)
-          test.ok(updateStub.withArgs({currentStateChangeId: settlmentWindowStateChangeIdMock}).calledOnce)
-          test.ok(insertStub.withArgs({reason, createdDate: now}).calledOnce)
+          test.ok(whereStub.withArgs({ settlementWindowId }).calledOnce)
+          test.ok(updateStub.withArgs({ currentStateChangeId: settlmentWindowStateChangeIdMock }).calledOnce)
+          test.ok(insertStub.withArgs({ reason, createdDate: now }).calledOnce)
           test.ok(insertStub.withArgs({
             settlementWindowId: newSettlementWindowIdMock[0],
             settlementWindowStateId: enums.OPEN,
@@ -349,8 +349,8 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
             createdDate: now
           }).calledOnce)
           test.end()
-          test.ok(whereStub.withArgs({settlementWindowId: newSettlementWindowIdMock}).calledOnce)
-          test.ok(updateStub.withArgs({currentStateChangeId: newSettlementWindowStateChangeIdMock}).calledOnce)
+          test.ok(whereStub.withArgs({ settlementWindowId: newSettlementWindowIdMock }).calledOnce)
+          test.ok(updateStub.withArgs({ currentStateChangeId: newSettlementWindowStateChangeIdMock }).calledOnce)
 
           try {
             insertStub.onCall(3).throws(new Error('Insert into settlementWindowStateChange failed'))
@@ -391,7 +391,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
     try {
       const settlementId = 1
       const enums = {}
-      const settlementWindowResultStub = [{id: 1, state: 'PENDING_SETTLEMENT'}, {id: 2, state: 'SETTLED'}]
+      const settlementWindowResultStub = [{ id: 1, state: 'PENDING_SETTLEMENT' }, { id: 2, state: 'SETTLED' }]
       let e
 
       await getBySettlementIdTest.test('retrieve settlement windows by settlement id', async test => {
@@ -406,7 +406,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           })
 
           Db.settlementSettlementWindow.query.returns(Promise.resolve(settlementWindowResultStub))
-          let result = await SettlementWindowFacade.getBySettlementId({settlementId}, enums)
+          let result = await SettlementWindowFacade.getBySettlementId({ settlementId }, enums)
           test.ok(result, 'Result returned')
           test.ok(builderStub.join.withArgs('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId').calledOnce)
           test.ok(join2Stub.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'sw.currentStateChangeId').calledOnce)
@@ -429,7 +429,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           e = new Error('Database unavailable')
           Db.settlementSettlementWindow.query = sandbox.stub().throws(e)
 
-          await SettlementWindowFacade.getBySettlementId({settlementId})
+          await SettlementWindowFacade.getBySettlementId({ settlementId })
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {

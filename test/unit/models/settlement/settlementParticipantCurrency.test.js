@@ -49,7 +49,7 @@ Test('SettlementParticipantCurrencyModel', async (settlementParticipantCurrencyM
         try {
           const settlementId = 1
           const accountId = 1
-          const params = {settlementId, accountId}
+          const params = { settlementId, accountId }
           const enums = {}
           const settlementParticipantCurrencyIdMock = 1
 
@@ -69,7 +69,7 @@ Test('SettlementParticipantCurrencyModel', async (settlementParticipantCurrencyM
           let result = await SettlementParticipantCurrencyModel.getAccountInSettlement(params, enums)
           test.ok(result, 'Result returned')
           test.ok(builderStub.select.withArgs('settlementParticipantCurrencyId').calledOnce, 'select with args ... called once')
-          test.ok(whereStub.withArgs({settlementId}).calledOnce, 'where with args ... called once')
+          test.ok(whereStub.withArgs({ settlementId }).calledOnce, 'where with args ... called once')
           test.ok(andWhereStub.withArgs('settlementParticipantCurrencyId', accountId).calledOnce, 'where with args ... called once')
           test.equal(result, settlementParticipantCurrencyIdMock, 'Result matched')
 

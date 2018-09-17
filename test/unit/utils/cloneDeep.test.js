@@ -36,7 +36,7 @@ Test('cloneDeep utility', (cloneDeepTest) => {
     },
     prop3: null,
     prop4: [1, 2, 3],
-    prop5: Object.create({notOwn: true})
+    prop5: Object.create({ notOwn: true })
   }
 
   cloneDeepTest.test('should copy object', test => {

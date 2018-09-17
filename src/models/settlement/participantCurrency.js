@@ -28,12 +28,12 @@
 
 const Db = require('../index')
 
-const checkParticipantAccountExists = async ({participantId, accountId}, enums = {}) => {
+const checkParticipantAccountExists = async ({ participantId, accountId }, enums = {}) => {
   try {
     let result = await Db.participantCurrency.query(builder => {
       return builder
         .select('participantCurrencyId')
-        .where({participantId})
+        .where({ participantId })
         .andWhere('participantCurrencyId', accountId)
     })
     return result
