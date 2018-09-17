@@ -53,8 +53,8 @@ Test('Settlement Window Model Index', async (settlementWindowIndexTest) => {
       await getByIdTest.test('be called', async test => {
         try {
           const settlementWindowId = 1
-          await SettlementWindowModelProxy.getById({settlementWindowId})
-          test.ok(SettlementWindowModelProxy.getById.withArgs({settlementWindowId}).calledOnce, 'once with settlement window model getById proxy')
+          await SettlementWindowModelProxy.getById({ settlementWindowId })
+          test.ok(SettlementWindowModelProxy.getById.withArgs({ settlementWindowId }).calledOnce, 'once with settlement window model getById proxy')
           test.end()
         } catch (err) {
           Logger.error(`getById failed with error - ${err}`)

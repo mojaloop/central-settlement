@@ -55,7 +55,7 @@ module.exports = {
     Logger.info('Here')
     try {
       const Enums = await request.server.methods.enums('settlementStates')
-      let settlementResult = await Settlements.getSettlementsByParams({query: request.query}, Enums, {logger: request.server.log})
+      let settlementResult = await Settlements.getSettlementsByParams({ query: request.query }, Enums, { logger: request.server.log })
       return h.response(settlementResult)
     } catch (e) {
       Logger.info('error', e)
@@ -80,7 +80,7 @@ module.exports = {
         transferParticipantRoleTypes: await request.server.methods.enums('transferParticipantRoleTypes'),
         ledgerEntryTypes: await request.server.methods.enums('ledgerEntryTypes')
       }
-      let settlementResult = await Settlements.settlementEventTrigger(request.payload, Enums, {logger: request.server.log})
+      let settlementResult = await Settlements.settlementEventTrigger(request.payload, Enums, { logger: request.server.log })
       return h.response(settlementResult)
     } catch (e) {
       request.server.log('error', e)

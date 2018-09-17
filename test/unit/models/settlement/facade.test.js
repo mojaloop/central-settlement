@@ -588,9 +588,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       await getByIdTest.test('retrieve settlement data by id', async test => {
         try {
           const settlementId = 1
-          const settlementResultStub = {id: 1}
+          const settlementResultStub = { id: 1 }
 
-          Db.settlement = {query: sandbox.stub()}
+          Db.settlement = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlement.query.callsArgWith(0, builderStub)
           builderStub.join = sandbox.stub()
@@ -606,7 +606,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           })
           Db.settlement.query.returns(Promise.resolve(settlementResultStub))
 
-          await SettlementFacade.getById({settlementId})
+          await SettlementFacade.getById({ settlementId })
           test.ok(builderStub.join.withArgs('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 'settlement.currentStateChangeId').calledOnce)
           test.ok(selectStub.withArgs('settlement.settlementId',
             'ssc.settlementStateId AS state',
@@ -625,10 +625,10 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       await getByIdTest.test('throw error if query is wrong', async test => {
         try {
           const settlementId = 1
-          Db.settlement = {query: sandbox.stub()}
+          Db.settlement = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlement.query.callsArgWith(0, builderStub)
-          await SettlementFacade.getById({settlementId})
+          await SettlementFacade.getById({ settlementId })
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
@@ -661,7 +661,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           let accountId = 1
           let query = { state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId }
 
-          Db.settlement = {query: sandbox.stub()}
+          Db.settlement = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlement.query.callsArgWith(0, builderStub)
           builderStub.innerJoin = sandbox.stub()
@@ -696,9 +696,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             })
           })
-          Db.settlement.query.returns(Promise.resolve({id: 1}))
+          Db.settlement.query.returns(Promise.resolve({ id: 1 }))
           const res1 = await SettlementFacade.getByParams(query)
-          Db.settlement.query.returns(Promise.resolve({id: 2}))
+          Db.settlement.query.returns(Promise.resolve({ id: 2 }))
           const res2 = await SettlementFacade.getByParams({})
           test.equal(res1.id, 1, 'First query returns settlement id 1')
           test.equal(res2.id, 2, 'Second query returns settlement id 2')
@@ -714,10 +714,10 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       await getByParamsTest.test('throw error if query is wrong', async test => {
         try {
           const settlementId = 1
-          Db.settlement = {query: sandbox.stub()}
+          Db.settlement = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlement.query.callsArgWith(0, builderStub)
-          await SettlementFacade.getByParams({settlementId})
+          await SettlementFacade.getByParams({ settlementId })
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
@@ -869,7 +869,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       await getByListOfIdsTest.test('retrieve settlementParticipantCurrency data by listOfIds', async test => {
         try {
           const listOfIds = [1]
-          Db.settlementParticipantCurrency = {query: sandbox.stub()}
+          Db.settlementParticipantCurrency = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
           builderStub.leftJoin = sandbox.stub()
@@ -902,7 +902,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       await getByListOfIdsTest.test('throw error if query is wrong', async test => {
         try {
           const listOfIds = [1]
-          Db.settlementParticipantCurrency = {query: sandbox.stub()}
+          Db.settlementParticipantCurrency = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
           await SettlementFacade.settlementParticipantCurrency.getByListOfIds(listOfIds)
@@ -927,8 +927,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
     try {
       await getAccountsInSettlementByIdsTest.test('retrieve accounts in settlement data by ids', async test => {
         try {
-          const params = {settlementId: 1, participantId: 1}
-          Db.settlementParticipantCurrency = {query: sandbox.stub()}
+          const params = { settlementId: 1, participantId: 1 }
+          Db.settlementParticipantCurrency = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
           builderStub.join = sandbox.stub()
@@ -945,7 +945,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           await SettlementFacade.settlementParticipantCurrency.getAccountsInSettlementByIds(params)
           test.ok(builderStub.join.withArgs('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId').calledOnce)
           test.ok(selectStub.withArgs('settlementParticipantCurrencyId').calledOnce)
-          test.ok(whereStub.withArgs({settlementId: params.settlementId}).calledOnce)
+          test.ok(whereStub.withArgs({ settlementId: params.settlementId }).calledOnce)
           test.ok(andWhereStub.withArgs('pc.participantId', params.participantId).calledOnce)
           test.end()
         } catch (err) {
@@ -957,8 +957,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await getAccountsInSettlementByIdsTest.test('throw error if query is wrong', async test => {
         try {
-          const params = {settlementId: 1, participantId: 1}
-          Db.settlementParticipantCurrency = {query: sandbox.stub()}
+          const params = { settlementId: 1, participantId: 1 }
+          Db.settlementParticipantCurrency = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
           await SettlementFacade.settlementParticipantCurrency.getAccountsInSettlementByIds(params)
@@ -983,8 +983,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
     try {
       await getParticipantCurrencyBySettlementIdTest.test('retrieve participant currency data by settlement id', async test => {
         try {
-          const params = {settlementId: 1}
-          Db.settlementParticipantCurrency = {query: sandbox.stub()}
+          const params = { settlementId: 1 }
+          Db.settlementParticipantCurrency = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
           builderStub.leftJoin = sandbox.stub()
@@ -1019,8 +1019,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await getParticipantCurrencyBySettlementIdTest.test('throw error if query is wrong', async test => {
         try {
-          const params = {settlementId: 1}
-          Db.settlementParticipantCurrency = {query: sandbox.stub()}
+          const params = { settlementId: 1 }
+          Db.settlementParticipantCurrency = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
           await SettlementFacade.settlementParticipantCurrency.getParticipantCurrencyBySettlementId(params)
@@ -1045,8 +1045,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
     try {
       await getAccountByIdTest.test('retrieve account by id', async test => {
         try {
-          const params = {settlementParticipantCurrencyId: 1}
-          Db.settlementParticipantCurrency = {query: sandbox.stub()}
+          const params = { settlementParticipantCurrencyId: 1 }
+          Db.settlementParticipantCurrency = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
           builderStub.join = sandbox.stub()
@@ -1080,8 +1080,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await getAccountByIdTest.test('throw error if query is wrong', async test => {
         try {
-          const params = {settlementId: 1}
-          Db.settlementParticipantCurrency = {query: sandbox.stub()}
+          const params = { settlementId: 1 }
+          Db.settlementParticipantCurrency = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
           await SettlementFacade.settlementParticipantCurrency.getAccountById(params)
@@ -1107,7 +1107,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       await getAccountsByListOfIdsTest.test('retrieve accounts by list of ids', async test => {
         try {
           const settlementParticipantCurrencyIdList = [1]
-          Db.settlementParticipantCurrency = {query: sandbox.stub()}
+          Db.settlementParticipantCurrency = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
           builderStub.join = sandbox.stub()
@@ -1141,8 +1141,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await getAccountsByListOfIdsTest.test('throw error if query is wrong', async test => {
         try {
-          const settlementParticipantCurrencyIdList = {settlementId: 1}
-          Db.settlementParticipantCurrency = {query: sandbox.stub()}
+          const settlementParticipantCurrencyIdList = { settlementId: 1 }
+          Db.settlementParticipantCurrency = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
           await SettlementFacade.settlementParticipantCurrency.getAccountsByListOfIds(settlementParticipantCurrencyIdList)
@@ -1167,8 +1167,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
     try {
       await getWindowsBySettlementIdAndAccountIdTest.test('retrieve settlement window by settlement id and account id', async test => {
         try {
-          const params = {settlementId: 1, accountId: 1}
-          Db.settlementSettlementWindow = {query: sandbox.stub()}
+          const params = { settlementId: 1, accountId: 1 }
+          Db.settlementSettlementWindow = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementSettlementWindow.query.callsArgWith(0, builderStub)
           builderStub.join = sandbox.stub()
@@ -1207,7 +1207,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             'settlementWindow.createdDate as createdDate',
             'swsc.createdDate as changedDate').calledOnce)
           test.ok(selectStub.calledOnce)
-          test.ok(whereStub.withArgs({settlementId: params.settlementId}).calledOnce)
+          test.ok(whereStub.withArgs({ settlementId: params.settlementId }).calledOnce)
           test.end()
         } catch (err) {
           Logger.error(`getWindowsBySettlementIdAndAccountId failed with error - ${err}`)
@@ -1218,8 +1218,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await getWindowsBySettlementIdAndAccountIdTest.test('throw error if query is wrong', async test => {
         try {
-          const params = {settlementId: 1}
-          Db.settlementSettlementWindow = {query: sandbox.stub()}
+          const params = { settlementId: 1 }
+          Db.settlementSettlementWindow = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementSettlementWindow.query.callsArgWith(0, builderStub)
           await SettlementFacade.settlementSettlementWindow.getWindowsBySettlementIdAndAccountId(params)
@@ -1244,8 +1244,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
     try {
       await getWindowsBySettlementIdAndParticipantIdTest.test('retrieve settlement window by settlement id and account id', async test => {
         try {
-          const params = {settlementId: 1, accountId: 1}
-          Db.settlementSettlementWindow = {query: sandbox.stub()}
+          const params = { settlementId: 1, accountId: 1 }
+          Db.settlementSettlementWindow = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementSettlementWindow.query.callsArgWith(0, builderStub)
           builderStub.join = sandbox.stub()
@@ -1256,7 +1256,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           context.on.returns({
             onIn: onInStub
           })
-          Db.participantCurrency = {find: sandbox.stub()}
+          Db.participantCurrency = { find: sandbox.stub() }
           let join3Stub = sandbox.stub()
           join3Stub.callsArgOn(1, context)
           let distinctStub = sandbox.stub()
@@ -1285,7 +1285,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             'settlementWindow.createdDate as createdDate',
             'swsc.createdDate as changedDate').calledOnce)
           test.ok(selectStub.calledOnce)
-          test.ok(whereStub.withArgs({settlementId: params.settlementId}).calledOnce)
+          test.ok(whereStub.withArgs({ settlementId: params.settlementId }).calledOnce)
           test.end()
         } catch (err) {
           Logger.error(`getWindowsBySettlementIdAndParticipantId failed with error - ${err}`)
@@ -1296,8 +1296,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await getWindowsBySettlementIdAndParticipantIdTest.test('throw error if query is wrong', async test => {
         try {
-          const params = {settlementId: 1}
-          Db.settlementSettlementWindow = {query: sandbox.stub()}
+          const params = { settlementId: 1 }
+          Db.settlementSettlementWindow = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementSettlementWindow.query.callsArgWith(0, builderStub)
           await SettlementFacade.settlementSettlementWindow.getWindowsBySettlementIdAndParticipantId(params)

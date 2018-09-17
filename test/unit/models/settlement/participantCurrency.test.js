@@ -49,7 +49,7 @@ Test('ParticipantCurrencyModel', async (participantCurrencyModelTest) => {
         try {
           const participantId = 1
           const accountId = 1
-          const params = {participantId, accountId}
+          const params = { participantId, accountId }
           const enums = {}
           const participantCurrecyIdMock = 1
 
@@ -69,7 +69,7 @@ Test('ParticipantCurrencyModel', async (participantCurrencyModelTest) => {
           let result = await ParticipantCurrencyModel.checkParticipantAccountExists(params, enums)
           test.ok(result, 'Result returned')
           test.ok(builderStub.select.withArgs('participantCurrencyId').calledOnce, 'select with args ... called once')
-          test.ok(whereStub.withArgs({participantId}).calledOnce, 'where with args ... called once')
+          test.ok(whereStub.withArgs({ participantId }).calledOnce, 'where with args ... called once')
           test.ok(andWhereStub.withArgs('participantCurrencyId', accountId).calledOnce, 'where with args ... called once')
           test.equal(result, participantCurrecyIdMock, 'Result matched')
 

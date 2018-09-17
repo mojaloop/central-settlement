@@ -45,10 +45,10 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
   await settlementWindowServiceTest.test('getById should', async getByIdTest => {
     try {
-      const params = {settlementWindowId: 1}
+      const params = { settlementWindowId: 1 }
       const enums = {}
-      const options = {logger: Logger}
-      const settlementWindowMock = {settlementWindowId: 1}
+      const options = { logger: Logger }
+      const settlementWindowMock = { settlementWindowId: 1 }
 
       await getByIdTest.test('return settlement window', async test => {
         try {
@@ -83,10 +83,10 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
   await settlementWindowServiceTest.test('getByParams should', async getByParamsTest => {
     try {
-      let params = {query: {participantId: 1, state: 'PENDING_SETTLEMENT'}}
+      let params = { query: { participantId: 1, state: 'PENDING_SETTLEMENT' } }
       const enums = {}
-      const options = {logger: Logger}
-      const settlementWindowsMock = [{settlementWindowId: 1}, {settlementWindowId: 2}]
+      const options = { logger: Logger }
+      const settlementWindowsMock = [{ settlementWindowId: 1 }, { settlementWindowId: 2 }]
 
       await getByParamsTest.test('return settlement windows', async test => {
         try {
@@ -104,7 +104,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
             test.ok(SettlementWindowModel.getByParams.withArgs(params, enums).calledOnce, 'SettlementWindowModel.getByParams with args ... called once')
           }
 
-          params = {query: {}}
+          params = { query: {} }
           try {
             result = await SettlementWindowService.getByParams(params, enums)
             test.fail('Error expected, but not thrown!')
@@ -130,11 +130,11 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
   await settlementWindowServiceTest.test('close should', async closeTest => {
     try {
-      let params = {id: 1}
+      let params = { id: 1 }
       const enums = {}
-      const options = {logger: Logger}
+      const options = { logger: Logger }
       const settlementWindowIdMock = 1
-      const settlementWindowMock = {settlementWindowId: settlementWindowIdMock, state: 'CLOSED'}
+      const settlementWindowMock = { settlementWindowId: settlementWindowIdMock, state: 'CLOSED' }
 
       await closeTest.test('close settlement window and return it', async test => {
         try {
@@ -143,7 +143,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
           let result = await SettlementWindowService.close(params, enums, options)
           test.ok(result, 'Result returned')
           test.ok(SettlementWindowModel.close.withArgs(params, enums).calledOnce, 'SettlementWindowModel.close with args ... called once')
-          test.ok(SettlementWindowModel.getById.withArgs({settlementWindowId: settlementWindowIdMock}, enums).calledOnce, 'SettlementWindowModel.getById with args ... called once')
+          test.ok(SettlementWindowModel.getById.withArgs({ settlementWindowId: settlementWindowIdMock }, enums).calledOnce, 'SettlementWindowModel.getById with args ... called once')
 
           SettlementWindowModel.close = sandbox.stub().throws(new Error('Error occured'))
           try {

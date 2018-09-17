@@ -58,7 +58,7 @@ Test('SettlementModel', async (settlementWindowStateChangeModelTest) => {
             insert: sandbox.stub().returns(true)
           }
 
-          let result = await SettlementWindowStateChangeModel.create({settlementWindowId, state, reason}, enums)
+          let result = await SettlementWindowStateChangeModel.create({ settlementWindowId, state, reason }, enums)
           test.ok(result, 'Result returned and matched')
           test.ok(Db.settlementWindowStateChange.insert.withArgs({
             settlementWindowId,
@@ -68,7 +68,7 @@ Test('SettlementModel', async (settlementWindowStateChangeModelTest) => {
 
           Db.settlementWindowStateChange.insert = sandbox.stub().throws(new Error('Error occured'))
           try {
-            result = await SettlementWindowStateChangeModel.create({settlementWindowId, state, reason})
+            result = await SettlementWindowStateChangeModel.create({ settlementWindowId, state, reason })
             test.fail('Error expected, but not thrown!')
           } catch (err) {
             test.equal(err.message, 'Error occured', `Error "${err.message}" thrown as expected`)
