@@ -376,7 +376,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           test.fail('Error not thrown!')
         } catch (err) {
           Logger.error(`close failed with error - ${err}`)
-          test.equal(err.message, '2001', `Error "${err.message}" thrown as expected`)
+          test.ok(err instanceof Error, `Error "${err.message}" thrown as expected`)
           test.end()
         }
       })

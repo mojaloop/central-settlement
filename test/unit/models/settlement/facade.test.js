@@ -1045,7 +1045,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
     try {
       await getAccountByIdTest.test('retrieve account by id', async test => {
         try {
-          const params = { settlementParticipantCurrencyId: 1 }
+          const settlementParticipantCurrencyList = [{ settlementParticipantCurrencyId: 1 }]
           Db.settlementParticipantCurrency = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
@@ -1056,11 +1056,11 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           builderStub.join.returns({
             join: joinStub.returns({
               select: selectStub.returns({
-                where: whereStub
+                whereIn: whereStub
               })
             })
           })
-          await SettlementFacade.settlementParticipantCurrency.getAccountById(params)
+          await SettlementFacade.settlementParticipantCurrency.getAccountById({ settlementParticipantCurrencyList })
           test.ok(builderStub.join.withArgs('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId').calledOnce)
           test.ok(joinStub.withArgs('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId').calledOnce)
           test.ok(selectStub.withArgs('pc.participantId AS participantId',
@@ -1069,7 +1069,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             'spcsc.reason AS reason',
             'settlementParticipantCurrency.netAmount as netAmount',
             'pc.currencyId AS currency').calledOnce)
-          test.ok(whereStub.withArgs(params).calledOnce)
+          test.ok(whereStub.withArgs('settlementParticipantCurrency.settlementParticipantCurrencyId', [1]).calledOnce)
           test.end()
         } catch (err) {
           Logger.error(`getAccountById failed with error - ${err}`)
@@ -1196,10 +1196,10 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             })
           })
           await SettlementFacade.settlementSettlementWindow.getWindowsBySettlementIdAndAccountId(params)
-          test.ok(builderStub.join.withArgs('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId').calledOnce)
+          test.ok(builderStub.join.withArgs('settlementWindow', 'settlementWindow.settlementWindowId', 'settlementSettlementWindow.settlementWindowId').calledOnce)
           test.ok(join2Stub.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce)
           test.equal(join3Stub.getCall(0).args[0], 'settlementTransferParticipant AS stp')
-          test.ok(context.on.withArgs('stp.settlementWindowId', 'sw.settlementWindowId').calledOnce)
+          test.ok(context.on.withArgs('stp.settlementWindowId', 'settlementWindow.settlementWindowId').calledOnce)
           test.ok(on2Stub.withArgs('stp.participantCurrencyId', params.accountId).calledOnce)
           test.ok(distinctStub.withArgs('settlementWindow.settlementWindowId',
             'swsc.settlementWindowStateId as state',
@@ -1207,7 +1207,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             'settlementWindow.createdDate as createdDate',
             'swsc.createdDate as changedDate').calledOnce)
           test.ok(selectStub.calledOnce)
-          test.ok(whereStub.withArgs({ settlementId: params.settlementId }).calledOnce)
+          test.ok(whereStub.withArgs('settlementSettlementWindow.settlementId', params.settlementId).calledOnce)
           test.end()
         } catch (err) {
           Logger.error(`getWindowsBySettlementIdAndAccountId failed with error - ${err}`)
@@ -1274,10 +1274,10 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             })
           })
           await SettlementFacade.settlementSettlementWindow.getWindowsBySettlementIdAndParticipantId(params)
-          test.ok(builderStub.join.withArgs('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId').calledOnce)
+          test.ok(builderStub.join.withArgs('settlementWindow', 'settlementWindow.settlementWindowId', 'settlementSettlementWindow.settlementWindowId').calledOnce)
           test.ok(join2Stub.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce)
           test.equal(join3Stub.getCall(0).args[0], 'settlementTransferParticipant AS stp')
-          test.ok(context.on.withArgs('stp.settlementWindowId', 'sw.settlementWindowId').calledOnce)
+          test.ok(context.on.withArgs('stp.settlementWindowId', 'settlementWindow.settlementWindowId').calledOnce)
           test.equal(onInStub.getCall(0).args[0], 'stp.participantCurrencyId')
           test.ok(distinctStub.withArgs('settlementWindow.settlementWindowId',
             'swsc.settlementWindowStateId as state',
@@ -1285,7 +1285,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             'settlementWindow.createdDate as createdDate',
             'swsc.createdDate as changedDate').calledOnce)
           test.ok(selectStub.calledOnce)
-          test.ok(whereStub.withArgs({ settlementId: params.settlementId }).calledOnce)
+          test.ok(whereStub.withArgs('settlementSettlementWindow.settlementId', params.settlementId).calledOnce)
           test.end()
         } catch (err) {
           Logger.error(`getWindowsBySettlementIdAndParticipantId failed with error - ${err}`)
