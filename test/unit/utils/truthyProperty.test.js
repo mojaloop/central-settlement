@@ -18,33 +18,34 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
 
 'use strict'
 
-const Db = require('../index')
+const Test = require('tapes')(require('tape'))
+const Logger = require('@mojaloop/central-services-shared').Logger
+const truthyProperty = require('../../../src/utils/truthyProperty')
 
-const getAccountInSettlement = async ({ settlementId, accountId }, enums = {}) => {
-  try {
-    // let result = await Db.settlementParticipantCurrency.query(builder => {
-    //   return builder
-    //     .select('settlementParticipantCurrencyId')
-    //     .where({ settlementId })
-    //     .andWhere('settlementParticipantCurrencyId', accountId)
-    // })
-    let result = await Db.settlementParticipantCurrency.find({
-      settlementId,
-      settlementParticipantCurrencyId: accountId
-    })
-    return result
-  } catch (err) {
-    throw err
-  }
-}
+Test('truthyProperty utility', (truthyPropertyTest) => {
+  truthyPropertyTest.test('should validate object properties are not all empty', test => {
+    try {
+      let emptyProps = truthyProperty({ input: null })
+      test.notOk(emptyProps, 'properties are empty')
+      let notObject = truthyProperty('string')
+      test.ok(notObject, 'not an object')
+      let emptyObject = truthyProperty({})
+      test.notOk(emptyObject, 'object is empty')
+      let ok = truthyProperty({ input: 'something' })
+      test.ok(ok, 'object is not empty')
+      test.end()
+    } catch (err) {
+      Logger.error(`truthyProperty failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
 
-module.exports = {
-  getAccountInSettlement
-}
+  truthyPropertyTest.end()
+})

@@ -53,14 +53,14 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
   get: async function getSettlementById (request, h) {
-    const Enums = await request.server.methods.enums('settlementStates')
     const settlementId = request.params.id
     try {
+      const Enums = await request.server.methods.enums('settlementStates')
       request.server.log('info', `get settlement by Id requested with id ${settlementId}`)
-      let settlementResult = await settlement.getById({ settlementId }, Enums, { logger: request.server.log })
+      let settlementResult = await settlement.getById({ settlementId }, Enums, { logger: request.server.log() })
       return h.response(settlementResult)
     } catch (e) {
-      request.server.log('error', `ERROR settlementWindowId: ${settlementId} not found`)
+      request.server.log('error', e)
       return Boom.notFound(e.message)
     }
   },
@@ -74,11 +74,12 @@ module.exports = {
 
   put: async function updateSettlementById (request, h) {
     const settlementId = request.params.id
-    const Enums = await request.server.methods.enums('settlementStates')
     try {
+      const Enums = await request.server.methods.enums('settlementStates')
       return await settlement.putById(settlementId, request.payload, Enums, { logger: request.server.log })
     } catch (e) {
-      throw (Boom.boomify(e))
+      request.server.log('error', e)
+      return Boom.boomify(e)
     }
   }
 }

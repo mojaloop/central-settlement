@@ -405,7 +405,7 @@ Test('SettlementService', async (settlementServiceTest) => {
       }]
       let participantCurrencyIdMock = 1
       let settlementParticipantCurrencyId = 1
-
+      let settlementParticipantCurrencyList = accountsMock
       await getByIdParticipantAccountTest.test('return settlement participant accounts', async test => {
         try {
           SettlementModel.getById = sandbox.stub().returns(settlementMock)
@@ -415,7 +415,7 @@ Test('SettlementService', async (settlementServiceTest) => {
             getAccountsByListOfIds: sandbox.stub().returns(accountsMock)
           }
           SettlementModel.checkParticipantAccountExists = sandbox.stub().returns(participantCurrencyIdMock)
-          SettlementModel.getAccountInSettlement = sandbox.stub().returns(settlementParticipantCurrencyId)
+          SettlementModel.getAccountInSettlement = sandbox.stub().returns(settlementParticipantCurrencyList)
           SettlementModel.settlementSettlementWindow = {
             getWindowsBySettlementIdAndAccountId: sandbox.stub().returns(settlementWindowsMock),
             getWindowsBySettlementIdAndParticipantId: sandbox.stub().returns(settlementWindowsMock)
@@ -427,7 +427,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.ok(SettlementModel.checkParticipantAccountExists.withArgs({ participantId, accountId }, enums).calledOnce, 'SettlementModel.checkParticipantAccountExists with args ... called once')
           test.ok(SettlementModel.getAccountInSettlement.withArgs({ settlementId, accountId }, enums).calledOnce, 'SettlementModel.getAccountInSettlement with args ... called once')
           test.ok(SettlementModel.settlementSettlementWindow.getWindowsBySettlementIdAndAccountId.withArgs({ settlementId, accountId }, enums).calledOnce, 'SettlementModel.ssw.getWindowsBySettlementIdAndAccountId with args ... called once')
-          test.ok(SettlementModel.settlementParticipantCurrency.getAccountById.withArgs({ settlementParticipantCurrencyId }, enums).calledOnce, 'SettlementModel.spc.getAccountById with args ... called once')
+          test.ok(SettlementModel.settlementParticipantCurrency.getAccountById.withArgs({ settlementParticipantCurrencyList }, enums).calledOnce, 'SettlementModel.spc.getAccountById with args ... called once')
           test.equal(result.id, settlementMock.settlementId)
           test.equal(result.state, settlementMock.state)
           test.equal(result.settlementWindows.length, settlementWindowsMock.length)
@@ -450,7 +450,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.ok(SettlementModel.checkParticipantAccountExists.withArgs({ participantId, accountId }, enums).calledOnce, 'SettlementModel.checkParticipantAccountExists with args ... called once')
           test.ok(SettlementModel.getAccountInSettlement.withArgs({ settlementId, accountId }, enums).calledOnce, 'SettlementModel.getAccountInSettlement with args ... called once')
           test.ok(SettlementModel.settlementSettlementWindow.getWindowsBySettlementIdAndAccountId.withArgs({ settlementId, accountId }, enums).calledOnce, 'SettlementModel.ssw.getWindowsBySettlementIdAndAccountId with args ... called once')
-          test.ok(SettlementModel.settlementParticipantCurrency.getAccountById.withArgs({ settlementParticipantCurrencyId }, enums).calledOnce, 'SettlementModel.spc.getAccountById with args ... called once')
+          test.ok(SettlementModel.settlementParticipantCurrency.getAccountById.withArgs({ settlementParticipantCurrencyList }, enums).calledOnce, 'SettlementModel.spc.getAccountById with args ... called once')
 
           params = { settlementId, participantId, accountId }
           SettlementModel.getAccountInSettlement = sandbox.stub().returns()
@@ -464,7 +464,7 @@ Test('SettlementService', async (settlementServiceTest) => {
             test.ok(SettlementModel.checkParticipantAccountExists.withArgs({ participantId, accountId }, enums).calledTwice, 'SettlementModel.checkParticipantAccountExists with args ... called twice')
             test.ok(SettlementModel.getAccountInSettlement.withArgs({ settlementId, accountId }, enums).calledOnce, 'SettlementModel.getAccountInSettlement with args ... called once')
             test.ok(SettlementModel.settlementSettlementWindow.getWindowsBySettlementIdAndAccountId.withArgs({ settlementId, accountId }, enums).calledOnce, 'SettlementModel.ssw.getWindowsBySettlementIdAndAccountId with args ... called once')
-            test.ok(SettlementModel.settlementParticipantCurrency.getAccountById.withArgs({ settlementParticipantCurrencyId }, enums).calledOnce, 'SettlementModel.spc.getAccountById with args ... called once')
+            test.ok(SettlementModel.settlementParticipantCurrency.getAccountById.withArgs({ settlementParticipantCurrencyList }, enums).calledOnce, 'SettlementModel.spc.getAccountById with args ... called once')
           }
 
           SettlementModel.checkParticipantAccountExists = sandbox.stub().returns()
@@ -478,7 +478,7 @@ Test('SettlementService', async (settlementServiceTest) => {
             test.ok(SettlementModel.checkParticipantAccountExists.withArgs({ participantId, accountId }, enums).calledOnce, 'SettlementModel.checkParticipantAccountExists with args ... called once')
             test.ok(SettlementModel.getAccountInSettlement.withArgs({ settlementId, accountId }, enums).calledOnce, 'SettlementModel.getAccountInSettlement with args ... called once')
             test.ok(SettlementModel.settlementSettlementWindow.getWindowsBySettlementIdAndAccountId.withArgs({ settlementId, accountId }, enums).calledOnce, 'SettlementModel.ssw.getWindowsBySettlementIdAndAccountId with args ... called once')
-            test.ok(SettlementModel.settlementParticipantCurrency.getAccountById.withArgs({ settlementParticipantCurrencyId }, enums).calledOnce, 'SettlementModel.spc.getAccountById with args ... called once')
+            test.ok(SettlementModel.settlementParticipantCurrency.getAccountById.withArgs({ settlementParticipantCurrencyList }, enums).calledOnce, 'SettlementModel.spc.getAccountById with args ... called once')
           }
           test.end()
         } catch (err) {

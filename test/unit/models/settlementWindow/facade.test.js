@@ -30,6 +30,8 @@ const Db = require('../../../../src/models')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const SettlementWindowFacade = require('../../../../src/models/settlementWindow/facade')
 
+Logger.error('this is error')
+
 Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
   let sandbox
   let clock

@@ -60,7 +60,8 @@ Test('Server Setup', async setupTest => {
         info: {
           host: Config.HOSTNAME,
           port: Config.PORT
-        }
+        },
+        ext: sandbox.stub()
       }
       HapiStub = {
         Server: sandbox.stub().returns(serverStub)
@@ -107,6 +108,7 @@ Test('Server Setup', async setupTest => {
           test.ok(serverStub.method.calledOnce, 'server.method called once')
           test.ok(serverStub.start.calledOnce, 'server.start called once')
           test.ok(serverStub.plugins.openapi.setHost.calledOnce, 'server.plugins.openapi.setHost called once')
+          test.ok(serverStub.ext.calledOnce, 'server.ext called once')
           test.end()
         } catch (err) {
           Logger.error(`init failed with error - ${err}`)

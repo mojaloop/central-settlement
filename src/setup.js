@@ -49,7 +49,11 @@ const defaultConfig = {
       engine: require('catbox-memory'),
       partition: 'cache'
     }
-  ]
+  ] // ,
+  // debug: {
+  //   request: ['error'],
+  //   log: ['error']
+  // }
 }
 
 const getEnums = (id) => {
@@ -58,7 +62,7 @@ const getEnums = (id) => {
 
 async function connectDatabase () {
   try {
-    let db = await Db.connect(Config.DATABASE_URI) // TODO: add from ENV or common config
+    let db = await Db.connect(Config.DATABASE_URI)
     return db
   } catch (e) {
     throw e
@@ -83,11 +87,31 @@ const createServer = async function (config, openAPIPluginOptions) {
       options: {
         cache: {
           cache: 'memCache',
-          expiresIn: 180 * 1000,
+          expiresIn: 20 * 1000,
           generateTimeout: 30 * 1000
         }
       }
     })
+
+    server.ext([
+      {
+        type: 'onPreHandler',
+        method: (request, h) => {
+          server.log('request', request)
+          return h.continue
+        }
+      },
+      {
+        type: 'onPreResponse',
+        method: (request, h) => {
+          if (!request.response.isBoom) {
+            server.log('response', request.response)
+          }
+          return h.continue
+        }
+      }
+    ])
+
     await server.start()
     return server
   } catch (e) {

@@ -19,6 +19,7 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * Georgi Georgiev <georgi.georgiev@modusbox.com>
+ * Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
 
@@ -28,6 +29,7 @@ const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 let Logger = require('@mojaloop/central-services-shared').Logger
 const Proxyquire = require('proxyquire')
+// const checkEmpty = require('./../../../src/utils/truthyProperty')
 
 Test('loggerPlugin utility', async (loggerPluginTest) => {
   let sandbox
@@ -52,12 +54,10 @@ Test('loggerPlugin utility', async (loggerPluginTest) => {
         tags: ['tagged'],
         data: 'data'
       }
-      const loggerTaggedStub = sandbox.stub()
       const loggerInfoStub = sandbox.stub()
       const loggerPluginProxy = Proxyquire('../../../src/utils/logger-plugin', {
         '@mojaloop/central-services-shared': {
           Logger: {
-            tagged: loggerTaggedStub,
             info: loggerInfoStub
           }
         }
@@ -66,9 +66,178 @@ Test('loggerPlugin utility', async (loggerPluginTest) => {
       await loggerPluginProxy.plugin.register(serverStub)
       delete eventMock.tags
       await loggerPluginProxy.plugin.register(serverStub)
-      test.ok(serverStub.events.on.calledTwice, 'server.events.on is called twice')
-      test.ok(loggerTaggedStub.withArgs(eventMock.data).calledOnce, 'Logger[event.tags[0]] with arg event.data is called once')
-      test.ok(loggerInfoStub.withArgs(eventMock.data).calledOnce, 'Logger.info with arg event.data is called once')
+      test.ok(!(serverStub.events.on.notCalled), 'server.events.on is called once')
+      test.ok(!(loggerInfoStub.notCalled), 'Logger.info with arg event.data is called once')
+      test.end()
+    } catch (err) {
+      Logger.error(`create failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
+
+  await loggerPluginTest.test('should log all logs', async test => {
+    try {
+      let serverStub = sandbox.stub()
+      serverStub.events = {
+        on: sandbox.stub()
+      }
+      let eventMock = {
+        tags: ['info'],
+        data: 'data'
+      }
+      const loggerInfoStub = sandbox.stub()
+      const loggerPluginProxy = Proxyquire('../../../src/utils/logger-plugin', {
+        '@mojaloop/central-services-shared': {
+          Logger: {
+            info: loggerInfoStub
+          }
+        }
+      })
+      serverStub.events.on.callsArgWith(1, eventMock)
+      await loggerPluginProxy.plugin.register(serverStub)
+      delete eventMock.tags
+      await loggerPluginProxy.plugin.register(serverStub)
+      test.ok(!(serverStub.events.on.notCalled), 'server.events.on is called once')
+      test.ok(!(loggerInfoStub.notCalled), 'Logger.info with arg event.data is called once')
+      test.end()
+    } catch (err) {
+      Logger.error(`create failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
+
+  await loggerPluginTest.test('should log errors', async test => {
+    try {
+      let serverStub = sandbox.stub()
+      serverStub.events = {
+        on: sandbox.stub()
+      }
+      let eventMock = {
+        tags: ['error'],
+        error: new Error('error')
+      }
+      const loggerInfoStub = sandbox.stub()
+      const loggerPluginProxy = Proxyquire('../../../src/utils/logger-plugin', {
+        '@mojaloop/central-services-shared': {
+          Logger: {
+            info: loggerInfoStub
+          }
+        }
+      })
+      serverStub.events.on.callsArgWith(1, eventMock)
+      await loggerPluginProxy.plugin.register(serverStub)
+      delete eventMock.tags
+      await loggerPluginProxy.plugin.register(serverStub)
+      test.ok(!(serverStub.events.on.notCalled), 'server.events.on is called once')
+      test.ok(!(loggerInfoStub.notCalled), 'Logger.info with arg event.data is called once')
+      test.end()
+    } catch (err) {
+      Logger.error(`create failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
+
+  await loggerPluginTest.test('should log for requests', async test => {
+    try {
+      let serverStub = sandbox.stub()
+      serverStub.events = {
+        on: sandbox.stub()
+      }
+      let eventMock = {
+        tags: ['request'],
+        data: {
+          method: 'method',
+          path: 'path'
+        }
+      }
+      const checkEmpty = Sinon.stub()
+      const loggerInfoStub = sandbox.stub()
+      const loggerPluginProxy = Proxyquire('../../../src/utils/logger-plugin', {
+        '@mojaloop/central-services-shared': {
+          Logger: {
+            info: loggerInfoStub
+          }
+        }
+      })
+      checkEmpty.returns(1)
+      serverStub.events.on.callsArgWith(1, eventMock)
+      await loggerPluginProxy.plugin.register(serverStub)
+      delete eventMock.tags
+      await loggerPluginProxy.plugin.register(serverStub)
+      test.ok(!(serverStub.events.on.notCalled), 'server.events.on is called once')
+      test.ok(!(loggerInfoStub.notCalled), 'Logger.info with arg event.data is called once')
+      test.end()
+    } catch (err) {
+      Logger.error(`create failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
+
+  await loggerPluginTest.test('should log empty requests', async test => {
+    try {
+      let serverStub = sandbox.stub()
+      serverStub.events = {
+        on: sandbox.stub()
+      }
+      let eventMock = {
+        tags: ['request'],
+        data: {
+          method: 'method',
+          path: 'path'
+        }
+      }
+      const checkEmpty = Sinon.stub()
+      const loggerInfoStub = sandbox.stub()
+      const loggerPluginProxy = Proxyquire('../../../src/utils/logger-plugin', {
+        '@mojaloop/central-services-shared': {
+          Logger: {
+            info: loggerInfoStub
+          }
+        }
+      })
+      checkEmpty.returns(0)
+      serverStub.events.on.callsArgWith(1, eventMock)
+      await loggerPluginProxy.plugin.register(serverStub)
+      delete eventMock.tags
+      await loggerPluginProxy.plugin.register(serverStub)
+      test.ok(!(serverStub.events.on.notCalled), 'server.events.on is called once')
+      test.ok(!(loggerInfoStub.notCalled), 'Logger.info with arg event.data is called once')
+      test.end()
+    } catch (err) {
+      Logger.error(`create failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
+
+  await loggerPluginTest.test('should log empty requests', async test => {
+    try {
+      let serverStub = sandbox.stub()
+      serverStub.events = {
+        on: sandbox.stub()
+      }
+      let eventMock = {
+        tags: ['response'],
+        data: 'data'
+      }
+      const loggerInfoStub = sandbox.stub()
+      const loggerPluginProxy = Proxyquire('../../../src/utils/logger-plugin', {
+        '@mojaloop/central-services-shared': {
+          Logger: {
+            info: loggerInfoStub
+          }
+        }
+      })
+      serverStub.events.on.callsArgWith(1, eventMock)
+      await loggerPluginProxy.plugin.register(serverStub)
+      delete eventMock.tags
+      await loggerPluginProxy.plugin.register(serverStub)
+      test.ok(!(serverStub.events.on.notCalled), 'server.events.on is called once')
+      test.ok(!(loggerInfoStub.notCalled), 'Logger.info with arg event.data is called once')
       test.end()
     } catch (err) {
       Logger.error(`create failed with error - ${err}`)
