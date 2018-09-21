@@ -19,6 +19,7 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * Georgi Georgiev <georgi.georgiev@modusbox.com>
+ * Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
 
@@ -53,27 +54,16 @@ Test('SettlementParticipantCurrencyModel', async (settlementParticipantCurrencyM
           const enums = {}
           const settlementParticipantCurrencyIdMock = 1
 
-          const builderStub = sandbox.stub()
           Db.settlementParticipantCurrency = {
-            query: sandbox.stub()
+            find: sandbox.stub()
           }
-          Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
-          const whereStub = sandbox.stub()
-          const andWhereStub = sandbox.stub()
-          builderStub.select = sandbox.stub().returns({
-            where: whereStub.returns({
-              andWhere: andWhereStub.returns(settlementParticipantCurrencyIdMock)
-            })
-          })
 
+          Db.settlementParticipantCurrency.find.returns(settlementParticipantCurrencyIdMock)
           let result = await SettlementParticipantCurrencyModel.getAccountInSettlement(params, enums)
+          test.ok(Db.settlementParticipantCurrency.find.withArgs({ settlementId, accountId }))
           test.ok(result, 'Result returned')
-          test.ok(builderStub.select.withArgs('settlementParticipantCurrencyId').calledOnce, 'select with args ... called once')
-          test.ok(whereStub.withArgs({ settlementId }).calledOnce, 'where with args ... called once')
-          test.ok(andWhereStub.withArgs('settlementParticipantCurrencyId', accountId).calledOnce, 'where with args ... called once')
           test.equal(result, settlementParticipantCurrencyIdMock, 'Result matched')
-
-          Db.settlementParticipantCurrency.query = sandbox.stub().throws(new Error('Error occured'))
+          Db.settlementParticipantCurrency.find.throws(new Error('Error occured'))
           try {
             result = await SettlementParticipantCurrencyModel.getAccountInSettlement(params)
             test.fail('Error expected, but not thrown!')

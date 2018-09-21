@@ -39,13 +39,14 @@ module.exports = {
    */
 
   get: async function getSettlementBySettlementParticipantAccount (request, h) {
-    const Enums = await request.server.methods.enums('settlementWindowStates')
-    const { settlementId, participantId, accountId } = request.params
     try {
-      let result = await Settlements.getByIdParticipantAccount({ settlementId, participantId, accountId }, Enums, { logger: request.server.log })
+      const Enums = await request.server.methods.enums('settlementWindowStates')
+      const { settlementId, participantId, accountId } = request.params
+      let result = await Settlements.getByIdParticipantAccount({ settlementId, participantId, accountId }, Enums)
       return h.response(result)
     } catch (e) {
-      return Boom.boomify(e)
+      request.server.log('error', e)
+      return Boom.badRequest(e)
     }
   }
   /**

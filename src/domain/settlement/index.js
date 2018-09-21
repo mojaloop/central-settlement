@@ -35,7 +35,6 @@
 
 const SettlementModel = require('../../models/settlement')
 const SettlementWindowModel = require('../../models/settlementWindow')
-const CentralLogger = require('@mojaloop/central-services-shared').Logger
 
 const prepareParticipantsResult = function (participantCurrenciesList) {
   try {
@@ -67,14 +66,12 @@ const prepareParticipantsResult = function (participantCurrenciesList) {
     }
     return Array.from(Object.keys(participantAccounts).map(participantId => participantAccounts[participantId]))
   } catch (e) {
-    CentralLogger.info(e)
     throw e
   }
 }
 
 module.exports = {
   getById: async function ({ settlementId }, enums, options = {}) {
-    let Logger = options.logger || CentralLogger
     try {
       let settlement = await SettlementModel.getById({ settlementId }, enums)
       if (settlement) {
@@ -89,11 +86,9 @@ module.exports = {
         }
       } else {
         let err = new Error('2001 TODO Settlement not found')
-        Logger.info('error', err)
         throw err
       }
     } catch (err) {
-      Logger.info('error', err)
       throw err
     }
   },
@@ -102,7 +97,6 @@ module.exports = {
 
   getSettlementsByParams: async function (params, enums, options = {}) {
     // 7 filters - at least one should be used
-    let Logger = options.logger || CentralLogger
     Object.keys(params.query).forEach(key => params.query[key] === undefined && delete params.query[key])
     if (Object.keys(params.query).length && Object.keys(params.query).length < 10) {
       try {
@@ -175,16 +169,13 @@ module.exports = {
           return result
         } else {
           let err = new Error('Settlements not found')
-          Logger.info('error', err)
           throw err
         }
       } catch (err) {
-        Logger.info('error', err)
         throw err
       }
     } else {
       let err = new Error('Use at least one parameter: state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId')
-      Logger.info('error', err)
       throw err
     }
   },
@@ -192,7 +183,6 @@ module.exports = {
   settlementEventTrigger: async function (params, enums, options = {}) {
     let settlementWindowsIdList = params.settlementWindows
     let reason = params.reason
-    let Logger = options.logger || CentralLogger
     try {
       let idList = settlementWindowsIdList.map(v => v.id)
       // validate windows state
@@ -221,13 +211,11 @@ module.exports = {
         participants
       }
     } catch (err) {
-      Logger.info('error', err)
       throw err
     }
   },
 
   getByIdParticipantAccount: async function ({ settlementId, participantId, accountId = null }, enums, options = {}) {
-    let Logger = options.logger || CentralLogger
     try {
       let settlement = await SettlementModel.getById({ settlementId }, enums) // 3
       let settlementParticipantCurrencyIdList = await SettlementModel.settlementParticipantCurrency.getAccountsInSettlementByIds({
@@ -242,18 +230,18 @@ module.exports = {
           participantId,
           accountId
         }, enums) // 9
-        let settlementParticipantCurrencyId
+        let settlementParticipantCurrencyList
         if (participantAndAccountMatched) {
-          settlementParticipantCurrencyId = await SettlementModel.getAccountInSettlement({
+          settlementParticipantCurrencyList = await SettlementModel.getAccountInSettlement({
             settlementId,
             accountId
           }, enums) // 12
-          if (settlementParticipantCurrencyId) {
+          if (settlementParticipantCurrencyList) {
             settlementWindows = await SettlementModel.settlementSettlementWindow.getWindowsBySettlementIdAndAccountId({
               settlementId,
               accountId
             }, enums)
-            accounts = await SettlementModel.settlementParticipantCurrency.getAccountById({ settlementParticipantCurrencyId }, enums)
+            accounts = await SettlementModel.settlementParticipantCurrency.getAccountById({ settlementParticipantCurrencyList }, enums)
             participants = prepareParticipantsResult(accounts)
           } else {
             throw new Error('TODO')
@@ -276,7 +264,6 @@ module.exports = {
         participants
       }
     } catch (err) {
-      Logger.info('error', err)
       throw err
     }
   }

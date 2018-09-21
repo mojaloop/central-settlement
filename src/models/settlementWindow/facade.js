@@ -76,7 +76,7 @@ const Facade = {
       let { participantId, state, fromDateTime, toDateTime } = query
       state = state ? ` = "${state.toUpperCase()}"` : 'IS NOT NULL'
       fromDateTime = fromDateTime || new Date('01-01-1970').toISOString()
-      toDateTime = toDateTime || new Date().toISOString()
+      toDateTime = toDateTime || new Date().toLocaleString()
       let result = await Db.settlementWindow.query(builder => {
         if (!participantId) {
           return builder
@@ -118,7 +118,7 @@ const Facade = {
       const knex = await Db.getKnex()
       let settlementWindowCurrentState = await Facade.getById({ settlementWindowId })
       if (settlementWindowCurrentState && settlementWindowCurrentState.state !== enums.OPEN) {
-        let err = new Error('2001')
+        let err = new Error(`2001: Window ${settlementWindowId} is not OPEN'`)
         throw err
       } else {
         return await knex.transaction(async (trx) => {

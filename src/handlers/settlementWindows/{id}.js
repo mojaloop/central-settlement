@@ -48,14 +48,13 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
   get: async function getSettlementWindowById (request, h) {
-    const Enums = await request.server.methods.enums('settlementWindowStates')
     const settlementWindowId = request.params.id
     try {
-      request.server.log('info', `get settlementwindow by Id requested with id ${settlementWindowId}`)
-      let settlementWindowResult = await settlementWindow.getById({ settlementWindowId }, Enums, { logger: request.server.log })
+      const Enums = await request.server.methods.enums('settlementWindowStates')
+      let settlementWindowResult = await settlementWindow.getById({ settlementWindowId }, Enums, request.server.log)
       return h.response(settlementWindowResult)
     } catch (e) {
-      request.server.log('error', `ERROR settlementWindowId: ${settlementWindowId} not found`)
+      request.server.log('error', e)
       return Boom.notFound(e.message)
     }
   },
@@ -69,11 +68,12 @@ module.exports = {
   post: async function closeSettlementWindow (request, h) {
     const { state, reason } = request.payload
     const settlementWindowId = request.params.id
-    const Enums = await request.server.methods.enums('settlementWindowStates')
     try {
-      return await settlementWindow.close({ settlementWindowId, state, reason }, Enums, { logger: request.server.log })
+      const Enums = await request.server.methods.enums('settlementWindowStates')
+      return await settlementWindow.close({ settlementWindowId, state, reason }, Enums)
     } catch (e) {
-      throw (Boom.boomify(e))
+      request.server.log('error', e)
+      return Boom.badRequest(e.message)
     }
   }
 }

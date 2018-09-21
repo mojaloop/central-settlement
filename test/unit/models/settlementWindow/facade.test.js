@@ -19,6 +19,7 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * Georgi Georgiev <georgi.georgiev@modusbox.com>
+ * Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
 
@@ -29,6 +30,8 @@ const Sinon = require('sinon')
 const Db = require('../../../../src/models')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const SettlementWindowFacade = require('../../../../src/models/settlementWindow/facade')
+
+Logger.error('this is error')
 
 Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
   let sandbox
@@ -374,7 +377,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           test.fail('Error not thrown!')
         } catch (err) {
           Logger.error(`close failed with error - ${err}`)
-          test.equal(err.message, '2001', `Error "${err.message}" thrown as expected`)
+          test.ok(err instanceof Error, `Error "${err.message}" thrown as expected`)
           test.end()
         }
       })
