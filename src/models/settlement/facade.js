@@ -621,8 +621,11 @@ const Facade = {
       }
     },
 
-    getAccountById: async function ({ settlementParticipantCurrencyId }, enums = {}) {
+    getAccountById: async function ({ settlementParticipantCurrencyList }, enums = {}) {
       try {
+        let settlementParticipantCurrencyIdList = settlementParticipantCurrencyList.map(a => {
+          return a.settlementParticipantCurrencyId
+        })
         let result = await Db.settlementParticipantCurrency.query(builder => {
           return builder
             .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
@@ -635,7 +638,7 @@ const Facade = {
               'settlementParticipantCurrency.netAmount as netAmount',
               'pc.currencyId AS currency'
             )
-            .where({ settlementParticipantCurrencyId })
+            .whereIn('settlementParticipantCurrency.settlementParticipantCurrencyId', settlementParticipantCurrencyIdList)
         })
         return result
       } catch (err) {
@@ -670,10 +673,10 @@ const Facade = {
       try {
         let result = await Db.settlementSettlementWindow.query(builder => {
           return builder
-            .join('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
+            .join('settlementWindow', 'settlementWindow.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
             .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
             .join('settlementTransferParticipant AS stp', function () {
-              this.on('stp.settlementWindowId', 'sw.settlementWindowId')
+              this.on('stp.settlementWindowId', 'settlementWindow.settlementWindowId')
                 .on('stp.participantCurrencyId', accountId)
             })
             .distinct(
@@ -684,7 +687,7 @@ const Facade = {
               'swsc.createdDate as changedDate'
             )
             .select()
-            .where({ settlementId })
+            .where('settlementSettlementWindow.settlementId', settlementId)
         })
         return result
       } catch (err) {
@@ -695,10 +698,10 @@ const Facade = {
       try {
         let result = await Db.settlementSettlementWindow.query(builder => {
           return builder
-            .join('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
+            .join('settlementWindow', 'settlementWindow.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
             .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
             .join('settlementTransferParticipant AS stp', async function () {
-              this.on('stp.settlementWindowId', 'sw.settlementWindowId')
+              this.on('stp.settlementWindowId', 'settlementWindow.settlementWindowId')
                 .onIn('stp.participantCurrencyId', await Db.participantCurrency.find({ participantId }))
             })
             .distinct(
@@ -709,7 +712,7 @@ const Facade = {
               'swsc.createdDate as changedDate'
             )
             .select()
-            .where({ settlementId })
+            .where('settlementSettlementWindow.settlementId', settlementId)
         })
         return result
       } catch (err) {

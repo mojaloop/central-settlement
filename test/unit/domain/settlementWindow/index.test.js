@@ -19,6 +19,7 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * Georgi Georgiev <georgi.georgiev@modusbox.com>
+ * Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
 
@@ -62,7 +63,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
             result = await SettlementWindowService.getById(params, enums)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
-            test.equal(err.message, 'Settlement Window Not Found', `Error "${err.message}" thrown as expected`)
+            test.ok(err instanceof Error, `Error ${err.message} thrown`)
             test.ok(SettlementWindowModel.getById.withArgs(params, enums).calledOnce, 'SettlementWindowModel.getById with args ... called once')
           }
           test.end()
@@ -100,7 +101,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
             result = await SettlementWindowService.getByParams(params, enums)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
-            test.equal(err.message, 'Settlement Window Not Found', `Error "${err.message}" thrown as expected`)
+            test.ok(err instanceof Error, `Error "${err.message}" thrown as expected`)
             test.ok(SettlementWindowModel.getByParams.withArgs(params, enums).calledOnce, 'SettlementWindowModel.getByParams with args ... called once')
           }
 
