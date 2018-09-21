@@ -81,7 +81,7 @@ module.exports = {
       return h.response(settlementResult)
     } catch (e) {
       request.server.log('error', e)
-      return Boom.notFound(e.message)
+      return Boom.badRequest(e.message)
     }
   }
 }

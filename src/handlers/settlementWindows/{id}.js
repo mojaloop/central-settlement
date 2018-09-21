@@ -73,7 +73,7 @@ module.exports = {
       return await settlementWindow.close({ settlementWindowId, state, reason }, Enums, { logger: request.server.log })
     } catch (e) {
       request.server.log('error', e)
-      throw (Boom.badRequest(e.message))
+      return Boom.badRequest(e.message)
     }
   }
 }

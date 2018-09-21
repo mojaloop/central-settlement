@@ -87,7 +87,7 @@ const createServer = async function (config, openAPIPluginOptions) {
       options: {
         cache: {
           cache: 'memCache',
-          expiresIn: 20 * 1000,
+          expiresIn: 5 * 1000,
           generateTimeout: 30 * 1000
         }
       }

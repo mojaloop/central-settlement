@@ -46,7 +46,7 @@ module.exports = {
       return h.response(result)
     } catch (e) {
       request.server.log('error', e)
-      return Boom.boomify(e)
+      return Boom.badRequest(e)
     }
   }
   /**

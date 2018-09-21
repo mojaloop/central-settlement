@@ -79,7 +79,7 @@ module.exports = {
       return await settlement.putById(settlementId, request.payload, Enums, { logger: request.server.log })
     } catch (e) {
       request.server.log('error', e)
-      return Boom.boomify(e)
+      return Boom.badRequest(e)
     }
   }
 }

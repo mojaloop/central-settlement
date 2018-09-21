@@ -19,6 +19,7 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * Georgi Georgiev <georgi.georgiev@modusbox.com>
+ * Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
 
@@ -56,7 +57,7 @@ Test('SettlementParticipantCurrencyModel', async (settlementParticipantCurrencyM
           Db.settlementParticipantCurrency = {
             find: sandbox.stub()
           }
-      
+
           Db.settlementParticipantCurrency.find.returns(settlementParticipantCurrencyIdMock)
           let result = await SettlementParticipantCurrencyModel.getAccountInSettlement(params, enums)
           test.ok(Db.settlementParticipantCurrency.find.withArgs({ settlementId, accountId }))
