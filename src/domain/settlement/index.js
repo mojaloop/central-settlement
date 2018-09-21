@@ -35,7 +35,6 @@
 
 const SettlementModel = require('../../models/settlement')
 const SettlementWindowModel = require('../../models/settlementWindow')
-const CentralLogger = require('@mojaloop/central-services-shared').Logger
 
 const prepareParticipantsResult = function (participantCurrenciesList) {
   try {
@@ -67,7 +66,6 @@ const prepareParticipantsResult = function (participantCurrenciesList) {
     }
     return Array.from(Object.keys(participantAccounts).map(participantId => participantAccounts[participantId]))
   } catch (e) {
-    CentralLogger.info(`an error in file ${__filename} prepareParticipantsResult: ${e}`)
     throw e
   }
 }

@@ -57,7 +57,7 @@ module.exports = {
     try {
       const Enums = await request.server.methods.enums('settlementStates')
       request.server.log('info', `get settlement by Id requested with id ${settlementId}`)
-      let settlementResult = await settlement.getById({ settlementId }, Enums, { logger: request.server.log() })
+      let settlementResult = await settlement.getById({ settlementId }, Enums)
       return h.response(settlementResult)
     } catch (e) {
       request.server.log('error', e)
@@ -76,7 +76,7 @@ module.exports = {
     const settlementId = request.params.id
     try {
       const Enums = await request.server.methods.enums('settlementStates')
-      return await settlement.putById(settlementId, request.payload, Enums, { logger: request.server.log })
+      return await settlement.putById(settlementId, request.payload, Enums)
     } catch (e) {
       request.server.log('error', e)
       return Boom.badRequest(e)

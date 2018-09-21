@@ -42,7 +42,7 @@ module.exports = {
     try {
       const Enums = await request.server.methods.enums('settlementWindowStates')
       const { settlementId, participantId, accountId } = request.params
-      let result = await Settlements.getByIdParticipantAccount({ settlementId, participantId, accountId }, Enums, { logger: request.server.log() })
+      let result = await Settlements.getByIdParticipantAccount({ settlementId, participantId, accountId }, Enums)
       return h.response(result)
     } catch (e) {
       request.server.log('error', e)

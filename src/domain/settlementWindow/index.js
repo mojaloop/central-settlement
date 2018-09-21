@@ -27,12 +27,10 @@
  ******/
 
 const settlementWindowModel = require('../../models/settlementWindow')
-const centralLogger = require('@mojaloop/central-services-shared').Logger
 const hasFilters = require('./../../utils/truthyProperty')
 
 module.exports = {
-  getById: async function (params, enums, Logger = centralLogger) {
-    // let Logger = options.logger || centralLogger
+  getById: async function (params, enums) {
     try {
       let settlementWindow = await settlementWindowModel.getById(params, enums)
       if (settlementWindow) return settlementWindow

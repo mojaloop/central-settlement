@@ -70,7 +70,7 @@ module.exports = {
     const settlementWindowId = request.params.id
     try {
       const Enums = await request.server.methods.enums('settlementWindowStates')
-      return await settlementWindow.close({ settlementWindowId, state, reason }, Enums, { logger: request.server.log })
+      return await settlementWindow.close({ settlementWindowId, state, reason }, Enums)
     } catch (e) {
       request.server.log('error', e)
       return Boom.badRequest(e.message)
