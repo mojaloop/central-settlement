@@ -43,12 +43,12 @@
     "scripts": {
         "start": "node src/server.js",
         "test": "npm run test:unit | faucet",
-        "test:unit": "tape 'test/unit/**/*.js'",
-        "test:xunit": "tape 'test/unit/**/*.js' | tap-xunit",
-        "cover": "istanbul cover tape -- 'test/unit/**/*.js'",
+        "test:unit": "tape 'tests/unit/**/*.js'",
+        "test:xunit": "tape 'tests/unit/**/*.js' | tap-xunit",
+        "cover": "istanbul cover tape -- 'tests/unit/**/*.js'",
         "lint": "eslint .",
         "test:coverage-check": "npm run test:coverage && istanbul check-coverage",
-        "test:coverage": "istanbul cover tape -- 'test/unit/**/*.js'",
+        "test:coverage": "istanbul cover tape -- 'tests/unit/**/*.js'",
         "regenerate": "yo swaggerize:test --framework hapi --apiPath './src/interface/swagger.json'"
     },
     "generator-swaggerize": {
