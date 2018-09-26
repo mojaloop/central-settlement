@@ -1,4 +1,4 @@
-# Serice to expose the Mojaloop settlements API 
+# Service to expose the Mojaloop settlements API 
 
 The service is created using the hapi-openapi plugin.
 The current Swagger API documentation can be found [here](./config/swagger.json)
