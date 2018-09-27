@@ -103,8 +103,8 @@ const Facade = {
               'settlementWindow.createdDate as createdDate',
               'swsc.createdDate as changedDate'
             )
-            .where('pc.participantId', participantId)
             .orderBy('changedDate', 'desc').distinct()
+            .where('pc.participantId', participantId)
           if (state) { b.where('swsc.settlementWindowStateId', state) }
           if (fromDateTime) { b.where('settlementWindow.createdDate', '>=', fromDateTime) }
           if (toDateTime) { b.where('settlementWindow.createdDate', '<=', toDateTime) }
