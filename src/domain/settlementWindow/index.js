@@ -51,7 +51,7 @@ module.exports = {
         if (settlementWindows && settlementWindows.length > 0) {
           return settlementWindows
         } else {
-          let err = new Error(`settlementWindow by filters: ${JSON.stringify(params.query)} not found`)
+          let err = new Error(`settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
           throw err
         }
       } catch (err) {
