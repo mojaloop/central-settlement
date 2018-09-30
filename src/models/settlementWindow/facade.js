@@ -74,12 +74,9 @@ const Facade = {
   getByParams: async function ({ query }, enums = {}) {
     try {
       let { participantId, state, fromDateTime, toDateTime } = query
-      state = state ? ` = "${state.toUpperCase()}"` : 'IS NOT NULL'
-      fromDateTime = fromDateTime || new Date('01-01-1970').toISOString()
-      toDateTime = toDateTime || new Date().toLocaleString()
       let result = await Db.settlementWindow.query(builder => {
         if (!participantId) {
-          return builder
+          let b = builder
             .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
             .select(
               'settlementWindow.settlementWindowId',
@@ -88,10 +85,13 @@ const Facade = {
               'settlementWindow.createdDate as createdDate',
               'swsc.createdDate as changedDate'
             )
-            .whereRaw(`swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
-            .orderBy('changedDate', 'desc')
+            .orderBy('changedDate', 'desc').distinct()
+          if (state) { b.where('swsc.settlementWindowStateId', state) }
+          if (fromDateTime) { b.where('settlementWindow.createdDate', '>=', fromDateTime) }
+          if (toDateTime) { b.where('settlementWindow.createdDate', '<=', toDateTime) }
+          return b
         } else {
-          return builder
+          let b = builder
             .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
             .leftJoin('transferFulfilment AS tf', 'tf.settlementWindowId', 'settlementWindow.settlementWindowId')
             .leftJoin('transferParticipant AS tp', 'tp.transferId', 'tf.transferId')
@@ -103,8 +103,12 @@ const Facade = {
               'settlementWindow.createdDate as createdDate',
               'swsc.createdDate as changedDate'
             )
-            .whereRaw(`pc.participantId = ${participantId} AND swsc.settlementWindowStateId ${state} AND settlementWindow.createdDate >= '${fromDateTime}' AND settlementWindow.createdDate <= '${toDateTime}'`)
-            .orderBy('changedDate', 'desc')
+            .orderBy('changedDate', 'desc').distinct()
+            .where('pc.participantId', participantId)
+          if (state) { b.where('swsc.settlementWindowStateId', state) }
+          if (fromDateTime) { b.where('settlementWindow.createdDate', '>=', fromDateTime) }
+          if (toDateTime) { b.where('settlementWindow.createdDate', '<=', toDateTime) }
+          return b
         }
       })
       return result
