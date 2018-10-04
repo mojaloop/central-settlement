@@ -27,7 +27,210 @@
 'use strict'
 
 const Db = require('../index')
+const Uuid = require('uuid4')
 // const cloneDeep = require('../../utils/cloneDeep')
+
+const settlementTransferValiditySeconds = 60 * 60 * 24 * 5 // currently 5 days
+
+const hashCode = function (str) {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash += Math.pow(str.charCodeAt(i) * 31, str.length - i)
+    hash = hash & hash // Convert to 32bit integer
+  }
+  return hash
+}
+
+const settlementTransfersPrepare = async function (settlementId, transactionTimestamp, enums, trx) {
+  try {
+    const knex = await Db.getKnex()
+
+    // Retrieve the list of SETTLED, but not prepared
+    let settlementTransferList = await knex('settlementParticipantCurrency AS spc')
+      .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'spc.participantCurrencyId')
+      .leftJoin('transferDuplicateCheck AS tdc', 'tdc.transferId', 'spc.settlementTransferId')
+      .select('spc.*', 'pc.currencyId')
+      .where('spc.settlementId', settlementId)
+      .whereNotNull('spc.settlementTransferId')
+      .whereNull('tdc.transferId')
+      .transacting(trx)
+
+    for (let t of settlementTransferList) {
+      // if settlementTransfersPrepare method is moved outside of this module's transacation, implement transaction start HERE
+      // Insert transferDuplicateCheck
+      await knex('transferDuplicateCheck')
+        .insert({
+          transferId: t.settlementTransferId,
+          hash: hashCode(t.settlementTransferId),
+          createdDate: transactionTimestamp
+        })
+        .transacting(trx)
+
+      // Insert transfer
+      await knex('transfer')
+        .insert({
+          transferId: t.settlementTransferId,
+          amount: t.netAmount,
+          currencyId: t.currencyId,
+          ilpCondition: 0,
+          expirationDate: new Date(+new Date() + 1000 * settlementTransferValiditySeconds).toISOString().replace(/[TZ]/g, ' ').trim(),
+          createdDate: transactionTimestamp
+        })
+        .transacting(trx)
+
+      // Retrieve participant settlement account
+      let {settlementAccountId} = await knex('participantCurrency AS pc1')
+        .join('participantCurrency AS pc2', function () {
+          this.on('pc2.participantId', 'pc1.participantId')
+            .andOn('pc2.currencyId', 'pc1.currencyId')
+            .andOn('pc2.ledgerAccountTypeId', enums.ledgerAccountTypes.SETTLEMENT)
+            .andOn('pc2.isActive', 1)
+        })
+        .select('pc2.participantCurrencyId AS settlementAccountId')
+        .where('pc1.participantCurrencyId', t.participantCurrencyId)
+        .first()
+        .transacting(trx)
+
+      let ledgerEntryTypeId
+      if (t.netAmount < 0) {
+        ledgerEntryTypeId = enums.ledgerEntryTypes.SETTLEMENT_NET_RECIPIENT
+      } else if (t.netAmount > 0) {
+        ledgerEntryTypeId = enums.ledgerEntryTypes.SETTLEMENT_NET_SENDER
+      } else { // t.netAmount === 0
+        ledgerEntryTypeId = enums.ledgerEntryTypes.SETTLEMENT_NET_ZERO
+      }
+
+      // Insert transferParticipant records
+      await knex('transferParticipant')
+        .insert({
+          transferId: t.settlementTransferId,
+          participantCurrencyId: settlementAccountId,
+          transferParticipantRoleTypeId: enums.transferParticipantRoleTypes.DFSP_SETTLEMENT_ACCOUNT,
+          ledgerEntryTypeId: ledgerEntryTypeId,
+          amount: t.netAmount,
+          createdDate: transactionTimestamp
+        })
+        .transacting(trx)
+      await knex('transferParticipant')
+        .insert({
+          transferId: t.settlementTransferId,
+          participantCurrencyId: t.participantCurrencyId,
+          transferParticipantRoleTypeId: enums.transferParticipantRoleTypes.DFSP_POSITION_ACCOUNT,
+          ledgerEntryTypeId: ledgerEntryTypeId,
+          amount: -t.netAmount,
+          createdDate: transactionTimestamp
+        })
+        .transacting(trx)
+
+      // Insert transferStateChange
+      await knex('transferStateChange')
+        .insert({
+          transferId: t.settlementTransferId,
+          transferStateId: enums.transferStates.RESERVED,
+          reason: 'Settlement transfer prepare',
+          createdDate: transactionTimestamp
+        })
+        .transacting(trx)
+
+      // if settlementTransfersPrepare method is moved outside of this module's transacation, implement transaction commit HERE
+    }
+  } catch (err) {
+    throw err
+  }
+}
+
+const settlementTransfersCommit = async function (settlementId, transactionTimestamp, enums, trx) {
+  try {
+    const knex = await Db.getKnex()
+    let netDebitCap, isLimitExceeded, latestPosition, transferStateChangeId
+
+    let settlementTransferList = await knex('settlementParticipantCurrency AS spc')
+      .join('transferStateChange AS tsc1', function () {
+        this.on('tsc1.transferId', 'spc.settlementTransferId')
+          .andOn('tsc1.transferStateId', knex.raw('?', [enums.transferStates.RESERVED]))
+      })
+      .leftJoin('transferStateChange AS tsc2', function () {
+        this.on('tsc2.transferId', 'spc.settlementTransferId')
+          .andOn('tsc2.transferStateId', knex.raw('?', [enums.transferStates.COMMITTED]))
+      })
+      .leftJoin('transferParticipant AS tp', function () {
+        this.on('tp.transferId', 'spc.settlementTransferId')
+          .andOn('tp.participantCurrencyId', 'spc.participantCurrencyId')
+      })
+      .select('tp.transferId', 'tp.participantCurrencyId', 'tp.amount')
+      .where('spc.settlementId', settlementId)
+      .whereNull('tsc2.transferId')
+      .transacting(trx)
+
+    // if settlementTransfersCommit method is moved outside of this module's transacation, implement transaction start HERE
+    for (let t of settlementTransferList) {
+      // Select participantPosition FOR UPDATE
+      let {participantPositionId, positionValue, reservedValue} = await knex('participantPosition')
+        .select('participantPositionId', 'value AS positionValue', 'reservedValue')
+        .where('participantCurrencyId', t.participantCurrencyId)
+        .first()
+        .transacting(trx)
+        .forUpdate()
+
+      // Select participant NET_DEBIT_CAP limit
+      netDebitCap = await knex('participantLimit')
+        .select('value AS netDebitCap')
+        .where('participantCurrencyId', t.participantCurrencyId)
+        .andWhere('participantLimitTypeId', enums.participantLimitTypes.NET_DEBIT_CAP)
+        .first()
+        .transacting(trx)
+        .forUpdate()
+
+      isLimitExceeded = netDebitCap - positionValue - reservedValue - t.amount < 0
+      latestPosition = positionValue + t.amount
+
+      // Persist latestPosition
+      await knex('participantPosition')
+        .update('value', latestPosition)
+        .where('participantCurrencyId', participantPositionId)
+        .transacting(trx)
+
+      if (isLimitExceeded) {
+        // TODO: adjust limits -- central-ledger/blob/develop/src/models/participant/facade.js#L320
+      }
+
+      // Persist transfer state and participant position change
+      await knex('transferFulfilment')
+        .insert({
+          transferFulfilmentId: Uuid(),
+          transferId: t.transferId,
+          ilpFulfilment: 0,
+          completedDate: transactionTimestamp,
+          isValid: 1,
+          settlementWindowId: null,
+          createdDate: transactionTimestamp
+        })
+        .transacting(trx)
+
+      transferStateChangeId = await knex('transferStateChange')
+        .insert({
+          transferId: t.transferId,
+          transferStateId: enums.transferStates.COMMITTED,
+          reason: 'Settlement transfer commit',
+          createdDate: transactionTimestamp
+        })
+        .transacting(trx)
+
+      await knex('participantPositionChange')
+        .insert({
+          participantPositionId: participantPositionId,
+          transferStateChangeId: transferStateChangeId,
+          value: latestPosition,
+          reservedValue,
+          createdDate: transactionTimestamp
+        })
+        .transacting(trx)
+    }
+    // if settlementTransfersCommit method is moved outside of this module's transacation, implement transaction commit HERE
+  } catch (err) {
+    throw err
+  }
+}
 
 const Facade = {
   putById: async function (settlementId, payload, enums, options = {}) {
@@ -74,7 +277,7 @@ const Facade = {
             .transacting(trx)
             .forUpdate()
 
-          let transactionTimestamp = new Date()
+          let transactionTimestamp = new Date().toISOString().replace(/[TZ]/g, ' ').trim()
 
           // seq-settlement-6.2.5, step 11
           let settlementAccounts = {
@@ -106,15 +309,15 @@ const Facade = {
               key: account.key
             }
             switch (state) {
-              case 'PENDING_SETTLEMENT': {
+              case enums.settlementStates.PENDING_SETTLEMENT: {
                 settlementAccounts.pendingSettlementCount++
                 break
               }
-              case 'SETTLED': {
+              case enums.settlementStates.SETTLED: {
                 settlementAccounts.settledCount++
                 break
               }
-              case 'NOT_SETTLED': {
+              case enums.settlementStates.NOT_SETTLED: {
                 settlementAccounts.notSettledCount++
                 break
               }
@@ -156,15 +359,15 @@ const Facade = {
               notSettledCount: 0
             }
             switch (state) {
-              case 'PENDING_SETTLEMENT': {
+              case enums.settlementStates.PENDING_SETTLEMENT: {
                 windowsAccounts[wid].pendingSettlementCount++
                 break
               }
-              case 'SETTLED': {
+              case enums.settlementStates.SETTLED: {
                 windowsAccounts[wid].settledCount++
                 break
               }
-              case 'NOT_SETTLED': {
+              case enums.settlementStates.NOT_SETTLED: {
                 windowsAccounts[wid].notSettledCount++
                 break
               }
@@ -238,7 +441,8 @@ const Facade = {
                 allAccounts[accountPayload.id].reason = accountPayload.reason
                 allAccounts[accountPayload.id].createdDate = transactionTimestamp
               // seq-settlement-6.2.5, step 24
-              } else if (allAccounts[accountPayload.id].state === 'PENDING_SETTLEMENT' && accountPayload.state === 'SETTLED') {
+              } else if (allAccounts[accountPayload.id].state === enums.settlementStates.PENDING_SETTLEMENT &&
+                accountPayload.state === enums.settlementStates.SETTLED) {
                 processedAccounts.push(accountPayload.id)
                 participant.accounts.push({
                   id: accountPayload.id,
@@ -250,7 +454,9 @@ const Facade = {
                 settlementParticipantCurrencyStateChange.push({
                   settlementParticipantCurrencyId: allAccounts[accountPayload.id].key,
                   settlementStateId: accountPayload.state,
-                  reason: accountPayload.reason
+                  reason: accountPayload.reason,
+                  createdDate: transactionTimestamp,
+                  settlementTransferId: Uuid()
                 })
                 settlementAccounts.pendingSettlementCount--
                 settlementAccounts.settledCount++
@@ -288,23 +494,31 @@ const Facade = {
           for (let cpcsc of settlementParticipantCurrencyStateChange) {
             // Switched to insert from batchInsert because only LAST_INSERT_ID is returned
             // TODO: PoC - batchInsert + select inserted ids vs multiple inserts without select
+            let cpcscCopy = Object.assign({}, cpcsc)
+            delete cpcscCopy.settlementTransferId
             insertPromises.push(
               knex('settlementParticipantCurrencyStateChange')
-                .insert(cpcsc).returning('settlementParticipantCurrencyStateChangeId')
+                .insert(cpcscCopy).returning('settlementParticipantCurrencyStateChangeId')
                 .transacting(trx)
             )
           }
           let settlementParticipantCurrencyStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
           // seq-settlement-6.2.5, step 29
           for (let i in settlementParticipantCurrencyStateChangeIdList) {
+            let updatedColumns = {currentStateChangeId: settlementParticipantCurrencyStateChangeIdList[i]}
+            if (settlementParticipantCurrencyStateChange[i].settlementTransferId) {
+              updatedColumns.settlementTransferId = settlementParticipantCurrencyStateChange[i].settlementTransferId
+            }
             updatePromises.push(
               knex('settlementParticipantCurrency')
                 .where('settlementParticipantCurrencyId', settlementParticipantCurrencyStateChange[i].settlementParticipantCurrencyId)
-                .update({ currentStateChangeId: settlementParticipantCurrencyStateChangeIdList[i] })
+                .update(updatedColumns)
                 .transacting(trx)
             )
           }
           await Promise.all(updatePromises)
+
+          await settlementTransfersPrepare(settlementId, transactionTimestamp, enums, trx)
 
           let settlementWindowStateChange = []
           let settlementWindows = [] // response object
@@ -314,7 +528,7 @@ const Facade = {
             if (windowAccounts.pendingSettlementCount === 0 &&
               windowAccounts.notSettledCount === 0 &&
               windowAccounts.settledCount > 0) {
-              allWindows[affectedWindows[aw]].settlementWindowStateId = 'SETTLED'
+              allWindows[affectedWindows[aw]].settlementWindowStateId = enums.settlementWindowStates.SETTLED
               allWindows[affectedWindows[aw]].reason = 'All setlement accounts are settled'
               allWindows[affectedWindows[aw]].createdDate = transactionTimestamp
               settlementWindowStateChange.push(allWindows[affectedWindows[aw]])
@@ -346,7 +560,7 @@ const Facade = {
           if (settlementAccounts.settledCount !== settlementAccountsInit.settledCount &&
             settlementAccounts.pendingSettlementCount === 0 &&
             settlementAccounts.notSettledCount === 0) {
-            settlementData.settlementStateId = 'SETTLED'
+            settlementData.settlementStateId = enums.settlementStates.SETTLED
             settlementData.reason = 'All setlement accounts are settled'
             settlementData.createdDate = transactionTimestamp
             // seq-settlement-6.2.5, step 34
@@ -358,6 +572,8 @@ const Facade = {
               .where('settlementId', settlementData.settlementId)
               .update({ currentStateChangeId: settlementStateChangeId })
               .transacting(trx)
+
+            await settlementTransfersCommit(settlementId, transactionTimestamp, enums, trx)
           }
           await trx.commit
           return {
@@ -483,15 +699,7 @@ const Facade = {
                 .whereRaw('stp.settlementId = ?', [settlementId])
                 .groupBy('stp.settlementId', 'stp.participantCurrencyId')
                 .select('stp.settlementId', 'stp.participantCurrencyId')
-                .sum(knex.raw(
-                  `CASE 
-                    WHEN stp.transferParticipantRoleTypeId = ${enums.transferParticipantRoleTypes.PAYER_DFSP}
-                      AND stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.PRINCIPLE_VALUE} THEN amount 
-                    WHEN stp.transferParticipantRoleTypeId = ${enums.transferParticipantRoleTypes.PAYEE_DFSP}
-                      AND stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.PRINCIPLE_VALUE} THEN -amount
-                    WHEN stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.INTERCHANGE_FEE} THEN -amount
-                    WHEN stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.HUB_FEE} THEN amount
-                  END`))
+                .sum('stp.amount')
             }, 'settlementParticipantCurrencyId')
             .transacting(trx)
           const settlementParticipantCurrencyList = await knex('settlementParticipantCurrency').select('settlementParticipantCurrencyId').where('settlementId', settlementId).transacting(trx)
