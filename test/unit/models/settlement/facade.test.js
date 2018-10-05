@@ -142,6 +142,43 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       PENDING_SETTLEMENT: 'PENDING_SETTLEMENT'
     }
   }
+  enums['putById'] = {
+    transferStates: {
+      RESERVED: 'RESERVED',
+      COMMITTED: 'COMMITTED'
+    },
+    transferParticipantRoleTypes: {
+      PAYER_DFSP: 'PAYER_DFSP',
+      PAYEE_DFSP: 'PAYEE_DFSP',
+      DFSP_SETTLEMENT_ACCOUNT: 'DFSP_SETTLEMENT_ACCOUNT',
+      DFSP_POSITION_ACCOUNT: 'DFSP_POSITION_ACCOUNT'
+    },
+    ledgerAccountTypes: {
+      POSITION: 'POSITION',
+      SETTLEMENT: 'SETTLEMENT'
+    },
+    ledgerEntryTypes: {
+      PRINCIPLE_VALUE: 'PRINCIPLE_VALUE',
+      INTERCHANGE_FEE: 'INTERCHANGE_FEE',
+      HUB_FEE: 'HUB_FEE',
+      SETTLEMENT_NET_RECIPIENT: 'SETTLEMENT_NET_RECIPIENT',
+      SETTLEMENT_NET_SENDER: 'SETTLEMENT_NET_SENDER',
+      SETTLEMENT_NET_ZERO: 'SETTLEMENT_NET_ZERO'
+    },
+    settlementStates: {
+      PENDING_SETTLEMENT: 'PENDING_SETTLEMENT',
+      SETTLED: 'SETTLED',
+      NOT_SETTLED: 'NOT_SETTLED'
+    },
+    settlementWindowStates: {
+      PENDING_SETTLEMENT: 'PENDING_SETTLEMENT',
+      SETTLED: 'SETTLED',
+      NOT_SETTLED: 'NOT_SETTLED'
+    },
+    participantLimitTypes: {
+      NET_DEBIT_CAP: 'NET_DEBIT_CAP'
+    }
+  }
 
   let stubData = new Map()
   stubData['putById'] = [
@@ -282,6 +319,14 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           settlementWindowId: 6,
           participantCurrencyId: 5
         }
+      ],
+      settlementTransferList: [
+        {
+          settlementTransferId: 1,
+          netAmount: 100,
+          currencyId: 'USD',
+          participantCurrencyId: 1
+        }
       ]
     },
     {
@@ -313,6 +358,14 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       windowsAccountsList: [
         {
           settlementWindowId: 1,
+          participantCurrencyId: 1
+        }
+      ],
+      settlementTransferList: [
+        {
+          settlementTransferId: 1,
+          netAmount: 100,
+          currencyId: 'USD',
           participantCurrencyId: 1
         }
       ]
@@ -368,7 +421,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             })
           })
 
-          await SettlementFacade.putById(1, payload['putById'][0])
+          await SettlementFacade.putById(1, payload['putById'][0], enums['putById'])
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
@@ -410,6 +463,19 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                     })
                   })
                 })
+              }),
+              leftJoin: sandbox.stub().returns({
+                select: sandbox.stub().returns({
+                  where: sandbox.stub().returns({
+                    whereNotNull: sandbox.stub().returns({
+                      whereNull: sandbox.stub().returns({
+                        transacting: sandbox.stub().returns(
+                          Promise.resolve(stubData['putById'][0].settlementTransferList)
+                        )
+                      })
+                    })
+                  })
+                })
               })
             }),
             leftJoin: sandbox.stub().returns({
@@ -441,7 +507,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                 transacting: sandbox.stub().returns(
                   Promise.resolve([21, 22, 23])
                 )
-              })
+              }),
+              transacting: sandbox.stub()
             }),
             where: sandbox.stub().returns({
               update: sandbox.stub().returns({
@@ -452,9 +519,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             })
           })
 
-          let result = await SettlementFacade.putById(1, payload['putById'][0])
+          let result = await SettlementFacade.putById(1, payload['putById'][0], enums['putById'])
           test.ok(result, 'Result returned')
-          test.equal(knexStub.callCount, 16, 'Knex called 16 times')
+          test.equal(knexStub.callCount, 23, 'Knex called 23 times')
           test.equal(result.state, 'PENDING_SETTLEMENT', 'Settlement should remain in PENDING_SETTLEMENT state')
           test.equal(result.settlementWindows.length, 3, 'Excactly three settlement windows are expected to be affected')
           test.equal(result.settlementWindows[0].settlementWindowStateId, 'SETTLED', 'First window is SETTLED')
@@ -517,6 +584,30 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                     })
                   })
                 })
+              }),
+              leftJoin: sandbox.stub().returns({
+                select: sandbox.stub().returns({
+                  where: sandbox.stub().returns({
+                    whereNotNull: sandbox.stub().returns({
+                      whereNull: sandbox.stub().returns({
+                        transacting: sandbox.stub().returns(
+                          Promise.resolve(stubData['putById'][1].settlementTransferList)
+                        )
+                      })
+                    })
+                  })
+                }),
+                leftJoin: sandbox.stub().returns({
+                  select: sandbox.stub().returns({
+                    where: sandbox.stub().returns({
+                      whereNull: sandbox.stub().returns({
+                        transacting: sandbox.stub().returns(
+                          Promise.resolve(stubData['putById'][1].settlementTransferList)
+                        )
+                      })
+                    })
+                  })
+                })
               })
             }),
             leftJoin: sandbox.stub().returns({
@@ -541,6 +632,20 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                     )
                   })
                 })
+              }),
+              where: sandbox.stub().returns({
+                first: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns({
+                    forUpdate: sandbox.stub()
+                  })
+                }),
+                andWhere: sandbox.stub().returns({
+                  first: sandbox.stub().returns({
+                    transacting: sandbox.stub().returns({
+                      forUpdate: sandbox.stub()
+                    })
+                  })
+                })
               })
             }),
             insert: sandbox.stub().returns({
@@ -548,7 +653,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                 transacting: sandbox.stub().returns(
                   Promise.resolve([1])
                 )
-              })
+              }),
+              transacting: sandbox.stub()
             }),
             where: sandbox.stub().returns({
               update: sandbox.stub().returns({
@@ -556,10 +662,15 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                   Promise.resolve([1])
                 )
               })
+            }),
+            update: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                transacting: sandbox.stub()
+              })
             })
           })
 
-          let result = await SettlementFacade.putById(1, payload['putById'][1])
+          let result = await SettlementFacade.putById(1, payload['putById'][1], enums['putById'])
           test.ok(result, 'Result returned')
           test.equal(knexStub.callCount, 10, 'Knex called 10 times')
           test.equal(result.settlementWindows.length, 1, 'Excactly one settlement window is returned as affected')
