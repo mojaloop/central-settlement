@@ -18,10 +18,74 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+  * Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
 
 'use strict'
 
-// const Test = require('tapes')(require('tape'))
-// const Sinon = require('sinon')
+const Test = require('tapes')(require('tape'))
+const Sinon = require('sinon')
+const Logger = require('@mojaloop/central-services-shared').Logger
+const SettlementModel = require('../../../../src/models/settlement/settlement')
+const Db = require('../../../../src/models')
+
+Test('SettlementModel', async (settlementModelTest) => {
+  let sandbox
+
+  settlementModelTest.beforeEach(test => {
+    sandbox = Sinon.createSandbox()
+    test.end()
+  })
+
+  settlementModelTest.afterEach(test => {
+    sandbox.restore()
+    test.end()
+  })
+
+  await settlementModelTest.test('settlementModel should', async createTest => {
+    try {
+      await createTest.test('return insert settlement into database', async test => {
+        try {
+          const settlement = {
+            reason: 'reason text',
+            createdDate: new Date()
+          }
+          const enums = {}
+
+          Db.settlement = {
+            insert: sandbox.stub().returns(true)
+          }
+
+          let result = await SettlementModel.create(settlement, enums)
+          test.ok(result, 'Result returned and matched')
+          test.ok(Db.settlement.insert.withArgs({
+            reason: settlement.reason,
+            createdDate: settlement.createdDate
+          }).calledOnce, 'insert with args ... called once')
+
+          Db.settlement.insert = sandbox.stub().throws(new Error('Error occured'))
+          try {
+            result = await SettlementModel.create(settlement)
+            test.fail('Error expected, but not thrown!')
+          } catch (err) {
+            test.equal(err.message, 'Error occured', `Error "${err.message}" thrown as expected`)
+          }
+          test.end()
+        } catch (err) {
+          Logger.error(`createTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await createTest.end()
+    } catch (err) {
+      Logger.error(`settlementModelTest failed with error - ${err}`)
+      createTest.fail()
+      createTest.end()
+    }
+  })
+
+  await settlementModelTest.end()
+})

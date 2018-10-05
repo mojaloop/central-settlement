@@ -27,7 +27,7 @@
 'use strict'
 
 const Db = require('../index')
-const cloneDeep = require('../../utils/cloneDeep')
+// const cloneDeep = require('../../utils/cloneDeep')
 
 const Facade = {
   putById: async function (settlementId, payload, enums, options = {}) {
@@ -70,7 +70,7 @@ const Facade = {
           let windowsAccountsList = await knex('settlementTransferParticipant')
             .select()
             .distinct('settlementWindowId', 'participantCurrencyId')
-            .where({settlementId})
+            .where({ settlementId })
             .transacting(trx)
             .forUpdate()
 
@@ -175,7 +175,7 @@ const Facade = {
           }
 
           // seq-settlement-6.2.5, step 17
-          let windowsAccountsInit = cloneDeep(windowsAccounts)
+          // let windowsAccountsInit = cloneDeep(windowsAccounts)
           let participants = []
           let affectedWindows = []
           let settlementParticipantCurrencyStateChange = []
@@ -183,7 +183,7 @@ const Facade = {
           // seq-settlement-6.2.5, step 18
           for (let participant in payload.participants) {
             let participantPayload = payload.participants[participant]
-            participants.push({id: participantPayload.id, accounts: []})
+            participants.push({ id: participantPayload.id, accounts: [] })
             let pi = participants.length - 1
             participant = participants[pi]
             // seq-settlement-6.2.5, step 19
@@ -295,64 +295,53 @@ const Facade = {
             )
           }
           let settlementParticipantCurrencyStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
-          if (settlementParticipantCurrencyStateChangeIdList) {
-            // seq-settlement-6.2.5, step 29
-            for (let i in settlementParticipantCurrencyStateChangeIdList) {
-              updatePromises.push(
-                knex('settlementParticipantCurrency')
-                  .where('settlementParticipantCurrencyId', settlementParticipantCurrencyStateChange[i].settlementParticipantCurrencyId)
-                  .update({currentStateChangeId: settlementParticipantCurrencyStateChangeIdList[i]})
-                  .transacting(trx)
-              )
-            }
-            await Promise.all(updatePromises)
+          // seq-settlement-6.2.5, step 29
+          for (let i in settlementParticipantCurrencyStateChangeIdList) {
+            updatePromises.push(
+              knex('settlementParticipantCurrency')
+                .where('settlementParticipantCurrencyId', settlementParticipantCurrencyStateChange[i].settlementParticipantCurrencyId)
+                .update({ currentStateChangeId: settlementParticipantCurrencyStateChangeIdList[i] })
+                .transacting(trx)
+            )
           }
+          await Promise.all(updatePromises)
 
           let settlementWindowStateChange = []
           let settlementWindows = [] // response object
-          let windowAccountsInit
           let windowAccounts
           for (let aw in affectedWindows) {
-            windowAccountsInit = windowsAccountsInit[affectedWindows[aw]]
             windowAccounts = windowsAccounts[affectedWindows[aw]]
-            if (windowAccounts.pendingSettlementCount !== windowAccountsInit.pendingSettlementCount ||
-              windowAccounts.settledCount !== windowAccountsInit.settledCount) {
-              if (windowAccounts.pendingSettlementCount === 0 &&
-                windowAccounts.notSettledCount === 0 &&
-                windowAccounts.settledCount > 0) {
-                allWindows[affectedWindows[aw]].settlementWindowStateId = 'SETTLED'
-                allWindows[affectedWindows[aw]].reason = 'All setlement accounts are settled'
-                allWindows[affectedWindows[aw]].createdDate = transactionTimestamp
-                settlementWindowStateChange.push(allWindows[affectedWindows[aw]])
-              }
-              settlementWindows.push(allWindows[affectedWindows[aw]])
+            if (windowAccounts.pendingSettlementCount === 0 &&
+              windowAccounts.notSettledCount === 0 &&
+              windowAccounts.settledCount > 0) {
+              allWindows[affectedWindows[aw]].settlementWindowStateId = 'SETTLED'
+              allWindows[affectedWindows[aw]].reason = 'All setlement accounts are settled'
+              allWindows[affectedWindows[aw]].createdDate = transactionTimestamp
+              settlementWindowStateChange.push(allWindows[affectedWindows[aw]])
             }
+            settlementWindows.push(allWindows[affectedWindows[aw]])
           }
           // seq-settlement-6.2.5, step 30
-          if (settlementWindowStateChange.length) {
-            insertPromises = []
-            for (let swsc of settlementWindowStateChange) {
-              insertPromises.push(
-                knex('settlementWindowStateChange')
-                  .insert(swsc).returning('settlementWindowStateChangeId')
-                  .transacting(trx)
-              )
-            }
-            let settlementWindowStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
-            // seq-settlement-6.2.5, step 33
-            if (settlementWindowStateChangeIdList) {
-              updatePromises = []
-              for (let i in settlementWindowStateChangeIdList) {
-                updatePromises.push(
-                  knex('settlementWindow')
-                    .where('settlementWindowId', settlementWindowStateChange[i].settlementWindowId)
-                    .update({currentStateChangeId: settlementWindowStateChangeIdList[i]})
-                    .transacting(trx)
-                )
-              }
-              await Promise.all(updatePromises)
-            }
+          insertPromises = []
+          for (let swsc of settlementWindowStateChange) {
+            insertPromises.push(
+              knex('settlementWindowStateChange')
+                .insert(swsc).returning('settlementWindowStateChangeId')
+                .transacting(trx)
+            )
           }
+          let settlementWindowStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
+          // seq-settlement-6.2.5, step 33
+          updatePromises = []
+          for (let i in settlementWindowStateChangeIdList) {
+            updatePromises.push(
+              knex('settlementWindow')
+                .where('settlementWindowId', settlementWindowStateChange[i].settlementWindowId)
+                .update({ currentStateChangeId: settlementWindowStateChangeIdList[i] })
+                .transacting(trx)
+            )
+          }
+          await Promise.all(updatePromises)
 
           if (settlementAccounts.settledCount !== settlementAccountsInit.settledCount &&
             settlementAccounts.pendingSettlementCount === 0 &&
@@ -367,7 +356,7 @@ const Facade = {
             // seq-settlement-6.2.5, step 36
             await knex('settlement')
               .where('settlementId', settlementData.settlementId)
-              .update({currentStateChangeId: settlementStateChangeId})
+              .update({ currentStateChangeId: settlementStateChangeId })
               .transacting(trx)
           }
           await trx.commit
@@ -388,7 +377,7 @@ const Facade = {
     }
   },
 
-  getById: async function ({settlementId}, enums = {}) {
+  getById: async function ({ settlementId }, enums = {}) {
     try {
       return await Db.settlement.query(builder => {
         return builder
@@ -401,15 +390,13 @@ const Facade = {
           .first()
       })
     } catch (err) {
-      console.log('here')
       throw err
     }
   },
 
-  getByParams: async function ({state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId}, enums = {}) {
+  getByParams: async function ({ state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId }, enums = {}) {
     try {
       let result = await Db.settlement.query(builder => {
-        let isWhere = true
         let b = builder
           .innerJoin('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 'settlement.currentStateChangeId')
           .innerJoin('settlementSettlementWindow AS ssw', 'ssw.settlementId', 'settlement.settlementId')
@@ -431,15 +418,15 @@ const Facade = {
             'spcsc.reason AS accountReason', 'spcsc.settlementStateId AS accountState',
             'spc.netAmount AS accountAmount', 'pc.currencyId AS accountCurrency')
           .select()
-        if (state) { b = isWhere ? b.where('ssc.settlementStateId', state) : b.andWhere('ssc.settlementStateId', state); isWhere = false }
-        if (fromDateTime) { b = isWhere ? b.where('settlement.createdDate', '>=', fromDateTime) : b.andWhere('settlement.createdDate', '>=', fromDateTime); isWhere = false }
-        if (toDateTime) { b = isWhere ? b.where('settlement.createdDate', '<=', toDateTime) : b.andWhere('settlement.createdDate', '<=', toDateTime); isWhere = false }
-        if (currency) { b = isWhere ? b.where('pc.currencyId', currency) : b.andWhere('pc.currencyId', currency); isWhere = false }
-        if (settlementWindowId) { b = isWhere ? b.where('ssw.settlementWindowId', settlementWindowId) : b.andWhere('ssw.settlementWindowId', settlementWindowId); isWhere = false }
-        if (fromSettlementWindowDateTime) { b = isWhere ? b.where('sw.createdDate', '>=', fromSettlementWindowDateTime) : b.andWhere('sw.createdDate', '>=', fromSettlementWindowDateTime); isWhere = false }
-        if (toSettlementWindowDateTime) { b = isWhere ? b.where('sw.createdDate', '<=', toSettlementWindowDateTime) : b.andWhere('sw.createdDate', '<=', toSettlementWindowDateTime); isWhere = false }
-        if (participantId) { b = isWhere ? b.where('pc.participantId', participantId) : b.andWhere('pc.participantId', participantId); isWhere = false }
-        if (accountId) { b = isWhere ? b.where('spc.participantCurrencyId', accountId) : b.andWhere('spc.participantCurrencyId', accountId); isWhere = false }
+        if (state) { b.where('ssc.settlementStateId', state) }
+        if (fromDateTime) { b.where('settlement.createdDate', '>=', fromDateTime) }
+        if (toDateTime) { b.where('settlement.createdDate', '<=', toDateTime) }
+        if (currency) { b.where('pc.currencyId', currency) }
+        if (settlementWindowId) { b.where('ssw.settlementWindowId', settlementWindowId) }
+        if (fromSettlementWindowDateTime) { b.where('sw.createdDate', '>=', fromSettlementWindowDateTime) }
+        if (toSettlementWindowDateTime) { b.where('sw.createdDate', '<=', toSettlementWindowDateTime) }
+        if (participantId) { b.where('pc.participantId', participantId) }
+        if (accountId) { b.where('spc.participantCurrencyId', accountId) }
         return b
       })
       return result
@@ -448,7 +435,7 @@ const Facade = {
     }
   },
 
-  knexTriggerEvent: async function ({idList, reason}, enums = {}) {
+  knexTriggerEvent: async function ({ idList, reason }, enums = {}) {
     try {
       const knex = await Db.getKnex()
       // Open transaction
@@ -456,7 +443,7 @@ const Facade = {
         try {
           // insert new settlement
           const transactionTimestamp = new Date()
-          const settlementId = await knex('settlement').insert({reason, createdDate: transactionTimestamp}).transacting(trx)
+          const settlementId = await knex('settlement').insert({ reason, createdDate: transactionTimestamp }).transacting(trx)
           const settlementSettlementWindowList = idList.map(settlementWindowId => {
             return {
               settlementId,
@@ -466,18 +453,17 @@ const Facade = {
           })
           await knex.batchInsert('settlementSettlementWindow', settlementSettlementWindowList).transacting(trx)
           /* let settlementTransferParticipantIdList = */await knex
-            .from(knex.raw('settlementTransferParticipant (settlementId, settlementWindowId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, createdDate, amount)'))
+            .from(
+              knex.raw('settlementTransferParticipant (settlementId, settlementWindowId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, createdDate, amount)'))
             .insert(function () {
               this.from('settlementSettlementWindow AS ssw')
                 .join('transferFulfilment AS tf', 'tf.settlementWindowId', 'ssw.settlementWindowId')
                 .join('transferStateChange AS tsc', function () {
-                  this
-                    .on('tsc.transferId', 'tf.transferId')
+                  this.on('tsc.transferId', 'tf.transferId')
                     .on('tsc.transferStateId', knex.raw('?', [enums.transferStates.COMMITTED]))
                 })
                 .join('transferParticipant AS tp', function () {
-                  this
-                    .on('tp.transferId', 'tf.transferId')
+                  this.on('tp.transferId', 'tf.transferId')
                 })
                 .where('ssw.settlementId', settlementId)
                 .groupBy('ssw.settlementWindowId', 'tp.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId')
@@ -497,12 +483,15 @@ const Facade = {
                 .whereRaw('stp.settlementId = ?', [settlementId])
                 .groupBy('stp.settlementId', 'stp.participantCurrencyId')
                 .select('stp.settlementId', 'stp.participantCurrencyId')
-                .sum(knex.raw(`CASE 
-                            WHEN stp.transferParticipantRoleTypeId = ${enums.transferParticipantRoleTypes.PAYER_DFSP} AND stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.PRINCIPLE_VALUE} THEN amount 
-                            WHEN stp.transferParticipantRoleTypeId = ${enums.transferParticipantRoleTypes.PAYEE_DFSP} AND stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.PRINCIPLE_VALUE} THEN -amount
-                            WHEN stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.INTERCHANGE_FEE} THEN -amount
-                            WHEN stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.HUB_FEE} THEN amount
-                          end`))
+                .sum(knex.raw(
+                  `CASE 
+                    WHEN stp.transferParticipantRoleTypeId = ${enums.transferParticipantRoleTypes.PAYER_DFSP}
+                      AND stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.PRINCIPLE_VALUE} THEN amount 
+                    WHEN stp.transferParticipantRoleTypeId = ${enums.transferParticipantRoleTypes.PAYEE_DFSP}
+                      AND stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.PRINCIPLE_VALUE} THEN -amount
+                    WHEN stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.INTERCHANGE_FEE} THEN -amount
+                    WHEN stp.ledgerEntryTypeId = ${enums.ledgerEntryTypes.HUB_FEE} THEN amount
+                  END`))
             }, 'settlementParticipantCurrencyId')
             .transacting(trx)
           const settlementParticipantCurrencyList = await knex('settlementParticipantCurrency').select('settlementParticipantCurrencyId').where('settlementId', settlementId).transacting(trx)
@@ -561,7 +550,7 @@ const Facade = {
             })
           await knex('settlement').transacting(trx)
             .where('settlementId', settlementId)
-            .update({currentStateChangeId: settlementStateChangeId})
+            .update({ currentStateChangeId: settlementStateChangeId })
           await trx.commit
           return settlementId
         } catch (err) {
@@ -594,13 +583,13 @@ const Facade = {
       }
     },
 
-    getAccountsInSettlementByIds: async function ({settlementId, participantId}, enums = {}) {
+    getAccountsInSettlementByIds: async function ({ settlementId, participantId }, enums = {}) {
       try {
         let result = await Db.settlementParticipantCurrency.query(builder => {
           return builder
             .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
             .select('settlementParticipantCurrencyId')
-            .where({settlementId})
+            .where({ settlementId })
             .andWhere('pc.participantId', participantId)
         })
         return result
@@ -609,7 +598,7 @@ const Facade = {
       }
     },
 
-    getParticipantCurrencyBySettlementId: async function ({settlementId}, enums = {}) {
+    getParticipantCurrencyBySettlementId: async function ({ settlementId }, enums = {}) {
       try {
         let result = await Db.settlementParticipantCurrency.query(builder => {
           return builder
@@ -624,7 +613,7 @@ const Facade = {
               'pc.currencyId AS currency',
               'settlementParticipantCurrency.settlementParticipantCurrencyId AS key'
             )
-            .where({settlementId})
+            .where({ settlementId })
         })
         return result
       } catch (err) {
@@ -632,8 +621,11 @@ const Facade = {
       }
     },
 
-    getAccountById: async function ({settlementParticipantCurrencyId}, enums = {}) {
+    getAccountById: async function ({ settlementParticipantCurrencyList }, enums = {}) {
       try {
+        let settlementParticipantCurrencyIdList = settlementParticipantCurrencyList.map(a => {
+          return a.settlementParticipantCurrencyId
+        })
         let result = await Db.settlementParticipantCurrency.query(builder => {
           return builder
             .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
@@ -646,7 +638,7 @@ const Facade = {
               'settlementParticipantCurrency.netAmount as netAmount',
               'pc.currencyId AS currency'
             )
-            .where({settlementParticipantCurrencyId})
+            .whereIn('settlementParticipantCurrency.settlementParticipantCurrencyId', settlementParticipantCurrencyIdList)
         })
         return result
       } catch (err) {
@@ -677,15 +669,14 @@ const Facade = {
     }
   },
   settlementSettlementWindow: {
-    getWindowsBySettlementIdAndAccountId: async function ({settlementId, accountId}, enums = {}) {
+    getWindowsBySettlementIdAndAccountId: async function ({ settlementId, accountId }, enums = {}) {
       try {
         let result = await Db.settlementSettlementWindow.query(builder => {
           return builder
-            .join('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
+            .join('settlementWindow', 'settlementWindow.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
             .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
             .join('settlementTransferParticipant AS stp', function () {
-              this
-                .on('stp.settlementWindowId', 'sw.settlementWindowId')
+              this.on('stp.settlementWindowId', 'settlementWindow.settlementWindowId')
                 .on('stp.participantCurrencyId', accountId)
             })
             .distinct(
@@ -696,23 +687,22 @@ const Facade = {
               'swsc.createdDate as changedDate'
             )
             .select()
-            .where({settlementId})
+            .where('settlementSettlementWindow.settlementId', settlementId)
         })
         return result
       } catch (err) {
         throw err
       }
     },
-    getWindowsBySettlementIdAndParticipantId: async function ({settlementId, participantId}, enums = {}) {
+    getWindowsBySettlementIdAndParticipantId: async function ({ settlementId, participantId }, enums = {}) {
       try {
         let result = await Db.settlementSettlementWindow.query(builder => {
           return builder
-            .join('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
+            .join('settlementWindow', 'settlementWindow.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
             .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
             .join('settlementTransferParticipant AS stp', async function () {
-              this
-                .on('stp.settlementWindowId', 'sw.settlementWindowId')
-                .onIn('stp.participantCurrencyId', await Db.participantCurrency.find({participantId}))
+              this.on('stp.settlementWindowId', 'settlementWindow.settlementWindowId')
+                .onIn('stp.participantCurrencyId', await Db.participantCurrency.find({ participantId }))
             })
             .distinct(
               'settlementWindow.settlementWindowId',
@@ -722,7 +712,7 @@ const Facade = {
               'swsc.createdDate as changedDate'
             )
             .select()
-            .where({settlementId})
+            .where('settlementSettlementWindow.settlementId', settlementId)
         })
         return result
       } catch (err) {

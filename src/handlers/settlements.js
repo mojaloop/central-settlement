@@ -52,13 +52,11 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
   get: async function getSettlementsByParams (request, h) {
-    Logger.info('Here')
     try {
       const Enums = await request.server.methods.enums('settlementStates')
-      let settlementResult = await Settlements.getSettlementsByParams({query: request.query}, Enums, {logger: request.server.log})
+      let settlementResult = await Settlements.getSettlementsByParams({ query: request.query }, Enums)
       return h.response(settlementResult)
     } catch (e) {
-      Logger.info('error', e)
       request.server.log('error', e)
       return Boom.notFound(e.message)
     }
@@ -72,7 +70,6 @@ module.exports = {
      */
   post: async function createSettlementEvent (request, h) {
     try {
-      // TODO
       const Enums = {
         settlementStates: await request.server.methods.enums('settlementStates'),
         settlementWindowStates: await request.server.methods.enums('settlementWindowStates'),
@@ -80,11 +77,11 @@ module.exports = {
         transferParticipantRoleTypes: await request.server.methods.enums('transferParticipantRoleTypes'),
         ledgerEntryTypes: await request.server.methods.enums('ledgerEntryTypes')
       }
-      let settlementResult = await Settlements.settlementEventTrigger(request.payload, Enums, {logger: request.server.log})
+      let settlementResult = await Settlements.settlementEventTrigger(request.payload, Enums)
       return h.response(settlementResult)
     } catch (e) {
       request.server.log('error', e)
-      return Boom.notFound(e.message)
+      return Boom.badRequest(e.message)
     }
   }
 }

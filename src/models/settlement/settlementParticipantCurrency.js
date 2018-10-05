@@ -27,16 +27,18 @@
 
 const Db = require('../index')
 
-module.exports.getAccountInSettlement = async ({ settlementId, accountId }, enums = {}) => {
+const getAccountInSettlement = async ({ settlementId, accountId }, enums = {}) => {
   try {
-    let result = await Db.settlementParticipantCurrency.query(builder => {
-      return builder
-        .select('settlementParticipantCurrencyId')
-        .where({ settlementId })
-        .andWhere('settlementParticipantCurrencyId', accountId)
+    let result = await Db.settlementParticipantCurrency.find({
+      settlementId,
+      settlementParticipantCurrencyId: accountId
     })
     return result
   } catch (err) {
     throw err
   }
+}
+
+module.exports = {
+  getAccountInSettlement
 }

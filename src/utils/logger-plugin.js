@@ -16,18 +16,49 @@
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
  * Gates Foundation
- - Name Surname <name.surname@gatesfoundation.com>
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
+ * Valentin Genev <valentin.genev@modusbox.com>
+ * Deon Botha <deon.botha@modusbox.com>
+ * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ * Miguel de Barros <miguel.debarros@modusbox.com>
 
  --------------
  ******/
 
 const Logger = require('@mojaloop/central-services-shared').Logger
-
+const checkEmpty = require('./truthyProperty')
 module.exports.plugin = {
   name: 'logger-plugin',
   register: async function (server) {
     server.events.on('log', function (event) {
-      if (Array.isArray(event.tags) && event.tags.length === 1) { Logger[`${event.tags[0]}`](event.data) } else Logger.info(event.data)
+      if (event.error) {
+        event.data = event.error
+      }
+      if (Array.isArray(event.tags) && event.tags.length === 1 && event.tags[0]) {
+        if (event.tags[0] !== 'info') {
+          if (!(event.data instanceof Error)) {
+            Logger.info(`::::::: ${event.tags[0].toUpperCase()} :::::::`)
+            if (event.tags[0] === 'request') {
+              let request = event.data
+              Logger.info(`:: ${request.method.toUpperCase()} ${request.path}`)
+              checkEmpty(request.payload) && Logger.info(`:: Payload: ${JSON.stringify(request.payload)}`)
+              checkEmpty(request.params) && Logger.info(`:: Params: ${JSON.stringify(request.params)}`)
+              checkEmpty(request.query) && Logger.info(`:: Query: ${JSON.stringify(request.query)}`)
+            } else if (event.tags[0] === 'response') {
+              Logger.info(`:: Payload: \n${JSON.stringify(event.data.source, null, 2)}`)
+            } else {
+              Logger.info(`::::::: ${event.tags[0].toUpperCase()} :::::::`)
+              Logger.info(event.data)
+            }
+          } else {
+            let error = event.data
+            Logger.info(`::::::: ${event.tags[0].toUpperCase()} :::::::\n ${error.stack}`)
+          }
+          Logger.info(`::: END OF ${event.tags[0].toUpperCase()} ::::`)
+        } else {
+          Logger.info(event.data)
+        }
+      }
     })
   }
 }

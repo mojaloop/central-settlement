@@ -18,6 +18,7 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
  * Valentin Genev <valentin.genev@modusbox.com>
  * Deon Botha <deon.botha@modusbox.com>
  --------------
@@ -27,7 +28,7 @@
 
 const Db = require('../index')
 
-module.exports.checkParticipantAccountExists = async ({ participantId, accountId }, enums = {}) => {
+const checkParticipantAccountExists = async ({ participantId, accountId }, enums = {}) => {
   try {
     let result = await Db.participantCurrency.query(builder => {
       return builder
@@ -39,4 +40,8 @@ module.exports.checkParticipantAccountExists = async ({ participantId, accountId
   } catch (err) {
     throw err
   }
+}
+
+module.exports = {
+  checkParticipantAccountExists
 }

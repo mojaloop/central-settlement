@@ -16,13 +16,36 @@
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
  * Gates Foundation
- * Georgi Georgiev <georgi.georgiev@modusbox.com>
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- * Miguel de Barros <miguel.debarros@modusbox.com>
+ - Name Surname <name.surname@gatesfoundation.com>
 
+ * Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
 
-module.exports = require('@mojaloop/central-services-database').Db
+'use strict'
+
+const Test = require('tapes')(require('tape'))
+const Logger = require('@mojaloop/central-services-shared').Logger
+const truthyProperty = require('../../../src/utils/truthyProperty')
+
+Test('truthyProperty utility', (truthyPropertyTest) => {
+  truthyPropertyTest.test('should validate object properties are not all empty', test => {
+    try {
+      let emptyProps = truthyProperty({ input: null })
+      test.notOk(emptyProps, 'properties are empty')
+      let notObject = truthyProperty('string')
+      test.ok(notObject, 'not an object')
+      let emptyObject = truthyProperty({})
+      test.notOk(emptyObject, 'object is empty')
+      let ok = truthyProperty({ input: 'something' })
+      test.ok(ok, 'object is not empty')
+      test.end()
+    } catch (err) {
+      Logger.error(`truthyProperty failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
+
+  truthyPropertyTest.end()
+})
