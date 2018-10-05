@@ -131,5 +131,6 @@ ON lat.ledgerAccountTypeId = pc.ledgerAccountTypeId
 JOIN central_ledger.participant p
 ON p.participantId = pc.participantId
 JOIN central_ledger.participantLimitType plt
-ON plt.participantLimitTypeId = pl.participantLimitTypeId"
+ON plt.participantLimitTypeId = pl.participantLimitTypeId
+ORDER BY 1 DESC"
 echo

@@ -636,13 +636,17 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               where: sandbox.stub().returns({
                 first: sandbox.stub().returns({
                   transacting: sandbox.stub().returns({
-                    forUpdate: sandbox.stub()
+                    forUpdate: sandbox.stub().returns(
+                      Promise.resolve({participantPositionId: 1, positionValue: 500, reservedValue: 0})
+                    )
                   })
                 }),
                 andWhere: sandbox.stub().returns({
                   first: sandbox.stub().returns({
                     transacting: sandbox.stub().returns({
-                      forUpdate: sandbox.stub()
+                      forUpdate: sandbox.stub().returns(
+                        Promise.resolve({netDebitCap: 1000})
+                      )
                     })
                   })
                 })
@@ -672,7 +676,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           let result = await SettlementFacade.putById(1, payload['putById'][1], enums['putById'])
           test.ok(result, 'Result returned')
-          test.equal(knexStub.callCount, 10, 'Knex called 10 times')
+          test.equal(knexStub.callCount, 24, 'Knex called 24 times')
           test.equal(result.settlementWindows.length, 1, 'Excactly one settlement window is returned as affected')
           test.equal(result.participants.length, 1, 'One participants is affected')
           test.equal(result.participants[0].accounts.length, 1, 'One account is affected')

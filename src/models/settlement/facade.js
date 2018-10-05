@@ -28,20 +28,10 @@
 
 const Db = require('../index')
 const Uuid = require('uuid4')
+const Crypto = require('crypto')
+const Config = require('../../lib/config')
 const ParticipantFacade = require('@mojaloop/central-ledger/src/models/participant/facade')
-// /Users/georgi/mb/mojaloop/central-ledger/src/models/participant/facade.js
 // const cloneDeep = require('../../utils/cloneDeep')
-
-const settlementTransferValiditySeconds = 60 * 60 * 24 * 5 // currently 5 days
-
-const hashCode = function (str) {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash += Math.pow(str.charCodeAt(i) * 31, str.length - i)
-    hash = hash & hash // Convert to 32bit integer
-  }
-  return Math.abs(hash)
-}
 
 const settlementTransfersPrepare = async function (settlementId, transactionTimestamp, enums, trx = null) {
   try {
@@ -58,14 +48,16 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
       .whereNull('tdc.transferId')
       .transacting(trx)
 
-    const trxFunction = async (trx, commit = true) => {
+    const trxFunction = async (trx, doCommit = true) => {
       try {
-        // if settlementTransfersPrepare method is moved outside of this module's transacation, implement transaction start HERE
+        const hashSha256 = Crypto.createHash('sha256')
+        let hash = hashSha256.update(String(t.settlementTransferId))
+        hash = hashSha256.digest(hash).toString('base64').slice(0, -1) // removing the trailing '=' as per the specification
         // Insert transferDuplicateCheck
         await knex('transferDuplicateCheck')
           .insert({
             transferId: t.settlementTransferId,
-            hash: hashCode(t.settlementTransferId),
+            hash,
             createdDate: transactionTimestamp
           })
           .transacting(trx)
@@ -77,7 +69,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             amount: Math.abs(t.netAmount),
             currencyId: t.currencyId,
             ilpCondition: 0,
-            expirationDate: new Date(+new Date() + 1000 * settlementTransferValiditySeconds).toISOString().replace(/[TZ]/g, ' ').trim(),
+            expirationDate: new Date(+new Date() + 1000 * Number(Config.TRANSFER_VALIDITY_SECONDS)).toISOString().replace(/[TZ]/g, ' ').trim(),
             createdDate: transactionTimestamp
           })
           .transacting(trx)
@@ -136,12 +128,13 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           })
           .transacting(trx)
 
-        if (commit) {
+        if (doCommit) {
           await trx.commit
         }
-        // if settlementTransfersPrepare method is moved outside of this module's transacation, implement transaction commit HERE
       } catch (err) {
-        await trx.rollback
+        if (doCommit) {
+          await trx.rollback
+        }
         throw err
       }
     }
@@ -181,7 +174,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
       .whereNull('tsc2.transferId')
       .transacting(trx)
 
-    const trxFunction = async (trx, commit = true) => {
+    const trxFunction = async (trx, doCommit = true) => {
       try {
         for (let t of settlementTransferList) {
           // Select participantPosition FOR UPDATE
@@ -212,8 +205,8 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
 
           if (isLimitExceeded) {
             await ParticipantFacade.adjustLimits(t.participantCurrencyId, {type: 'NET_DEBIT_CAP', value: netDebitCap + t.amount}, trx)
-            // TODO: insert new limit with correct value for startAfterParticipantPositionChangeId
-            // TODO: notify DFSP for NDC change
+            // TODO: insert new limit with correct value for startAfterParticipantPositionChangeId (not to be implemented here)
+            // TODO: notify DFSP for NDC change (not to be implemented here)
           }
 
           // Persist transfer state and participant position change
@@ -248,12 +241,14 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             })
             .transacting(trx)
 
-          if (commit) {
+          if (doCommit) {
             await trx.commit
           }
         }
       } catch (err) {
-        await trx.rollback
+        if (doCommit) {
+          await trx.rollback
+        }
         throw err
       }
     }
@@ -705,7 +700,7 @@ const Facade = {
           })
           await knex.batchInsert('settlementSettlementWindow', settlementSettlementWindowList).transacting(trx)
           /* let settlementTransferParticipantIdList = */
-          await knex
+          let builder = knex
             .from(knex.raw('settlementTransferParticipant (settlementId, settlementWindowId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, createdDate, amount)'))
             .insert(function () {
               this.from('settlementSettlementWindow AS ssw')
@@ -725,19 +720,23 @@ const Facade = {
                   'tp.transferParticipantRoleTypeId',
                   'tp.ledgerEntryTypeId',
                   knex.raw('? AS ??', [transactionTimestamp, 'createdDate']))
-                .sum('tp.amount')
+                .sum('tp.amount AS amount')
             })
             .transacting(trx)
-          await knex
+          await builder
+
+          builder = knex
             .from(knex.raw('settlementParticipantCurrency (settlementId, participantCurrencyId, netAmount)'))
             .insert(function () {
               this.from('settlementTransferParticipant AS stp')
                 .whereRaw('stp.settlementId = ?', [settlementId])
                 .groupBy('stp.settlementId', 'stp.participantCurrencyId')
                 .select('stp.settlementId', 'stp.participantCurrencyId')
-                .sum('stp.amount')
+                .sum('stp.amount AS netAmount')
             }, 'settlementParticipantCurrencyId')
             .transacting(trx)
+          await builder
+
           const settlementParticipantCurrencyList = await knex('settlementParticipantCurrency').select('settlementParticipantCurrencyId').where('settlementId', settlementId).transacting(trx)
           let settlementParticipantCurrencyIdList = []
           const settlementParticipantCurrencyStateChangeList = settlementParticipantCurrencyList.map(value => {
