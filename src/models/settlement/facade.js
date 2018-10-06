@@ -146,12 +146,13 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
         await knex.transaction(trxFunction)
       }
     }
+    return 0
   } catch (err) {
     throw err
   }
 }
 
-const settlementTransfersCommit = async function (settlementId, transactionTimestamp, enums, trx) {
+const settlementTransfersCommit = async function (settlementId, transactionTimestamp, enums, trx = null) {
   try {
     const knex = await Db.getKnex()
     let isLimitExceeded, latestPosition, transferStateChangeId
@@ -258,12 +259,15 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
     } else {
       await knex.transaction(trxFunction)
     }
+    return 0
   } catch (err) {
     throw err
   }
 }
 
 const Facade = {
+  settlementTransfersPrepare,
+  settlementTransfersCommit,
   putById: async function (settlementId, payload, enums, options = {}) {
     try {
       const knex = await Db.getKnex()
