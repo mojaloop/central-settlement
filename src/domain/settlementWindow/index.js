@@ -27,11 +27,10 @@
  ******/
 
 const settlementWindowModel = require('../../models/settlementWindow')
-const centralLogger = require('@mojaloop/central-services-shared').Logger
+const hasFilters = require('./../../utils/truthyProperty')
 
 module.exports = {
-  getById: async function (params, enums, Logger = centralLogger) {
-    // let Logger = options.logger || centralLogger
+  getById: async function (params, enums) {
     try {
       let settlementWindow = await settlementWindowModel.getById(params, enums)
       if (settlementWindow) return settlementWindow
@@ -46,13 +45,13 @@ module.exports = {
 
   getByParams: async function (params, enums, options = {}) {
     // 4 filters - at least one should be used
-    if (Object.keys(params.query).length && Object.keys(params.query).length < 5) {
+    if (hasFilters(params.query) && Object.keys(params.query).length < 5) {
       try {
         let settlementWindows = await settlementWindowModel.getByParams(params, enums)
         if (settlementWindows && settlementWindows.length > 0) {
           return settlementWindows
         } else {
-          let err = new Error(`settlementWindow by filters: ${JSON.stringify(params.query)} not found`)
+          let err = new Error(`settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
           throw err
         }
       } catch (err) {

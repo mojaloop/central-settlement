@@ -152,7 +152,13 @@ Test('/settlements/{id}', async (settlementTest) => {
     }
   })
   await settlementTest.test('test settlements put operation', async (t) => {
+    sandbox.stub(Enums, 'ledgerAccountTypes').returns({})
+    sandbox.stub(Enums, 'ledgerEntryTypes').returns({})
+    sandbox.stub(Enums, 'participantLimitTypes').returns({})
     sandbox.stub(Enums, 'settlementStates').returns({})
+    sandbox.stub(Enums, 'settlementWindowStates').returns({})
+    sandbox.stub(Enums, 'transferParticipantRoleTypes').returns({})
+    sandbox.stub(Enums, 'transferStates').returns({})
     sandbox.stub(settlement, 'putById').returns({})
     try {
       const requests = new Promise((resolve, reject) => {
@@ -199,7 +205,13 @@ Test('/settlements/{id}', async (settlementTest) => {
   })
 
   await settlementTest.test('test settlements get by params throws', async (t) => {
+    sandbox.stub(Enums, 'ledgerAccountTypes').returns({})
+    sandbox.stub(Enums, 'ledgerEntryTypes').returns({})
+    sandbox.stub(Enums, 'participantLimitTypes').returns({})
     sandbox.stub(Enums, 'settlementStates').returns({})
+    sandbox.stub(Enums, 'settlementWindowStates').returns({})
+    sandbox.stub(Enums, 'transferParticipantRoleTypes').returns({})
+    sandbox.stub(Enums, 'transferStates').returns({})
     sandbox.stub(settlement, 'putById').throws()
     try {
       const requests = new Promise((resolve, reject) => {
@@ -236,7 +248,7 @@ Test('/settlements/{id}', async (settlementTest) => {
         options.headers = mock.request.headers
       }
       const response = await server.inject(options)
-      t.equal(response.statusCode, 500, 'Ok response status')
+      t.equal(response.statusCode, 400, 'Ok response status')
       t.end()
     } catch (e) {
       Logger.error(`testing error ${e}`)

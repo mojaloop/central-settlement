@@ -1,7 +1,7 @@
 {
     "name": "central-settlement",
     "description": "Central settlements hosted by a scheme to record and settle settlements.",
-    "version": "3.5.1-snapshot",
+    "version": "3.7.1-snapshot",
     "license": "Apache-2.0",
     "private": true,
     "author": "Valentin Genev <vgenev@gmail.com>",
@@ -19,16 +19,18 @@
     },
     "dependencies": {
         "@mojaloop/central-services-auth": "0.2.0",
-        "@mojaloop/central-services-database": "^3.1.0-snapshot",
+        "@mojaloop/central-services-database": "3.1.0-snapshot",
         "@mojaloop/central-services-error-handling": "0.5.1",
-        "@mojaloop/central-services-shared": "^1.2.1-snapshot",
+        "@mojaloop/central-services-shared": "3.1.0-snapshot",
         "@mojaloop/forensic-logging-client": "0.5.1",
+        "@mojaloop/central-ledger": "3.7.1-snapshot",
         "boom": "^7.1.1",
         "hapi": "^17.0.0",
         "hapi-openapi": "^1.0.0",
         "hapi-pagination": "^2.0.0",
         "rc": "^1.2.8",
-        "swagmock": "~0.0.2"
+        "swagmock": "~0.0.2",
+        "uuid4": "1.0.0"
     },
     "devDependencies": {
         "eslint": "^2",
@@ -38,7 +40,9 @@
         "swagmock": "~0.0.2",
         "tap-xunit": "1.4.0",
         "tape": "4.6.2",
-        "tapes": "4.1.0"
+        "tapes": "4.1.0",
+        "pre-commit": "^1.2.2",
+        "faucet": "0.0.1"
     },
     "scripts": {
         "start": "node src/server.js",

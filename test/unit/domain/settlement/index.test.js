@@ -19,6 +19,7 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * Georgi Georgiev <georgi.georgiev@modusbox.com>
+ * Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
 
@@ -404,7 +405,7 @@ Test('SettlementService', async (settlementServiceTest) => {
         currency: 'USD'
       }]
       let participantCurrencyIdMock = 1
-      let settlementParticipantCurrencyId = 1
+      // let settlementParticipantCurrencyId = 1
       let settlementParticipantCurrencyList = accountsMock
       await getByIdParticipantAccountTest.test('return settlement participant accounts', async test => {
         try {

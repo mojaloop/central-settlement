@@ -19,6 +19,7 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * Georgi Georgiev <georgi.georgiev@modusbox.com>
+ * Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
 
@@ -42,6 +43,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
   let whereStub
   let whereRawStub
   let orderByStub
+  let distinctStub
   let selectStubResult
   let leftJoin2Stub
   let leftJoin3Stub
@@ -67,12 +69,22 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
     whereStub = sandbox.stub()
     whereRawStub = sandbox.stub()
     orderByStub = sandbox.stub()
+    distinctStub = sandbox.stub()
     selectStubResult = {
       first: firstStub.returns({
         where: whereStub
       }),
       whereRaw: whereRawStub.returns({
         orderBy: orderByStub
+      }),
+      orderBy: orderByStub.returns({
+        distinct: distinctStub.returns({
+          where: whereStub.returns({
+            where: whereStub.returns({
+              where: whereStub
+            })
+          })
+        })
       })
     }
     leftJoin2Stub = sandbox.stub()
@@ -237,8 +249,68 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
             'swsc.reason as reason',
             'settlementWindow.createdDate as createdDate',
             'swsc.createdDate as changedDate').calledOnce)
-          test.ok(whereRawStub.calledOnce)
           test.ok(orderByStub.withArgs('changedDate', 'desc').calledOnce)
+          test.ok(distinctStub.calledOnce)
+          test.ok(whereStub.withArgs('pc.participantId', participantId).calledOnce)
+          test.ok(whereStub.withArgs('swsc.settlementWindowStateId', state).calledOnce)
+          test.ok(whereStub.withArgs('settlementWindow.createdDate', '>=', fromDateTime).calledOnce)
+          test.ok(whereStub.withArgs('settlementWindow.createdDate', '<=', toDateTime).calledOnce)
+          test.end()
+        } catch (err) {
+          Logger.error(`getByParams failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await getByParamsTest.test('retrieve settlement windows by params', async test => {
+        try {
+          Db.settlementWindow.query.returns(Promise.resolve(settlementWindowResultStub))
+
+          query = { participantId }
+          let result = await SettlementWindowFacade.getByParams({ query }, enums)
+          test.ok(result, 'Result returned')
+          test.ok(builderStub.leftJoin.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce)
+          test.ok(leftJoin2Stub.withArgs('transferFulfilment AS tf', 'tf.settlementWindowId', 'settlementWindow.settlementWindowId').calledOnce)
+          test.ok(leftJoin3Stub.withArgs('transferParticipant AS tp', 'tp.transferId', 'tf.transferId').calledOnce)
+          test.ok(leftJoin4Stub.withArgs('participantCurrency AS pc', 'pc.participantCurrencyId', 'tp.participantCurrencyId').calledOnce)
+          test.ok(selectStub.withArgs('settlementWindow.settlementWindowId',
+            'swsc.settlementWindowStateId as state',
+            'swsc.reason as reason',
+            'settlementWindow.createdDate as createdDate',
+            'swsc.createdDate as changedDate').calledOnce)
+          test.ok(orderByStub.withArgs('changedDate', 'desc').calledOnce)
+          test.ok(distinctStub.calledOnce)
+          test.ok(whereStub.withArgs('pc.participantId', participantId).calledOnce)
+          test.ok(whereStub.withArgs('swsc.settlementWindowStateId', state).notCalled)
+          test.ok(whereStub.withArgs('settlementWindow.createdDate', '>=', fromDateTime).notCalled)
+          test.ok(whereStub.withArgs('settlementWindow.createdDate', '<=', toDateTime).notCalled)
+          test.end()
+        } catch (err) {
+          Logger.error(`getByParams failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await getByParamsTest.test('retrieve settlement windows by params', async test => {
+        try {
+          Db.settlementWindow.query.returns(Promise.resolve(settlementWindowResultStub))
+
+          query = { state, fromDateTime, toDateTime }
+          let result = await SettlementWindowFacade.getByParams({ query }, enums)
+          test.ok(result, 'Result returned')
+          test.ok(builderStub.leftJoin.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce)
+          test.ok(selectStub.withArgs('settlementWindow.settlementWindowId',
+            'swsc.settlementWindowStateId as state',
+            'swsc.reason as reason',
+            'settlementWindow.createdDate as createdDate',
+            'swsc.createdDate as changedDate').calledOnce)
+          test.ok(orderByStub.withArgs('changedDate', 'desc').calledOnce)
+          test.ok(distinctStub.calledOnce)
+          test.ok(whereStub.withArgs('swsc.settlementWindowStateId', state).calledOnce)
+          test.ok(whereStub.withArgs('settlementWindow.createdDate', '>=', fromDateTime).calledOnce)
+          test.ok(whereStub.withArgs('settlementWindow.createdDate', '<=', toDateTime).calledOnce)
           test.end()
         } catch (err) {
           Logger.error(`getByParams failed with error - ${err}`)
@@ -260,8 +332,11 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
             'swsc.reason as reason',
             'settlementWindow.createdDate as createdDate',
             'swsc.createdDate as changedDate').calledOnce)
-          test.ok(whereRawStub.calledOnce)
           test.ok(orderByStub.withArgs('changedDate', 'desc').calledOnce)
+          test.ok(distinctStub.calledOnce)
+          test.ok(whereStub.withArgs('swsc.settlementWindowStateId', state).notCalled)
+          test.ok(whereStub.withArgs('settlementWindow.createdDate', '>=', fromDateTime).notCalled)
+          test.ok(whereStub.withArgs('settlementWindow.createdDate', '<=', toDateTime).notCalled)
           test.end()
         } catch (err) {
           Logger.error(`getByParams failed with error - ${err}`)
@@ -376,7 +451,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           test.fail('Error not thrown!')
         } catch (err) {
           Logger.error(`close failed with error - ${err}`)
-          test.equal(err.message, '2001', `Error "${err.message}" thrown as expected`)
+          test.ok(err instanceof Error, `Error "${err.message}" thrown as expected`)
           test.end()
         }
       })

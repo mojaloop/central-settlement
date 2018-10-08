@@ -35,7 +35,6 @@ const Boom = require('boom')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Path = require('path')
 const settlementWindows = require('./../domain/settlementWindow')
-
 Logger.info('path ', Path.basename(__filename))
 
 /**
@@ -52,7 +51,7 @@ module.exports = {
   get: async function getSettlementWindowsByParams (request, h) {
     try {
       const Enums = await request.server.methods.enums('settlementWindowStates')
-      let settlementWindowResult = await settlementWindows.getByParams({ query: request.query }, Enums, { logger: request.server.log() })
+      let settlementWindowResult = await settlementWindows.getByParams({ query: request.query }, Enums)
       return h.response(settlementWindowResult)
     } catch (e) {
       request.server.log('error', e)

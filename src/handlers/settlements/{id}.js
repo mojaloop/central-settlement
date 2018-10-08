@@ -57,7 +57,7 @@ module.exports = {
     try {
       const Enums = await request.server.methods.enums('settlementStates')
       request.server.log('info', `get settlement by Id requested with id ${settlementId}`)
-      let settlementResult = await settlement.getById({ settlementId }, Enums, { logger: request.server.log() })
+      let settlementResult = await settlement.getById({ settlementId }, Enums)
       return h.response(settlementResult)
     } catch (e) {
       request.server.log('error', e)
@@ -75,11 +75,19 @@ module.exports = {
   put: async function updateSettlementById (request, h) {
     const settlementId = request.params.id
     try {
-      const Enums = await request.server.methods.enums('settlementStates')
-      return await settlement.putById(settlementId, request.payload, Enums, { logger: request.server.log })
+      const Enums = {
+        ledgerAccountTypes: await request.server.methods.enums('ledgerAccountTypes'),
+        ledgerEntryTypes: await request.server.methods.enums('ledgerEntryTypes'),
+        participantLimitTypes: await request.server.methods.enums('participantLimitTypes'),
+        settlementStates: await request.server.methods.enums('settlementStates'),
+        settlementWindowStates: await request.server.methods.enums('settlementWindowStates'),
+        transferParticipantRoleTypes: await request.server.methods.enums('transferParticipantRoleTypes'),
+        transferStates: await request.server.methods.enums('transferStates')
+      }
+      return await settlement.putById(settlementId, request.payload, Enums)
     } catch (e) {
       request.server.log('error', e)
-      return Boom.boomify(e)
+      return Boom.badRequest(e)
     }
   }
 }
