@@ -23,12 +23,14 @@
         "@mojaloop/central-services-error-handling": "0.5.1",
         "@mojaloop/central-services-shared": "3.1.0-snapshot",
         "@mojaloop/forensic-logging-client": "0.5.1",
+        "@mojaloop/central-ledger": "3.7.1-snapshot",
         "boom": "^7.1.1",
         "hapi": "^17.0.0",
         "hapi-openapi": "^1.0.0",
         "hapi-pagination": "^2.0.0",
         "rc": "^1.2.8",
-        "swagmock": "~0.0.2"
+        "swagmock": "~0.0.2",
+        "uuid4": "1.0.0"
     },
     "devDependencies": {
         "eslint": "^2",
