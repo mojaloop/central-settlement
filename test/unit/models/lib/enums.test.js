@@ -180,6 +180,49 @@ Test('Enums', async (enumsTest) => {
     }
   })
 
+  await enumsTest.test('ledgerAccountTypes should', async ledgerAccountTypesTest => {
+    try {
+      await ledgerAccountTypesTest.test('return', async test => {
+        try {
+          const states = [
+            { ledgerAccountTypeId: 1, name: 'POSITION' },
+            { ledgerAccountTypeId: 2, name: 'SETTLEMENT' },
+            { ledgerAccountTypeId: 3, name: 'HUB_SETTLEMENT' }
+          ]
+          Db.ledgerAccountType = { find: sandbox.stub().returns(states) }
+          let ledgerAccountTypesEnum = await Enums.ledgerAccountTypes()
+          test.equal(Object.keys(ledgerAccountTypesEnum).length, states.length, 'ledger account type enum')
+          Db.ledgerAccountType.find = sandbox.stub().returns(undefined)
+          ledgerAccountTypesEnum = await Enums.ledgerAccountTypes()
+          test.notOk(ledgerAccountTypesEnum, 'undefined when no record is returned')
+          test.end()
+        } catch (err) {
+          Logger.error(`ledgerAccountTypes failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await ledgerAccountTypesTest.test('throw error if database is unavailable', async test => {
+        try {
+          Db.ledgerAccountType = { find: sandbox.stub().throws(new Error('Database unavailable')) }
+          await Enums.ledgerAccountTypes()
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`ledgerAccountTypes failed with error - ${err}`)
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+      await ledgerAccountTypesTest.end()
+    } catch (err) {
+      Logger.error(`enumsTest failed with error - ${err}`)
+      ledgerAccountTypesTest.fail()
+      ledgerAccountTypesTest.end()
+    }
+  })
+
   await enumsTest.test('ledgerEntryTypes should', async ledgerEntryTypesTest => {
     try {
       await ledgerEntryTypesTest.test('return', async test => {
@@ -263,6 +306,47 @@ Test('Enums', async (enumsTest) => {
       Logger.error(`enumsTest failed with error - ${err}`)
       transferParticipantRoleTypesTest.fail()
       transferParticipantRoleTypesTest.end()
+    }
+  })
+
+  await enumsTest.test('participantLimitTypes should', async participantLimitTypesTest => {
+    try {
+      await participantLimitTypesTest.test('return', async test => {
+        try {
+          const states = [
+            { participantLimitTypeId: 1, name: 'NET_DEBIT_CAP' }
+          ]
+          Db.participantLimitType = { find: sandbox.stub().returns(states) }
+          let participantLimitTypesEnum = await Enums.participantLimitTypes()
+          test.equal(Object.keys(participantLimitTypesEnum).length, states.length, 'participant limit type enum')
+          Db.participantLimitType.find = sandbox.stub().returns(undefined)
+          participantLimitTypesEnum = await Enums.participantLimitTypes()
+          test.notOk(participantLimitTypesEnum, 'undefined when no record is returned')
+          test.end()
+        } catch (err) {
+          Logger.error(`participantLimitTypes failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await participantLimitTypesTest.test('throw error if database is unavailable', async test => {
+        try {
+          Db.participantLimitType = { find: sandbox.stub().throws(new Error('Database unavailable')) }
+          await Enums.participantLimitTypes()
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`participantLimitTypes failed with error - ${err}`)
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+      await participantLimitTypesTest.end()
+    } catch (err) {
+      Logger.error(`enumsTest failed with error - ${err}`)
+      participantLimitTypesTest.fail()
+      participantLimitTypesTest.end()
     }
   })
 

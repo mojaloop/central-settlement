@@ -72,6 +72,20 @@ module.exports = {
       throw err
     }
   },
+  ledgerAccountTypes: async function () {
+    try {
+      let ledgerAccountTypeEnum = {}
+      let ledgerAccountTypeEnumsList = await Db.ledgerAccountType.find({})
+      if (ledgerAccountTypeEnumsList) {
+        for (let state of ledgerAccountTypeEnumsList) {
+          ledgerAccountTypeEnum[`${state.name}`] = state.ledgerAccountTypeId
+        }
+        return ledgerAccountTypeEnum
+      }
+    } catch (err) {
+      throw err
+    }
+  },
   ledgerEntryTypes: async function () {
     try {
       let ledgerEntryTypeEnum = {}
@@ -95,6 +109,20 @@ module.exports = {
           transferParticipantRoleTypeEnum[`${state.name}`] = state.transferParticipantRoleTypeId
         }
         return transferParticipantRoleTypeEnum
+      }
+    } catch (err) {
+      throw err
+    }
+  },
+  participantLimitTypes: async function () {
+    try {
+      let participantLimitTypeEnum = {}
+      let participantLimitTypeEnumsList = await Db.participantLimitType.find({})
+      if (participantLimitTypeEnumsList) {
+        for (let state of participantLimitTypeEnumsList) {
+          participantLimitTypeEnum[`${state.name}`] = state.participantLimitTypeId
+        }
+        return participantLimitTypeEnum
       }
     } catch (err) {
       throw err
