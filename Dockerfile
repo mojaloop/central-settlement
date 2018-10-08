@@ -9,7 +9,7 @@ COPY README.md /opt/central-settlement
 
 RUN apk add --no-cache -t build-dependencies git make gcc g++ python libtool autoconf automake \
     && cd $(npm root -g)/npm \
-    && npm config set unsafe-perm true \
+    && npm config set unsafe-perm true
 
 RUN npm install --production && \
   npm uninstall -g npm
