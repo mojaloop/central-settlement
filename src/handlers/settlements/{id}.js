@@ -75,7 +75,15 @@ module.exports = {
   put: async function updateSettlementById (request, h) {
     const settlementId = request.params.id
     try {
-      const Enums = await request.server.methods.enums('settlementStates')
+      const Enums = {
+        ledgerAccountTypes: await request.server.methods.enums('ledgerAccountTypes'),
+        ledgerEntryTypes: await request.server.methods.enums('ledgerEntryTypes'),
+        participantLimitTypes: await request.server.methods.enums('participantLimitTypes'),
+        settlementStates: await request.server.methods.enums('settlementStates'),
+        settlementWindowStates: await request.server.methods.enums('settlementWindowStates'),
+        transferParticipantRoleTypes: await request.server.methods.enums('transferParticipantRoleTypes'),
+        transferStates: await request.server.methods.enums('transferStates')
+      }
       return await settlement.putById(settlementId, request.payload, Enums)
     } catch (e) {
       request.server.log('error', e)
