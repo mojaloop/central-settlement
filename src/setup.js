@@ -111,8 +111,7 @@ const createServer = async function (config, openAPIPluginOptions) {
             let errorMessage = {
               errorInformation: {
                 errorCode: error.statusCode,
-                errorDescription: error.message,
-                extensionList: []
+                errorDescription: error.message
               }
             }
             error.message = errorMessage
