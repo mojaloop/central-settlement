@@ -106,6 +106,17 @@ const createServer = async function (config, openAPIPluginOptions) {
         method: (request, h) => {
           if (!request.response.isBoom) {
             server.log('response', request.response)
+          } else {
+            const error = request.response
+            let errorMessage = {
+              errorInformation: {
+                errorCode: error.statusCode,
+                errorDescription: error.message,
+                extensionList: []
+              }
+            }
+            error.message = errorMessage
+            error.reformat()
           }
           return h.continue
         }
