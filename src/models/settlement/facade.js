@@ -155,7 +155,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
 const settlementTransfersCommit = async function (settlementId, transactionTimestamp, enums, trx = null) {
   try {
     const knex = await Db.getKnex()
-    let isLimitExceeded, latestPosition, transferStateChangeId
+    let isLimitExceeded, latestPosition, transferStateChangeId, latestSettlementPosition
 
     let settlementTransferList = await knex('settlementParticipantCurrency AS spc')
       .join('transferStateChange AS tsc1', function () {
@@ -170,7 +170,11 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
         this.on('tp.transferId', 'spc.settlementTransferId')
           .andOn('tp.participantCurrencyId', 'spc.participantCurrencyId')
       })
-      .select('tp.transferId', 'tp.participantCurrencyId', 'tp.amount')
+      .leftJoin('transferParticipant AS tp2', function () {
+        this.on('tp2.transferId', 'spc.settlementTransferId')
+          .andOn('tp2.participantCurrencyId', '!=', 'spc.participantCurrencyId')
+      })
+      .select('tp.transferId', 'tp.participantCurrencyId', 'tp2.participantCurrencyId AS settlementAccountId', 'tp.amount')
       .where('spc.settlementId', settlementId)
       .whereNull('tsc2.transferId')
       .transacting(trx)
@@ -186,6 +190,13 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             .transacting(trx)
             .forUpdate()
 
+          let {settlementPositionId, settlementPositionValue} = await knex('participantPosition')
+            .select('participantPositionId AS settlementPositionId', 'value AS settlementPositionValue')
+            .where('participantCurrencyId', t.settlementAccountId)
+            .first()
+            .transacting(trx)
+            .forUpdate()
+
           // Select participant NET_DEBIT_CAP limit
           let {netDebitCap} = await knex('participantLimit')
             .select('value AS netDebitCap')
@@ -197,11 +208,16 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
 
           isLimitExceeded = netDebitCap - positionValue - reservedValue - t.amount < 0
           latestPosition = positionValue + t.amount
+          latestSettlementPosition = settlementPositionValue - t.amount
 
           // Persist latestPosition
           await knex('participantPosition')
             .update('value', latestPosition)
             .where('participantPositionId', participantPositionId)
+            .transacting(trx)
+          await knex('participantPosition')
+            .update('value', latestSettlementPosition)
+            .where('participantPositionId', settlementPositionId)
             .transacting(trx)
 
           if (isLimitExceeded) {
@@ -238,6 +254,15 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
               transferStateChangeId: transferStateChangeId,
               value: latestPosition,
               reservedValue,
+              createdDate: transactionTimestamp
+            })
+            .transacting(trx)
+          await knex('participantPositionChange')
+            .insert({
+              participantPositionId: settlementPositionId,
+              transferStateChangeId: transferStateChangeId,
+              value: latestSettlementPosition,
+              reservedValue: 0,
               createdDate: transactionTimestamp
             })
             .transacting(trx)
