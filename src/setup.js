@@ -87,7 +87,7 @@ const createServer = async function (config, openAPIPluginOptions) {
       options: {
         cache: {
           cache: 'memCache',
-          expiresIn: 5 * 1000,
+          expiresIn: 20 * 1000,
           generateTimeout: 30 * 1000
         }
       }
@@ -106,6 +106,16 @@ const createServer = async function (config, openAPIPluginOptions) {
         method: (request, h) => {
           if (!request.response.isBoom) {
             server.log('response', request.response)
+          } else {
+            const error = request.response
+            let errorMessage = {
+              errorInformation: {
+                errorCode: error.statusCode,
+                errorDescription: error.message
+              }
+            }
+            error.message = errorMessage
+            error.reformat()
           }
           return h.continue
         }
