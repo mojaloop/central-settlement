@@ -19,9 +19,9 @@ echo "---------------------------------------------------------------------"
 echo "PAYER=dfsp1, PAYEE=dfsp2, amount=600"
 sh -c "curl -X POST \
   http://localhost:3000/transfers \
-  -H 'Accept: 1.0' \
+  -H 'Accept: application/vnd.interoperability.transfers+json;version=1' \
   -H 'Cache-Control: no-cache' \
-  -H 'Content-Type: application/json' \
+  -H 'Content-Type: application/vnd.interoperability.transfers+json;version=1.0' \
   -H 'Date: Fri, 14 Sep 2018 19:10:56 GMT' \
   -H 'FSPIOP-Destination: dfsp2' \
   -H 'FSPIOP-Source: dfsp1' \
@@ -36,7 +36,7 @@ sh -c "curl -X POST \
     },
     \"ilpPacket\": \"AYIBgQAAAAAAAASwNGxldmVsb25lLmRmc3AxLm1lci45T2RTOF81MDdqUUZERmZlakgyOVc4bXFmNEpLMHlGTFGCAUBQU0svMS4wCk5vbmNlOiB1SXlweUYzY3pYSXBFdzVVc05TYWh3CkVuY3J5cHRpb246IG5vbmUKUGF5bWVudC1JZDogMTMyMzZhM2ItOGZhOC00MTYzLTg0NDctNGMzZWQzZGE5OGE3CgpDb250ZW50LUxlbmd0aDogMTM1CkNvbnRlbnQtVHlwZTogYXBwbGljYXRpb24vanNvbgpTZW5kZXItSWRlbnRpZmllcjogOTI4MDYzOTEKCiJ7XCJmZWVcIjowLFwidHJhbnNmZXJDb2RlXCI6XCJpbnZvaWNlXCIsXCJkZWJpdE5hbWVcIjpcImFsaWNlIGNvb3BlclwiLFwiY3JlZGl0TmFtZVwiOlwibWVyIGNoYW50XCIsXCJkZWJpdElkZW50aWZpZXJcIjpcIjkyODA2MzkxXCJ9IgA\",
     \"condition\": \"bSqIkHNqib-I69QFoVR--ja3L4Raye2WERq2Gzitb-U\",
-    \"expiration\": \"2018-10-20T17:15:00.000+03:00\",
+    \"expiration\": \"$EXPIRATION_DATE\",
     \"extensionList\": {
       \"extension\": [{
         \"key\": \"prepare\",
@@ -47,9 +47,9 @@ sh -c "curl -X POST \
 echo "PAYER=dfsp1, PAYEE=dfsp2, amount=200"
 sh -c "curl -X POST \
   http://localhost:3000/transfers \
-  -H 'Accept: 1.0' \
+  -H 'Accept: application/vnd.interoperability.transfers+json;version=1.0' \
   -H 'Cache-Control: no-cache' \
-  -H 'Content-Type: application/json' \
+  -H 'Content-Type: application/vnd.interoperability.transfers+json;version=1' \
   -H 'Date: Fri, 14 Sep 2018 19:10:56 GMT' \
   -H 'FSPIOP-Destination: dfsp2' \
   -H 'FSPIOP-Source: dfsp1' \
@@ -64,7 +64,7 @@ sh -c "curl -X POST \
     },
     \"ilpPacket\": \"AYIBgQAAAAAAAASwNGxldmVsb25lLmRmc3AxLm1lci45T2RTOF81MDdqUUZERmZlakgyOVc4bXFmNEpLMHlGTFGCAUBQU0svMS4wCk5vbmNlOiB1SXlweUYzY3pYSXBFdzVVc05TYWh3CkVuY3J5cHRpb246IG5vbmUKUGF5bWVudC1JZDogMTMyMzZhM2ItOGZhOC00MTYzLTg0NDctNGMzZWQzZGE5OGE3CgpDb250ZW50LUxlbmd0aDogMTM1CkNvbnRlbnQtVHlwZTogYXBwbGljYXRpb24vanNvbgpTZW5kZXItSWRlbnRpZmllcjogOTI4MDYzOTEKCiJ7XCJmZWVcIjowLFwidHJhbnNmZXJDb2RlXCI6XCJpbnZvaWNlXCIsXCJkZWJpdE5hbWVcIjpcImFsaWNlIGNvb3BlclwiLFwiY3JlZGl0TmFtZVwiOlwibWVyIGNoYW50XCIsXCJkZWJpdElkZW50aWZpZXJcIjpcIjkyODA2MzkxXCJ9IgA\",
     \"condition\": \"bSqIkHNqib-I69QFoVR--ja3L4Raye2WERq2Gzitb-U\",
-    \"expiration\": \"2018-10-20T17:15:00.000+03:00\",
+    \"expiration\": \"$EXPIRATION_DATE\",
     \"extensionList\": {
       \"extension\": [{
         \"key\": \"prepare\",
@@ -82,9 +82,9 @@ echo "---------------------------------------------------------------------"
 echo
 sh -c "curl -X PUT \
   http://localhost:3000/transfers/123ec534-ee48-4575-b6a9-ead2955b8211 \
-  -H 'Accept: 1.0' \
+  -H 'Accept: application/vnd.interoperability.transfers+json;version=1.0' \
   -H 'Cache-Control: no-cache' \
-  -H 'Content-Type: application/json' \
+  -H 'Content-Type: application/vnd.interoperability.transfers+json;version=1' \
   -H 'Date: Fri, 14 Sep 2018 19:10:56 GMT' \
   -H 'FSPIOP-Destination: dfsp1' \
   -H 'FSPIOP-Source: dfsp2' \
@@ -102,9 +102,9 @@ sh -c "curl -X PUT \
   }'"
 sh -c "curl -X PUT \
   http://localhost:3000/transfers/123ec534-ee48-4575-b6a9-ead2955b8212 \
-  -H 'Accept: 1.0' \
+  -H 'Accept: application/vnd.interoperability.transfers+json;version=1.0' \
   -H 'Cache-Control: no-cache' \
-  -H 'Content-Type: application/json' \
+  -H 'Content-Type: application/vnd.interoperability.transfers+json;version=1' \
   -H 'Date: Fri, 14 Sep 2018 19:10:56 GMT' \
   -H 'FSPIOP-Destination: dfsp1' \
   -H 'FSPIOP-Source: dfsp2' \
@@ -164,7 +164,7 @@ sh -c "curl -X PUT \
   -d '{
     \"participants\": [
       {
-        \"id\": 1,
+        \"id\": 2,
         \"accounts\": [
           {
             \"id\": 1,

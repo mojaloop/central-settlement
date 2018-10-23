@@ -26,7 +26,7 @@ sh -c "curl -X PUT \
   -d '{
     \"participants\": [
       {
-        \"id\": 2,
+        \"id\": 3,
         \"accounts\": [
           {
             \"id\": 3,

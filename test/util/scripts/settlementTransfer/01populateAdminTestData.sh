@@ -59,7 +59,7 @@ do
   echo "Retrieving limits for '$FSP'"
   echo "---------------------------------------------------------------------"
   curl -X GET \
-    ${CENTRAL_LEDGER_ADMIN_URI_PREFIX}://${CENTRAL_LEDGER_ADMIN_HOST}:${CENTRAL_LEDGER_ADMIN_PORT}${CENTRAL_LEDGER_ADMIN_BASE}participants/${FSP}/limits \
+    ${CENTRAL_LEDGER_ADMIN_URI_PREFIX}://${CENTRAL_LEDGER_ADMIN_HOST}:${CENTRAL_LEDGER_ADMIN_PORT}${CENTRAL_LEDGER_ADMIN_BASE}participants/${FSP}/limits?currency=USD \
     -H 'Cache-Control: no-cache'
 
   echo
@@ -93,7 +93,7 @@ do
   }'"
 
   echo
-  echo "Retrieving EndPoints for '$FSP'"
+  echo "Retrieving Endpoints for '$FSP'"
   echo "---------------------------------------------------------------------"
   curl -X GET \
     ${CENTRAL_LEDGER_ADMIN_URI_PREFIX}://${CENTRAL_LEDGER_ADMIN_HOST}:${CENTRAL_LEDGER_ADMIN_PORT}${CENTRAL_LEDGER_ADMIN_BASE}participants/${FSP}/endpoints \
