@@ -29,7 +29,7 @@ sh -c "curl -X PUT \
         \"id\": 3,
         \"accounts\": [
           {
-            \"id\": 3,
+            \"id\": 4,
             \"reason\": \"test settlement transfer\",
             \"state\": \"SETTLED\"
           }
