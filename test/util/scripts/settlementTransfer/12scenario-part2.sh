@@ -16,10 +16,10 @@ source $CWD/env.sh
 
 echo
 echo "---------------------------------------------------------------------"
-echo "Settle both PAYER's and PAYEE's account for settlementId=1"
+echo "Settle both PAYER's and PAYEE's account for settlementId=2"
 echo "---------------------------------------------------------------------"
 sh -c "curl -X PUT \
-  http://localhost:3007/v1/settlements/1 \
+  http://localhost:3007/v1/settlements/2 \
   -H 'Cache-Control: no-cache' \
   -H 'Content-Type: application/json' \
   -H 'Postman-Token: 7d78bd18-2614-494a-9860-4236564df1c6' \
@@ -49,5 +49,5 @@ sh -c "curl -X PUT \
   }'"
 echo
 echo
-echo "Completed Scenario 11-2 - Settlement transfer commit to exceed NET_DEBIT_CAP"
+echo "Completed Scenario 12-2 - Settlement transfer commit to exceed NET_DEBIT_CAP"
 echo

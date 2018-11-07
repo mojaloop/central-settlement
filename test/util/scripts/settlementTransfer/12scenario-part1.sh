@@ -9,8 +9,8 @@ fi
 echo "Loading env vars..."
 source $CWD/env.sh
 
-sh $CWD/00recreateDatabase.sh
-sh $CWD/01populateAdminTestData.sh
+#sh $CWD/00recreateDatabase.sh
+#sh $CWD/01populateAdminTestData.sh
 
 echo "---------------------------------------------------------------------"
 echo "Starting script to populate test transfers - Prepare transfers:"
@@ -127,9 +127,9 @@ echo
 echo "---------------------------------------------------------------------"
 echo "Sending requests to central-settlement"
 echo "---------------------------------------------------------------------"
-echo "Close settlement window ID=1"
+echo "Close settlement window ID=2"
 sh -c "curl -X POST \
-  http://localhost:3007/v1/settlementWindows/1 \
+  http://localhost:3007/v1/settlementWindows/2 \
   -H 'Cache-Control: no-cache' \
   -H 'Content-Type: application/json' \
   -H 'Postman-Token: a2a0d43c-f11e-4b5b-bd80-cbd050dad451' \
@@ -138,7 +138,7 @@ sh -c "curl -X POST \
     \"reason\": \"settlement transfer test script\"
   }'"
 echo
-echo "Create settlement for settlement window ID=1"
+echo "Create settlement for settlement window ID=2"
 sh -c "curl -X POST \
   http://localhost:3007/v1/settlements \
   -H 'Cache-Control: no-cache' \
@@ -148,7 +148,7 @@ sh -c "curl -X POST \
     \"reason\": \"settlement transfer test script\",
     \"settlementWindows\": [
       {
-        \"id\": 1
+        \"id\": 2
       }
     ]
   }'"
@@ -222,9 +222,9 @@ echo
 echo "---------------------------------------------------------------------"
 echo "Sending requests to central-settlement"
 echo "---------------------------------------------------------------------"
-echo "Close settlement window ID=2"
+echo "Close settlement window ID=3"
 sh -c "curl -X POST \
-  http://localhost:3007/v1/settlementWindows/2 \
+  http://localhost:3007/v1/settlementWindows/3 \
   -H 'Cache-Control: no-cache' \
   -H 'Content-Type: application/json' \
   -H 'Postman-Token: a2a0d43c-f11e-4b5b-bd80-cbd050dad451' \
@@ -233,7 +233,7 @@ sh -c "curl -X POST \
     \"reason\": \"settlement transfer test script\"
   }'"
 echo
-echo "Create settlement for settlement window ID=2"
+echo "Create settlement for settlement window ID=3"
 sh -c "curl -X POST \
   http://localhost:3007/v1/settlements \
   -H 'Cache-Control: no-cache' \
@@ -243,7 +243,7 @@ sh -c "curl -X POST \
     \"reason\": \"settlement transfer test script\",
     \"settlementWindows\": [
       {
-        \"id\": 2
+        \"id\": 3
       }
     ]
   }'"
