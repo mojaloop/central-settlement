@@ -50,7 +50,11 @@ Test('ParticipantCurrencyModel', async (participantCurrencyModelTest) => {
           const participantId = 1
           const accountId = 1
           const params = { participantId, accountId }
-          const enums = {}
+          const enums = {
+            ledgerAccountTypes: {
+              POSITION: 1
+            }
+          }
           const participantCurrecyIdMock = 1
 
           const builderStub = sandbox.stub()
@@ -59,10 +63,15 @@ Test('ParticipantCurrencyModel', async (participantCurrencyModelTest) => {
           }
           Db.participantCurrency.query.callsArgWith(0, builderStub)
           const whereStub = sandbox.stub()
-          const andWhereStub = sandbox.stub()
+          const andWhereStub1 = sandbox.stub()
+          const andWhereStub2 = sandbox.stub()
           builderStub.select = sandbox.stub().returns({
             where: whereStub.returns({
-              andWhere: andWhereStub.returns(participantCurrecyIdMock)
+              andWhere: andWhereStub1.returns({
+                andWhere: andWhereStub2.returns({
+                  first: sandbox.stub().returns(participantCurrecyIdMock)
+                })
+              })
             })
           })
 
@@ -70,7 +79,8 @@ Test('ParticipantCurrencyModel', async (participantCurrencyModelTest) => {
           test.ok(result, 'Result returned')
           test.ok(builderStub.select.withArgs('participantCurrencyId').calledOnce, 'select with args ... called once')
           test.ok(whereStub.withArgs({ participantId }).calledOnce, 'where with args ... called once')
-          test.ok(andWhereStub.withArgs('participantCurrencyId', accountId).calledOnce, 'where with args ... called once')
+          test.ok(andWhereStub1.withArgs('participantCurrencyId', accountId).calledOnce, 'where with args ... called once')
+          test.ok(andWhereStub2.withArgs('ledgerAccountTypeId', enums.ledgerAccountTypes.POSITION).calledOnce, 'where with args ... called once')
           test.equal(result, participantCurrecyIdMock, 'Result matched')
 
           Db.participantCurrency.query = sandbox.stub().throws(new Error('Error occured'))

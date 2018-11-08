@@ -217,46 +217,73 @@ module.exports = {
 
   getByIdParticipantAccount: async function ({ settlementId, participantId, accountId = null }, enums, options = {}) {
     try {
+      let settlementFound = false
+      let participantFoundInSettlement = false
+      let accountProvided = accountId > 0
+      let participantAndAccountMatched = !accountProvided
+      let accountFoundInSettlement = !accountProvided
+
       let settlement = await SettlementModel.getById({ settlementId }, enums) // 3
-      let settlementParticipantCurrencyIdList = await SettlementModel.settlementParticipantCurrency.getAccountsInSettlementByIds({
-        settlementId,
-        participantId
-      }, enums) // 6
+      settlementFound = !!settlement
+
+      let settlementParticipantCurrencyIdList, account, settlementAccount
+
+      if (settlementFound) {
+        settlementParticipantCurrencyIdList = await SettlementModel.settlementParticipantCurrency.getAccountsInSettlementByIds({
+          settlementId,
+          participantId
+        }, enums) // 6
+        participantFoundInSettlement = settlementParticipantCurrencyIdList.length > 0
+
+        if (participantFoundInSettlement && accountProvided) {
+          account = await SettlementModel.checkParticipantAccountExists({
+            participantId,
+            accountId
+          }, enums) // 9
+          participantAndAccountMatched = !!account
+
+          if (participantAndAccountMatched) {
+            settlementAccount = await SettlementModel.getAccountInSettlement({
+              settlementId,
+              accountId
+            }, enums) // 12
+            accountFoundInSettlement = !!settlementAccount
+          }
+        }
+      }
+
       let settlementWindows
       let accounts
       let participants
-      if (accountId) {
-        let participantAndAccountMatched = await SettlementModel.checkParticipantAccountExists({
-          participantId,
-          accountId
-        }, enums) // 9
-        let settlementParticipantCurrencyList
-        if (participantAndAccountMatched) {
-          settlementParticipantCurrencyList = await SettlementModel.getAccountInSettlement({
+      if (settlementFound && participantFoundInSettlement && participantAndAccountMatched && accountFoundInSettlement) {
+        if (accountProvided) { // 16
+          settlementWindows = await SettlementModel.settlementSettlementWindow.getWindowsBySettlementIdAndAccountId({
             settlementId,
             accountId
-          }, enums) // 12
-          if (settlementParticipantCurrencyList) {
-            settlementWindows = await SettlementModel.settlementSettlementWindow.getWindowsBySettlementIdAndAccountId({
-              settlementId,
-              accountId
-            }, enums)
-            accounts = await SettlementModel.settlementParticipantCurrency.getAccountById({ settlementParticipantCurrencyList }, enums)
-            participants = prepareParticipantsResult(accounts)
-          } else {
-            throw new Error('TODO')
-          }
+          }, enums)
+          accounts = await SettlementModel.settlementParticipantCurrency.getSettlementAccountById(settlementAccount.settlementParticipantCurrencyId, enums)
+          participants = prepareParticipantsResult(accounts)
         } else {
-          throw new Error('TODO')
+          settlementWindows = await SettlementModel.settlementSettlementWindow.getWindowsBySettlementIdAndParticipantId({
+            settlementId,
+            participantId
+          }, enums)
+          const ids = settlementParticipantCurrencyIdList.map(record => record.settlementParticipantCurrencyId)
+          accounts = await SettlementModel.settlementParticipantCurrency.getSettlementAccountsByListOfIds(ids, enums)
+          participants = prepareParticipantsResult(accounts)
         }
       } else {
-        settlementWindows = await SettlementModel.settlementSettlementWindow.getWindowsBySettlementIdAndParticipantId({
-          settlementId,
-          participantId
-        }, enums)
-        accounts = await SettlementModel.settlementParticipantCurrency.getAccountsByListOfIds(settlementParticipantCurrencyIdList, enums)
-        participants = prepareParticipantsResult(accounts)
+        if (!settlementFound) {
+          throw new Error('Settlement not found')
+        } else if (!participantFoundInSettlement) {
+          throw new Error('Participant not in settlement')
+        } else if (!participantAndAccountMatched) {
+          throw new Error('Provided account does not match any participant position account')
+        } else { // else if (!accountFoundInSettlement) { // else if changed to else for achieving 100% branch coverage (else path not taken)
+          throw new Error('Account not in settlement')
+        }
       }
+
       return {
         id: settlement.settlementId,
         state: settlement.state,

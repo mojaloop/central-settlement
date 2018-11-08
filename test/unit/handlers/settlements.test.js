@@ -58,9 +58,7 @@ Test('/settlements', async (settlementTest) => {
   })
   await settlementTest.test('test settlements get operation', async (t) => {
     sandbox.stub(Enums, 'settlementStates').returns({})
-    sandbox.stub(settlement, 'getSettlementsByParams').returns({
-
-    })
+    sandbox.stub(settlement, 'getSettlementsByParams').returns({})
     try {
       const requests = new Promise((resolve, reject) => {
         Mockgen().requests({
