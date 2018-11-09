@@ -35,6 +35,8 @@ const checkParticipantAccountExists = async ({ participantId, accountId }, enums
         .select('participantCurrencyId')
         .where({ participantId })
         .andWhere('participantCurrencyId', accountId)
+        .andWhere('ledgerAccountTypeId', enums.ledgerAccountTypes.POSITION)
+        .first()
     })
     return result
   } catch (err) {

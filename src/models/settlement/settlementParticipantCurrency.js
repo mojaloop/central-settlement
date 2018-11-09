@@ -29,9 +29,12 @@ const Db = require('../index')
 
 const getAccountInSettlement = async ({ settlementId, accountId }, enums = {}) => {
   try {
-    let result = await Db.settlementParticipantCurrency.find({
-      settlementId,
-      settlementParticipantCurrencyId: accountId
+    let result = await Db.settlementParticipantCurrency.query(builder => {
+      return builder
+        .select('settlementParticipantCurrencyId')
+        .where({ settlementId })
+        .andWhere('participantCurrencyId', accountId)
+        .first()
     })
     return result
   } catch (err) {
