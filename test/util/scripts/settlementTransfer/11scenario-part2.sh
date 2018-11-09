@@ -26,10 +26,10 @@ sh -c "curl -X PUT \
   -d '{
     \"participants\": [
       {
-        \"id\": 2,
+        \"id\": 3,
         \"accounts\": [
           {
-            \"id\": 3,
+            \"id\": 4,
             \"reason\": \"test settlement transfer\",
             \"state\": \"SETTLED\"
           }

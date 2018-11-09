@@ -20,111 +20,135 @@
  optionally within square brackets <email>.
 
  * Gates Foundation
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- * Miguel de Barros <miguel.debarros@modusbox.com>
+ - Name Surname <name.surname@gatesfoundation.com>
+
+ * Georgi Georgiev <georgi.georgiev@modusbox.com>
 
  --------------
  ******/
 
-// 'use strict'
+'use strict'
 
-// const Test = require('tapes')(require('tape'))
-// const Mockgen = require('../../../../../data/mockgen.js')
-// const InitServer = require('./../../../../../../src/setup').initialize
-// const responseCodes = [200, 400, 401, 404, 415, 500]
+const Test = require('tapes')(require('tape'))
+const Sinon = require('sinon')
+const Mockgen = require('../../../../../data/mockgen.js')
+const InitServer = require('./../../../../../../src/setup').initialize
+const Enums = require('./../../../../../../src/models/lib/enums')
+const Logger = require('@mojaloop/central-services-shared').Logger
+const settlement = require('./../../../../../../src/domain/settlement')
+const Db = require('./../../../../../../src/models')
 
-// /**
-//  * Test for /settlements/{settlementId}/participants/{participantId}
-//  */
-// Test('/settlements/{settlementId}/participants/{participantId}', function (settlementTest) {
-//   let server
-//   settlementTest.beforeEach(async t => {
-//     server = await InitServer()
-//     t.end()
-//   })
+Test('/settlements/{settlementId}/participants/{participantId}', async (settlementTest) => {
+  let server
+  let sandbox
+  settlementTest.beforeEach(async t => {
+    sandbox = Sinon.createSandbox()
+    sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+    server = await InitServer()
+    t.end()
+  })
 
-//   settlementTest.afterEach(async t => {
-//     await server.stop()
-//     t.end()
-//   })
+  settlementTest.afterEach(async t => {
+    await server.stop()
+    sandbox.restore()
+    t.end()
+  })
 
-//   /**
-//      * summary: Acknowledegement of settlement by updating with Settlements Id and Participant Id.
-//      * description:
-//      * parameters: settlementId, participantId, settlementParticipantUpdatePayload
-//      * produces: application/json
-//      * responses: 200, 400, 401, 404, 415, default
-//      */
-//   settlementTest.test('test updateSettlementBySettlementIdParticipantId put operation', async function (t) {
-//     try {
-//       const requests = new Promise((resolve, reject) => {
-//         Mockgen().requests({
-//           path: '/settlements/{settlementId}/participants/{participantId}',
-//           operation: 'put'
-//         }, function (error, mock) {
-//           return error ? reject(error) : resolve(mock)
-//         })
-//       })
+  await settlementTest.test('test settlements get operation', async (t) => {
+    sandbox.stub(Enums, 'settlementWindowStates').returns({})
+    sandbox.stub(Enums, 'ledgerAccountTypes').returns({})
+    sandbox.stub(settlement, 'getByIdParticipantAccount').returns({})
+    try {
+      const requests = new Promise((resolve, reject) => {
+        Mockgen().requests({
+          path: '/settlements/{settlementId}/participants/{participantId}',
+          operation: 'get'
+        }, function (error, mock) {
+          return error ? reject(error) : resolve(mock)
+        })
+      })
 
-//       const mock = await requests
+      const mock = await requests
 
-//       t.ok(mock)
-//       t.ok(mock.request)
-//       // Get the resolved path from mock request
-//       // Mock request Path templates({}) are resolved using path parameters
-//       const options = {
-//         method: 'put',
-//         url: '/v1' + mock.request.path
-//       }
-//       if (mock.request.body) {
-//         // Send the request body
-//         options.payload = mock.request.body
-//       } else if (mock.request.formData) {
-//         // Send the request form data
-//         options.payload = mock.request.formData
-//         // Set the Content-Type as application/x-www-form-urlencoded
-//         options.headers = options.headers || {}
-//         options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
-//       }
-//       // If headers are present, set the headers.
-//       if (mock.request.headers && mock.request.headers.length > 0) {
-//         options.headers = mock.request.headers
-//       }
+      t.ok(mock)
+      t.ok(mock.request)
+      // Get the resolved path from mock request
+      // Mock request Path templates({}) are resolved using path parameters
+      const options = {
+        method: 'get',
+        url: '/v1' + mock.request.path
+      }
+      if (mock.request.body) {
+        // Send the request body
+        options.payload = mock.request.body
+      } else if (mock.request.formData) {
+        // Send the request form data
+        options.payload = mock.request.formData
+        // Set the Content-Type as application/x-www-form-urlencoded
+        options.headers = options.headers || {}
+        options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+      }
+      // If headers are present, set the headers.
+      if (mock.request.headers && mock.request.headers.length > 0) {
+        options.headers = mock.request.headers
+      }
+      const response = await server.inject(options)
+      t.equal(response.statusCode, 200, 'Ok response status')
+      t.end()
+    } catch (e) {
+      Logger.error(`testing error ${e}`)
+      t.fail()
+      t.end()
+    }
+  })
 
-//       for (let responseCode of responseCodes) {
-//         server.app.responseCode = responseCode
-//         const response = await server.inject(options)
+  await settlementTest.test('test settlements get by params throws', async (t) => {
+    sandbox.stub(Enums, 'settlementWindowStates').returns({})
+    sandbox.stub(Enums, 'ledgerAccountTypes').returns({})
+    sandbox.stub(settlement, 'getByIdParticipantAccount').throws()
+    try {
+      const requests = new Promise((resolve, reject) => {
+        Mockgen().requests({
+          path: '/settlements/{settlementId}/participants/{participantId}',
+          operation: 'get'
+        }, function (error, mock) {
+          return error ? reject(error) : resolve(mock)
+        })
+      })
 
-//         switch (responseCode) {
-//           case 200:
-//             responseCode = 200
-//             break
-//           case 400:
-//             responseCode = 500
-//             break
-//           case 401:
-//             responseCode = 500
-//             break
-//           case 404:
-//             responseCode = 500
-//             break
-//           case 415:
-//             responseCode = 500
-//             break
-//           default:
-//             responseCode = 500
-//             break
-//         }
+      const mock = await requests
 
-//         t.equal(response.statusCode, responseCode, 'Ok response status')
-//       }
+      t.ok(mock)
+      t.ok(mock.request)
+      // Get the resolved path from mock request
+      // Mock request Path templates({}) are resolved using path parameters
+      const options = {
+        method: 'get',
+        url: '/v1' + mock.request.path
+      }
+      if (mock.request.body) {
+        // Send the request body
+        options.payload = mock.request.body
+      } else if (mock.request.formData) {
+        // Send the request form data
+        options.payload = mock.request.formData
+        // Set the Content-Type as application/x-www-form-urlencoded
+        options.headers = options.headers || {}
+        options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+      }
+      // If headers are present, set the headers.
+      if (mock.request.headers && mock.request.headers.length > 0) {
+        options.headers = mock.request.headers
+      }
+      const response = await server.inject(options)
+      t.equal(response.statusCode, 400, 'Ok response status')
+      t.end()
+    } catch (e) {
+      Logger.error(`testing error ${e}`)
+      t.fail()
+      t.end()
+    }
+  })
 
-//       t.end()
-//     } catch (e) {
-//       t.fail(e)
-//       t.end()
-//     }
-//   })
-// })
+  await settlementTest.end()
+})

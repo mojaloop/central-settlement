@@ -707,6 +707,71 @@
             }
         },
         "/settlements/{settlementId}/participants/{participantId}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "deprecated": false,
+                "summary": "Returns Settlement(s) as per filter criteria.",
+                "operationId": "getSettlementBySettlementParticipant",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "settlementId",
+                        "required": true,
+                        "type": "integer",
+                        "description": "A valid Settlement Id.\n"
+                    },
+                    {
+                        "in": "path",
+                        "name": "participantId",
+                        "required": true,
+                        "type": "integer",
+                        "description": "A valid Participant Id.\n"
+                    }
+                ],
+                "tags": [
+                    "getSettlementBySettlementParticipant"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Settlement, settlement windows and settlement accounts returned by the filtering parameters.",
+                        "schema": {
+                            "$ref": "#/definitions/Settlement"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Authorisation information is missing or invalid.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "No data found.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported Media Type.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            },
             "put": {
                 "produces": [
                     "application/json"

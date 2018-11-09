@@ -1828,11 +1828,11 @@ Test('Settlement facade', async (settlementFacadeTest) => {
     }
   })
 
-  await settlementFacadeTest.test('settlementParticipantCurrency.getAccountById should', async getAccountByIdTest => {
+  await settlementFacadeTest.test('settlementParticipantCurrency.getSettlementAccountById should', async getSettlementAccountByIdTest => {
     try {
-      await getAccountByIdTest.test('retrieve account by id', async test => {
+      await getSettlementAccountByIdTest.test('retrieve account by id', async test => {
         try {
-          const settlementParticipantCurrencyList = [{ settlementParticipantCurrencyId: 1 }]
+          const settlementParticipantCurrencyId = 1
           Db.settlementParticipantCurrency = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
@@ -1843,55 +1843,56 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           builderStub.join.returns({
             join: joinStub.returns({
               select: selectStub.returns({
-                whereIn: whereStub
+                where: whereStub
               })
             })
           })
-          await SettlementFacade.settlementParticipantCurrency.getAccountById({ settlementParticipantCurrencyList })
+          await SettlementFacade.settlementParticipantCurrency.getSettlementAccountById(settlementParticipantCurrencyId)
           test.ok(builderStub.join.withArgs('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId').calledOnce)
           test.ok(joinStub.withArgs('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId').calledOnce)
-          test.ok(selectStub.withArgs('pc.participantId AS participantId',
+          test.ok(selectStub.withArgs(
+            'pc.participantId AS id',
             'settlementParticipantCurrency.participantCurrencyId',
             'spcsc.settlementStateId AS state',
             'spcsc.reason AS reason',
             'settlementParticipantCurrency.netAmount as netAmount',
             'pc.currencyId AS currency').calledOnce)
-          test.ok(whereStub.withArgs('settlementParticipantCurrency.settlementParticipantCurrencyId', [1]).calledOnce)
+          test.ok(whereStub.withArgs('settlementParticipantCurrency.settlementParticipantCurrencyId', settlementParticipantCurrencyId).calledOnce)
           test.end()
         } catch (err) {
-          Logger.error(`getAccountById failed with error - ${err}`)
+          Logger.error(`getSettlementAccountById failed with error - ${err}`)
           test.fail()
           test.end()
         }
       })
 
-      await getAccountByIdTest.test('throw error if query is wrong', async test => {
+      await getSettlementAccountByIdTest.test('throw error if query is wrong', async test => {
         try {
           const params = { settlementId: 1 }
           Db.settlementParticipantCurrency = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
-          await SettlementFacade.settlementParticipantCurrency.getAccountById(params)
+          await SettlementFacade.settlementParticipantCurrency.getSettlementAccountById(params)
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`getAccountById failed with error - ${err}`)
+          Logger.error(`getSettlementAccountById failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
       })
 
-      await getAccountByIdTest.end()
+      await getSettlementAccountByIdTest.end()
     } catch (err) {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
-      getAccountByIdTest.fail()
-      getAccountByIdTest.end()
+      getSettlementAccountByIdTest.fail()
+      getSettlementAccountByIdTest.end()
     }
   })
 
-  await settlementFacadeTest.test('settlementParticipantCurrency.getAccountsByListOfIds should', async getAccountsByListOfIdsTest => {
+  await settlementFacadeTest.test('settlementParticipantCurrency.getSettlementAccountsByListOfIds should', async getSettlementAccountsByListOfIdsTest => {
     try {
-      await getAccountsByListOfIdsTest.test('retrieve accounts by list of ids', async test => {
+      await getSettlementAccountsByListOfIdsTest.test('retrieve accounts by list of ids', async test => {
         try {
           const settlementParticipantCurrencyIdList = [1]
           Db.settlementParticipantCurrency = { query: sandbox.stub() }
@@ -1908,45 +1909,46 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             })
           })
-          await SettlementFacade.settlementParticipantCurrency.getAccountsByListOfIds(settlementParticipantCurrencyIdList)
+          await SettlementFacade.settlementParticipantCurrency.getSettlementAccountsByListOfIds(settlementParticipantCurrencyIdList)
           test.ok(builderStub.join.withArgs('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId').calledOnce)
           test.ok(joinStub.withArgs('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId').calledOnce)
-          test.ok(selectStub.withArgs('pc.participantId AS participantId',
+          test.ok(selectStub.withArgs(
+            'pc.participantId AS id',
             'settlementParticipantCurrency.participantCurrencyId',
             'spcsc.settlementStateId AS state',
             'spcsc.reason AS reason',
             'settlementParticipantCurrency.netAmount as netAmount',
             'pc.currencyId AS currency').calledOnce)
-          test.ok(whereInStub.withArgs('settlementParticipantCurrencyId', settlementParticipantCurrencyIdList).calledOnce)
+          test.ok(whereInStub.withArgs('settlementParticipantCurrency.settlementParticipantCurrencyId', settlementParticipantCurrencyIdList).calledOnce)
           test.end()
         } catch (err) {
-          Logger.error(`getAccountsByListOfIds failed with error - ${err}`)
+          Logger.error(`getSettlementAccountsByListOfIds failed with error - ${err}`)
           test.fail()
           test.end()
         }
       })
 
-      await getAccountsByListOfIdsTest.test('throw error if query is wrong', async test => {
+      await getSettlementAccountsByListOfIdsTest.test('throw error if query is wrong', async test => {
         try {
           const settlementParticipantCurrencyIdList = { settlementId: 1 }
           Db.settlementParticipantCurrency = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
-          await SettlementFacade.settlementParticipantCurrency.getAccountsByListOfIds(settlementParticipantCurrencyIdList)
+          await SettlementFacade.settlementParticipantCurrency.getSettlementAccountsByListOfIds(settlementParticipantCurrencyIdList)
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`getAccountsByListOfIds failed with error - ${err}`)
+          Logger.error(`getSettlementAccountsByListOfIds failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
       })
 
-      await getAccountsByListOfIdsTest.end()
+      await getSettlementAccountsByListOfIdsTest.end()
     } catch (err) {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
-      getAccountsByListOfIdsTest.fail()
-      getAccountsByListOfIdsTest.end()
+      getSettlementAccountsByListOfIdsTest.fail()
+      getSettlementAccountsByListOfIdsTest.end()
     }
   })
 
@@ -1988,7 +1990,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.equal(join3Stub.getCall(0).args[0], 'settlementTransferParticipant AS stp')
           test.ok(context.on.withArgs('stp.settlementWindowId', 'settlementWindow.settlementWindowId').calledOnce)
           test.ok(on2Stub.withArgs('stp.participantCurrencyId', params.accountId).calledOnce)
-          test.ok(distinctStub.withArgs('settlementWindow.settlementWindowId',
+          test.ok(distinctStub.withArgs(
+            'settlementWindow.settlementWindowId as id',
             'swsc.settlementWindowStateId as state',
             'swsc.reason as reason',
             'settlementWindow.createdDate as createdDate',
@@ -2032,6 +2035,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       await getWindowsBySettlementIdAndParticipantIdTest.test('retrieve settlement window by settlement id and account id', async test => {
         try {
           const params = { settlementId: 1, accountId: 1 }
+          const enums = {ledgerAccountTypes: {POSITION: 1}}
           Db.settlementSettlementWindow = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementSettlementWindow.query.callsArgWith(0, builderStub)
@@ -2043,7 +2047,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           context.on.returns({
             onIn: onInStub
           })
-          Db.participantCurrency = { find: sandbox.stub() }
+          Db.participantCurrency = { find: sandbox.stub().returns([{participantCurrencyId: 1}]) }
           let join3Stub = sandbox.stub()
           join3Stub.callsArgOn(1, context)
           let distinctStub = sandbox.stub()
@@ -2060,13 +2064,14 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             })
           })
-          await SettlementFacade.settlementSettlementWindow.getWindowsBySettlementIdAndParticipantId(params)
+          await SettlementFacade.settlementSettlementWindow.getWindowsBySettlementIdAndParticipantId(params, enums)
           test.ok(builderStub.join.withArgs('settlementWindow', 'settlementWindow.settlementWindowId', 'settlementSettlementWindow.settlementWindowId').calledOnce)
           test.ok(join2Stub.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce)
           test.equal(join3Stub.getCall(0).args[0], 'settlementTransferParticipant AS stp')
           test.ok(context.on.withArgs('stp.settlementWindowId', 'settlementWindow.settlementWindowId').calledOnce)
           test.equal(onInStub.getCall(0).args[0], 'stp.participantCurrencyId')
-          test.ok(distinctStub.withArgs('settlementWindow.settlementWindowId',
+          test.ok(distinctStub.withArgs(
+            'settlementWindow.settlementWindowId as id',
             'swsc.settlementWindowStateId as state',
             'swsc.reason as reason',
             'settlementWindow.createdDate as createdDate',
@@ -2084,10 +2089,11 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       await getWindowsBySettlementIdAndParticipantIdTest.test('throw error if query is wrong', async test => {
         try {
           const params = { settlementId: 1 }
+          const enums = {ledgerAccountTypes: {POSITION: 1}}
           Db.settlementSettlementWindow = { query: sandbox.stub() }
           let builderStub = sandbox.stub()
           Db.settlementSettlementWindow.query.callsArgWith(0, builderStub)
-          await SettlementFacade.settlementSettlementWindow.getWindowsBySettlementIdAndParticipantId(params)
+          await SettlementFacade.settlementSettlementWindow.getWindowsBySettlementIdAndParticipantId(params, enums)
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
