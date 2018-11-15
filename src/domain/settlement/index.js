@@ -194,7 +194,8 @@ module.exports = {
 
       for (let settlementWindow of settlementWindows) {
         let { state } = settlementWindow
-        if (state !== enums.settlementWindowStates.CLOSED) {
+        if (state !== enums.settlementWindowStates.CLOSED &&
+            state !== enums.settlementWindowStates.NOT_SETTLED) {
           let err = new Error('2001')
           throw err
         }
