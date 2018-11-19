@@ -34,5 +34,5 @@ sh -c "curl -X PUT \
   }'"
 echo
 echo
-echo "Completed Scenario 11-3 - Settlement to PS_TRANSFERS_RESERVED -- Q: Should HMLNS be positive 800?"
+echo "Completed Scenario 11-3 - Settlement to PS_TRANSFERS_RESERVED"
 echo

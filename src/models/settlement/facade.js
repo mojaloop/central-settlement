@@ -182,7 +182,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
           .andOn('tp2.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.HUB]))
       })
       .select('tp1.transferId', 'tp1.ledgerEntryTypeId', 'tp1.participantCurrencyId AS dfspAccountId', 'tp1.amount AS dfspAmount',
-        'tp2.participantCurrencyId AS hubAccountId', 'tp1.amount AS hubAmount')
+        'tp2.participantCurrencyId AS hubAccountId', 'tp2.amount AS hubAmount')
       .where('spc.settlementId', settlementId)
       .whereNull('tsc2.transferId')
       .transacting(trx)
@@ -329,7 +329,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
           .andOn('tp2.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.HUB]))
       })
       .select('tp1.transferId', 'tp1.ledgerEntryTypeId', 'tp1.participantCurrencyId AS dfspAccountId', 'tp1.amount AS dfspAmount',
-        'tp2.participantCurrencyId AS hubAccountId', 'tp1.amount AS hubAmount')
+        'tp2.participantCurrencyId AS hubAccountId', 'tp2.amount AS hubAmount')
       .where('spc.settlementId', settlementId)
       .whereNull('tsc2.transferId')
       .transacting(trx)
