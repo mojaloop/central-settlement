@@ -220,7 +220,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             isLimitExceeded = netDebitCap - dfspPositionValue - dfspReservedValue - t.dfspAmount < 0
 
             if (isLimitExceeded) {
-              let { startAfterParticipantPositionChangeId } = await knex('participantPositionChange')
+              /* let { startAfterParticipantPositionChangeId } = */ await knex('participantPositionChange')
                 .select('participantPositionChangeId AS startAfterParticipantPositionChangeId')
                 .where('participanPositionId', dfspPositionId)
                 .orderBy('participantPositionChangeId', 'desc')
