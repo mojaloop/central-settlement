@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 echo
 echo "---------------------------------------------------------------------"
-echo "PS_TRANSFERS_RECORDED for PAYEE"
+echo "PS_TRANSFERS_COMMITTED for PAYER & PAYEE"
 echo "---------------------------------------------------------------------"
 sh -c "curl -X PUT \
   http://localhost:3007/v1/settlements/1 \
@@ -11,12 +11,22 @@ sh -c "curl -X PUT \
   -d '{
     \"participants\": [
       {
+        \"id\": 2,
+        \"accounts\": [
+          {
+            \"id\": 3,
+            \"reason\": \"Transfers committed for payer & payee\",
+            \"state\": \"PS_TRANSFERS_COMMITTED\"
+          }
+        ]
+      },
+      {
         \"id\": 3,
         \"accounts\": [
           {
             \"id\": 5,
-            \"reason\": \"Transfers recorded for payee\",
-            \"state\": \"PS_TRANSFERS_RECORDED\"
+            \"reason\": \"Transfers committed for payer & payee\",
+            \"state\": \"PS_TRANSFERS_COMMITTED\"
           }
         ]
       }
@@ -24,5 +34,5 @@ sh -c "curl -X PUT \
   }'"
 echo
 echo
-echo "Completed Scenario 11-2 - Settlement to PS_TRANSFERS_RECORDED"
+echo "Completed Scenario 11-4 - Settlement to PS_TRANSFERS_COMMITTED"
 echo

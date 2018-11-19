@@ -157,7 +157,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
 const settlementTransfersReserve = async function (settlementId, transactionTimestamp, enums, trx = null) {
   try {
     const knex = await Db.getKnex()
-    let isLimitExceeded, latestPosition, transferStateChangeId, latestSettlementPosition
+    let isLimitExceeded, transferStateChangeId
 
     // Retrieve list of PS_TRANSFERS_RESERVED, but not RESERVED
     let settlementTransferList = await knex('settlementParticipantCurrency AS spc')
@@ -173,11 +173,16 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
         this.on('tsc2.transferId', 'spc.settlementTransferId')
           .andOn('tsc2.transferStateId', knex.raw('?', [enums.transferStates.RESERVED]))
       })
-      .leftJoin('transferParticipant AS tp', function () {
-        this.on('tp.transferId', 'spc.settlementTransferId')
-          .andOn('tp.amount', '>', 0) // get CR entries
+      .join('transferParticipant AS tp1', function () {
+        this.on('tp1.transferId', 'spc.settlementTransferId')
+          .andOn('tp1.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.DFSP_POSITION]))
       })
-      .select('tp.transferId', 'tp.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.amount')
+      .join('transferParticipant AS tp2', function () {
+        this.on('tp2.transferId', 'spc.settlementTransferId')
+          .andOn('tp2.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.HUB]))
+      })
+      .select('tp1.transferId', 'tp1.ledgerEntryTypeId', 'tp1.participantCurrencyId AS dfspAccountId', 'tp1.amount AS dfspAmount',
+        'tp2.participantCurrencyId AS hubAccountId', 'tp1.amount AS hubAmount')
       .where('spc.settlementId', settlementId)
       .whereNull('tsc2.transferId')
       .transacting(trx)
@@ -185,47 +190,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
     const trxFunction = async (trx, doCommit = true) => {
       try {
         for (let t of settlementTransferList) {
-          // Select participantPosition FOR UPDATE
-          let { participantPositionId, positionValue, reservedValue } = await knex('participantPosition')
-            .select('participantPositionId', 'value AS positionValue', 'reservedValue')
-            .where('participantCurrencyId', t.participantCurrencyId)
-            .first()
-            .transacting(trx)
-            .forUpdate()
-
-          if (t.transferParticipantRoleTypeId === enums.transferParticipantRoleTypes.DFSP_POSITION) {
-            // Select participant NET_DEBIT_CAP limit
-            let { netDebitCap } = await knex('participantLimit')
-              .select('value AS netDebitCap')
-              .where('participantCurrencyId', t.participantCurrencyId)
-              .andWhere('participantLimitTypeId', enums.participantLimitTypes.NET_DEBIT_CAP)
-              .first()
-              .transacting(trx)
-              .forUpdate()
-            isLimitExceeded = netDebitCap - positionValue - reservedValue - t.amount < 0
-
-            if (isLimitExceeded) {
-              let { startAfterParticipantPositionChangeId } = await knex('participantPositionChange')
-                .select('participantPositionChangeId AS startAfterParticipantPositionChangeId')
-                .where('participanPositionId', participantPositionId)
-                .orderBy('participantPositionChangeId', 'desc')
-                .first()
-                .transacting(trx)
-
-              // TODO: notify DFSP for NDC change
-              // TODO: insert new limit with correct value for startAfterParticipantPositionChangeId
-              await ParticipantFacade.adjustLimits(t.participantCurrencyId, { type: 'NET_DEBIT_CAP', value: netDebitCap + t.amount }, trx)
-            }
-          }
-
-          latestPosition = positionValue + t.amount
-          // Persist latestPosition
-          await knex('participantPosition')
-            .update('value', latestPosition)
-            .where('participantPositionId', participantPositionId)
-            .transacting(trx)
-
-          // Persist transfer state and participant position change
+          // Persist transfer state change
           transferStateChangeId = await knex('transferStateChange')
             .insert({
               transferId: t.transferId,
@@ -235,15 +200,83 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             })
             .transacting(trx)
 
-          await knex('participantPositionChange')
-            .insert({
-              participantPositionId: participantPositionId,
-              transferStateChangeId: transferStateChangeId,
-              value: latestPosition,
-              reservedValue,
-              createdDate: transactionTimestamp
-            })
-            .transacting(trx)
+          if (t.ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_RECIPIENT) {
+            // Select dfspPosition FOR UPDATE
+            let { dfspPositionId, dfspPositionValue, dfspReservedValue } = await knex('participantPosition')
+              .select('participantPositionId AS dfspPositionId', 'value AS dfspPositionValue', 'reservedValue AS dfspReservedValue')
+              .where('participantCurrencyId', t.dfspAccountId)
+              .first()
+              .transacting(trx)
+              .forUpdate()
+
+            // Select dfsp NET_DEBIT_CAP limit
+            let { netDebitCap } = await knex('participantLimit')
+              .select('value AS netDebitCap')
+              .where('participantCurrencyId', t.dfspAccountId)
+              .andWhere('participantLimitTypeId', enums.participantLimitTypes.NET_DEBIT_CAP)
+              .first()
+              .transacting(trx)
+              .forUpdate()
+            isLimitExceeded = netDebitCap - dfspPositionValue - dfspReservedValue - t.dfspAmount < 0
+
+            if (isLimitExceeded) {
+              let { startAfterParticipantPositionChangeId } = await knex('participantPositionChange')
+                .select('participantPositionChangeId AS startAfterParticipantPositionChangeId')
+                .where('participanPositionId', dfspPositionId)
+                .orderBy('participantPositionChangeId', 'desc')
+                .first()
+                .transacting(trx)
+
+              // TODO: notify DFSP for NDC change
+              // TODO: insert new limit with correct value for startAfterParticipantPositionChangeId
+              await ParticipantFacade.adjustLimits(t.dfspAccountId, {
+                type: 'NET_DEBIT_CAP',
+                value: netDebitCap + t.dfspAmount
+              }, trx)
+            }
+
+            // Persist dfsp latestPosition
+            await knex('participantPosition')
+              .update('value', dfspPositionValue + t.dfspAmount)
+              .where('participantPositionId', dfspPositionId)
+              .transacting(trx)
+
+            // Persist dfsp position change
+            await knex('participantPositionChange')
+              .insert({
+                participantPositionId: dfspPositionId,
+                transferStateChangeId: transferStateChangeId,
+                value: dfspPositionValue + t.dfspAmount,
+                reservedValue: dfspReservedValue,
+                createdDate: transactionTimestamp
+              })
+              .transacting(trx)
+
+            // Select hubPosition FOR UPDATE
+            let { hubPositionId, hubPositionValue } = await knex('participantPosition')
+              .select('participantPositionId AS hubPositionId', 'value AS hubPositionValue')
+              .where('participantCurrencyId', t.hubAccountId)
+              .first()
+              .transacting(trx)
+              .forUpdate()
+
+            // Persist hub latestPosition
+            await knex('participantPosition')
+              .update('value', hubPositionValue + t.hubAmount)
+              .where('participantPositionId', hubPositionId)
+              .transacting(trx)
+
+            // Persist hub position change
+            await knex('participantPositionChange')
+              .insert({
+                participantPositionId: hubPositionId,
+                transferStateChangeId: transferStateChangeId,
+                value: hubPositionValue + t.hubAmount,
+                reservedValue: 0,
+                createdDate: transactionTimestamp
+              })
+              .transacting(trx)
+          }
 
           if (doCommit) {
             await trx.commit
@@ -271,7 +304,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
 const settlementTransfersCommit = async function (settlementId, transactionTimestamp, enums, trx = null) {
   try {
     const knex = await Db.getKnex()
-    let latestPosition, transferStateChangeId
+    let transferStateChangeId
 
     // Retrieve list of PS_TRANSFERS_COMMITTED, but not COMMITTED
     let settlementTransferList = await knex('settlementParticipantCurrency AS spc')
@@ -287,11 +320,16 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
         this.on('tsc2.transferId', 'spc.settlementTransferId')
           .andOn('tsc2.transferStateId', knex.raw('?', [enums.transferStates.COMMITTED]))
       })
-      .leftJoin('transferParticipant AS tp', function () {
-        this.on('tp.transferId', 'spc.settlementTransferId')
-          .andOn('tp.amount', '<', 0) // get CR entries
+      .join('transferParticipant AS tp1', function () {
+        this.on('tp1.transferId', 'spc.settlementTransferId')
+          .andOn('tp1.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.DFSP_POSITION]))
       })
-      .select('tp.transferId', 'tp.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.amount')
+      .join('transferParticipant AS tp2', function () {
+        this.on('tp2.transferId', 'spc.settlementTransferId')
+          .andOn('tp2.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.HUB]))
+      })
+      .select('tp1.transferId', 'tp1.ledgerEntryTypeId', 'tp1.participantCurrencyId AS dfspAccountId', 'tp1.amount AS dfspAmount',
+        'tp2.participantCurrencyId AS hubAccountId', 'tp1.amount AS hubAmount')
       .where('spc.settlementId', settlementId)
       .whereNull('tsc2.transferId')
       .transacting(trx)
@@ -299,22 +337,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
     const trxFunction = async (trx, doCommit = true) => {
       try {
         for (let t of settlementTransferList) {
-          // Select participantPosition FOR UPDATE
-          let { participantPositionId, positionValue, reservedValue } = await knex('participantPosition')
-            .select('participantPositionId', 'value AS positionValue', 'reservedValue')
-            .where('participantCurrencyId', t.participantCurrencyId)
-            .first()
-            .transacting(trx)
-            .forUpdate()
-          latestPosition = positionValue + t.amount
-
-          // Persist latestPosition
-          await knex('participantPosition')
-            .update('value', latestPosition)
-            .where('participantPositionId', participantPositionId)
-            .transacting(trx)
-
-          // Persist transfer state and participant position change
+          // Persist transfer fulfilment and transfer state change
           await knex('transferFulfilment')
             .insert({
               transferFulfilmentId: Uuid(),
@@ -336,15 +359,57 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             })
             .transacting(trx)
 
-          await knex('participantPositionChange')
-            .insert({
-              participantPositionId: participantPositionId,
-              transferStateChangeId: transferStateChangeId,
-              value: latestPosition,
-              reservedValue,
-              createdDate: transactionTimestamp
-            })
-            .transacting(trx)
+          if (t.ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_SENDER) {
+            // Select dfspPosition FOR UPDATE
+            let { dfspPositionId, dfspPositionValue, dfspReservedValue } = await knex('participantPosition')
+              .select('participantPositionId AS dfspPositionId', 'value AS dfspPositionValue', 'reservedValue AS dfspReservedValue')
+              .where('participantCurrencyId', t.dfspAccountId)
+              .first()
+              .transacting(trx)
+              .forUpdate()
+
+            // Persist dfsp latestPosition
+            await knex('participantPosition')
+              .update('value', dfspPositionValue + t.dfspAmount)
+              .where('participantPositionId', dfspPositionId)
+              .transacting(trx)
+
+            // Persist dfsp position change
+            await knex('participantPositionChange')
+              .insert({
+                participantPositionId: dfspPositionId,
+                transferStateChangeId: transferStateChangeId,
+                value: dfspPositionValue + t.dfspAmount,
+                reservedValue: dfspReservedValue,
+                createdDate: transactionTimestamp
+              })
+              .transacting(trx)
+
+            // Select hubPosition FOR UPDATE
+            let { hubPositionId, hubPositionValue } = await knex('participantPosition')
+              .select('participantPositionId AS hubPositionId', 'value AS hubPositionValue')
+              .where('participantCurrencyId', t.hubAccountId)
+              .first()
+              .transacting(trx)
+              .forUpdate()
+
+            // Persist hub latestPosition
+            await knex('participantPosition')
+              .update('value', hubPositionValue + t.hubAmount)
+              .where('participantPositionId', hubPositionId)
+              .transacting(trx)
+
+            // Persist hub position change
+            await knex('participantPositionChange')
+              .insert({
+                participantPositionId: hubPositionId,
+                transferStateChangeId: transferStateChangeId,
+                value: hubPositionValue + t.hubAmount,
+                reservedValue: 0,
+                createdDate: transactionTimestamp
+              })
+              .transacting(trx)
+          }
 
           if (doCommit) {
             await trx.commit
@@ -620,7 +685,7 @@ const Facade = {
                 (settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_RECORDED && accountPayload.state === enums.settlementStates.PS_TRANSFERS_RESERVED) ||
                 (settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_RESERVED && accountPayload.state === enums.settlementStates.PS_TRANSFERS_COMMITTED) ||
                 ((settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_COMMITTED || settlementData.settlementStateId === enums.settlementStates.SETTLING) &&
-                  accountPayload.state === enums.settlementStates.PS_TRANSFERS_RECORDED)) {
+                  accountPayload.state === enums.settlementStates.SETTLED)) {
                 processedAccounts.push(accountPayload.id)
                 participant.accounts.push({
                   id: accountPayload.id,
@@ -792,7 +857,7 @@ const Facade = {
             settlementData.settlementStateId = enums.settlementStates.PS_TRANSFERS_COMMITTED
             settlementData.reason = 'All settlement accounts are PS_TRANSFERS_COMMITTED'
           } else if (settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_COMMITTED &&
-            settlementAccounts.psTransfersCommittedCount === 0 &&
+            settlementAccounts.psTransfersCommittedCount > 0 &&
             settlementAccounts.settledCount > 0) {
             settlementData.settlementStateId = enums.settlementStates.SETTLING
             settlementData.reason = 'Some settlement accounts are SETTLED'

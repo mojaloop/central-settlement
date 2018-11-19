@@ -2,7 +2,7 @@
 export KAFKA_ID=kafka
 export MOCKSERVER_ID=mockserver
 export DB_ID=mysql
-export SLEEP_FACTOR_IN_SECONDS=10
+export SLEEP_FACTOR_IN_SECONDS=5
 export DBUSER=central_ledger
 export DBPASS=password
 export DBNAME=central_ledger
@@ -15,4 +15,4 @@ export CENTRAL_LEDGER_ADMIN_URI_PREFIX=http
 export CENTRAL_LEDGER_ADMIN_HOST=localhost
 export CENTRAL_LEDGER_ADMIN_PORT=3001
 export CENTRAL_LEDGER_ADMIN_BASE=/
-export EXPIRATION_DATE=2018-11-10T17:00:00.000+00:00
+export EXPIRATION_DATE=2018-12-01T17:00:00.000+00:00
