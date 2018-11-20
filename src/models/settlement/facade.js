@@ -473,7 +473,9 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
 
 const Facade = {
   settlementTransfersPrepare,
+
   settlementTransfersReserve,
+
   settlementTransfersCommit,
 
   /**
@@ -841,11 +843,11 @@ const Facade = {
             await Promise.all(updatePromises)
 
             if (settlementData.settlementStateId === enums.settlementStates.PENDING_SETTLEMENT) {
-              await settlementTransfersPrepare(settlementId, transactionTimestamp, enums, trx)
+              await Facade.settlementTransfersPrepare(settlementId, transactionTimestamp, enums, trx)
             } else if (settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_RECORDED) {
-              await settlementTransfersReserve(settlementId, transactionTimestamp, enums, trx)
+              await Facade.settlementTransfersReserve(settlementId, transactionTimestamp, enums, trx)
             } else if (settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_RESERVED) {
-              await settlementTransfersCommit(settlementId, transactionTimestamp, enums, trx)
+              await Facade.settlementTransfersCommit(settlementId, transactionTimestamp, enums, trx)
             }
 
             let settlementWindowStateChange = []
@@ -1273,6 +1275,7 @@ const Facade = {
         throw err
       }
     },
+
     getWindowsBySettlementIdAndParticipantId: async function ({ settlementId, participantId }, enums) {
       try {
         let participantAccountList = (await Db.participantCurrency.find({ participantId, ledgerAccountTypeId: enums.ledgerAccountTypes.POSITION })).map(record => record.participantCurrencyId)
