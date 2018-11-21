@@ -750,6 +750,7 @@ const Facade = {
                         settlementParticipantCurrencyId: allAccounts[accountPayload.id].key,
                         settlementStateId: accountPayload.state,
                         reason: accountPayload.reason,
+                        externalReference: accountPayload.externalReference,
                         createdDate: transactionTimestamp
                       }
                       if (accountPayload.state === enums.settlementStates.PS_TRANSFERS_RECORDED) {

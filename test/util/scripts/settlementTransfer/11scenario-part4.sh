@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
-echo
+CWD="${0%/*}"
+
+if [[ "$CWD" =~ ^(.*)\.sh$ ]];
+then
+    CWD="."
+fi
+
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo "---------------------------------------------------------------------"
 echo "PS_TRANSFERS_COMMITTED for PAYER & PAYEE"
 echo "---------------------------------------------------------------------"
@@ -36,3 +43,5 @@ echo
 echo
 echo "Completed Scenario 11-4 - Settlement to PS_TRANSFERS_COMMITTED"
 echo
+
+sh $CWD/21scenario-part4-results.sh

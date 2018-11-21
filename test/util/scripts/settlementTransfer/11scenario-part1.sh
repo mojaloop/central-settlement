@@ -9,9 +9,6 @@ fi
 echo "Loading env vars..."
 source $CWD/env.sh
 
-sh $CWD/00recreateDatabase.sh
-sh $CWD/01populateAdminTestData.sh
-
 echo "---------------------------------------------------------------------"
 echo "Starting script to populate test transfers - Prepare transfers:"
 echo "---------------------------------------------------------------------"
@@ -153,6 +150,9 @@ sh -c "curl -X POST \
     ]
   }'"
 echo
+echo
+echo
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo "---------------------------------------------------------------------"
 echo "PS_TRANSFERS_RECORDED for PAYER"
 echo "---------------------------------------------------------------------"
@@ -179,3 +179,5 @@ echo
 echo
 echo "Completed Scenario 11-1 - PAYER's account to PS_TRANSFERS_RECORDED"
 echo
+
+sh $CWD/21scenario-part1-results.sh

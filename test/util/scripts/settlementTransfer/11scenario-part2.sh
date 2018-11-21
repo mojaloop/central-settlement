@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
-echo
+CWD="${0%/*}"
+
+if [[ "$CWD" =~ ^(.*)\.sh$ ]];
+then
+    CWD="."
+fi
+
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo "---------------------------------------------------------------------"
 echo "PS_TRANSFERS_RECORDED for PAYEE"
 echo "---------------------------------------------------------------------"
@@ -16,7 +23,8 @@ sh -c "curl -X PUT \
           {
             \"id\": 5,
             \"reason\": \"Transfers recorded for payee\",
-            \"state\": \"PS_TRANSFERS_RECORDED\"
+            \"state\": \"PS_TRANSFERS_RECORDED\",
+            \"externalReference\": \"tr0123456789\"
           }
         ]
       }
@@ -26,3 +34,5 @@ echo
 echo
 echo "Completed Scenario 11-2 - Settlement to PS_TRANSFERS_RECORDED"
 echo
+
+sh $CWD/21scenario-part2-results.sh

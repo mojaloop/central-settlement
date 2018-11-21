@@ -2,7 +2,7 @@
 export KAFKA_ID=kafka
 export MOCKSERVER_ID=mockserver
 export DB_ID=mysql
-export SLEEP_FACTOR_IN_SECONDS=5
+export SLEEP_FACTOR_IN_SECONDS=10
 export DBUSER=central_ledger
 export DBPASS=password
 export DBNAME=central_ledger

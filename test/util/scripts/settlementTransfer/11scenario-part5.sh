@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
-echo
+CWD="${0%/*}"
+
+if [[ "$CWD" =~ ^(.*)\.sh$ ]];
+then
+    CWD="."
+fi
+
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo "---------------------------------------------------------------------"
 echo "SETTLED for PAYER"
 echo "---------------------------------------------------------------------"
@@ -41,7 +48,8 @@ sh -c "curl -X PUT \
           {
             \"id\": 3,
             \"reason\": \"Additional reason for SETTLED account\",
-            \"state\": \"SETTLED\"
+            \"state\": \"SETTLED\",
+            \"externalReference\": \"tr98765432109876543210\"
           }
         ]
       }
@@ -51,3 +59,5 @@ echo
 echo
 echo "Completed Scenario 11-5 - Settlement to SETTLING"
 echo
+
+sh $CWD/21scenario-part5-results.sh
