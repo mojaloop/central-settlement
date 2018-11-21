@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+echo
+echo "*********************************************************************"
 echo "---------------------------------------------------------------------"
 echo "Showing current database state"
 echo "---------------------------------------------------------------------"
@@ -10,28 +12,43 @@ if [[ "$CWD" =~ ^(.*)\.sh$ ]];
 then
     CWD="."
 fi
-
 source $CWD/env.sh
-echo
 
 echo "TABLE settlementParticipantCurrency"
 docker exec -it $DB_ID mysql -uroot -e "SELECT * FROM central_ledger.settlementParticipantCurrency ORDER BY 1 DESC"
+echo "=> EXPECTED RESULT: No change. Showing same 2 records."
+echo
 echo
 
 echo "TABLE settlementParticipantCurrencyStateChange"
 docker exec -it $DB_ID mysql -uroot -e "SELECT * FROM central_ledger.settlementParticipantCurrencyStateChange ORDER BY 1 DESC"
+echo "=> EXPECTED RESULT: Payer account is now SETTLED... twice! Showing 10 records (previously 8). Longer externalReference recorded."
+echo
 echo
 
 echo "TABLE settlementStateChange"
 docker exec -it $DB_ID mysql -uroot -e "SELECT * FROM central_ledger.settlementStateChange ORDER BY 1 DESC"
+echo "=> EXPECTED RESULT: Settlement state has changed to SETTLING, because payee's account is still not settled. Showing 5 records (previously 4)."
+echo ""
+echo
+echo
+
+echo "TABLE settlementWindowStateChange"
+docker exec -it $DB_ID mysql -uroot -e "SELECT * FROM central_ledger.settlementWindowStateChange ORDER BY 1 DESC"
+echo "=> EXPECTED RESULT: Settlement window is still PENDING_SETTLEMENT state. Showing same 4 records."
+echo
 echo
 
 echo "TABLE transferDuplicateCheck"
 docker exec -it $DB_ID mysql -uroot -e "SELECT * FROM central_ledger.transferDuplicateCheck ORDER BY createdDate DESC"
+echo "=> EXPECTED RESULT: No change here. Showing same 4 records."
+echo
 echo
 
 echo "TABLE transfer"
 docker exec -it $DB_ID mysql -uroot -e "SELECT * FROM central_ledger.transfer ORDER BY createdDate DESC"
+echo "=> EXPECTED RESULT: No change here. Showing same 4 records."
+echo
 echo
 
 echo "TABLE transferFulfilment"
@@ -41,6 +58,8 @@ SUBSTRING(transferFulfilmentId, -20) AS transferFulfilmentId_20,
 ilpFulfilment, completedDate, isValid, settlementWindowId, createdDate
 FROM central_ledger.transferFulfilment 
 ORDER BY createdDate DESC"
+echo "=> EXPECTED RESULT: No change. Showing same 4 records."
+echo
 echo
 
 echo "TABLE transferParticipant (w/ enums)"
@@ -61,6 +80,8 @@ ON tprt.transferParticipantRoleTypeId = tp.transferParticipantRoleTypeId
 JOIN central_ledger.ledgerEntryType let
 ON let.ledgerEntryTypeId = tp.ledgerEntryTypeId
 ORDER BY tp.transferParticipantId DESC"
+echo "=> No change. Showing same 8 records."
+echo
 echo
 
 echo "TABLE transferParticipant TOTALS by account REGARDLESS transferState (w/ enums)"
@@ -75,10 +96,15 @@ JOIN central_ledger.participant p
 ON p.participantId = pc.participantId
 GROUP BY CONCAT(tp.participantCurrencyId, '-', p.name, '-', lat.name)
 ORDER BY 1 DESC"
+echo "=> EXPECTED RESULT: The total SUM_amount for transferParticipant records should be always 0. Not changed."
+echo
 echo
 
 echo "TABLE transferStateChange"
 docker exec -it $DB_ID mysql -uroot -e "SELECT * FROM central_ledger.transferStateChange ORDER BY 1 DESC"
+echo "=> EXPECTED RESULT: No change. Showing same 14 records."
+
+echo
 echo
 
 echo "TABLE participantPosition (w/ enums)"
@@ -94,6 +120,8 @@ ON lat.ledgerAccountTypeId = pc.ledgerAccountTypeId
 JOIN central_ledger.participant p
 ON p.participantId = pc.participantId
 ORDER BY 1 DESC"
+echo "=> EXPECTED RESULT: No change. Showing the same participant position records."
+echo
 echo
 
 echo "TABLE participantPositionChange (w/ enums)"
@@ -114,6 +142,8 @@ ON p.participantId = pc.participantId
 JOIN central_ledger.transferStateChange tsc
 ON tsc.transferStateChangeId = ppc.transferStateChangeId
 ORDER BY 1 DESC"
+echo "=> EXPECTED RESULT: No change. Showing same 8 records."
+echo
 echo
 
 echo "TABLE participantLimit (w/ enums)"
@@ -133,4 +163,6 @@ ON p.participantId = pc.participantId
 JOIN central_ledger.participantLimitType plt
 ON plt.participantLimitTypeId = pl.participantLimitTypeId
 ORDER BY 1 DESC"
+echo "=> EXPECTED RESULT: Participant limits are not affected. Showing 3 records."
+echo
 echo

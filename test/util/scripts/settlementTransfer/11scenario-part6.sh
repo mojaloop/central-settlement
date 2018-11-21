@@ -8,7 +8,7 @@ fi
 
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo "---------------------------------------------------------------------"
-echo "PS_TRANSFERS_RECORDED for PAYEE"
+echo "SETTLED for PAYEE"
 echo "---------------------------------------------------------------------"
 sh -c "curl -X PUT \
   http://localhost:3007/v1/settlements/1 \
@@ -22,9 +22,8 @@ sh -c "curl -X PUT \
         \"accounts\": [
           {
             \"id\": 5,
-            \"reason\": \"Transfers recorded for payee\",
-            \"state\": \"PS_TRANSFERS_RECORDED\",
-            \"externalReference\": \"tr0123456789\"
+            \"reason\": \"Payee: SETTLED, settlement: SETTLED\",
+            \"state\": \"SETTLED\"
           }
         ]
       }
@@ -32,7 +31,7 @@ sh -c "curl -X PUT \
   }'"
 echo
 echo
-echo "Completed Scenario 11-2 - Settlement to PS_TRANSFERS_RECORDED"
+echo "Completed Scenario 11-6 - Settlement SETTLED"
 echo
 
-sh $CWD/21scenario-part2-results.sh
+sh $CWD/21scenario-part6-results.sh

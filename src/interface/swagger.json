@@ -912,6 +912,10 @@
                 "state": {
                     "type": "string",
                     "example": "CLOSED"
+                },
+                "externalReference": {
+                    "type": "string",
+                    "example": "external-reference-abc123"
                 }
             }
         },

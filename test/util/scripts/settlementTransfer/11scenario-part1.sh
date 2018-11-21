@@ -9,9 +9,6 @@ fi
 echo "Loading env vars..."
 source $CWD/env.sh
 
-sh $CWD/00recreateDatabase.sh
-sh $CWD/01populateAdminTestData.sh
-
 echo "---------------------------------------------------------------------"
 echo "Starting script to populate test transfers - Prepare transfers:"
 echo "---------------------------------------------------------------------"
@@ -145,7 +142,7 @@ sh -c "curl -X POST \
   -H 'Content-Type: application/json' \
   -H 'Postman-Token: a57f4181-19e7-4c17-858e-91c12c17b5e2' \
   -d '{
-    \"reason\": \"settlement transfer test script\",
+    \"reason\": \"Create settlement for window 1\",
     \"settlementWindows\": [
       {
         \"id\": 1
@@ -153,8 +150,11 @@ sh -c "curl -X POST \
     ]
   }'"
 echo
+echo
+echo
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo "---------------------------------------------------------------------"
-echo "Settle only PAYER's account"
+echo "PS_TRANSFERS_RECORDED for PAYER"
 echo "---------------------------------------------------------------------"
 sh -c "curl -X PUT \
   http://localhost:3007/v1/settlements/1 \
@@ -167,9 +167,9 @@ sh -c "curl -X PUT \
         \"id\": 2,
         \"accounts\": [
           {
-            \"id\": 2,
-            \"reason\": \"test settlement transfer\",
-            \"state\": \"SETTLED\"
+            \"id\": 3,
+            \"reason\": \"Transfers recorded for payer\",
+            \"state\": \"PS_TRANSFERS_RECORDED\"
           }
         ]
       }
@@ -177,5 +177,7 @@ sh -c "curl -X PUT \
   }'"
 echo
 echo
-echo "Completed Scenario 11-1 - Settlement transfer prepare"
+echo "Completed Scenario 11-1 - PAYER's account to PS_TRANSFERS_RECORDED"
 echo
+
+sh $CWD/21scenario-part1-results.sh
