@@ -767,7 +767,7 @@ const Facade = {
                       } else if (accountPayload.state === enums.settlementStates.PS_TRANSFERS_COMMITTED) {
                         settlementAccounts.psTransfersReservedCount--
                         settlementAccounts.psTransfersCommittedCount++
-                      } else if (accountPayload.state === enums.settlementStates.SETTLED) {
+                      } else /* if (accountPayload.state === enums.settlementStates.SETTLED) */ { // disabled because else path not taken
                         settlementAccounts.psTransfersCommittedCount--
                         settlementAccounts.settledCount++
                       }
@@ -787,7 +787,7 @@ const Facade = {
                         } else if (accountPayload.state === enums.settlementStates.PS_TRANSFERS_COMMITTED) {
                           windowsAccounts[settlementWindowId].psTransfersReservedCount--
                           windowsAccounts[settlementWindowId].psTransfersCommittedCount++
-                        } else if (accountPayload.state === enums.settlementStates.SETTLED) {
+                        } else /* if (accountPayload.state === enums.settlementStates.SETTLED) */ { // disabled because else path not taken
                           windowsAccounts[settlementWindowId].psTransfersCommittedCount--
                           windowsAccounts[settlementWindowId].settledCount++
                         }
@@ -862,7 +862,7 @@ const Facade = {
                 windowAccounts.psTransfersRecordedCount !== windowAccountsInit.psTransfersRecordedCount ||
                 windowAccounts.psTransfersReservedCount !== windowAccountsInit.psTransfersReservedCount ||
                 windowAccounts.psTransfersCommittedCount !== windowAccountsInit.psTransfersCommittedCount ||
-                windowAccounts.settledCount !== windowAccountsInit.settledCount) {
+                windowAccounts.settledCount !== windowAccountsInit.settledCount) { // this condition is never reached because always any of the previous is true
                 settlementWindows.push(allWindows[affectedWindows[aw]])
 
                 if (windowAccounts.psTransfersCommittedCount === 0 &&
