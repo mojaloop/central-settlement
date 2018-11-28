@@ -165,7 +165,7 @@
                             "CLOSED",
                             "PENDING_SETTLEMENT",
                             "SETTLED",
-                            "NOT_SETTLED"
+                            "ABORTED"
                         ],
                         "description": "A settlement window state to filter on.\n",
                         "required": false
@@ -274,7 +274,7 @@
                         "enum": [
                             "PENDING_SETTLEMENT",
                             "SETTLED",
-                            "NOT_SETTLED"
+                            "ABORTED"
                         ],
                         "description": "A settlement state to filter on.  \n",
                         "required": false

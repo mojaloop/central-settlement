@@ -207,12 +207,12 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       PS_TRANSFERS_COMMITTED: 'PS_TRANSFERS_COMMITTED',
       SETTLING: 'SETTLING',
       SETTLED: 'SETTLED',
-      NOT_SETTLED: 'NOT_SETTLED'
+      ABORTED: 'ABORTED'
     },
     settlementWindowStates: {
       PENDING_SETTLEMENT: 'PENDING_SETTLEMENT',
       SETTLED: 'SETTLED',
-      NOT_SETTLED: 'NOT_SETTLED'
+      ABORTED: 'ABORTED'
     },
     participantLimitTypes: {
       NET_DEBIT_CAP: 'NET_DEBIT_CAP'
@@ -341,7 +341,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         {
           participantId: 1,
           participantCurrencyId: 4,
-          settlementStateId: 'NOT_SETTLED',
+          settlementStateId: 'ABORTED',
           reason: 'text',
           netAmount: 100,
           currencyId: 'USD',
@@ -417,7 +417,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         },
         {
           settlementWindowId: 3,
-          settlementWindowStateId: 'NOT_SETTLED',
+          settlementWindowStateId: 'ABORTED',
           reason: 'text',
           createdDate: now
         },
@@ -1994,7 +1994,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.equal(result.state, 'PENDING_SETTLEMENT', 'Settlement should remain in PENDING_SETTLEMENT state')
           test.equal(result.settlementWindows.length, 2, 'Exactly two settlement windows are expected to be affected')
           test.equal(result.settlementWindows[0].settlementWindowStateId, 'PENDING_SETTLEMENT', 'First window is PENDING_SETTLEMENT')
-          test.equal(result.settlementWindows[1].settlementWindowStateId, 'NOT_SETTLED', 'Second window is NOT_SETTLED')
+          test.equal(result.settlementWindows[1].settlementWindowStateId, 'ABORTED', 'Second window is ABORTED')
           test.equal(result.participants.length, 2, 'Two participants are affected')
           test.equal(result.participants[0].accounts.length, 6, 'Six accounts for first participant are affected')
           test.equal(result.participants[1].accounts.length, 1, 'One account for second participant is affected')
