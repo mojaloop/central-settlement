@@ -546,7 +546,7 @@ const Facade = {
               psTransfersReservedCount: 0,
               psTransfersCommittedCount: 0,
               settledCount: 0,
-              notSettledCount: 0,
+              abortedCount: 0,
               unknownCount: 0
             }
             let allAccounts = new Map()
@@ -594,8 +594,8 @@ const Facade = {
                   settlementAccounts.settledCount++
                   break
                 }
-                case enums.settlementStates.NOT_SETTLED: {
-                  settlementAccounts.notSettledCount++
+                case enums.settlementStates.ABORTED: {
+                  settlementAccounts.abortedCount++
                   break
                 }
                 default: {
@@ -632,7 +632,7 @@ const Facade = {
                 psTransfersReservedCount: 0,
                 psTransfersCommittedCount: 0,
                 settledCount: 0,
-                notSettledCount: 0
+                abortedCount: 0
               }
               switch (state) {
                 case enums.settlementStates.PENDING_SETTLEMENT: {
@@ -655,8 +655,8 @@ const Facade = {
                   windowsAccounts[wid].settledCount++
                   break
                 }
-                case enums.settlementStates.NOT_SETTLED: {
-                  windowsAccounts[wid].notSettledCount++
+                case enums.settlementStates.ABORTED: {
+                  windowsAccounts[wid].abortedCount++
                   break
                 }
                 default: {
@@ -867,7 +867,7 @@ const Facade = {
                 settlementWindows.push(allWindows[affectedWindows[aw]])
 
                 if (windowAccounts.psTransfersCommittedCount === 0 &&
-                  windowAccounts.notSettledCount === 0 &&
+                  windowAccounts.abortedCount === 0 &&
                   windowAccounts.settledCount > 0) {
                   allWindows[affectedWindows[aw]].settlementWindowStateId = enums.settlementWindowStates.SETTLED
                   allWindows[affectedWindows[aw]].reason = 'All window settlement accounts are settled'

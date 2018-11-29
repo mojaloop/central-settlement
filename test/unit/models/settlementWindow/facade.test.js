@@ -170,7 +170,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
         state: 'SETTLED'
       }, {
         settlementWindowId: 2,
-        state: 'NOT_SETTLED'
+        state: 'ABORTED'
       }]
       let e
 

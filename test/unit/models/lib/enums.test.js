@@ -52,7 +52,7 @@ Test('Enums', async (enumsTest) => {
             { settlementWindowStateId: 'CLOSED', enumeration: 'CLOSED' },
             { settlementWindowStateId: 'PENDING_SETTLEMENT', enumeration: 'PENDING_SETTLEMENT' },
             { settlementWindowStateId: 'SETTLED', enumeration: 'SETTLED' },
-            { settlementWindowStateId: 'NOT_SETTLED', enumeration: 'NOT_SETTLED' }
+            { settlementWindowStateId: 'ABORTED', enumeration: 'ABORTED' }
           ]
           Db.settlementWindowState = { find: sandbox.stub().returns(states) }
           let settlementWindowStatesEnum = await Enums.settlementWindowStates()
@@ -95,7 +95,7 @@ Test('Enums', async (enumsTest) => {
           const states = [
             { settlementStateId: 'PENDING_SETTLEMENT', enumeration: 'PENDING_SETTLEMENT' },
             { settlementStateId: 'SETTLED', enumeration: 'SETTLED' },
-            { settlementStateId: 'NOT_SETTLED', enumeration: 'NOT_SETTLED' }
+            { settlementStateId: 'ABORTED', enumeration: 'ABORTED' }
           ]
           Db.settlementState = { find: sandbox.stub().returns(states) }
           let settlementStatesEnum = await Enums.settlementStates()

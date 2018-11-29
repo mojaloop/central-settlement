@@ -153,7 +153,7 @@ N/A
 | in    | name          | type                                                           | required | description                          |
 |-|-|-|-|-|
 | query | participantId | integer | false | A valid participant Id to filter on. |
-| query | state         | string: OPEN, CLOSED, PENDING_SETTLEMENT, SETTLED, NOT_SETTLED | false    | A settlement window state to filter on. |
+| query | state         | string: OPEN, CLOSED, PENDING_SETTLEMENT, SETTLED, ABORTED | false    | A settlement window state to filter on. |
 | query | fromDateTime  | string, date-time | false | The start date for query (relates to central-ledger.settlementWindow.createdDate). Can be used together with `toDateTime'. eg 2017-07-20T17:32:28Z |
 | query | toDateTime    | string, date-time                                              | false    | The end date for query (relates to central-ledger.settlementWindow.createdDate). Can be used together with `fromDateTime'. eg 2017-07-21T17:32:28Z |
 
@@ -221,7 +221,7 @@ N/A
 | query | participantId                | integer                                          | false    | A valid participant Id to filter on |
 | query | settlementWindowId           | number                                           | false    | A valid Settlement Window Id to filter on.|
 | query | accountId                    | number                                           | false    | A valid Account Id to filter on. |
-| query | state                        | string: PENDING_SETTLEMENT, SETTLED, NOT_SETTLED | false    | A settlement state to filter on. |
+| query | state                        | string: PENDING_SETTLEMENT, SETTLED, ABORTED | false    | A settlement state to filter on. |
 | query | fromDateTime                 | string, date-time                                | false    | The start date for query (relates to central-ledger.settlement.createdDate). Can be used together with `toDateTime'. eg 2017-07-20T17:32:28Z |
 | query | toDateTime                   | string, date-time                                | false    | The end date for query (relates to central-ledger.settlement.createdDate). Can be used together with `fromDateTime'. eg 2017-07-21T17:32:28Z |
 | query | fromSettlementWindowDateTime | string, date-time                                | false    | The start date for query (relates to central-ledger.settlementWindow.createdDate). Can be used together with `toDateTime'. eg 2017-07-20T17:32:28Z |
