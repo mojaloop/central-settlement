@@ -992,11 +992,17 @@
                 },
                 "settlementWindows": {
                     "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
                     "items": {
                         "$ref": "#/definitions/SettlementWindowId"
                     }
                 }
-            }
+            },
+            "required": [
+                "reason",
+                "settlementWindows"
+            ]
         },
         "SettlementWindowId": {
             "type": "object",
