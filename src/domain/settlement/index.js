@@ -94,6 +94,7 @@ module.exports = {
   },
 
   putById: SettlementModel.putById,
+  abortById: SettlementModel.abortById,
 
   getSettlementsByParams: async function (params, enums, options = {}) {
     // 7 filters - at least one should be used

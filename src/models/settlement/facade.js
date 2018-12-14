@@ -388,6 +388,15 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             })
             .transacting(trx)
 
+          await knex('transferStateChange')
+            .insert({
+              transferId,
+              transferStateId: enums.transferStates.RECEIVED_FULFIL,
+              reason: 'Settlement transfer commit initiated',
+              createdDate: transactionTimestamp
+            })
+            .transacting(trx)
+
           transferStateChangeId = await knex('transferStateChange')
             .insert({
               transferId,
@@ -493,7 +502,7 @@ const Facade = {
    * @param enums.transferParticipantRoleTypes.HUB
    * @param enums.transferStates
    */
-  putById: async function (settlementId, payload, enums/* , options = {} */) {
+  putById: async function (settlementId, payload, enums) {
     try {
       const knex = await Db.getKnex()
       return await knex.transaction(async (trx) => {
@@ -948,6 +957,22 @@ const Facade = {
               participants
             }
           }
+        } catch (err) {
+          await trx.rollback
+          throw err
+        }
+      })
+    } catch (err) {
+      throw err
+    }
+  },
+
+  abortById: async function (settlementId, payload, enums) {
+    try {
+      const knex = await Db.getKnex()
+      return await knex.transaction(async (trx) => {
+        try {
+          throw new Error('todo')
         } catch (err) {
           await trx.rollback
           throw err

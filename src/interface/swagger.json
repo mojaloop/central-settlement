@@ -875,6 +875,18 @@
         "SettlementUpdatebySettlementIdPayload": {
             "type": "object",
             "properties": {
+                "state": {
+                    "type": "string",
+                    "enum": [
+                        "ABORTED"
+                    ]
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "externalReference": {
+                    "type": "string"
+                },
                 "participants": {
                     "type": "array",
                     "items": {

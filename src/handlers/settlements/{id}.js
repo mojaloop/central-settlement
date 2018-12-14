@@ -72,9 +72,15 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
 
-  put: async function updateSettlementById (request, h) {
+  put: async function updateSettlementById (request) {
     const settlementId = request.params.id
     try {
+      const p = request.payload
+      if (p.participants && (p.state || p.reason || p.externalReference)) {
+        throw new Error('No other properties are allowed when participants is provided')
+      } else if ((p.state && !p.reason) || (!p.state && p.reason)) {
+        throw new Error('State and reason are mandatory')
+      }
       const Enums = {
         ledgerAccountTypes: await request.server.methods.enums('ledgerAccountTypes'),
         ledgerEntryTypes: await request.server.methods.enums('ledgerEntryTypes'),
@@ -84,7 +90,13 @@ module.exports = {
         transferParticipantRoleTypes: await request.server.methods.enums('transferParticipantRoleTypes'),
         transferStates: await request.server.methods.enums('transferStates')
       }
-      return await settlement.putById(settlementId, request.payload, Enums)
+      if (p.participants) {
+        return await settlement.putById(settlementId, request.payload, Enums)
+      } else if (p.state && p.state === Enums.settlementStates.ABORTED) {
+        return await settlement.abortById(settlementId, request.payload, Enums)
+      } else {
+        throw new Error('Invalid request payload input')
+      }
     } catch (e) {
       request.server.log('error', e)
       return Boom.badRequest(e)
