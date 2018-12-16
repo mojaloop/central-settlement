@@ -339,6 +339,147 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
  * @param enums.transferParticipantRoleTypes.HUB
  * @param enums.transferStates
  */
+const settlementTransfersAbort = async function (settlementId, transactionTimestamp, enums, trx = null) {
+  try {
+    const knex = await Db.getKnex()
+    let transferStateChangeId
+
+    // Retrieve list of ABORTED, but not ABORTED
+    let settlementTransferList = await knex('settlementParticipantCurrency AS spc')
+      .join('settlementParticipantCurrencyStateChange AS spcsc', function () {
+        this.on('spcsc.settlementParticipantCurrencyId', 'spc.settlementParticipantCurrencyId')
+          .andOn('spcsc.settlementStateId', knex.raw('?', [enums.settlementStates.ABORTED]))
+      })
+      .leftJoin('transferStateChange AS tsc1', function () {
+        this.on('tsc1.transferId', 'spc.settlementTransferId')
+          .andOn('tsc1.transferStateId', knex.raw('?', [enums.transferStates.RESERVED]))
+      })
+      .leftJoin('transferStateChange AS tsc2', function () {
+        this.on('tsc2.transferId', 'spc.settlementTransferId')
+          .andOn('tsc2.transferStateId', knex.raw('?', [enums.transferStates.ABORTED]))
+      })
+      .join('transferParticipant AS tp1', function () {
+        this.on('tp1.transferId', 'spc.settlementTransferId')
+          .andOn('tp1.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.DFSP_POSITION]))
+      })
+      .join('transferParticipant AS tp2', function () {
+        this.on('tp2.transferId', 'spc.settlementTransferId')
+          .andOn('tp2.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.HUB]))
+      })
+      .select('tp1.transferId', 'tp1.ledgerEntryTypeId', 'tp1.participantCurrencyId AS dfspAccountId', 'tp1.amount AS dfspAmount',
+        'tp2.participantCurrencyId AS hubAccountId', 'tp2.amount AS hubAmount', 'tsc1.transferId AS isReserved')
+      .where('spc.settlementId', settlementId)
+      .whereNull('tsc2.transferId')
+      .transacting(trx)
+
+    const trxFunction = async (trx, doCommit = true) => {
+      try {
+        for (let { transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount, isReserved } of settlementTransferList) {
+          // Persist transfer state change
+          await knex('transferStateChange')
+            .insert({
+              transferId,
+              transferStateId: enums.transferStates.REJECTED,
+              reason: 'Settlement transfer reject',
+              createdDate: transactionTimestamp
+            })
+            .transacting(trx)
+          transferStateChangeId = await knex('transferStateChange')
+            .insert({
+              transferId,
+              transferStateId: enums.transferStates.ABORTED,
+              reason: 'Settlement transfer abort',
+              createdDate: transactionTimestamp
+            })
+            .transacting(trx)
+
+          if (isReserved !== undefined && ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_RECIPIENT) {
+            // Select dfspPosition FOR UPDATE
+            let { dfspPositionId, dfspPositionValue, dfspReservedValue } = await knex('participantPosition')
+              .select('participantPositionId AS dfspPositionId', 'value AS dfspPositionValue', 'reservedValue AS dfspReservedValue')
+              .where('participantCurrencyId', dfspAccountId)
+              .first()
+              .transacting(trx)
+              .forUpdate()
+
+            // Persist dfsp latestPosition
+            await knex('participantPosition')
+              .update('value', dfspPositionValue - dfspAmount)
+              .where('participantPositionId', dfspPositionId)
+              .transacting(trx)
+
+            // Persist dfsp position change
+            await knex('participantPositionChange')
+              .insert({
+                participantPositionId: dfspPositionId,
+                transferStateChangeId: transferStateChangeId,
+                value: dfspPositionValue - dfspAmount,
+                reservedValue: dfspReservedValue,
+                createdDate: transactionTimestamp
+              })
+              .transacting(trx)
+
+            // Select hubPosition FOR UPDATE
+            let { hubPositionId, hubPositionValue } = await knex('participantPosition')
+              .select('participantPositionId AS hubPositionId', 'value AS hubPositionValue')
+              .where('participantCurrencyId', hubAccountId)
+              .first()
+              .transacting(trx)
+              .forUpdate()
+
+            // Persist hub latestPosition
+            await knex('participantPosition')
+              .update('value', hubPositionValue - hubAmount)
+              .where('participantPositionId', hubPositionId)
+              .transacting(trx)
+
+            // Persist hub position change
+            await knex('participantPositionChange')
+              .insert({
+                participantPositionId: hubPositionId,
+                transferStateChangeId: transferStateChangeId,
+                value: hubPositionValue - hubAmount,
+                reservedValue: 0,
+                createdDate: transactionTimestamp
+              })
+              .transacting(trx)
+          }
+
+          if (doCommit) {
+            await trx.commit
+          }
+        }
+      } catch (err) {
+        if (doCommit) {
+          await trx.rollback
+        }
+        throw err
+      }
+    }
+
+    if (trx) {
+      await trxFunction(trx, false)
+    } else {
+      await knex.transaction(trxFunction)
+    }
+    return 0
+  } catch (err) {
+    throw err
+  }
+}
+
+/**
+ * @param enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT
+ * @param enums.ledgerEntryTypes
+ * @param enums.participantLimitTypes
+ * @param enums.settlementStates.PS_TRANSFERS_RECORDED
+ * @param enums.settlementStates.PS_TRANSFERS_RESERVED
+ * @param enums.settlementStates.PS_TRANSFERS_COMMITTED
+ * @param enums.transferParticipantRoleTypes
+ * @param enums.transferParticipantRoleTypes.DFSP_POSITION
+ * @param enums.transferParticipantRoleTypes.HUB
+ * @param enums.transferStates
+ */
 const settlementTransfersCommit = async function (settlementId, transactionTimestamp, enums, trx = null) {
   try {
     const knex = await Db.getKnex()
@@ -483,9 +624,8 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
 
 const Facade = {
   settlementTransfersPrepare,
-
   settlementTransfersReserve,
-
+  settlementTransfersAbort,
   settlementTransfersCommit,
 
   /**
@@ -507,6 +647,8 @@ const Facade = {
       const knex = await Db.getKnex()
       return await knex.transaction(async (trx) => {
         try {
+          let transactionTimestamp = new Date().toISOString().replace(/[TZ]/g, ' ').trim()
+
           // seq-settlement-6.2.5, step 3
           let settlementData = await knex('settlement AS s')
             .join('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 's.currentStateChangeId')
@@ -545,8 +687,6 @@ const Facade = {
               .where({ settlementId })
               .transacting(trx)
               .forUpdate()
-
-            let transactionTimestamp = new Date().toISOString().replace(/[TZ]/g, ' ').trim()
 
             // seq-settlement-6.2.5, step 11
             let settlementAccounts = {
@@ -826,14 +966,14 @@ const Facade = {
             let insertPromises = []
             let updatePromises = []
             // seq-settlement-6.2.5, step 26
-            for (let cpcsc of settlementParticipantCurrencyStateChange) {
+            for (let spcsc of settlementParticipantCurrencyStateChange) {
               // Switched to insert from batchInsert because only LAST_INSERT_ID is returned
               // TODO: PoC - batchInsert + select inserted ids vs multiple inserts without select
-              let cpcscCopy = Object.assign({}, cpcsc)
-              delete cpcscCopy.settlementTransferId
+              let spcscCopy = Object.assign({}, spcsc)
+              delete spcscCopy.settlementTransferId
               insertPromises.push(
                 knex('settlementParticipantCurrencyStateChange')
-                  .insert(cpcscCopy).returning('settlementParticipantCurrencyStateChangeId')
+                  .insert(spcscCopy).returning('settlementParticipantCurrencyStateChangeId')
                   .transacting(trx)
               )
             }
@@ -970,9 +1110,147 @@ const Facade = {
   abortById: async function (settlementId, payload, enums) {
     try {
       const knex = await Db.getKnex()
+
+      // seq-settlement-6.2.6, step 3
+      let settlementData = await Facade.getById({ settlementId })
+
+      if (settlementData.state === enums.settlementStates.PS_TRANSFERS_COMMITTED ||
+        settlementData.state === enums.settlementStates.SETTLING ||
+        settlementData.state === enums.settlementStates.SETTLED) {
+        throw new Error('State change is not allowed')
+      } else if (settlementData.state === enums.settlementStates.ABORTED) {
+        // seq-settlement-6.2.6, step 5
+        let settlementStateChangeId = await knex('settlementStateChange')
+          .insert({
+            settlementId,
+            settlementStateId: enums.settlementStates.ABORTED,
+            reason: payload.reason
+          }).returning('settlementStateChangeId')
+        // seq-settlement-6.2.6, step 5a // TODO: update diagram
+        await knex('settlement')
+          .where('settlementId', settlementId)
+          .update({ currentStateChangeId: settlementStateChangeId })
+
+        return {
+          id: settlementId,
+          state: payload.state,
+          reason: payload.reason
+        }
+      } else if (settlementData.state === enums.settlementStates.PS_TRANSFERS_RESERVED) {
+        // seq-settlement-6.2.6, step 6
+        const transferCommittedAccount = await knex('settlementParticipantCurrency AS spc')
+          .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'spc.currentStateChangeId')
+          .where('spc.settlementId', settlementId)
+          .where('spcsc.settlementStateId', enums.settlementStates.PS_TRANSFERS_COMMITTED)
+          .first()
+        if (transferCommittedAccount !== undefined) {
+          throw new Error('At least one settlement transfer is committed')
+        }
+      }
+
       return await knex.transaction(async (trx) => {
         try {
-          throw new Error('todo')
+          let transactionTimestamp = new Date().toISOString().replace(/[TZ]/g, ' ').trim()
+
+          // seq-settlement-6.2.6, step 8
+          let settlementAccountList = await knex('settlementParticipantCurrency AS spc')
+            .leftJoin('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'spc.currentStateChangeId')
+            .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'spc.participantCurrencyId')
+            .select('pc.participantId', 'spc.participantCurrencyId', 'spcsc.settlementStateId', 'spcsc.reason', 'spc.netAmount', 'pc.currencyId', 'spc.settlementParticipantCurrencyId AS key'
+            )
+            .where('spc.settlementId', settlementId)
+            .transacting(trx)
+            .forUpdate()
+
+          // seq-settlement-6.2.6, step 10
+          let windowsList = await knex('settlementSettlementWindow AS ssw')
+            .join('settlementWindow AS sw', 'sw.settlementWindowId', 'ssw.settlementWindowId')
+            .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'sw.currentStateChangeId')
+            .select('sw.settlementWindowId', 'swsc.settlementWindowStateId', 'swsc.reason', 'sw.createdDate')
+            .where('ssw.settlementId', settlementId)
+            .transacting(trx)
+            .forUpdate()
+
+          let insertPromises = []
+          let updatePromises = []
+          // seq-settlement-6.2.6, step 12
+          for (let sal of settlementAccountList) {
+            // Switched to insert from batchInsert because only LAST_INSERT_ID is returned
+            // TODO: PoC - batchInsert + select inserted ids vs multiple inserts without select
+            const spcsc = {
+              settlementParticipantCurrencyId: sal.key,
+              settlementStateId: enums.settlementStates.ABORTED,
+              reason: payload.reason,
+              externalReference: payload.externalReference
+            }
+            insertPromises.push(
+              knex('settlementParticipantCurrencyStateChange')
+                .insert(spcsc).returning('settlementParticipantCurrencyStateChangeId')
+                .transacting(trx)
+            )
+          }
+          let settlementParticipantCurrencyStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
+          // seq-settlement-6.2.6, step 15
+          for (let i in settlementParticipantCurrencyStateChangeIdList) {
+            let updatedColumns = { currentStateChangeId: settlementParticipantCurrencyStateChangeIdList[i] }
+            updatePromises.push(
+              knex('settlementParticipantCurrency')
+                .where('settlementParticipantCurrencyId', settlementAccountList[i].key)
+                .update(updatedColumns)
+                .transacting(trx)
+            )
+          }
+          await Promise.all(updatePromises)
+
+          await Facade.settlementTransfersAbort(settlementId, transactionTimestamp, enums, trx)
+
+          // seq-settlement-6.2.6, step 16
+          insertPromises = []
+          for (let rec of windowsList) {
+            const swsc = {
+              settlementWindowId: rec.settlementWindowId,
+              settlementWindowStateId: enums.settlementWindowStates.ABORTED,
+              reason: payload.reason
+            }
+            insertPromises.push(
+              knex('settlementWindowStateChange')
+                .insert(swsc).returning('settlementWindowStateChangeId')
+                .transacting(trx)
+            )
+          }
+          let settlementWindowStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
+          // seq-settlement-6.2.6, step 19
+          updatePromises = []
+          for (let i in settlementWindowStateChangeIdList) {
+            updatePromises.push(
+              knex('settlementWindow')
+                .where('settlementWindowId', windowsList[i].settlementWindowId)
+                .update({ currentStateChangeId: settlementWindowStateChangeIdList[i] })
+                .transacting(trx)
+            )
+          }
+          await Promise.all(updatePromises)
+
+          // seq-settlement-6.2.6, step 20
+          let settlementStateChangeId = await knex('settlementStateChange')
+            .insert({
+              settlementId,
+              settlementStateId: enums.settlementStates.ABORTED,
+              reason: payload.reason
+            }).returning('settlementStateChangeId')
+            .transacting(trx)
+          // seq-settlement-6.2.6, step 22
+          await knex('settlement')
+            .where('settlementId', settlementId)
+            .update({ currentStateChangeId: settlementStateChangeId })
+            .transacting(trx)
+
+          await trx.commit
+          return {
+            id: settlementId,
+            state: payload.state,
+            reason: payload.reason
+          }
         } catch (err) {
           await trx.rollback
           throw err
@@ -990,8 +1268,9 @@ const Facade = {
           .join('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 'settlement.currentStateChangeId')
           .select('settlement.settlementId',
             'ssc.settlementStateId AS state',
-            'settlement.reason',
-            'settlement.createdDate')
+            'ssc.reason',
+            'settlement.createdDate',
+            'ssc.createdDate AS changedDate')
           .where('settlement.settlementId', settlementId)
           .first()
       })
@@ -1047,7 +1326,7 @@ const Facade = {
       return await knex.transaction(async (trx) => {
         try {
           // insert new settlement
-          const transactionTimestamp = new Date()
+          const transactionTimestamp = new Date().toISOString().replace(/[TZ]/g, ' ').trim()
           const settlementId = await knex('settlement').insert({ reason, createdDate: transactionTimestamp }).transacting(trx)
           const settlementSettlementWindowList = idList.map(settlementWindowId => {
             return {
@@ -1070,7 +1349,7 @@ const Facade = {
                 .join('transferParticipant AS tp', function () {
                   this.on('tp.transferId', 'tf.transferId')
                 })
-                .where('ssw.settlementId', settlementId)
+                .where('ssw.settlementId', settlementId[0])
                 .groupBy('ssw.settlementWindowId', 'tp.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId')
                 .select(knex.raw('? AS ??', [settlementId, 'settlementId']),
                   'ssw.settlementWindowId',
@@ -1087,7 +1366,7 @@ const Facade = {
             .from(knex.raw('settlementParticipantCurrency (settlementId, participantCurrencyId, netAmount)'))
             .insert(function () {
               this.from('settlementTransferParticipant AS stp')
-                .whereRaw('stp.settlementId = ?', [settlementId])
+                .whereRaw('stp.settlementId = ?', settlementId[0])
                 .groupBy('stp.settlementId', 'stp.participantCurrencyId')
                 .select('stp.settlementId', 'stp.participantCurrencyId')
                 .sum('stp.amount AS netAmount')
@@ -1106,18 +1385,24 @@ const Facade = {
               createdDate: transactionTimestamp
             }
           })
-          await knex.batchInsert('settlementParticipantCurrencyStateChange', settlementParticipantCurrencyStateChangeList).transacting(trx)
-          const settlementParticipantCurrencyStateChangeIdList = await knex('settlementParticipantCurrencyStateChange')
-            .select('settlementParticipantCurrencyStateChangeId')
-            .whereIn('settlementParticipantCurrencyId', settlementParticipantCurrencyIdList)
-            .transacting(trx)
+
+          let insertPromises = []
+          for (let spcsc of settlementParticipantCurrencyStateChangeList) {
+            insertPromises.push(
+              knex('settlementParticipantCurrencyStateChange')
+                .insert(spcsc).returning('settlementParticipantCurrencyStateChangeId')
+                .transacting(trx)
+            )
+          }
+          const settlementParticipantCurrencyStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
+
           let updatePromises = []
           for (let index in settlementParticipantCurrencyIdList) {
             updatePromises.push(knex('settlementParticipantCurrency')
               .transacting(trx)
               .where('settlementParticipantCurrencyId', settlementParticipantCurrencyIdList[index])
               .update({
-                currentStateChangeId: settlementParticipantCurrencyStateChangeIdList[index].settlementParticipantCurrencyStateChangeId
+                currentStateChangeId: settlementParticipantCurrencyStateChangeIdList[index]
               }))
           }
           await Promise.all(updatePromises)
@@ -1129,19 +1414,24 @@ const Facade = {
               createdDate: transactionTimestamp
             }
           })
-          await knex.batchInsert('settlementWindowStateChange', settlementWindowStateChangeList).transacting(trx)
-          const settlementWindowStateChangeIdList = await knex('settlementWindowStateChange')
-            .transacting(trx)
-            .select('settlementWindowStateChangeId')
-            .whereIn('settlementWindowId', idList)
-            .andWhere('settlementWindowStateId', enums.settlementStates.PENDING_SETTLEMENT)
+
+          insertPromises = []
+          for (let swsc of settlementWindowStateChangeList) {
+            insertPromises.push(
+              knex('settlementWindowStateChange')
+                .insert(swsc).returning('settlementWindowStateChangeId')
+                .transacting(trx)
+            )
+          }
+          let settlementWindowStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
+
           updatePromises = []
           for (let index in idList) {
             if (idList.hasOwnProperty(index)) {
               updatePromises.push(await knex('settlementWindow').transacting(trx)
                 .where('settlementWindowId', idList[index])
                 .update({
-                  currentStateChangeId: settlementWindowStateChangeIdList[index].settlementWindowStateChangeId
+                  currentStateChangeId: settlementWindowStateChangeIdList[index]
                 }))
             }
           }
@@ -1149,7 +1439,9 @@ const Facade = {
           const settlementStateChangeId = await knex('settlementStateChange').transacting(trx)
             .insert({
               settlementId,
-              settlementStateId: enums.settlementStates.PENDING_SETTLEMENT
+              settlementStateId: enums.settlementStates.PENDING_SETTLEMENT,
+              reason,
+              createdDate: transactionTimestamp
             })
           await knex('settlement').transacting(trx)
             .where('settlementId', settlementId)
