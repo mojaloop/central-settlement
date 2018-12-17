@@ -48,7 +48,6 @@ const cloneDeep = require('../../utils/cloneDeep')
  */
 const settlementTransfersPrepare = async function (settlementId, transactionTimestamp, enums, trx = null) {
   try {
-    const HUB_PARTICIPANT_ID = 1
     const knex = await Db.getKnex()
     let t // see (t of settlementTransferList) below
 
@@ -93,7 +92,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
         // Retrieve Hub mlns account
         let { mlnsAccountId } = await knex('participantCurrency AS pc1')
           .join('participantCurrency AS pc2', function () {
-            this.on('pc2.participantId', HUB_PARTICIPANT_ID)
+            this.on('pc2.participantId', Config.HUB_ID)
               .andOn('pc2.currencyId', 'pc1.currencyId')
               .andOn('pc2.ledgerAccountTypeId', enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT)
               .andOn('pc2.isActive', 1)
