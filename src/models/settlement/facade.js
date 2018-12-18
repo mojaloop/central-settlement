@@ -392,7 +392,7 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
             })
             .transacting(trx)
 
-          if (isReserved !== undefined && ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_RECIPIENT) {
+          if (isReserved !== null && ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_RECIPIENT) {
             // Select dfspPosition FOR UPDATE
             let { dfspPositionId, dfspPositionValue, dfspReservedValue } = await knex('participantPosition')
               .select('participantPositionId AS dfspPositionId', 'value AS dfspPositionValue', 'reservedValue AS dfspReservedValue')
