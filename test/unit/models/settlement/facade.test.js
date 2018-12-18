@@ -1558,7 +1558,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.equal(knexStub.withArgs('participantPosition').callCount, 4)
           test.equal(knexStub.withArgs('participantPosition').callCount, 4)
           test.equal(knexStub.withArgs('transferFulfilment').callCount, 2)
-          test.equal(knexStub.withArgs('transferStateChange').callCount, 2)
+          test.equal(knexStub.withArgs('transferStateChange').callCount, 4)
           test.equal(knexStub.withArgs('participantPositionChange').callCount, 2)
 
           test.end()
@@ -2615,11 +2615,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           Db.settlement.query.returns(Promise.resolve(settlementResultStub))
 
           await SettlementFacade.getById({ settlementId })
-          test.ok(builderStub.join.withArgs('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 'settlement.currentStateChangeId').calledOnce)
-          test.ok(selectStub.withArgs('settlement.settlementId',
-            'ssc.settlementStateId AS state',
-            'settlement.reason',
-            'settlement.createdDate').calledOnce)
+          test.ok(builderStub.join.withArgs('settlementStateChange AS ssc',
+            'ssc.settlementStateChangeId',
+            'settlement.currentStateChangeId').calledOnce)
           test.ok(whereStub.withArgs('settlement.settlementId', settlementId).calledOnce)
           test.ok(firstStub.calledOnce)
           test.end()
@@ -2757,7 +2755,12 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             insert: sandbox.stub().returns({
               transacting: sandbox.stub().returns(
                 Promise.resolve(stubData['knexTriggerEvent'].settlementId)
-              )
+              ),
+              returning: sandbox.stub().returns({
+                transacting: sandbox.stub().returns(
+                  Promise.resolve(stubData['knexTriggerEvent'].settlementParticipantCurrencyStateChangeIdList)
+                )
+              })
             }),
             select: sandbox.stub().returns({
               where: sandbox.stub().returns({
@@ -2829,7 +2832,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           let settlementId = await SettlementFacade.knexTriggerEvent(payload['knexTriggerEvent'], enums)
           test.equal(settlementId, 1, 'settlementId returned')
-          test.equal(knexStub.callCount, 9, 'Knex called 9 times')
+          test.equal(knexStub.callCount, 10, 'Knex called 10 times')
           test.end()
         } catch (err) {
           Logger.error(`knexTriggerEvent failed with error - ${err}`)

@@ -1389,7 +1389,8 @@ const Facade = {
           for (let spcsc of settlementParticipantCurrencyStateChangeList) {
             insertPromises.push(
               knex('settlementParticipantCurrencyStateChange')
-                .insert(spcsc).returning('settlementParticipantCurrencyStateChangeId')
+                .insert(spcsc)
+                .returning('settlementParticipantCurrencyStateChangeId')
                 .transacting(trx)
             )
           }

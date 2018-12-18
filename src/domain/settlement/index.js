@@ -192,7 +192,7 @@ module.exports = {
       // validate windows state
       const settlementWindows = await SettlementWindowModel.getByListOfIds(idList, enums.settlementWindowStates)
       if (settlementWindows.length && settlementWindows.length !== idList.length) {
-        let err = new Error('Not all provided windows where found')
+        let err = new Error('Not all provided windows were found')
         throw err
       }
 

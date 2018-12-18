@@ -194,6 +194,11 @@ Test('/settlements/{id}', async (settlementTest) => {
       if (mock.request.headers && mock.request.headers.length > 0) {
         options.headers = mock.request.headers
       }
+
+      delete options.payload.state
+      delete options.payload.reason
+      delete options.payload.externalReference
+
       const response = await server.inject(options)
       t.equal(response.statusCode, 200, 'Ok response status')
       t.end()

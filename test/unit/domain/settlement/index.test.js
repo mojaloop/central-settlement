@@ -330,7 +330,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.end()
         } catch (err) {
           Logger.error(`settlementEventTriggerTest failed with error - ${err}`)
-          test.equal(err.message, '2001', `Error "${err.message}" thrown`)
+          test.equal(err.message, 'Not all provided windows were found', `Error "${err.message}" thrown`)
           test.end()
         }
       })
@@ -343,7 +343,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.end()
         } catch (err) {
           Logger.error(`settlementEventTriggerTest failed with error - ${err}`)
-          test.equal(err.message, '2001', `Error "${err.message}" thrown`)
+          test.equal(err.message, 'At least one settlement window is not CLOSED/ABORTED', `Error "${err.message}" thrown`)
           test.end()
         }
       })
