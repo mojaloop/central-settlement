@@ -282,6 +282,34 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       }
     ]
   }
+  stubData['settlementTransfersAbort'] = {
+    settlementTransferList: [
+      {
+        transferId: Uuid(),
+        ledgerEntryTypeId: 7,
+        dfspAccountId: 3,
+        dfspAmount: -800,
+        hubAccountId: 2,
+        hubAmount: 800
+      },
+      {
+        transferId: Uuid(),
+        ledgerEntryTypeId: 6,
+        dfspAccountId: 5,
+        dfspAmount: 800,
+        hubAccountId: 2,
+        hubAmount: -800
+      },
+      {
+        transferId: Uuid(),
+        ledgerEntryTypeId: 6,
+        dfspAccountId: 5,
+        dfspAmount: 1001,
+        hubAccountId: 2,
+        hubAmount: -1001
+      }
+    ]
+  }
   stubData['settlementTransfersCommit'] = {
     settlementTransferList: [
       {
@@ -1448,6 +1476,459 @@ Test('Settlement facade', async (settlementFacadeTest) => {
     }
   })
 
+  await settlementFacadeTest.test('settlementTransfersAbort should', async settlementTransfersAbortTest => {
+    try {
+      await settlementTransfersAbortTest.test('throw error if database is not available', async test => {
+        try {
+          const settlementId = 1
+          const transactionTimestamp = new Date().toISOString().replace(/[TZ]/g, ' ').trim()
+          const trxStub = sandbox.stub()
+
+          const knexStub = sandbox.stub().throws(new Error('Database unavailable'))
+          sandbox.stub(Db, 'getKnex').returns(knexStub)
+
+          await SettlementFacade.settlementTransfersAbort(settlementId, transactionTimestamp, enums, trxStub)
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementTransfersAbort failed with error - ${err}`)
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+
+      await settlementTransfersAbortTest.test('make transfer commit when called from within a transaction', async test => {
+        try {
+          const settlementId = 1
+          const transactionTimestamp = new Date().toISOString().replace(/[TZ]/g, ' ').trim()
+          const trxStub = sandbox.stub()
+
+          const knexStub = sandbox.stub()
+          knexStub.raw = sandbox.stub()
+          sandbox.stub(Db, 'getKnex').returns(knexStub)
+          let context = sandbox.stub()
+          context.on = sandbox.stub().returns({
+            andOn: sandbox.stub()
+          })
+          let join1Stub = sandbox.stub().callsArgOn(1, context)
+          let join2Stub = sandbox.stub().callsArgOn(1, context)
+          let leftJoin1Stub = sandbox.stub().callsArgOn(1, context)
+          let join3Stub = sandbox.stub().callsArgOn(1, context)
+          let join4Stub = sandbox.stub().callsArgOn(1, context)
+          knexStub.returns({
+            join: join1Stub.returns({
+              leftJoin: join2Stub.returns({
+                leftJoin: leftJoin1Stub.returns({
+                  join: join3Stub.returns({
+                    join: join4Stub.returns({
+                      select: sandbox.stub().returns({
+                        where: sandbox.stub().returns({
+                          whereNull: sandbox.stub().returns({
+                            transacting: sandbox.stub().returns(
+                              Promise.resolve(
+                                stubData['settlementTransfersAbort'].settlementTransferList
+                              )
+                            )
+                          })
+                        })
+                      })
+                    })
+                  })
+                })
+              })
+            }),
+            insert: sandbox.stub().returns({
+              transacting: sandbox.stub()
+            })
+          })
+          knexStub.withArgs('participantPosition').returns({
+            select: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                first: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns({
+                    forUpdate: sandbox.stub().returns(
+                      Promise.resolve({
+                        dfspPositionId: 1,
+                        dfspPositionValue: 0,
+                        dfspAbortdValue: 0
+                      })
+                    )
+                  })
+                })
+              })
+            }),
+            update: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                transacting: sandbox.stub()
+              })
+            })
+          })
+          knexStub.withArgs('participantPositionChange').returns({
+            select: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                orderBy: sandbox.stub().returns({
+                  first: sandbox.stub().returns({
+                    transacting: sandbox.stub()
+                  })
+                })
+              })
+            }),
+            insert: sandbox.stub().returns({
+              transacting: sandbox.stub()
+            })
+          })
+          knexStub.withArgs('participantLimit').returns({
+            select: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                andWhere: sandbox.stub().returns({
+                  first: sandbox.stub().returns({
+                    transacting: sandbox.stub().returns({
+                      forUpdate: sandbox.stub().returns(
+                        Promise.resolve({ netDebitCap: 1000 })
+                      )
+                    })
+                  })
+                })
+              })
+            })
+          })
+          ParticipantFacade.adjustLimits = sandbox.stub()
+
+          let result = await SettlementFacade.settlementTransfersAbort(settlementId, transactionTimestamp, enums, trxStub)
+          test.equal(result, 0, 'Result for successful operation returned')
+          test.equal(knexStub.withArgs('settlementParticipantCurrency AS spc').callCount, 1)
+          test.equal(knexStub.withArgs('transferStateChange').callCount, 6)
+          test.equal(knexStub.withArgs('participantPosition').callCount, 8)
+          test.equal(knexStub.withArgs('participantPosition').callCount, 8)
+          test.equal(knexStub.withArgs('transferFulfilment').callCount, 0)
+          test.equal(knexStub.withArgs('participantPositionChange').callCount, 4)
+
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementTransfersAbort failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await settlementTransfersAbortTest.test('throw error if insert fails', async test => {
+        try {
+          const settlementId = 1
+          const transactionTimestamp = new Date().toISOString().replace(/[TZ]/g, ' ').trim()
+          const trxStub = sandbox.stub()
+
+          const knexStub = sandbox.stub()
+          knexStub.raw = sandbox.stub()
+          sandbox.stub(Db, 'getKnex').returns(knexStub)
+          let context = sandbox.stub()
+          context.on = sandbox.stub().returns({
+            andOn: sandbox.stub()
+          })
+          let join1Stub = sandbox.stub().callsArgOn(1, context)
+          let join2Stub = sandbox.stub().callsArgOn(1, context)
+          let leftJoin1Stub = sandbox.stub().callsArgOn(1, context)
+          let join3Stub = sandbox.stub().callsArgOn(1, context)
+          let join4Stub = sandbox.stub().callsArgOn(1, context)
+          knexStub.returns({
+            join: join1Stub.returns({
+              leftJoin: join2Stub.returns({
+                leftJoin: leftJoin1Stub.returns({
+                  join: join3Stub.returns({
+                    join: join4Stub.returns({
+                      select: sandbox.stub().returns({
+                        where: sandbox.stub().returns({
+                          whereNull: sandbox.stub().returns({
+                            transacting: sandbox.stub().returns(
+                              Promise.resolve(
+                                stubData['settlementTransfersAbort'].settlementTransferList
+                              )
+                            )
+                          })
+                        })
+                      })
+                    })
+                  })
+                })
+              })
+            }),
+            insert: sandbox.stub().returns({
+              transacting: sandbox.stub().throws(new Error('Insert failed'))
+            })
+          })
+          knexStub.withArgs('participantPosition').returns({
+            select: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                first: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns({
+                    forUpdate: sandbox.stub().returns(
+                      Promise.resolve({
+                        dfspPositionId: 1,
+                        dfspPositionValue: 0,
+                        dfspAbortdValue: 0
+                      })
+                    )
+                  })
+                })
+              })
+            }),
+            update: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                transacting: sandbox.stub()
+              })
+            })
+          })
+          knexStub.withArgs('participantPositionChange').returns({
+            select: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                orderBy: sandbox.stub().returns({
+                  first: sandbox.stub().returns({
+                    transacting: sandbox.stub()
+                  })
+                })
+              })
+            }),
+            insert: sandbox.stub().returns({
+              transacting: sandbox.stub()
+            })
+          })
+          knexStub.withArgs('participantLimit').returns({
+            select: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                andWhere: sandbox.stub().returns({
+                  first: sandbox.stub().returns({
+                    transacting: sandbox.stub().returns({
+                      forUpdate: sandbox.stub().returns(
+                        Promise.resolve({ netDebitCap: 1000 })
+                      )
+                    })
+                  })
+                })
+              })
+            })
+          })
+
+          await SettlementFacade.settlementTransfersAbort(settlementId, transactionTimestamp, enums, trxStub)
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementTransfersAbort failed with error - ${err}`)
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+
+      await settlementTransfersAbortTest.test('make transfer commit in a new transaction and commit it when called from outside of a transaction', async test => {
+        try {
+          const settlementId = 1
+          const transactionTimestamp = new Date().toISOString().replace(/[TZ]/g, ' ').trim()
+
+          const knexStub = sandbox.stub()
+          sandbox.stub(Db, 'getKnex').returns(knexStub)
+          const trxStub = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          trxStub.commit = sandbox.stub()
+
+          knexStub.raw = sandbox.stub()
+          let context = sandbox.stub()
+          context.on = sandbox.stub().returns({
+            andOn: sandbox.stub()
+          })
+          let join1Stub = sandbox.stub().callsArgOn(1, context)
+          let join2Stub = sandbox.stub().callsArgOn(1, context)
+          let leftJoin1Stub = sandbox.stub().callsArgOn(1, context)
+          let join3Stub = sandbox.stub().callsArgOn(1, context)
+          let join4Stub = sandbox.stub().callsArgOn(1, context)
+          knexStub.returns({
+            join: join1Stub.returns({
+              leftJoin: join2Stub.returns({
+                leftJoin: leftJoin1Stub.returns({
+                  join: join3Stub.returns({
+                    join: join4Stub.returns({
+                      select: sandbox.stub().returns({
+                        where: sandbox.stub().returns({
+                          whereNull: sandbox.stub().returns({
+                            transacting: sandbox.stub().returns(
+                              Promise.resolve(
+                                stubData['settlementTransfersAbort'].settlementTransferList
+                              )
+                            )
+                          })
+                        })
+                      })
+                    })
+                  })
+                })
+              })
+            }),
+            insert: sandbox.stub().returns({
+              transacting: sandbox.stub()
+            })
+          })
+          knexStub.withArgs('participantPosition').returns({
+            select: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                first: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns({
+                    forUpdate: sandbox.stub().returns(
+                      Promise.resolve({
+                        dfspPositionId: 1,
+                        dfspPositionValue: 800,
+                        dfspAbortdValue: 0
+                      })
+                    )
+                  })
+                })
+              })
+            }),
+            update: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                transacting: sandbox.stub()
+              })
+            })
+          })
+          knexStub.withArgs('participantPositionChange').returns({
+            select: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                orderBy: sandbox.stub().returns({
+                  first: sandbox.stub().returns({
+                    transacting: sandbox.stub()
+                  })
+                })
+              })
+            }),
+            insert: sandbox.stub().returns({
+              transacting: sandbox.stub()
+            })
+          })
+          knexStub.withArgs('participantLimit').returns({
+            select: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                andWhere: sandbox.stub().returns({
+                  first: sandbox.stub().returns({
+                    transacting: sandbox.stub().returns({
+                      forUpdate: sandbox.stub().returns(
+                        Promise.resolve({ netDebitCap: 1000 })
+                      )
+                    })
+                  })
+                })
+              })
+            })
+          })
+
+          let result = await SettlementFacade.settlementTransfersAbort(settlementId, transactionTimestamp, enums)
+          test.equal(result, 0, 'Result for successful operation returned')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementTransfersAbort failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await settlementTransfersAbortTest.test('throw error and rollback when called outside of a transaction', async test => {
+        try {
+          const settlementId = 1
+          const transactionTimestamp = new Date().toISOString().replace(/[TZ]/g, ' ').trim()
+
+          const knexStub = sandbox.stub()
+          sandbox.stub(Db, 'getKnex').returns(knexStub)
+          const trxStub = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          trxStub.rollback = sandbox.stub()
+
+          knexStub.raw = sandbox.stub()
+          let context = sandbox.stub()
+          context.on = sandbox.stub().returns({
+            andOn: sandbox.stub()
+          })
+          let join1Stub = sandbox.stub().callsArgOn(1, context)
+          let join2Stub = sandbox.stub().callsArgOn(1, context)
+          let leftJoin1Stub = sandbox.stub().callsArgOn(1, context)
+          let join3Stub = sandbox.stub().callsArgOn(1, context)
+          let join4Stub = sandbox.stub().callsArgOn(1, context)
+          knexStub.returns({
+            join: join1Stub.returns({
+              leftJoin: join2Stub.returns({
+                leftJoin: leftJoin1Stub.returns({
+                  join: join3Stub.returns({
+                    join: join4Stub.returns({
+                      select: sandbox.stub().returns({
+                        where: sandbox.stub().returns({
+                          whereNull: sandbox.stub().returns({
+                            transacting: sandbox.stub().returns(
+                              Promise.resolve(
+                                stubData['settlementTransfersAbort'].settlementTransferList
+                              )
+                            )
+                          })
+                        })
+                      })
+                    })
+                  })
+                })
+              })
+            }),
+            insert: sandbox.stub().returns({
+              transacting: sandbox.stub().throws(new Error('Insert failed'))
+            })
+          })
+          knexStub.withArgs('participantPosition').returns({
+            select: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                first: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns({
+                    forUpdate: sandbox.stub().returns(
+                      Promise.resolve({
+                        participantPositionId: 1,
+                        positionValue: 800,
+                        reservedValue: 0
+                      })
+                    )
+                  })
+                })
+              })
+            }),
+            update: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                transacting: sandbox.stub()
+              })
+            })
+          })
+          knexStub.withArgs('participantLimit').returns({
+            select: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                andWhere: sandbox.stub().returns({
+                  first: sandbox.stub().returns({
+                    transacting: sandbox.stub().returns({
+                      forUpdate: sandbox.stub().returns(
+                        Promise.resolve({ netDebitCap: 1000 })
+                      )
+                    })
+                  })
+                })
+              })
+            })
+          })
+
+          await SettlementFacade.settlementTransfersAbort(settlementId, transactionTimestamp, enums)
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementTransfersAbort failed with error - ${err}`)
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+
+      await settlementTransfersAbortTest.end()
+    } catch (err) {
+      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      settlementTransfersAbortTest.fail()
+      settlementTransfersAbortTest.end()
+    }
+  })
+
   await settlementFacadeTest.test('settlementTransferCommit should', async settlementTransfersCommitTest => {
     try {
       await settlementTransfersCommitTest.test('throw error if database is not available', async test => {
@@ -2517,29 +2998,6 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           let result = await SettlementFacade.putById(1, payload['putById'][5], enums)
           test.ok(result, 'Result returned')
-          // test.equal(knexStub.callCount, 23, 'Knex called 23 times')
-          // test.equal(result.state, 'PENDING_SETTLEMENT', 'Settlement should remain in PENDING_SETTLEMENT state')
-          // test.equal(result.settlementWindows.length, 3, 'Exactly three settlement windows are expected to be affected')
-          // test.equal(result.settlementWindows[0].settlementWindowStateId, 'SETTLED', 'First window is SETTLED')
-          // test.equal(result.settlementWindows[1].settlementWindowStateId, 'SETTLED', 'Second window is SETTLED')
-          // test.equal(result.settlementWindows[2].settlementWindowStateId, 'PENDING_SETTLEMENT', 'Third window remains PENDING_SETTLEMENT')
-          // test.equal(result.participants.length, 2, 'Two participants are affected')
-          // test.equal(result.participants[0].accounts.length, 7, 'Seven accounts for first participant are affected')
-          // test.equal(result.participants[1].accounts.length, 1, 'One account for second participant is affected')
-          // test.equal(result.participants[0].accounts[0].id, 10, 'First account processed has id 10')
-          // test.equal(result.participants[0].accounts[0].errorInformation.errorDescription, 'Account not found', 'First account returns error "Account not found"')
-          // test.equal(result.participants[0].accounts[1].id, 1, 'Second account processed has id 1')
-          // test.equal(result.participants[0].accounts[1].state, 'SETTLED', 'Second account is SETTLED')
-          // test.equal(result.participants[0].accounts[2].id, 2, 'Third account processed has id 2')
-          // test.equal(result.participants[0].accounts[2].state, 'SETTLED', 'Third account is SETTLED')
-          // test.equal(result.participants[0].accounts[3].id, 1, 'Fourth account processed has id 1')
-          // test.equal(result.participants[0].accounts[3].errorInformation.errorDescription, 'Account already processed once', 'Fourth account returns error "Account already processed once"')
-          // test.equal(result.participants[0].accounts[4].id, 3, 'Fifth account processed has id 3')
-          // test.equal(result.participants[0].accounts[4].state, 'SETTLED', 'Fifth account state remains SETTLED')
-          // test.equal(result.participants[0].accounts[5].id, 4, 'Sixth account processed has id 4')
-          // test.equal(result.participants[0].accounts[5].errorInformation.errorDescription, 'State change not allowed', 'Fourth account returns error "State change not allowed"')
-          // test.equal(result.participants[1].accounts[0].id, 5, 'First account processed for second participant has id 5')
-          // test.equal(result.participants[1].accounts[0].errorInformation.errorDescription, 'Participant and account mismatch', 'First account processed for second participant "Participant and account mismatch"')
           test.end()
         } catch (err) {
           Logger.error(`putById failed with error - ${err}`)
@@ -2588,6 +3046,334 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
       putByIdTest.fail()
       putByIdTest.end()
+    }
+  })
+
+  await settlementFacadeTest.test('abortById should', async abortByIdTest => {
+    try {
+      await abortByIdTest.test('throw error if state change is not allowed - PS_TRANSFERS_COMMITTED', async test => {
+        try {
+          const settlementId = 1
+          const settlementResultStub = { id: 1, state: 'PS_TRANSFERS_COMMITTED' }
+
+          sandbox.stub(Db, 'getKnex')
+          const knexStub = sandbox.stub()
+
+          Db.getKnex.returns(knexStub)
+          sandbox.stub(SettlementFacade, 'getById')
+          SettlementFacade.getById.returns(settlementResultStub)
+
+          await SettlementFacade.abortById({ settlementId }, {}, enums)
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`abortById failed with error - ${err}`)
+          test.ok('Error thrown')
+          test.end()
+        }
+      })
+
+      await abortByIdTest.test('throw error if state change is not allowed - SETTLING', async test => {
+        try {
+          const settlementId = 1
+          const settlementResultStub = { id: 1, state: 'SETTLING' }
+
+          sandbox.stub(Db, 'getKnex')
+          const knexStub = sandbox.stub()
+
+          Db.getKnex.returns(knexStub)
+          sandbox.stub(SettlementFacade, 'getById')
+          SettlementFacade.getById.returns(settlementResultStub)
+
+          await SettlementFacade.abortById({ settlementId }, {}, enums)
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`abortById failed with error - ${err}`)
+          test.ok('Error thrown')
+          test.end()
+        }
+      })
+
+      await abortByIdTest.test('throw error if state change is not allowed - SETTLED', async test => {
+        try {
+          const settlementId = 1
+          const settlementResultStub = { id: 1, state: 'SETTLED' }
+
+          sandbox.stub(Db, 'getKnex')
+          const knexStub = sandbox.stub()
+
+          Db.getKnex.returns(knexStub)
+          sandbox.stub(SettlementFacade, 'getById')
+          SettlementFacade.getById.returns(settlementResultStub)
+
+          await SettlementFacade.abortById({ settlementId }, {}, enums)
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`abortById failed with error - ${err}`)
+          test.ok('Error thrown')
+          test.end()
+        }
+      })
+
+      await abortByIdTest.test('record additional reason on settlement level when already ABORTED', async test => {
+        try {
+          const settlementId = 1
+          const payload = {
+            reason: 'Additional abort reason',
+            state: 'ABORTED'
+          }
+          const resultMock = {
+            id: settlementId,
+            state: payload.state,
+            reason: payload.reason
+          }
+          const settlementResultStub = { id: 1, state: 'ABORTED' }
+
+          sandbox.stub(Db, 'getKnex')
+          const knexStub = sandbox.stub()
+
+          Db.getKnex.returns(knexStub)
+          sandbox.stub(SettlementFacade, 'getById')
+          SettlementFacade.getById.returns(settlementResultStub)
+
+          knexStub.returns({
+            insert: sandbox.stub().returns({
+              returning: sandbox.stub()
+            }),
+            where: sandbox.stub().returns({
+              update: sandbox.stub()
+            })
+          })
+
+          let result = await SettlementFacade.abortById(settlementId, payload, enums)
+          test.deepEqual(result, resultMock)
+          test.end()
+        } catch (err) {
+          Logger.error(`abortById failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await abortByIdTest.test('throw error if one or more accounts are PS_TRANSFERS_COMMITTED', async test => {
+        try {
+          const settlementId = 1
+          const payload = {
+            reason: 'Abort reason text',
+            state: 'ABORTED'
+          }
+          const settlementResultStub = { id: 1, state: 'PS_TRANSFERS_RESERVED' }
+
+          sandbox.stub(Db, 'getKnex')
+          const knexStub = sandbox.stub()
+
+          Db.getKnex.returns(knexStub)
+          sandbox.stub(SettlementFacade, 'getById')
+          SettlementFacade.getById.returns(settlementResultStub)
+
+          knexStub.returns({
+            join: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  first: sandbox.stub().returns(1)
+                })
+              })
+            })
+          })
+
+          await SettlementFacade.abortById(settlementId, payload, enums)
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`abortById failed with error - ${err}`)
+          test.ok('Error thrown')
+          test.end()
+        }
+      })
+
+      await abortByIdTest.test('abort settlement from PS_TRANSFERS_RESERVED', async test => {
+        try {
+          const settlementId = 1
+          const payload = {
+            reason: 'Abort reason text',
+            state: 'ABORTED'
+          }
+          const resultMock = {
+            id: settlementId,
+            state: payload.state,
+            reason: payload.reason
+          }
+          const settlementResultMock = { id: 1, state: 'PS_TRANSFERS_RESERVED' }
+          const settlementAccountListMock = [{
+            participantId: 2,
+            participantCurrencyId: 3,
+            reason: 'text',
+            netAmount: 100,
+            currencyId: 'USD',
+            key: 1
+          }]
+          const windowsListMock = [{
+            settlementWindowId: 1,
+            settlementWindowStateId: 'PENDING_SETTLEMENT',
+            reason: 'text',
+            createdDate: new Date()
+          }]
+
+          sandbox.stub(Db, 'getKnex')
+          const knexStub = sandbox.stub()
+
+          Db.getKnex.returns(knexStub)
+          sandbox.stub(SettlementFacade, 'getById')
+          SettlementFacade.getById.returns(settlementResultMock)
+
+          knexStub.returns({
+            join: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  first: sandbox.stub()
+                })
+              }),
+              join: sandbox.stub().returns({
+                select: sandbox.stub().returns({
+                  where: sandbox.stub().returns({
+                    transacting: sandbox.stub().returns({
+                      forUpdate: sandbox.stub().returns(windowsListMock)
+                    })
+                  })
+                })
+              })
+            }),
+            leftJoin: sandbox.stub().returns({
+              join: sandbox.stub().returns({
+                select: sandbox.stub().returns({
+                  where: sandbox.stub().returns({
+                    transacting: sandbox.stub().returns({
+                      forUpdate: sandbox.stub().returns(settlementAccountListMock)
+                    })
+                  })
+                })
+              })
+            }),
+            insert: sandbox.stub().returns({
+              returning: sandbox.stub().returns({
+                transacting: sandbox.stub().returns([1])
+              })
+            }),
+            where: sandbox.stub().returns({
+              update: sandbox.stub().returns({
+                transacting: sandbox.stub()
+              })
+            })
+          })
+
+          const trxStub = sandbox.stub()
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          sandbox.stub(SettlementFacade, 'settlementTransfersAbort')
+
+          let result = await SettlementFacade.abortById(settlementId, payload, enums)
+          test.deepEqual(result, resultMock)
+          test.end()
+        } catch (err) {
+          Logger.error(`abortById failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await abortByIdTest.test('throw error and rollback in case of error during abort settlement from PS_TRANSFERS_RECORDED', async test => {
+        try {
+          const settlementId = 1
+          const payload = {
+            reason: 'Abort reason text',
+            state: 'ABORTED'
+          }
+          const settlementResultMock = { id: 1, state: 'PS_TRANSFERS_RECORDED' }
+          const settlementAccountListMock = [{
+            participantId: 2,
+            participantCurrencyId: 3,
+            reason: 'text',
+            netAmount: 100,
+            currencyId: 'USD',
+            key: 1
+          }]
+          const windowsListMock = [{
+            settlementWindowId: 1,
+            settlementWindowStateId: 'PENDING_SETTLEMENT',
+            reason: 'text',
+            createdDate: new Date()
+          }]
+
+          sandbox.stub(Db, 'getKnex')
+          const knexStub = sandbox.stub()
+
+          Db.getKnex.returns(knexStub)
+          sandbox.stub(SettlementFacade, 'getById')
+          SettlementFacade.getById.returns(settlementResultMock)
+
+          knexStub.returns({
+            join: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  first: sandbox.stub()
+                })
+              }),
+              join: sandbox.stub().returns({
+                select: sandbox.stub().returns({
+                  where: sandbox.stub().returns({
+                    transacting: sandbox.stub().returns({
+                      forUpdate: sandbox.stub().returns(windowsListMock)
+                    })
+                  })
+                })
+              })
+            }),
+            leftJoin: sandbox.stub().returns({
+              join: sandbox.stub().returns({
+                select: sandbox.stub().returns({
+                  where: sandbox.stub().returns({
+                    transacting: sandbox.stub().returns({
+                      forUpdate: sandbox.stub().returns(settlementAccountListMock)
+                    })
+                  })
+                })
+              })
+            }),
+            insert: sandbox.stub().returns({
+              returning: sandbox.stub().returns({
+                transacting: sandbox.stub().returns([1])
+              })
+            }),
+            where: sandbox.stub().returns({
+              update: sandbox.stub().returns({
+                transacting: sandbox.stub().throws(new Error())
+              })
+            })
+          })
+
+          const trxStub = sandbox.stub()
+          trxStub.commit = sandbox.stub()
+          trxStub.rollback = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          sandbox.stub(SettlementFacade, 'settlementTransfersAbort')
+
+          await SettlementFacade.abortById(settlementId, payload, enums)
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`abortById failed with error - ${err}`)
+          test.pass('Error thrown after rollback')
+          test.end()
+        }
+      })
+
+      await abortByIdTest.end()
+    } catch (err) {
+      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      abortByIdTest.fail()
+      abortByIdTest.end()
     }
   })
 

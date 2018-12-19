@@ -1125,7 +1125,7 @@ const Facade = {
             settlementStateId: enums.settlementStates.ABORTED,
             reason: payload.reason
           }).returning('settlementStateChangeId')
-        // seq-settlement-6.2.6, step 5a // TODO: update diagram
+        // seq-settlement-6.2.6, step 5a
         await knex('settlement')
           .where('settlementId', settlementId)
           .update({ currentStateChangeId: settlementStateChangeId })
