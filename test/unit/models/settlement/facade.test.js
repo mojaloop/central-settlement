@@ -2450,12 +2450,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             }),
             insert: sandbox.stub().returns({
-              returning: sandbox.stub().returns({
-                transacting: sandbox.stub().returns(
-                  Promise.resolve([21, 22, 23])
-                )
-              }),
-              transacting: sandbox.stub()
+              transacting: sandbox.stub().returns(
+                Promise.resolve([21, 22, 23])
+              )
             }),
             where: sandbox.stub().returns({
               update: sandbox.stub().returns({
@@ -2573,12 +2570,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             }),
             insert: sandbox.stub().returns({
-              returning: sandbox.stub().returns({
-                transacting: sandbox.stub().returns(
-                  Promise.resolve([21, 22, 23])
-                )
-              }),
-              transacting: sandbox.stub()
+              transacting: sandbox.stub().returns(
+                Promise.resolve([21, 22, 23])
+              )
             }),
             where: sandbox.stub().returns({
               update: sandbox.stub().returns({
@@ -2674,12 +2668,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             }),
             insert: sandbox.stub().returns({
-              returning: sandbox.stub().returns({
-                transacting: sandbox.stub().returns(
-                  Promise.resolve([21, 22, 23])
-                )
-              }),
-              transacting: sandbox.stub()
+              transacting: sandbox.stub().returns(
+                Promise.resolve([21, 22, 23])
+              )
             }),
             where: sandbox.stub().returns({
               update: sandbox.stub().returns({
@@ -2775,12 +2766,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             }),
             insert: sandbox.stub().returns({
-              returning: sandbox.stub().returns({
-                transacting: sandbox.stub().returns(
-                  Promise.resolve([21, 22, 23])
-                )
-              }),
-              transacting: sandbox.stub()
+              transacting: sandbox.stub().returns(
+                Promise.resolve([21, 22, 23])
+              )
             }),
             where: sandbox.stub().returns({
               update: sandbox.stub().returns({
@@ -2876,12 +2864,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             }),
             insert: sandbox.stub().returns({
-              returning: sandbox.stub().returns({
-                transacting: sandbox.stub().returns(
-                  Promise.resolve([21, 22, 23])
-                )
-              }),
-              transacting: sandbox.stub()
+              transacting: sandbox.stub().returns(
+                Promise.resolve([21, 22, 23])
+              )
             }),
             where: sandbox.stub().returns({
               update: sandbox.stub().returns({
@@ -2977,12 +2962,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             }),
             insert: sandbox.stub().returns({
-              returning: sandbox.stub().returns({
-                transacting: sandbox.stub().returns(
-                  Promise.resolve([21, 22, 23])
-                )
-              }),
-              transacting: sandbox.stub()
+              transacting: sandbox.stub().returns(
+                Promise.resolve([21, 22, 23])
+              )
             }),
             where: sandbox.stub().returns({
               update: sandbox.stub().returns({
@@ -3139,9 +3121,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           SettlementFacade.getById.returns(settlementResultStub)
 
           knexStub.returns({
-            insert: sandbox.stub().returns({
-              returning: sandbox.stub()
-            }),
+            insert: sandbox.stub(),
             where: sandbox.stub().returns({
               update: sandbox.stub()
             })
@@ -3257,9 +3237,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             }),
             insert: sandbox.stub().returns({
-              returning: sandbox.stub().returns({
-                transacting: sandbox.stub().returns([1])
-              })
+              transacting: sandbox.stub().returns([1])
             }),
             where: sandbox.stub().returns({
               update: sandbox.stub().returns({
@@ -3342,9 +3320,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             }),
             insert: sandbox.stub().returns({
-              returning: sandbox.stub().returns({
-                transacting: sandbox.stub().returns([1])
-              })
+              transacting: sandbox.stub().returns([1])
             }),
             where: sandbox.stub().returns({
               update: sandbox.stub().returns({
@@ -3541,12 +3517,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             insert: sandbox.stub().returns({
               transacting: sandbox.stub().returns(
                 Promise.resolve(stubData['knexTriggerEvent'].settlementId)
-              ),
-              returning: sandbox.stub().returns({
-                transacting: sandbox.stub().returns(
-                  Promise.resolve(stubData['knexTriggerEvent'].settlementParticipantCurrencyStateChangeIdList)
-                )
-              })
+              )
             }),
             select: sandbox.stub().returns({
               where: sandbox.stub().returns({

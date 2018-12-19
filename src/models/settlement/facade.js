@@ -972,7 +972,7 @@ const Facade = {
               delete spcscCopy.settlementTransferId
               insertPromises.push(
                 knex('settlementParticipantCurrencyStateChange')
-                  .insert(spcscCopy).returning('settlementParticipantCurrencyStateChangeId')
+                  .insert(spcscCopy)
                   .transacting(trx)
               )
             }
@@ -1029,7 +1029,7 @@ const Facade = {
             for (let swsc of settlementWindowStateChange) {
               insertPromises.push(
                 knex('settlementWindowStateChange')
-                  .insert(swsc).returning('settlementWindowStateChangeId')
+                  .insert(swsc)
                   .transacting(trx)
               )
             }
@@ -1078,7 +1078,7 @@ const Facade = {
 
               // seq-settlement-6.2.5, step 34
               let settlementStateChangeId = await knex('settlementStateChange')
-                .insert(settlementData).returning('settlementStateChangeId')
+                .insert(settlementData)
                 .transacting(trx)
               // seq-settlement-6.2.5, step 36
               await knex('settlement')
@@ -1124,7 +1124,7 @@ const Facade = {
             settlementId,
             settlementStateId: enums.settlementStates.ABORTED,
             reason: payload.reason
-          }).returning('settlementStateChangeId')
+          })
         // seq-settlement-6.2.6, step 5a
         await knex('settlement')
           .where('settlementId', settlementId)
@@ -1184,7 +1184,7 @@ const Facade = {
             }
             insertPromises.push(
               knex('settlementParticipantCurrencyStateChange')
-                .insert(spcsc).returning('settlementParticipantCurrencyStateChangeId')
+                .insert(spcsc)
                 .transacting(trx)
             )
           }
@@ -1213,7 +1213,7 @@ const Facade = {
             }
             insertPromises.push(
               knex('settlementWindowStateChange')
-                .insert(swsc).returning('settlementWindowStateChangeId')
+                .insert(swsc)
                 .transacting(trx)
             )
           }
@@ -1236,7 +1236,7 @@ const Facade = {
               settlementId,
               settlementStateId: enums.settlementStates.ABORTED,
               reason: payload.reason
-            }).returning('settlementStateChangeId')
+            })
             .transacting(trx)
           // seq-settlement-6.2.6, step 22
           await knex('settlement')
@@ -1390,7 +1390,6 @@ const Facade = {
             insertPromises.push(
               knex('settlementParticipantCurrencyStateChange')
                 .insert(spcsc)
-                .returning('settlementParticipantCurrencyStateChangeId')
                 .transacting(trx)
             )
           }
@@ -1419,7 +1418,7 @@ const Facade = {
           for (let swsc of settlementWindowStateChangeList) {
             insertPromises.push(
               knex('settlementWindowStateChange')
-                .insert(swsc).returning('settlementWindowStateChangeId')
+                .insert(swsc)
                 .transacting(trx)
             )
           }
