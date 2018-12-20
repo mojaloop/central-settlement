@@ -81,6 +81,9 @@ module.exports = {
         return {
           id: settlement.settlementId,
           state: settlement.state,
+          reason: settlement.reason,
+          createdDate: settlement.createdDate,
+          changedDate: settlement.changedDate,
           settlementWindows: settlementWindowsList,
           participants
         }
@@ -94,6 +97,7 @@ module.exports = {
   },
 
   putById: SettlementModel.putById,
+  abortById: SettlementModel.abortById,
 
   getSettlementsByParams: async function (params, enums, options = {}) {
     // 7 filters - at least one should be used
@@ -188,7 +192,7 @@ module.exports = {
       // validate windows state
       const settlementWindows = await SettlementWindowModel.getByListOfIds(idList, enums.settlementWindowStates)
       if (settlementWindows.length && settlementWindows.length !== idList.length) {
-        let err = new Error('2001')
+        let err = new Error('Not all provided windows were found')
         throw err
       }
 
@@ -196,7 +200,7 @@ module.exports = {
         let { state } = settlementWindow
         if (state !== enums.settlementWindowStates.CLOSED &&
             state !== enums.settlementWindowStates.ABORTED) {
-          let err = new Error('2001')
+          let err = new Error('At least one settlement window is not CLOSED/ABORTED')
           throw err
         }
       }
@@ -208,6 +212,9 @@ module.exports = {
       return {
         id: settlement.settlementId,
         state: settlement.state,
+        reason: settlement.reason,
+        createdDate: settlement.createdDate,
+        changedDate: settlement.changedDate,
         settlementWindows: settlementWindowsList,
         participants
       }
