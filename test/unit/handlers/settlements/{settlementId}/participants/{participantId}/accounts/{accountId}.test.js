@@ -146,5 +146,112 @@ Test('/settlements/{settlementId}/participants/{participantId}/account/{accountI
     }
   })
 
+  await settlementTest.test('test settlements put operation :: putById', async (t) => {
+    sandbox.stub(Enums, 'ledgerAccountTypes').returns({})
+    sandbox.stub(Enums, 'ledgerEntryTypes').returns({})
+    sandbox.stub(Enums, 'participantLimitTypes').returns({})
+    sandbox.stub(Enums, 'settlementStates').returns({})
+    sandbox.stub(Enums, 'settlementWindowStates').returns({})
+    sandbox.stub(Enums, 'transferParticipantRoleTypes').returns({})
+    sandbox.stub(Enums, 'transferStates').returns({})
+    sandbox.stub(settlement, 'putById').returns({})
+    try {
+      const requests = new Promise((resolve, reject) => {
+        Mockgen().requests({
+          path: '/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}',
+          operation: 'put'
+        }, function (error, mock) {
+          return error ? reject(error) : resolve(mock)
+        })
+      })
+
+      const mock = await requests
+
+      t.ok(mock)
+      t.ok(mock.request)
+      // Get the resolved path from mock request
+      // Mock request Path templates({}) are resolved using path parameters
+      const options = {
+        method: 'put',
+        url: '/v1' + mock.request.path
+      }
+      if (mock.request.body) {
+        // Send the request body
+        options.payload = mock.request.body
+      } else if (mock.request.formData) {
+        // Send the request form data
+        options.payload = mock.request.formData
+        // Set the Content-Type as application/x-www-form-urlencoded
+        options.headers = options.headers || {}
+        options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+      }
+      // If headers are present, set the headers.
+      if (mock.request.headers && mock.request.headers.length > 0) {
+        options.headers = mock.request.headers
+      }
+
+      const response = await server.inject(options)
+      t.equal(response.statusCode, 200, 'Ok response status')
+      t.end()
+    } catch (e) {
+      Logger.error(`testing error ${e}`)
+      t.fail()
+      t.end()
+    }
+  })
+
+  await settlementTest.test('test settlements put by params throws', async (t) => {
+    sandbox.stub(Enums, 'ledgerAccountTypes').returns({})
+    sandbox.stub(Enums, 'ledgerEntryTypes').returns({})
+    sandbox.stub(Enums, 'participantLimitTypes').returns({})
+    sandbox.stub(Enums, 'settlementStates').returns({})
+    sandbox.stub(Enums, 'settlementWindowStates').returns({})
+    sandbox.stub(Enums, 'transferParticipantRoleTypes').returns({})
+    sandbox.stub(Enums, 'transferStates').returns({})
+    sandbox.stub(settlement, 'putById').throws()
+    try {
+      const requests = new Promise((resolve, reject) => {
+        Mockgen().requests({
+          path: '/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}',
+          operation: 'put'
+        }, function (error, mock) {
+          return error ? reject(error) : resolve(mock)
+        })
+      })
+
+      const mock = await requests
+
+      t.ok(mock)
+      t.ok(mock.request)
+      // Get the resolved path from mock request
+      // Mock request Path templates({}) are resolved using path parameters
+      const options = {
+        method: 'put',
+        url: '/v1' + mock.request.path
+      }
+      if (mock.request.body) {
+        // Send the request body
+        options.payload = mock.request.body
+      } else if (mock.request.formData) {
+        // Send the request form data
+        options.payload = mock.request.formData
+        // Set the Content-Type as application/x-www-form-urlencoded
+        options.headers = options.headers || {}
+        options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+      }
+      // If headers are present, set the headers.
+      if (mock.request.headers && mock.request.headers.length > 0) {
+        options.headers = mock.request.headers
+      }
+      const response = await server.inject(options)
+      t.equal(response.statusCode, 400, 'Ok response status')
+      t.end()
+    } catch (e) {
+      Logger.error(`testing error ${e}`)
+      t.fail()
+      t.end()
+    }
+  })
+
   await settlementTest.end()
 })

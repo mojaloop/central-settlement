@@ -418,164 +418,6 @@
                 }
             }
         },
-        "/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "deprecated": false,
-                "summary": "Returns Settlement(s) as per filter criteria.",
-                "operationId": "getSettlementBySettlementParticipantAccount",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "settlementId",
-                        "required": true,
-                        "type": "integer",
-                        "description": "A valid Settlement Id.\n"
-                    },
-                    {
-                        "in": "path",
-                        "name": "participantId",
-                        "required": true,
-                        "type": "integer",
-                        "description": "A valid Participant Id.\n"
-                    },
-                    {
-                        "in": "path",
-                        "name": "accountId",
-                        "required": true,
-                        "type": "integer",
-                        "description": "A valid Account Id.    \n"
-                    }
-                ],
-                "tags": [
-                    "getSettlementBySettlementParticipantAccount"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Settlement, settlement windows and settlement accounts returned by the filtering parameters.",
-                        "schema": {
-                            "$ref": "#/definitions/Settlement"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request.",
-                        "schema": {
-                            "$ref": "#/definitions/Error"
-                        }
-                    },
-                    "401": {
-                        "description": "Authorisation information is missing or invalid.",
-                        "schema": {
-                            "$ref": "#/definitions/Error"
-                        }
-                    },
-                    "404": {
-                        "description": "No data found.",
-                        "schema": {
-                            "$ref": "#/definitions/Error"
-                        }
-                    },
-                    "415": {
-                        "description": "Unsupported Media Type.",
-                        "schema": {
-                            "$ref": "#/definitions/Error"
-                        }
-                    },
-                    "default": {
-                        "description": "Unexpected error",
-                        "schema": {
-                            "$ref": "#/definitions/Error"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "produces": [
-                    "application/json"
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "deprecated": false,
-                "summary": "Acknowledegement of settlement by updating the reason and state by Settlements Id, Participant Id and accounts Id.",
-                "operationId": "updateSettlementBySettlementParticipantAccount",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "settlementId",
-                        "description": "A valid Settlement Id.",
-                        "required": true,
-                        "type": "integer"
-                    },
-                    {
-                        "in": "path",
-                        "name": "participantId",
-                        "description": "A valid Participant Id.",
-                        "required": true,
-                        "type": "integer"
-                    },
-                    {
-                        "in": "path",
-                        "name": "accountId",
-                        "description": "A valid Account Id.",
-                        "required": true,
-                        "type": "integer"
-                    },
-                    {
-                        "in": "body",
-                        "name": "payload",
-                        "description": "A JSON object containing settlement update info.",
-                        "schema": {
-                            "$ref": "#/definitions/SettlementUpdateBySettlementParticipantAccount"
-                        },
-                        "required": true
-                    }
-                ],
-                "tags": [
-                    "updateSettlementBySettlementParticipantAccount"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Settlements updated.",
-                        "schema": {
-                            "$ref": "#/definitions/Settlement"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request.",
-                        "schema": {
-                            "$ref": "#/definitions/Error"
-                        }
-                    },
-                    "401": {
-                        "description": "Authorisation information is missing or invalid.",
-                        "schema": {
-                            "$ref": "#/definitions/Error"
-                        }
-                    },
-                    "404": {
-                        "description": "No data found.",
-                        "schema": {
-                            "$ref": "#/definitions/Error"
-                        }
-                    },
-                    "415": {
-                        "description": "Unsupported Media Type.",
-                        "schema": {
-                            "$ref": "#/definitions/Error"
-                        }
-                    },
-                    "default": {
-                        "description": "Unexpected error",
-                        "schema": {
-                            "$ref": "#/definitions/Error"
-                        }
-                    }
-                }
-            }
-        },
         "/settlements/{id}": {
             "get": {
                 "produces": [
@@ -849,6 +691,164 @@
                     }
                 }
             }
+        },
+        "/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "deprecated": false,
+                "summary": "Returns Settlement(s) as per filter criteria.",
+                "operationId": "getSettlementBySettlementParticipantAccount",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "settlementId",
+                        "required": true,
+                        "type": "integer",
+                        "description": "A valid Settlement Id.\n"
+                    },
+                    {
+                        "in": "path",
+                        "name": "participantId",
+                        "required": true,
+                        "type": "integer",
+                        "description": "A valid Participant Id.\n"
+                    },
+                    {
+                        "in": "path",
+                        "name": "accountId",
+                        "required": true,
+                        "type": "integer",
+                        "description": "A valid Account Id.    \n"
+                    }
+                ],
+                "tags": [
+                    "getSettlementBySettlementParticipantAccount"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Settlement, settlement windows and settlement accounts returned by the filtering parameters.",
+                        "schema": {
+                            "$ref": "#/definitions/Settlement"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Authorisation information is missing or invalid.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "No data found.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported Media Type.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "produces": [
+                    "application/json"
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "deprecated": false,
+                "summary": "Acknowledegement of settlement by updating the reason and state by Settlements Id, Participant Id and accounts Id.",
+                "operationId": "updateSettlementBySettlementParticipantAccount",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "settlementId",
+                        "description": "A valid Settlement Id.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "in": "path",
+                        "name": "participantId",
+                        "description": "A valid Participant Id.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "in": "path",
+                        "name": "accountId",
+                        "description": "A valid Account Id.",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "in": "body",
+                        "name": "payload",
+                        "description": "A JSON object containing settlement update info.",
+                        "schema": {
+                            "$ref": "#/definitions/SettlementUpdateBySettlementParticipantAccount"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "updateSettlementBySettlementParticipantAccount"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Settlements updated.",
+                        "schema": {
+                            "$ref": "#/definitions/Settlement"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Authorisation information is missing or invalid.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "No data found.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported Media Type.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -989,6 +989,10 @@
                 "reason": {
                     "type": "string",
                     "example": "string"
+                },
+                "externalReference": {
+                    "type": "string",
+                    "example": "external-reference-abc123"
                 }
             },
             "required": [
