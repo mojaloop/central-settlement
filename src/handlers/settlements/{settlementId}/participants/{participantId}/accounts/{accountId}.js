@@ -54,5 +54,42 @@ module.exports = {
       request.server.log('error', e)
       return Boom.badRequest(e)
     }
+  },
+
+  /**
+   * summary: Acknowledegement of settlement by updating with Settlements Id.
+   * description:
+   * parameters: id, participantId, settlementUpdatePayload
+   * produces: application/json
+   * responses: 200, 400, 401, 404, 415, default
+   */
+  put: async function updateSettlementById (request) {
+    const settlementId = request.params.settlementId
+    const participantId = request.params.participantId
+    const accountId = request.params.accountId
+    try {
+      const accounts = [Object.assign({}, request.payload, { id: accountId })]
+      const universalPayload = {
+        participants: [
+          {
+            id: participantId,
+            accounts
+          }
+        ]
+      }
+      const Enums = {
+        ledgerAccountTypes: await request.server.methods.enums('ledgerAccountTypes'),
+        ledgerEntryTypes: await request.server.methods.enums('ledgerEntryTypes'),
+        participantLimitTypes: await request.server.methods.enums('participantLimitTypes'),
+        settlementStates: await request.server.methods.enums('settlementStates'),
+        settlementWindowStates: await request.server.methods.enums('settlementWindowStates'),
+        transferParticipantRoleTypes: await request.server.methods.enums('transferParticipantRoleTypes'),
+        transferStates: await request.server.methods.enums('transferStates')
+      }
+      return await Settlements.putById(settlementId, universalPayload, Enums)
+    } catch (e) {
+      request.server.log('error', e)
+      return Boom.badRequest(e)
+    }
   }
 }

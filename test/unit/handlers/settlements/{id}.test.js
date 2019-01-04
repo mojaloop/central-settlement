@@ -105,7 +105,7 @@ Test('/settlements/{id}', async (settlementTest) => {
     }
   })
 
-  await settlementTest.test('test settlements get by Id throws', async (t) => {
+  await settlementTest.test('test settlements get by id throws', async (t) => {
     sandbox.stub(Enums, 'settlementStates').returns({})
     sandbox.stub(settlement, 'getById').throws()
     try {
@@ -151,6 +151,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       t.end()
     }
   })
+
   await settlementTest.test('test settlements put operation :: putById', async (t) => {
     sandbox.stub(Enums, 'ledgerAccountTypes').returns({})
     sandbox.stub(Enums, 'ledgerEntryTypes').returns({})
@@ -379,7 +380,7 @@ Test('/settlements/{id}', async (settlementTest) => {
     }
   })
 
-  await settlementTest.test('test settlements get by params throws', async (t) => {
+  await settlementTest.test('test settlements put by id throws', async (t) => {
     sandbox.stub(Enums, 'ledgerAccountTypes').returns({})
     sandbox.stub(Enums, 'ledgerEntryTypes').returns({})
     sandbox.stub(Enums, 'participantLimitTypes').returns({})
