@@ -35,7 +35,7 @@
 
 const Boom = require('boom')
 
-const settlement = require('../../domain/settlement/index')
+const Settlements = require('../../domain/settlement')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Path = require('path')
 
@@ -57,13 +57,14 @@ module.exports = {
     try {
       const Enums = await request.server.methods.enums('settlementStates')
       request.server.log('info', `get settlement by Id requested with id ${settlementId}`)
-      let settlementResult = await settlement.getById({ settlementId }, Enums)
+      let settlementResult = await Settlements.getById({ settlementId }, Enums)
       return h.response(settlementResult)
     } catch (e) {
       request.server.log('error', e)
       return Boom.notFound(e.message)
     }
   },
+
   /**
      * summary: Acknowledegement of settlement by updating with Settlements Id.
      * description:
@@ -71,7 +72,6 @@ module.exports = {
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-
   put: async function updateSettlementById (request) {
     const settlementId = request.params.id
     try {
@@ -91,9 +91,9 @@ module.exports = {
         transferStates: await request.server.methods.enums('transferStates')
       }
       if (p.participants) {
-        return await settlement.putById(settlementId, request.payload, Enums)
+        return await Settlements.putById(settlementId, request.payload, Enums)
       } else if (p.state && p.state === Enums.settlementStates.ABORTED) {
-        return await settlement.abortById(settlementId, request.payload, Enums)
+        return await Settlements.abortById(settlementId, request.payload, Enums)
       } else {
         throw new Error('Invalid request payload input')
       }
