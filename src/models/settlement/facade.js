@@ -227,8 +227,8 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
         this.on('tp1.transferId', 'spc.settlementTransferId')
           .andOn('tp1.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.DFSP_POSITION]))
       })
-      .join('participantCurrency AS pc1, pc1.participantCurrencyId, tp1.participantCurrencyId')
-      .join('participant p1', 'p1.participantId', 'pc1.participantId')
+      .join('participantCurrency AS pc1', 'pc1.participantCurrencyId', 'tp1.participantCurrencyId')
+      .join('participant AS p1', 'p1.participantId', 'pc1.participantId')
       .join('transferParticipant AS tp2', function () {
         this.on('tp2.transferId', 'spc.settlementTransferId')
           .andOn('tp2.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.HUB]))
@@ -401,8 +401,8 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
         this.on('tp1.transferId', 'spc.settlementTransferId')
           .andOn('tp1.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.DFSP_POSITION]))
       })
-      .join('participantCurrency AS pc1, pc1.participantCurrencyId, tp1.participantCurrencyId')
-      .join('participant p1', 'p1.participantId', 'pc1.participantId')
+      .join('participantCurrency AS pc1', 'pc1.participantCurrencyId', 'tp1.participantCurrencyId')
+      .join('participant AS p1', 'p1.participantId', 'pc1.participantId')
       .join('transferParticipant AS tp2', function () {
         this.on('tp2.transferId', 'spc.settlementTransferId')
           .andOn('tp2.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.HUB]))
@@ -557,8 +557,8 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
         this.on('tp1.transferId', 'spc.settlementTransferId')
           .andOn('tp1.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.DFSP_POSITION]))
       })
-      .join('participantCurrency AS pc1, pc1.participantCurrencyId, tp1.participantCurrencyId')
-      .join('participant p1', 'p1.participantId', 'pc1.participantId')
+      .join('participantCurrency AS pc1', 'pc1.participantCurrencyId', 'tp1.participantCurrencyId')
+      .join('participant AS p1', 'p1.participantId', 'pc1.participantId')
       .join('transferParticipant AS tp2', function () {
         this.on('tp2.transferId', 'spc.settlementTransferId')
           .andOn('tp2.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.HUB]))
