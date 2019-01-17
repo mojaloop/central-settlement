@@ -1066,15 +1066,19 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               join: join2Stub.returns({
                 leftJoin: leftJoin1Stub.returns({
                   join: join3Stub.returns({
-                    join: join4Stub.returns({
-                      select: sandbox.stub().returns({
-                        where: sandbox.stub().returns({
-                          whereNull: sandbox.stub().returns({
-                            transacting: sandbox.stub().returns(
-                              Promise.resolve(
-                                stubData['settlementTransfersReserve'].settlementTransferList
-                              )
-                            )
+                    join: sandbox.stub().returns({
+                      join: sandbox.stub().returns({
+                        join: join4Stub.returns({
+                          select: sandbox.stub().returns({
+                            where: sandbox.stub().returns({
+                              whereNull: sandbox.stub().returns({
+                                transacting: sandbox.stub().returns(
+                                  Promise.resolve(
+                                    stubData['settlementTransfersReserve'].settlementTransferList
+                                  )
+                                )
+                              })
+                            })
                           })
                         })
                       })
