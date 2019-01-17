@@ -34,9 +34,6 @@
 
 const settlementWindow = require('../../domain/settlementWindow/index')
 const Boom = require('boom')
-const Utility = require('../../handlers/lib/utility')
-const Uuid = require('uuid4')
-const enums = require('../../models/lib/enums')
 
 /**
  * Operations on /settlementWindows/{id}
