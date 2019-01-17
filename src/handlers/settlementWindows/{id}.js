@@ -34,7 +34,9 @@
 
 const settlementWindow = require('../../domain/settlementWindow/index')
 const Boom = require('boom')
-// const Path = require('path')
+const Utility = require('../../handlers/lib/utility')
+const Uuid = require('uuid4')
+const enums = require('../../models/lib/enums')
 
 /**
  * Operations on /settlementWindows/{id}
@@ -49,6 +51,36 @@ module.exports = {
      */
   get: async function getSettlementWindowById (request, h) {
     const settlementWindowId = request.params.id
+
+    const uuid = Uuid()
+    const destination = 'dfsp1'
+    const payload = {
+      currency: 'USD',
+      value: 0,
+      changedDate: '2019-01-14T22:07:46.000Z'
+    }
+    const message = {
+      id: uuid,
+      from: enums.headers.FSPIOP.SWITCH,
+      to: destination,
+      type: 'application/json',
+      content: {
+        headers: {
+          'Content-Type': 'application/json',
+          'Date': new Date().toISOString(),
+          'FSPIOP-Source': enums.headers.FSPIOP.SWITCH,
+          'FSPIOP-Destination': destination
+        },
+        payload
+      },
+      metadata: {
+        event: {
+          action: 'settlement-transfer-position-change'
+        }
+      }
+    }
+    await Utility.produceGeneralMessage(Utility.ENUMS.NOTIFICATION, Utility.ENUMS.EVENT, message, Utility.ENUMS.STATE.SUCCESS)
+
     try {
       const Enums = await request.server.methods.enums('settlementWindowStates')
       let settlementWindowResult = await settlementWindow.getById({ settlementWindowId }, Enums, request.server.log)
