@@ -184,7 +184,7 @@ const transformGeneralTopicName = (functionality, action) => {
 }
 
 /**
- * @function TransformGeneralTopicName
+ * @function TransformAccountToTopicName
  *
  * @description participantTopicTemplate called which generates a participant topic name from the 3 inputs, which are used in the placeholder participant topic template found in the default.json
  *

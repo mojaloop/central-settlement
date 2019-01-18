@@ -43,7 +43,8 @@
         "tape": "4.6.2",
         "tapes": "4.1.0",
         "pre-commit": "1.2.2",
-        "faucet": "0.0.1"
+        "faucet": "0.0.1",
+        "rewire": "^4.0.1"
     },
     "scripts": {
         "start": "node src/server.js",

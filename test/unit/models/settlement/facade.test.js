@@ -32,6 +32,7 @@ const Logger = require('@mojaloop/central-services-shared').Logger
 const SettlementFacade = require('../../../../src/models/settlement/facade')
 const ParticipantFacade = require('@mojaloop/central-ledger/src/models/participant/facade')
 const Uuid = require('uuid4')
+const Utility = require('../../../../src/handlers/lib/utility')
 
 Test('Settlement facade', async (settlementFacadeTest) => {
   let sandbox
@@ -1032,6 +1033,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           const knexStub = sandbox.stub().throws(new Error('Database unavailable'))
           sandbox.stub(Db, 'getKnex').returns(knexStub)
+          sandbox.stub(Utility, 'produceGeneralMessage').returns()
 
           await SettlementFacade.settlementTransfersReserve(settlementId, transactionTimestamp, enums, trxStub)
           test.fail('Error not thrown!')
@@ -1143,6 +1145,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             })
           })
           ParticipantFacade.adjustLimits = sandbox.stub()
+          
+          sandbox.stub(Utility, 'produceGeneralMessage').returns()
 
           let result = await SettlementFacade.settlementTransfersReserve(settlementId, transactionTimestamp, enums, trxStub)
           test.equal(result, 0, 'Result for successful operation returned')
@@ -1185,15 +1189,19 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               join: join2Stub.returns({
                 leftJoin: leftJoin1Stub.returns({
                   join: join3Stub.returns({
-                    join: join4Stub.returns({
-                      select: sandbox.stub().returns({
-                        where: sandbox.stub().returns({
-                          whereNull: sandbox.stub().returns({
-                            transacting: sandbox.stub().returns(
-                              Promise.resolve(
-                                stubData['settlementTransfersReserve'].settlementTransferList
-                              )
-                            )
+                    join: sandbox.stub().returns({
+                      join: sandbox.stub().returns({
+                        join: join4Stub.returns({
+                          select: sandbox.stub().returns({
+                            where: sandbox.stub().returns({
+                              whereNull: sandbox.stub().returns({
+                                transacting: sandbox.stub().returns(
+                                  Promise.resolve(
+                                    stubData['settlementTransfersReserve'].settlementTransferList
+                                  )
+                                )
+                              })
+                            })
                           })
                         })
                       })
@@ -1258,6 +1266,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             })
           })
 
+          sandbox.stub(Utility, 'produceGeneralMessage').returns()
+
           await SettlementFacade.settlementTransfersReserve(settlementId, transactionTimestamp, enums, trxStub)
           test.fail('Error not thrown!')
           test.end()
@@ -1294,15 +1304,19 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               join: join2Stub.returns({
                 leftJoin: leftJoin1Stub.returns({
                   join: join3Stub.returns({
-                    join: join4Stub.returns({
-                      select: sandbox.stub().returns({
-                        where: sandbox.stub().returns({
-                          whereNull: sandbox.stub().returns({
-                            transacting: sandbox.stub().returns(
-                              Promise.resolve(
-                                stubData['settlementTransfersReserve'].settlementTransferList
-                              )
-                            )
+                    join: sandbox.stub().returns({
+                      join: sandbox.stub().returns({
+                        join: join4Stub.returns({
+                          select: sandbox.stub().returns({
+                            where: sandbox.stub().returns({
+                              whereNull: sandbox.stub().returns({
+                                transacting: sandbox.stub().returns(
+                                  Promise.resolve(
+                                    stubData['settlementTransfersReserve'].settlementTransferList
+                                  )
+                                )
+                              })
+                            })
                           })
                         })
                       })
@@ -1367,6 +1381,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             })
           })
 
+          sandbox.stub(Utility, 'produceGeneralMessage').returns()
+
           let result = await SettlementFacade.settlementTransfersReserve(settlementId, transactionTimestamp, enums)
           test.equal(result, 0, 'Result for successful operation returned')
           test.end()
@@ -1403,15 +1419,19 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               join: join2Stub.returns({
                 leftJoin: leftJoin1Stub.returns({
                   join: join3Stub.returns({
-                    join: join4Stub.returns({
-                      select: sandbox.stub().returns({
-                        where: sandbox.stub().returns({
-                          whereNull: sandbox.stub().returns({
-                            transacting: sandbox.stub().returns(
-                              Promise.resolve(
-                                stubData['settlementTransfersReserve'].settlementTransferList
-                              )
-                            )
+                    join: sandbox.stub().returns({
+                      join: sandbox.stub().returns({
+                        join: join4Stub.returns({
+                          select: sandbox.stub().returns({
+                            where: sandbox.stub().returns({
+                              whereNull: sandbox.stub().returns({
+                                transacting: sandbox.stub().returns(
+                                  Promise.resolve(
+                                    stubData['settlementTransfersReserve'].settlementTransferList
+                                  )
+                                )
+                              })
+                            })
                           })
                         })
                       })
@@ -1524,15 +1544,19 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               leftJoin: join2Stub.returns({
                 leftJoin: leftJoin1Stub.returns({
                   join: join3Stub.returns({
-                    join: join4Stub.returns({
-                      select: sandbox.stub().returns({
-                        where: sandbox.stub().returns({
-                          whereNull: sandbox.stub().returns({
-                            transacting: sandbox.stub().returns(
-                              Promise.resolve(
-                                stubData['settlementTransfersAbort'].settlementTransferList
-                              )
-                            )
+                    join: sandbox.stub().returns({
+                      join: sandbox.stub().returns({
+                        join: join4Stub.returns({
+                          select: sandbox.stub().returns({
+                            where: sandbox.stub().returns({
+                              whereNull: sandbox.stub().returns({
+                                transacting: sandbox.stub().returns(
+                                  Promise.resolve(
+                                    stubData['settlementTransfersAbort'].settlementTransferList
+                                  )
+                                )
+                              })
+                            })
                           })
                         })
                       })
@@ -1598,6 +1622,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           })
           ParticipantFacade.adjustLimits = sandbox.stub()
 
+          sandbox.stub(Utility, 'produceGeneralMessage').returns()
+
           let result = await SettlementFacade.settlementTransfersAbort(settlementId, transactionTimestamp, enums, trxStub)
           test.equal(result, 0, 'Result for successful operation returned')
           test.equal(knexStub.withArgs('settlementParticipantCurrency AS spc').callCount, 1)
@@ -1638,15 +1664,19 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               leftJoin: join2Stub.returns({
                 leftJoin: leftJoin1Stub.returns({
                   join: join3Stub.returns({
-                    join: join4Stub.returns({
-                      select: sandbox.stub().returns({
-                        where: sandbox.stub().returns({
-                          whereNull: sandbox.stub().returns({
-                            transacting: sandbox.stub().returns(
-                              Promise.resolve(
-                                stubData['settlementTransfersAbort'].settlementTransferList
-                              )
-                            )
+                    join: sandbox.stub().returns({
+                      join: sandbox.stub().returns({
+                        join: join4Stub.returns({
+                          select: sandbox.stub().returns({
+                            where: sandbox.stub().returns({
+                              whereNull: sandbox.stub().returns({
+                                transacting: sandbox.stub().returns(
+                                  Promise.resolve(
+                                    stubData['settlementTransfersAbort'].settlementTransferList
+                                  )
+                                )
+                              })
+                            })
                           })
                         })
                       })
@@ -1747,15 +1777,19 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               leftJoin: join2Stub.returns({
                 leftJoin: leftJoin1Stub.returns({
                   join: join3Stub.returns({
-                    join: join4Stub.returns({
-                      select: sandbox.stub().returns({
-                        where: sandbox.stub().returns({
-                          whereNull: sandbox.stub().returns({
-                            transacting: sandbox.stub().returns(
-                              Promise.resolve(
-                                stubData['settlementTransfersAbort'].settlementTransferList
-                              )
-                            )
+                    join: sandbox.stub().returns({
+                      join: sandbox.stub().returns({
+                        join: join4Stub.returns({
+                          select: sandbox.stub().returns({
+                            where: sandbox.stub().returns({
+                              whereNull: sandbox.stub().returns({
+                                transacting: sandbox.stub().returns(
+                                  Promise.resolve(
+                                    stubData['settlementTransfersAbort'].settlementTransferList
+                                  )
+                                )
+                              })
+                            })
                           })
                         })
                       })
@@ -1820,6 +1854,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             })
           })
 
+          sandbox.stub(Utility, 'produceGeneralMessage').returns()
+
           let result = await SettlementFacade.settlementTransfersAbort(settlementId, transactionTimestamp, enums)
           test.equal(result, 0, 'Result for successful operation returned')
           test.end()
@@ -1856,15 +1892,19 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               leftJoin: join2Stub.returns({
                 leftJoin: leftJoin1Stub.returns({
                   join: join3Stub.returns({
-                    join: join4Stub.returns({
-                      select: sandbox.stub().returns({
-                        where: sandbox.stub().returns({
-                          whereNull: sandbox.stub().returns({
-                            transacting: sandbox.stub().returns(
-                              Promise.resolve(
-                                stubData['settlementTransfersAbort'].settlementTransferList
-                              )
-                            )
+                    join: sandbox.stub().returns({
+                      join: sandbox.stub().returns({
+                        join: join4Stub.returns({
+                          select: sandbox.stub().returns({
+                            where: sandbox.stub().returns({
+                              whereNull: sandbox.stub().returns({
+                                transacting: sandbox.stub().returns(
+                                  Promise.resolve(
+                                    stubData['settlementTransfersAbort'].settlementTransferList
+                                  )
+                                )
+                              })
+                            })
                           })
                         })
                       })
@@ -1977,15 +2017,19 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               join: join2Stub.returns({
                 leftJoin: leftJoin1Stub.returns({
                   join: join3Stub.returns({
-                    join: join4Stub.returns({
-                      select: sandbox.stub().returns({
-                        where: sandbox.stub().returns({
-                          whereNull: sandbox.stub().returns({
-                            transacting: sandbox.stub().returns(
-                              Promise.resolve(
-                                stubData['settlementTransfersCommit'].settlementTransferList
-                              )
-                            )
+                    join: sandbox.stub().returns({
+                      join: sandbox.stub().returns({
+                        join: join4Stub.returns({
+                          select: sandbox.stub().returns({
+                            where: sandbox.stub().returns({
+                              whereNull: sandbox.stub().returns({
+                                transacting: sandbox.stub().returns(
+                                  Promise.resolve(
+                                    stubData['settlementTransfersCommit'].settlementTransferList
+                                  )
+                                )
+                              })
+                            })
                           })
                         })
                       })
@@ -2036,6 +2080,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             })
           })
           ParticipantFacade.adjustLimits = sandbox.stub()
+          sandbox.stub(Utility, 'produceGeneralMessage').returns()
 
           let result = await SettlementFacade.settlementTransfersCommit(settlementId, transactionTimestamp, enums, trxStub)
           test.equal(result, 0, 'Result for successful operation returned')
@@ -2077,15 +2122,19 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               join: join2Stub.returns({
                 leftJoin: leftJoin1Stub.returns({
                   join: join3Stub.returns({
-                    join: join4Stub.returns({
-                      select: sandbox.stub().returns({
-                        where: sandbox.stub().returns({
-                          whereNull: sandbox.stub().returns({
-                            transacting: sandbox.stub().returns(
-                              Promise.resolve(
-                                stubData['settlementTransfersCommit'].settlementTransferList
-                              )
-                            )
+                    join: sandbox.stub().returns({
+                      join: sandbox.stub().returns({
+                        join: join4Stub.returns({
+                          select: sandbox.stub().returns({
+                            where: sandbox.stub().returns({
+                              whereNull: sandbox.stub().returns({
+                                transacting: sandbox.stub().returns(
+                                  Promise.resolve(
+                                    stubData['settlementTransfersCommit'].settlementTransferList
+                                  )
+                                )
+                              })
+                            })
                           })
                         })
                       })
@@ -2172,15 +2221,19 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               join: join2Stub.returns({
                 leftJoin: leftJoin1Stub.returns({
                   join: join3Stub.returns({
-                    join: join4Stub.returns({
-                      select: sandbox.stub().returns({
-                        where: sandbox.stub().returns({
-                          whereNull: sandbox.stub().returns({
-                            transacting: sandbox.stub().returns(
-                              Promise.resolve(
-                                stubData['settlementTransfersCommit'].settlementTransferList
-                              )
-                            )
+                    join: sandbox.stub().returns({
+                      join: sandbox.stub().returns({
+                        join: join4Stub.returns({
+                          select: sandbox.stub().returns({
+                            where: sandbox.stub().returns({
+                              whereNull: sandbox.stub().returns({
+                                transacting: sandbox.stub().returns(
+                                  Promise.resolve(
+                                    stubData['settlementTransfersCommit'].settlementTransferList
+                                  )
+                                )
+                              })
+                            })
                           })
                         })
                       })
@@ -2231,6 +2284,8 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             })
           })
 
+          sandbox.stub(Utility, 'produceGeneralMessage').returns()
+
           let result = await SettlementFacade.settlementTransfersCommit(settlementId, transactionTimestamp, enums)
           test.equal(result, 0, 'Result for successful operation returned')
           test.end()
@@ -2267,15 +2322,19 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               join: join2Stub.returns({
                 leftJoin: leftJoin1Stub.returns({
                   join: join3Stub.returns({
-                    join: join4Stub.returns({
-                      select: sandbox.stub().returns({
-                        where: sandbox.stub().returns({
-                          whereNull: sandbox.stub().returns({
-                            transacting: sandbox.stub().returns(
-                              Promise.resolve(
-                                stubData['settlementTransfersCommit'].settlementTransferList
-                              )
-                            )
+                    join: sandbox.stub().returns({
+                      join: sandbox.stub().returns({
+                        join: join4Stub.returns({
+                          select: sandbox.stub().returns({
+                            where: sandbox.stub().returns({
+                              whereNull: sandbox.stub().returns({
+                                transacting: sandbox.stub().returns(
+                                  Promise.resolve(
+                                    stubData['settlementTransfersCommit'].settlementTransferList
+                                  )
+                                )
+                              })
+                            })
                           })
                         })
                       })
