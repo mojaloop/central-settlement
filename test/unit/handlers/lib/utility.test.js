@@ -5,7 +5,7 @@ const Test = require('tapes')(require('tape'))
 const Mustache = require('mustache')
 const P = require('bluebird')
 const Uuid = require('uuid4')
-// const Logger = require('@mojaloop/central-services-shared').Logger
+
 const KafkaProducer = require('@mojaloop/central-services-stream').Kafka.Producer
 const Proxyquire = require('proxyquire')
 const Utility = require('../../../../src/handlers/lib/utility')
@@ -14,7 +14,7 @@ let participantName
 const TRANSFER = 'transfer'
 const PREPARE = 'prepare'
 const FULFIL = 'fulfil'
-// const COMMIT = 'commit'
+
 const CONSUMER = 'CONSUMER'
 
 const participantTopic = 'topic-testParticipant-transfer-prepare'
@@ -87,38 +87,6 @@ Test('Utility Test', utilityTest => {
     sandbox.restore()
     test.end()
   })
-
-  
-
-  // utilityTest.test('createParticipantTopicConf should', createParticipantTopicConfTest => {
-    
-    
-  //   createParticipantTopicConfTest.test('return a participant topic conf object', test => {
-  //     const response = Utility.createParticipantTopicConf(participantName, TRANSFER, PREPARE)
-  //     test.equal(response.topicName, participantTopic)
-  //     test.equal(response.partition, 0)
-  //     test.equal(response.opaqueKey, 0)
-  //     test.end()
-  //   })
-    
-    
-    
-  //   createParticipantTopicConfTest.test('throw error when Mustache cannot find config', test => {
-  //     try {
-  //       Sinon.stub(Mustache, 'render').throws(new Error())
-  //       Utility.createParticipantTopicConf(participantName, TRANSFER, PREPARE)
-  //       test.fail('No Error thrown')
-  //       test.end()
-  //       Mustache.render.restore()
-  //     } catch (e) {
-  //       test.pass('Error thrown')
-  //       test.end()
-  //       Mustache.render.restore()
-  //     }
-  //   })
-    
-  //   createParticipantTopicConfTest.end()
-  // })
 
   utilityTest.test('createGeneralTopicConf should', createGeneralTopicConfTest => {
     createGeneralTopicConfTest.test('return a general topic conf object', test => {
@@ -217,20 +185,6 @@ Test('Utility Test', utilityTest => {
     getKafkaConfigTest.end()
   })
 
-  // utilityTest.test('createTransferMessageProtocol should', createTransferMessageProtocolTest => {
-  //   createTransferMessageProtocolTest.test('return a new messageProtocol', test => {
-  //     const createdMessageProtocol = Utility.createTransferMessageProtocol(transfer, PREPARE, PREPARE, Utility.ENUMS.STATE.SUCCESS)
-  //     messageProtocol.metadata.event.type = createdMessageProtocol.metadata.event.type
-  //     createdMessageProtocol.metadata.event.id = messageProtocol.metadata.event.id
-  //     createdMessageProtocol.metadata.event.responseTo = messageProtocol.metadata.event.responseTo
-  //     createdMessageProtocol.metadata.event.createdAt = messageProtocol.metadata.event.createdAt
-  //     test.deepEqual(createdMessageProtocol, messageProtocol)
-  //     test.end()
-  //   })
-
-  //   createTransferMessageProtocolTest.end()
-  // })
-
   utilityTest.test('produceGeneralMessage should', produceGeneralMessageTest => {
     produceGeneralMessageTest.test('produce a general message', async (test) => {
       let functionality = "notification"
@@ -271,73 +225,6 @@ Test('Utility Test', utilityTest => {
 
     produceGeneralMessageTest.end()
   })
-
-  // utilityTest.test('produceParticipantMessage should', produceParticipantMessageTest => {
-  //   produceParticipantMessageTest.test('produce a participant message', async (test) => {
-  //     const result = await Utility.produceParticipantMessage(participantName, TRANSFER, PREPARE, messageProtocol, Utility.ENUMS.STATE.SUCCESS)
-  //     test.equal(result, true)
-  //     test.end()
-  //   })
-
-  //   produceParticipantMessageTest.test('produce a participant message using topicMap', async (test) => {
-  //     const ModuleProxy = Proxyquire('../../../../src/handlers/lib/utility', {
-  //       '../../lib/enum': {
-  //         topicMap: {
-  //           transfer: {
-  //             prepare: {
-  //               functionality: 'transfer',
-  //               action: 'prepare'
-  //             }
-  //           }
-  //         }
-  //       }
-  //     })
-  //     const result = await ModuleProxy.produceParticipantMessage(participantName, TRANSFER, PREPARE, messageProtocol, Utility.ENUMS.STATE.SUCCESS)
-  //     test.equal(result, true)
-  //     test.end()
-  //   })
-
-  //   produceParticipantMessageTest.test('produce a participant message', async (test) => {
-  //     try {
-  //       await Utility.produceParticipantMessage(participantName, TRANSFER, 'invalid', messageProtocol, Utility.ENUMS.STATE.SUCCESS)
-  //     } catch (e) {
-  //       test.ok(e instanceof Error)
-  //     }
-  //     test.end()
-  //   })
-
-  //   produceParticipantMessageTest.end()
-  // })
-
-  // utilityTest.test('createState should', createStateTest => {
-  //   createStateTest.test('create a state', async (test) => {
-  //     const state = {
-  //       status: 'status',
-  //       code: 1,
-  //       description: 'description'
-  //     }
-  //     const result = await Utility.createState(state.status, state.code, state.description)
-  //     test.deepEqual(result, state)
-  //     test.end()
-  //   })
-
-  //   createStateTest.end()
-  // })
-
-  // utilityTest.test('createPrepareErrorStatus should', createPrepareErrorStatusTest => {
-  //   createPrepareErrorStatusTest.test('create Prepare Error Status', async (test) => {
-  //     const errorInformation = {
-  //       errorCode: 3000,
-  //       errorDescription: 'description',
-  //       extensionList: []
-  //     }
-  //     const result = await Utility.createPrepareErrorStatus(errorInformation.errorCode, errorInformation.errorDescription, errorInformation.extensionList)
-  //     test.deepEqual(result.errorInformation, errorInformation)
-  //     test.end()
-  //   })
-
-  //   createPrepareErrorStatusTest.end()
-  // })
 
   utilityTest.end()
 })
