@@ -52,15 +52,6 @@ const Kafka = require('./kafka')
  * @property {string} PRODUCER - PRODUCER config to be fetched
  */
 const PRODUCER = 'PRODUCER'
-/**
- * The Consumer config required
- *
- * @description This ENUM is for the CONSUMER of the topic being created
- *
- * @enum {object} ENUMS~CONSUMER
- * @property {string} CONSUMER - CONSUMER config to be fetched
- */
-const CONSUMER = 'CONSUMER'
 
 /**
  * The Notification config required
@@ -112,94 +103,12 @@ const STATE = {
  *
  * @enum {string} ENUMS
  * @property {string} PRODUCER - This ENUM is for the PRODUCER
- * @property {string} CONSUMER - This ENUM is for the CONSUMER
  */
 const ENUMS = {
   PRODUCER,
-  CONSUMER,
   NOTIFICATION,
   STATE,
   EVENT
-}
-
-/**
- * @function ParticipantTopicTemplate
- *
- * @description Generates a participant topic name from the 3 inputs which are used in the placeholder topic template for participants found in the default.json
- *
- * @param {string} participantName - participant name, retrieved from database. Example: 'dfsp1'
- * @param {string} functionality - the functionality flow. Example: 'transfer'
- * @param {string} action - the action that applies to the flow. Example: 'prepare'
- *
- * @returns {string} - Returns topic name to be created, throws error if failure occurs
- */
-const participantTopicTemplate = (participantName, functionality, action) => {
-  try {
-    return Mustache.render(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.PARTICIPANT_TOPIC_TEMPLATE.TEMPLATE, {
-      participantName,
-      functionality,
-      action
-    })
-  } catch (e) {
-    Logger.error(e)
-    throw e
-  }
-}
-
-/**
- * @function GeneralTopicTemplate
- *
- * @description Generates a general topic name from the 2 inputs, which are used in the placeholder general topic template found in the default.json
- *
- * @param {string} functionality - the functionality flow. Example: 'transfer'
- * @param {string} action - the action that applies to the flow. Example: 'prepare'
- *
- * @returns {string} - Returns topic name to be created, throws error if failure occurs
- */
-const generalTopicTemplate = (functionality, action) => {
-  try {
-    return Mustache.render(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, { functionality, action })
-  } catch (e) {
-    Logger.error(e)
-    throw e
-  }
-}
-
-/**
- * @function TransformGeneralTopicName
- *
- * @description generalTopicTemplate called which generates a general topic name from the 2 inputs, which are used in the placeholder general topic template found in the default.json
- *
- * @param {string} functionality - the functionality flow. Example: 'transfer'
- * @param {string} action - the action that applies to the flow. Example: 'prepare'
- *
- * @returns {string} - Returns topic name to be created, throws error if failure occurs
- */
-const transformGeneralTopicName = (functionality, action) => {
-  try {
-    return generalTopicTemplate(functionality, action)
-  } catch (e) {
-    throw e
-  }
-}
-
-/**
- * @function TransformAccountToTopicName
- *
- * @description participantTopicTemplate called which generates a participant topic name from the 3 inputs, which are used in the placeholder participant topic template found in the default.json
- *
- * @param {string} participantName - participant name, retrieved from database. Example: 'dfsp1'
- * @param {string} functionality - the functionality flow. Example: 'transfer'
- * @param {string} action - the action that applies to the flow. Example: 'prepare'
- *
- * @returns {string} - Returns topic name to be created, throws error if failure occurs
- */
-const transformAccountToTopicName = (participantName, functionality, action) => {
-  try {
-    return participantTopicTemplate(participantName, functionality, action)
-  } catch (e) {
-    throw e
-  }
 }
 
 /**
@@ -255,82 +164,27 @@ const updateMessageProtocolMetadata = (messageProtocol, metadataType, metadataAc
     messageProtocol.metadata.event.responseTo = messageProtocol.metadata.event.id
     messageProtocol.metadata.event.id = Uuid()
     messageProtocol.metadata.event.type = metadataType
-    // messageProtocol.metadata.event.action = metadataAction
     messageProtocol.metadata.event.state = state
   }
   return messageProtocol
 }
 
 /**
- * @function createPrepareErrorStatus
+ * @function GeneralTopicTemplate
  *
- * @param {number} errorCode - error code for error occurred
- * @param {string} errorDescription - error description for error occurred
- * @param {object} extensionList - list of extensions
- * Example:
- * errorInformation: {
- *   errorCode: 3001,
- *   errorDescription: 'A failure has occurred',
- *   extensionList: [{
- *      extension: {
- *        key: 'key',
- *        value: 'value'
- *      }
- *   }]
- * }
+ * @description Generates a general topic name from the 2 inputs, which are used in the placeholder general topic template found in the default.json
  *
- * @returns {object} - Returns errorInformation object
+ * @param {string} functionality - the functionality flow. Example: 'transfer'
+ * @param {string} action - the action that applies to the flow. Example: 'prepare'
+ *
+ * @returns {string} - Returns topic name to be created, throws error if failure occurs
  */
-const createPrepareErrorStatus = (errorCode, errorDescription, extensionList) => {
-  return {
-    errorInformation: {
-      errorCode,
-      errorDescription,
-      extensionList
-    }
-  }
-}
-
-/**
- * @function createState
- *
- * @param {string} status - status of message
- * @param {number} code - error code
- * @param {string} description - description of error
- * @example:
- * errorInformation: {
- *   status: 'error',
- *   code: 3100,
- *   description: 'error message'
- * }
- *
- * @returns {object} - Returns errorInformation object
- */
-const createState = (status, code, description) => {
-  return {
-    status,
-    code,
-    description
-  }
-}
-
-/**
- * @function createParticipantTopicConfig
- *
- * @param {string} participantName - The participant name
- * @param {string} functionality - the functionality flow. Example: 'transfer' ie: note the case of text
- * @param {string} action - the action that applies to the flow. Example: 'prepare' ie: note the case of text
- * @param {number} partition - optional partition to produce to
- * @param {*} opaqueKey - optional opaque token, which gets passed along to your delivery reports
- *
- * @returns {object} - Returns newly created participant topicConfig
- */
-const createParticipantTopicConf = (participantName, functionality, action, partition = 0, opaqueKey = 0) => {
-  return {
-    topicName: transformAccountToTopicName(participantName, functionality, action),
-    key: Uuid(),
-    partition,
-    opaqueKey
+const generalTopicTemplate = (functionality, action) => {
+  try {
+    return Mustache.render(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, { functionality, action })
+  } catch (e) {
+    Logger.error(e)
+    throw e
   }
 }
 
@@ -346,7 +200,7 @@ const createParticipantTopicConf = (participantName, functionality, action, part
  */
 const createGeneralTopicConf = (functionality, action, partition = 0, opaqueKey = 0) => {
   return {
-    topicName: transformGeneralTopicName(functionality, action),
+    topicName: generalTopicTemplate(functionality, action),
     key: Uuid(),
     partition,
     opaqueKey
@@ -379,42 +233,8 @@ const produceGeneralMessage = async (functionality, action, message, state) => {
     getKafkaConfig(ENUMS.PRODUCER, functionalityMapped.toUpperCase(), actionMapped.toUpperCase()))
 }
 
-/**
- * @function produceParticipantMessage
- *
- * @async
- *
- * @description This is an async method that produces a message against a Kafka generated topic for a specific participant. it is called multiple times
- *
- * Kafka.Producer.produceMessage called to persist the message to the configured topic on Kafka
- * Utility.updateMessageProtocolMetadata called updates the messages metadata
- * Utility.createParticipantTopicConf called dynamically generates the topic configuration with a participant name
- * Utility.getKafkaConfig called dynamically gets Kafka configuration
- *
- * @param {string} participantName - the name of the participant for topic creation
- * @param {string} functionality - the functionality flow. Example: 'transfer' ie: note the case of text
- * @param {string} action - the action that applies to the flow. Example: 'prepare' ie: note the case of text
- * @param {object} message - a list of messages to consume for the relevant topic
- * @param {object} state - state of the message being produced
- *
- * @returns {object} - Returns a boolean: true if successful, or throws and error if failed
- */
-const produceParticipantMessage = async (participantName, functionality, action, message, state) => {
-  let functionalityMapped = functionality
-  let actionMapped = action
-  return Kafka.Producer.produceMessage(updateMessageProtocolMetadata(message, functionality, action, state),
-    createParticipantTopicConf(participantName, functionalityMapped, actionMapped),
-    getKafkaConfig(ENUMS.PRODUCER, functionalityMapped.toUpperCase(), actionMapped.toUpperCase()))
-}
-
-exports.transformAccountToTopicName = transformAccountToTopicName
-exports.transformGeneralTopicName = transformGeneralTopicName
+exports.ENUMS = ENUMS
 exports.getKafkaConfig = getKafkaConfig
 exports.updateMessageProtocolMetadata = updateMessageProtocolMetadata
-exports.createPrepareErrorStatus = createPrepareErrorStatus
-exports.createState = createState
-exports.createParticipantTopicConf = createParticipantTopicConf
 exports.createGeneralTopicConf = createGeneralTopicConf
-exports.produceParticipantMessage = produceParticipantMessage
 exports.produceGeneralMessage = produceGeneralMessage
-exports.ENUMS = ENUMS

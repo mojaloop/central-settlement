@@ -1496,14 +1496,12 @@ const Facade = {
           let settlementWindowStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
 
           updatePromises = []
-          for (let index in idList) {
-            if (idList.hasOwnProperty(index)) {
-              updatePromises.push(await knex('settlementWindow').transacting(trx)
-                .where('settlementWindowId', idList[index])
-                .update({
-                  currentStateChangeId: settlementWindowStateChangeIdList[index]
-                }))
-            }
+          for (let index = 0; index < idList.length; index++) {
+            updatePromises.push(await knex('settlementWindow').transacting(trx)
+              .where('settlementWindowId', idList[index])
+              .update({
+                currentStateChangeId: settlementWindowStateChangeIdList[index]
+              }))
           }
           await Promise.all(updatePromises)
           const settlementStateChangeId = await knex('settlementStateChange').transacting(trx)
