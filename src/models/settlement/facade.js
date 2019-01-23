@@ -33,6 +33,31 @@ const Crypto = require('crypto')
 const Config = require('../../lib/config')
 const ParticipantFacade = require('@mojaloop/central-ledger/src/models/participant/facade')
 const cloneDeep = require('../../utils/cloneDeep')
+const Enums = require('../lib/enums')
+const Utility = require('../../handlers/lib/utility')
+
+const getNotificationMessage = function (action, destination, payload) {
+  return {
+    id: Uuid(),
+    from: Enums.headers.FSPIOP.SWITCH,
+    to: destination,
+    type: 'application/json',
+    content: {
+      headers: {
+        'Content-Type': 'application/json',
+        'Date': new Date().toISOString(),
+        'FSPIOP-Source': Enums.headers.FSPIOP.SWITCH,
+        'FSPIOP-Destination': destination
+      },
+      payload
+    },
+    metadata: {
+      event: {
+        action: action
+      }
+    }
+  }
+}
 
 /**
  * @param enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT
@@ -202,19 +227,23 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
         this.on('tp1.transferId', 'spc.settlementTransferId')
           .andOn('tp1.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.DFSP_POSITION]))
       })
+      .join('participantCurrency AS pc1', 'pc1.participantCurrencyId', 'tp1.participantCurrencyId')
+      .join('participant AS p1', 'p1.participantId', 'pc1.participantId')
       .join('transferParticipant AS tp2', function () {
         this.on('tp2.transferId', 'spc.settlementTransferId')
           .andOn('tp2.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.HUB]))
       })
       .select('tp1.transferId', 'tp1.ledgerEntryTypeId', 'tp1.participantCurrencyId AS dfspAccountId', 'tp1.amount AS dfspAmount',
-        'tp2.participantCurrencyId AS hubAccountId', 'tp2.amount AS hubAmount')
+        'tp2.participantCurrencyId AS hubAccountId', 'tp2.amount AS hubAmount',
+        'p1.name AS dfspName', 'pc1.currencyId')
       .where('spc.settlementId', settlementId)
       .whereNull('tsc2.transferId')
       .transacting(trx)
 
     const trxFunction = async (trx, doCommit = true) => {
       try {
-        for (let { transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount } of settlementTransferList) {
+        for (let { transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount,
+          dfspName, currencyId } of settlementTransferList) {
           // Persist transfer state change
           transferStateChangeId = await knex('transferStateChange')
             .insert({
@@ -276,6 +305,17 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
                 createdDate: transactionTimestamp
               })
               .transacting(trx)
+
+            // Send notification for position change
+            const action = 'settlement-transfer-position-change'
+            const destination = dfspName
+            const payload = {
+              currency: currencyId,
+              value: dfspPositionValue + dfspAmount,
+              changedDate: new Date().toISOString()
+            }
+            const message = getNotificationMessage(action, destination, payload)
+            await Utility.produceGeneralMessage(Utility.ENUMS.NOTIFICATION, Utility.ENUMS.EVENT, message, Utility.ENUMS.STATE.SUCCESS)
 
             // Select hubPosition FOR UPDATE
             let { hubPositionId, hubPositionValue } = await knex('participantPosition')
@@ -361,19 +401,23 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
         this.on('tp1.transferId', 'spc.settlementTransferId')
           .andOn('tp1.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.DFSP_POSITION]))
       })
+      .join('participantCurrency AS pc1', 'pc1.participantCurrencyId', 'tp1.participantCurrencyId')
+      .join('participant AS p1', 'p1.participantId', 'pc1.participantId')
       .join('transferParticipant AS tp2', function () {
         this.on('tp2.transferId', 'spc.settlementTransferId')
           .andOn('tp2.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.HUB]))
       })
       .select('tp1.transferId', 'tp1.ledgerEntryTypeId', 'tp1.participantCurrencyId AS dfspAccountId', 'tp1.amount AS dfspAmount',
-        'tp2.participantCurrencyId AS hubAccountId', 'tp2.amount AS hubAmount', 'tsc1.transferId AS isReserved')
+        'tp2.participantCurrencyId AS hubAccountId', 'tp2.amount AS hubAmount', 'tsc1.transferId AS isReserved',
+        'p1.name AS dfspName', 'pc1.currencyId')
       .where('spc.settlementId', settlementId)
       .whereNull('tsc2.transferId')
       .transacting(trx)
 
     const trxFunction = async (trx, doCommit = true) => {
       try {
-        for (let { transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount, isReserved } of settlementTransferList) {
+        for (let { transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount, isReserved,
+          dfspName, currencyId } of settlementTransferList) {
           // Persist transfer state change
           await knex('transferStateChange')
             .insert({
@@ -417,6 +461,17 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
                 createdDate: transactionTimestamp
               })
               .transacting(trx)
+
+            // Send notification for position change
+            const action = 'settlement-transfer-position-change'
+            const destination = dfspName
+            const payload = {
+              currency: currencyId,
+              value: dfspPositionValue - dfspAmount,
+              changedDate: new Date().toISOString()
+            }
+            const message = Facade.getNotificationMessage(action, destination, payload)
+            await Utility.produceGeneralMessage(Utility.ENUMS.NOTIFICATION, Utility.ENUMS.EVENT, message, Utility.ENUMS.STATE.SUCCESS)
 
             // Select hubPosition FOR UPDATE
             let { hubPositionId, hubPositionValue } = await knex('participantPosition')
@@ -502,19 +557,23 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
         this.on('tp1.transferId', 'spc.settlementTransferId')
           .andOn('tp1.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.DFSP_POSITION]))
       })
+      .join('participantCurrency AS pc1', 'pc1.participantCurrencyId', 'tp1.participantCurrencyId')
+      .join('participant AS p1', 'p1.participantId', 'pc1.participantId')
       .join('transferParticipant AS tp2', function () {
         this.on('tp2.transferId', 'spc.settlementTransferId')
           .andOn('tp2.transferParticipantRoleTypeId', knex.raw('?', [enums.transferParticipantRoleTypes.HUB]))
       })
       .select('tp1.transferId', 'tp1.ledgerEntryTypeId', 'tp1.participantCurrencyId AS dfspAccountId', 'tp1.amount AS dfspAmount',
-        'tp2.participantCurrencyId AS hubAccountId', 'tp2.amount AS hubAmount')
+        'tp2.participantCurrencyId AS hubAccountId', 'tp2.amount AS hubAmount',
+        'p1.name AS dfspName', 'pc1.currencyId')
       .where('spc.settlementId', settlementId)
       .whereNull('tsc2.transferId')
       .transacting(trx)
 
     const trxFunction = async (trx, doCommit = true) => {
       try {
-        for (let { transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount } of settlementTransferList) {
+        for (let { transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount,
+          dfspName, currencyId } of settlementTransferList) {
           // Persist transfer fulfilment and transfer state change
           await knex('transferFulfilment')
             .insert({
@@ -596,6 +655,17 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
                 createdDate: transactionTimestamp
               })
               .transacting(trx)
+
+            // Send notification for position change
+            const action = 'settlement-transfer-position-change'
+            const destination = dfspName
+            const payload = {
+              currency: currencyId,
+              value: dfspPositionValue + dfspAmount,
+              changedDate: new Date().toISOString()
+            }
+            const message = Facade.getNotificationMessage(action, destination, payload)
+            await Utility.produceGeneralMessage(Utility.ENUMS.NOTIFICATION, Utility.ENUMS.EVENT, message, Utility.ENUMS.STATE.SUCCESS)
           }
 
           if (doCommit) {
@@ -622,6 +692,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
 }
 
 const Facade = {
+  getNotificationMessage,
   settlementTransfersPrepare,
   settlementTransfersReserve,
   settlementTransfersAbort,
@@ -1425,14 +1496,12 @@ const Facade = {
           let settlementWindowStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
 
           updatePromises = []
-          for (let index in idList) {
-            if (idList.hasOwnProperty(index)) {
-              updatePromises.push(await knex('settlementWindow').transacting(trx)
-                .where('settlementWindowId', idList[index])
-                .update({
-                  currentStateChangeId: settlementWindowStateChangeIdList[index]
-                }))
-            }
+          for (let index = 0; index < idList.length; index++) {
+            updatePromises.push(await knex('settlementWindow').transacting(trx)
+              .where('settlementWindowId', idList[index])
+              .update({
+                currentStateChangeId: settlementWindowStateChangeIdList[index]
+              }))
           }
           await Promise.all(updatePromises)
           const settlementStateChangeId = await knex('settlementStateChange').transacting(trx)

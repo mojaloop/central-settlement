@@ -29,6 +29,12 @@
 const Db = require('../index')
 
 module.exports = {
+  headers: {
+    FSPIOP: {
+      SWITCH: 'central-switch'
+    }
+  },
+
   settlementWindowStates: async function () {
     try {
       let settlementWindowStateEnum = {}
