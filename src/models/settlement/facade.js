@@ -39,7 +39,7 @@ const Utility = require('../../handlers/lib/utility')
 const getNotificationMessage = function (action, destination, payload) {
   return {
     id: Uuid(),
-    from: Config.HUB_PARTICIPANT.NAME,
+    from: Config.HUB_NAME,
     to: destination,
     type: 'application/json',
     content: {
