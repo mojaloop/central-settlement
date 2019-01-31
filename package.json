@@ -1,12 +1,13 @@
 {
-    "version": "1.0.0",
     "name": "central-settlement",
     "description": "Central settlements hosted by a scheme to record and settle settlements.",
+    "version": "4.3.0",
     "license": "Apache-2.0",
     "private": true,
     "author": "Valentin Genev <vgenev@gmail.com>",
     "contributors": [
-        "Deon Botha <deon.botha@modusbox.com>"
+        "Deon Botha <deon.botha@modusbox.com>",
+        "Miguel de Barros <miguel.debarros@modusbox.com>"
     ],
     "repository": {
         "type": "git",
@@ -17,27 +18,44 @@
         "registry": "https://registry.npmjs.org"
     },
     "dependencies": {
-        "hapi": "^17.0.0",
-        "boom": "^7.1.1",
-        "hapi-openapi": "^1.0.0"
+        "@mojaloop/central-ledger": "3.7.1-snapshot",
+        "@mojaloop/central-services-auth": "0.2.0",
+        "@mojaloop/central-services-database": "3.1.0-snapshot",
+        "@mojaloop/central-services-error-handling": "0.5.1",
+        "@mojaloop/central-services-shared": "4.1.0-snapshot",
+        "@mojaloop/forensic-logging-client": "0.5.1",
+        "@mojaloop/central-services-stream": "4.1.0-snapshot",
+        "boom": "7.2.0",
+        "hapi": "17.6.0",
+        "hapi-openapi": "1.2.0",
+        "hapi-pagination": "2.0.1",
+        "rc": "1.2.8",
+        "swagmock": "1.0.0",
+        "uuid4": "1.0.0"
     },
     "devDependencies": {
-        "eslint": "^2",
-        "istanbul": "~0.4.3",
-        "swagmock": "~0.0.2",
+        "eslint": "5.6.1",
+        "istanbul": "1.1.0-alpha.1",
+        "proxyquire": "2.1.0",
+        "sinon": "6.3.5",
+        "swagmock": "1.0.0",
         "tap-xunit": "1.4.0",
         "tape": "4.6.2",
-        "tapes": "4.1.0"
-    
+        "tapes": "4.1.0",
+        "pre-commit": "1.2.2",
+        "faucet": "0.0.1",
+        "rewire": "^4.0.1"
     },
     "scripts": {
-        "test": "tape 'tests/unit/**/*.js'",
-        "test:xunit": "tape 'tests/unit/**/*.js' | tap-xunit",
-        "cover": "istanbul cover tape -- 'tests/unit/**/*.js'",
+        "start": "node src/server.js",
+        "test": "npm run test:unit | faucet",
+        "test:unit": "tape 'test/unit/**/*.js'",
+        "test:xunit": "tape 'test/unit/**/*.js' | tap-xunit",
+        "cover": "istanbul cover tape -- 'test/unit/**/*.js'",
         "lint": "eslint .",
         "test:coverage-check": "npm run test:coverage && istanbul check-coverage",
-        "test:coverage": "istanbul cover tape -- 'tests/unit/**/*.js'",
-        "regenerate": "yo swaggerize:test --framework hapi --apiPath './config/swagger.json'"
+        "test:coverage": "istanbul cover tape -- 'test/unit/**/*.js'",
+        "regenerate": "yo swaggerize:test --framework hapi --apiPath './src/interface/swagger.json'"
     },
     "generator-swaggerize": {
         "version": "4.1.0"
