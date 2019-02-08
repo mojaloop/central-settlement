@@ -456,6 +456,18 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
         }
       })
 
+      await closeTest.test('throw error if the requested window does not exist', async test => {
+        try {
+          SettlementWindowFacade.getById = sandbox.stub().returns(undefined)
+          await SettlementWindowFacade.close(params)
+          test.fail('Error not thrown!')
+        } catch (err) {
+          Logger.error(`close failed with error - ${err}`)
+          test.ok(err instanceof Error, `Error "${err.message}" thrown as expected`)
+          test.end()
+        }
+      })
+
       await closeTest.end()
     } catch (err) {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
