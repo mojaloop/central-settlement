@@ -314,7 +314,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
               value: dfspPositionValue + dfspAmount,
               changedDate: new Date().toISOString()
             }
-            const message = getNotificationMessage(action, destination, payload)
+            const message = Facade.getNotificationMessage(action, destination, payload)
             await Utility.produceGeneralMessage(Utility.ENUMS.NOTIFICATION, Utility.ENUMS.EVENT, message, Utility.ENUMS.STATE.SUCCESS)
 
             // Select hubPosition FOR UPDATE
