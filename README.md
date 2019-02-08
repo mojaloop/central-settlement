@@ -1,4 +1,7 @@
 # central-settlements
+[![](https://images.microbadger.com/badges/version/mojaloop/central-settlement.svg)](https://microbadger.com/images/mojaloop/central-settlement "Get your own version badge on microbadger.com")
+[![](https://images.microbadger.com/badges/image/mojaloop/central-settlement.svg)](https://microbadger.com/images/mojaloop/central-settlement "Get your own image badge on microbadger.com")
+[![CircleCI](https://circleci.com/gh/mojaloop/central-settlement/tree/master.svg?style=svg)](https://circleci.com/gh/mojaloop/central-settlement/tree/master)
 
 The Central Settlements service is part of the Mojaloop project and deployment.
 
