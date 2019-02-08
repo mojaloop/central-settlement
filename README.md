@@ -1,7 +1,9 @@
 # central-settlements
-[![](https://images.microbadger.com/badges/version/mojaloop/central-settlement.svg)](https://microbadger.com/images/mojaloop/central-settlement "Get your own version badge on microbadger.com")
-[![](https://images.microbadger.com/badges/image/mojaloop/central-settlement.svg)](https://microbadger.com/images/mojaloop/central-settlement "Get your own image badge on microbadger.com")
-[![CircleCI](https://circleci.com/gh/mojaloop/central-settlement/tree/master.svg?style=svg)](https://circleci.com/gh/mojaloop/central-settlement/tree/master)
+[![Git Commit](https://img.shields.io/github/last-commit/mojaloop/central-settlement.svg?style=flat)](https://github.com/mojaloop/central-settlement/commits/master)
+[![Git Releases](https://img.shields.io/github/release/mojaloop/central-settlement.svg?style=flat)](https://github.com/mojaloop/central-settlement/releases)
+[![Docker pulls](https://img.shields.io/docker/pulls/mojaloop/central-settlement.svg?style=flat)](https://hub.docker.com/r/mojaloop/central-settlement)
+[![CircleCI](https://circleci.com/gh/mojaloop/central-settlement.svg?style=svg)](https://circleci.com/gh/mojaloop/central-settlement)
+
 
 The Central Settlements service is part of the Mojaloop project and deployment.
 
