@@ -121,7 +121,9 @@ const Facade = {
     try {
       const knex = await Db.getKnex()
       let settlementWindowCurrentState = await Facade.getById({ settlementWindowId })
-      if (settlementWindowCurrentState && settlementWindowCurrentState.state !== enums.OPEN) {
+      if (!settlementWindowCurrentState) {
+        throw new Error(`2001: Window ${settlementWindowId} does NOT EXIST'`)
+      } if (settlementWindowCurrentState && settlementWindowCurrentState.state !== enums.OPEN) {
         let err = new Error(`2001: Window ${settlementWindowId} is not OPEN'`)
         throw err
       } else {
