@@ -23,8 +23,8 @@
         "@mojaloop/central-services-database": "3.1.0-snapshot",
         "@mojaloop/central-services-error-handling": "0.5.1",
         "@mojaloop/central-services-shared": "4.1.0-snapshot",
-        "@mojaloop/forensic-logging-client": "0.5.1",
         "@mojaloop/central-services-stream": "4.1.0-snapshot",
+        "@mojaloop/forensic-logging-client": "0.5.1",
         "boom": "7.2.0",
         "hapi": "17.6.0",
         "hapi-openapi": "1.2.0",
@@ -35,16 +35,17 @@
     },
     "devDependencies": {
         "eslint": "5.6.1",
+        "faucet": "0.0.1",
         "istanbul": "1.1.0-alpha.1",
+        "node-fetch": "^2.3.0",
+        "pre-commit": "1.2.2",
         "proxyquire": "2.1.0",
+        "rewire": "^4.0.1",
         "sinon": "6.3.5",
         "swagmock": "1.0.0",
         "tap-xunit": "1.4.0",
         "tape": "4.6.2",
-        "tapes": "4.1.0",
-        "pre-commit": "1.2.2",
-        "faucet": "0.0.1",
-        "rewire": "^4.0.1"
+        "tapes": "4.1.0"
     },
     "scripts": {
         "start": "node src/server.js",
