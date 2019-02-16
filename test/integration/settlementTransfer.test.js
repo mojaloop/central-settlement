@@ -28,69 +28,48 @@ const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const PrepareTransferData = require('./helpers/transferData')
-const dbQueries = require('./helpers/dbQueries.js')
+const Models = require('./helpers/models')
 const Config = require('../../src/lib/config')
 const Db = require('../../src/models')
-const settlementWindowService = require('../../src/domain/settlementWindow')
-const settlement = require('../../src/domain/settlement')
+const SettlementWindowService = require('../../src/domain/settlementWindow')
+const SettlementService = require('../../src/domain/settlement')
+const Enums = require('../../src/models/lib/enums')
+const SettlementWindowStateChangeModel = require('../../src/models/settlementWindow/settlementWindowStateChange')
+const SettlementModel = require('../../src/models/settlement/settlement')
+const SettlementStateChangeModel = require('../../src/models/settlement/settlementStateChange')
+const SettlementParticipantCurrencyModel = require('../../src/models/settlement/settlementParticipantCurrency')
+const TransferModel = require('@mojaloop/central-ledger/src/models/transfer/transfer')
+const TransferStateChangeModel = require('@mojaloop/central-ledger/src/models/transfer/transferStateChange')
+const ParticipantPositionModel = require('@mojaloop/central-ledger/src/models/position/participantPosition')
+const Producer = require('../../src/handlers/lib/kafka/producer')
+// require('leaked-handles').set({ fullStack: true, timeout: 15000, debugSockets: true })
 
-const enums = {
-  settlementStates: {
-    ABORTED: 'ABORTED',
-    PENDING_SETTLEMENT: 'PENDING_SETTLEMENT',
-    PS_TRANSFERS_COMMITTED: 'PS_TRANSFERS_COMMITTED',
-    PS_TRANSFERS_RECORDED: 'PS_TRANSFERS_RECORDED',
-    PS_TRANSFERS_RESERVED: 'PS_TRANSFERS_RESERVED',
-    SETTLED: 'SETTLED',
-    SETTLING: 'SETTLING'
-  },
-  settlementWindowStates: {
-    ABORTED: 'ABORTED',
-    CLOSED: 'CLOSED',
-    OPEN: 'OPEN',
-    PENDING_SETTLEMENT: 'PENDING_SETTLEMENT',
-    SETTLED: 'SETTLED'
-  },
-  transferStates: {
-    ABORTED: 'ABORTED',
-    COMMITTED: 'COMMITTED',
-    EXPIRED_PREPARED: 'EXPIRED_PREPARED',
-    EXPIRED_RESERVED: 'EXPIRED_RESERVED',
-    FAILED: 'FAILED',
-    INVALID: 'INVALID',
-    RECEIVED_FULFIL: 'RECEIVED_FULFIL',
-    RECEIVED_PREPARE: 'RECEIVED_PREPARE',
-    REJECTED: 'REJECTED',
-    RESERVED: 'RESERVED',
-    RESERVED_TIMEOUT: 'RESERVED_TIMEOUT'
-  },
-  transferParticipantRoleTypes: {
-    DFSP_POSITION: 5,
-    DFSP_SETTLEMENT: 4,
-    HUB: 3,
-    PAYEE_DFSP: 2,
-    PAYER_DFSP: 1
-  },
-  ledgerEntryTypes: {
-    HUB_FEE: 3,
-    INTERCHANGE_FEE: 2,
-    POSITION_DEPOSIT: 4,
-    POSITION_WITHDRAWAL: 5,
-    PRINCIPLE_VALUE: 1,
-    RECORD_FUNDS_IN: 9,
-    RECORD_FUNDS_OUT: 10,
-    SETTLEMENT_NET_RECIPIENT: 6,
-    SETTLEMENT_NET_SENDER: 7,
-    SETTLEMENT_NET_ZERO: 8
+const currency = 'USD'
+let netSettlementSenderId
+let netSenderAccountId
+let netSettlementRecipientId
+let netRecipientAccountId
+let netSettlementAmount
+let netSenderSettlementTransferId
+let netRecipientSettlementTransferId
+
+const getEnums = async () => {
+  return {
+    settlementWindowStates: await Enums.settlementWindowStates(),
+    settlementStates: await Enums.settlementStates(),
+    transferStates: await Enums.transferStates(),
+    ledgerAccountTypes: await Enums.ledgerAccountTypes(),
+    ledgerEntryTypes: await Enums.ledgerEntryTypes(),
+    transferParticipantRoleTypes: await Enums.transferParticipantRoleTypes(),
+    participantLimitTypes: await Enums.participantLimitTypes()
   }
 }
-
-// TODO better reasons
 
 PrepareTransferData()
 
 Test('SettlementTransfer should', async settlementTransferTest => {
   await Db.connect(Config.DATABASE_URI)
+  let enums = await getEnums()
   let settlementWindowId
   let settlementData
 
@@ -107,26 +86,19 @@ Test('SettlementTransfer should', async settlementTransferTest => {
   await settlementTransferTest.test('close current window should', async test => {
     try {
       let params = { query: { state: enums.settlementWindowStates.OPEN } }
-      let res = await settlementWindowService.getByParams(params)
+      let res = await SettlementWindowService.getByParams(params) // method to be verified
       settlementWindowId = res[0].settlementWindowId
       test.ok(settlementWindowId > 0, 'retrieve the OPEN window')
 
       params = { settlementWindowId: settlementWindowId, state: enums.settlementWindowStates.CLOSED, reason: 'text' }
-      res = await settlementWindowService.close(params, enums.settlementWindowStates)
-      test.ok(res, `close operation returned result`)
+      res = await SettlementWindowService.close(params, enums.settlementWindowStates) // method to be verified
+      test.ok(res, 'close settlement window operation success')
 
-      // res = await settlementWindowService.getById({ settlementWindowId })
-      // test.equal(res.state, enums.settlementWindowStates.CLOSED, `getById returns window ${settlementWindowId} state CLOSED`)   
+      let closedWindow = await SettlementWindowStateChangeModel.getBySettlementWindowId(settlementWindowId)
+      let openWindow = await SettlementWindowStateChangeModel.getBySettlementWindowId(res.settlementWindowId)
+      test.equal(closedWindow.settlementWindowStateId, enums.settlementWindowStates.CLOSED, `window id ${settlementWindowId} is CLOSED`)
+      test.equal(openWindow.settlementWindowStateId, enums.settlementWindowStates.OPEN, `window id ${res.settlementWindowId} is OPEN`)
 
-      let dbData = await dbQueries.settlementWindowStateChange([settlementWindowId, res.settlementWindowId])
-      let closedWindow = dbData.filter(window => {
-        return window.settlementWindowId === settlementWindowId && window.settlementWindowStateId === enums.settlementWindowStates.CLOSED
-      })
-      let openWindow = dbData.filter(window => {
-        return window.settlementWindowId === res.settlementWindowId && window.settlementWindowStateId === enums.settlementWindowStates.OPEN
-      })
-      test.ok(closedWindow, `close window with id: ${settlementWindowId}`)
-      test.ok(openWindow, `open window with id: ${res.settlementWindowId}`)
       test.end()
     } catch (err) {
       Logger.error(`settlementTransferTest failed with error - ${err}`)
@@ -137,33 +109,25 @@ Test('SettlementTransfer should', async settlementTransferTest => {
 
   await settlementTransferTest.test('create settlement should', async test => {
     try {
-      let params = {
-        reason: 'Create settlement for window',
+      const params = {
+        reason: 'reason',
         settlementWindows: [
           {
             id: settlementWindowId
           }
         ]
       }
-      settlementData = await settlement.settlementEventTrigger(params, enums)
+      settlementData = await SettlementService.settlementEventTrigger(params, enums) // method to be verified
+      test.ok(settlementData, 'settlementEventTrigger operation success')
 
-      let dbData = await dbQueries.settlementWindowStateChange([settlementWindowId])
-      let pendingWindow = dbData.filter(window => {
-        return window.settlementWindowId === settlementWindowId && window.settlementWindowStateId === enums.settlementWindowStates.PENDING_SETTLEMENT
-      })
-      test.ok(pendingWindow, `change window with id ${settlementWindowId} to ${enums.settlementWindowStates.PENDING_SETTLEMENT} state`)
+      let settlementWindow = await SettlementWindowStateChangeModel.getBySettlementWindowId(settlementWindowId)
+      test.equal(settlementWindow.settlementWindowStateId, enums.settlementWindowStates.PENDING_SETTLEMENT, `window id ${settlementWindowId} is PENDING_SETTLEMENT`)
 
-      dbData = await dbQueries.settlements()
-      let createdSettlement = dbData.filter(settlement => {
-        return settlement.settlementId === settlementData.id && settlement.createdDate === settlementData.createdDate
-      })
-      test.ok(createdSettlement, `create settlement with id ${settlement.settlementId}`)
+      let settlement = await SettlementModel.getById(settlementData.id)
+      test.ok(settlement, `create settlement with id ${settlementData.id}`)
 
-      dbData = await dbQueries.settlementStateChange()
-      let changedSettlementState = dbData.filter(stateChange => {
-        return stateChange.settlementId === settlementData.id && stateChange.settlementStateId === enums.settlementStates.PENDING_SETTLEMENT
-      })
-      test.ok(changedSettlementState, `change settlement state to ${enums.settlementStates.PENDING_SETTLEMENT}`)
+      let settlementState = await SettlementStateChangeModel.getBySettlementId(settlementData.id)
+      test.equal(settlementState.settlementStateId, enums.settlementStates.PENDING_SETTLEMENT, `settlement state is PENDING_SETTLEMENT`)
       test.end()
     } catch (err) {
       Logger.error(`settlementTransferTest failed with error - ${err}`)
@@ -172,42 +136,66 @@ Test('SettlementTransfer should', async settlementTransferTest => {
     }
   })
 
-  // DOES NOT WORK
-  await settlementTransferTest.test('PS_TRANSFERS_RECORDED for PAYER, THEN FOR PAYEE ', async test => {
+  await settlementTransferTest.test('PS_TRANSFERS_RECORDED for PAYER', async test => {
     try {
-      let params = {
+      // read and store settlement participant and account data needed in remaining tests
+      let participantFilter = settlementData.participants.filter(participant => {
+        return participant.accounts.find(account => {
+          if (account.netSettlementAmount.currency === currency && account.netSettlementAmount.amount > 0) {
+            netSenderAccountId = account.id
+            netSettlementAmount = account.netSettlementAmount.amount
+            return true
+          }
+        })
+      })
+      netSettlementSenderId = participantFilter[0].id
+      participantFilter = settlementData.participants.filter(participant => {
+        return participant.accounts.find(account => {
+          if (account.netSettlementAmount.currency === currency && account.netSettlementAmount.amount < 0) {
+            netRecipientAccountId = account.id
+            return true
+          }
+        })
+      })
+      netSettlementRecipientId = participantFilter[0].id
+      // data retrieved and stored into module scope variables
+
+      const params = {
         participants: [
           {
-            id: settlementData.participants[0].id,
+            id: netSettlementSenderId,
             accounts: [
               {
-                id: settlementData.participants[0].accounts[0].id,
+                id: netSenderAccountId,
                 reason: 'Transfers recorded for payer',
-                state: enums.transferStates.PS_TRANSFERS_RECORDED
+                state: enums.settlementStates.PS_TRANSFERS_RECORDED
               }
             ]
           }
         ]
       }
-      let res = await settlement.putById(settlementData.id, params, enums)
+      let res = await SettlementService.putById(settlementData.id, params, enums) // method to be verified
+      test.ok(res, 'settlement putById operation successful')
 
-      params = {
-        participants: [
-          {
-            id: settlementData.participants[1].id,
-            accounts: [
-              {
-                id: settlementData.participants[1].accounts[0].id,
-                reason: 'Transfers recorded for payer',
-                state: enums.transferStates.PS_TRANSFERS_RECORDED
-              }
-            ]
-          }
-        ]
-      }
+      const settlementParticipantCurrencyRecord = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementData.id, netSenderAccountId)
+      test.equal(settlementParticipantCurrencyRecord.settlementStateId, enums.settlementStates.PS_TRANSFERS_RECORDED, 'record for payer changed to PS_TRANSFERS_RECORDED')
 
-      res = await settlement.putById(settlementData.id, params, enums)
-      test.ok(res)
+      netSenderSettlementTransferId = settlementParticipantCurrencyRecord.settlementTransferId
+      const transferRecord = await TransferModel.getById(netSenderSettlementTransferId)
+      test.ok(transferRecord, 'settlement transfer is created for payer')
+
+      const transferStateChangeRecord = await TransferStateChangeModel.getByTransferId(netSenderSettlementTransferId)
+      test.equal(transferStateChangeRecord.transferStateId, enums.transferStates.RECEIVED_PREPARE, 'settlement transfer for payer is RECEIVED_PREPARE')
+
+      const transferParticipantRecords = await Models.getTransferParticipantsByTransferId(netSenderSettlementTransferId)
+      const hubTransferParticipant = transferParticipantRecords.find(record => {
+        return record.transferParticipantRoleTypeId === enums.transferParticipantRoleTypes.HUB
+      })
+      const payerTransferParticipant = transferParticipantRecords.find(record => {
+        return record.transferParticipantRoleTypeId === enums.transferParticipantRoleTypes.DFSP_POSITION
+      })
+      test.ok(payerTransferParticipant.amount < 0, `DR settlement transfer for SETTLEMENT_NET_SENDER is negative for payer ${payerTransferParticipant.amount}`)
+      test.ok(hubTransferParticipant.amount > 0, `CR settlement transfer for SETTLEMENT_NET_SENDER is positive for hub ${hubTransferParticipant.amount}`)
       test.end()
     } catch (err) {
       Logger.error(`settlementTransferTest failed with error - ${err}`)
@@ -216,34 +204,51 @@ Test('SettlementTransfer should', async settlementTransferTest => {
     }
   })
 
-  await settlementTransferTest.test('PS_TRANSFERS_RECORDED for PAYER AND FOR PAYEE ', async test => {
+  await settlementTransferTest.test('PS_TRANSFERS_RECORDED for PAYEE', async test => {
     try {
-      let params = {
+      const externalReferenceSample = 'tr0123456789'
+      const params = {
         participants: [
           {
-            id: settlementData.participants[0].id,
+            id: netSettlementRecipientId,
             accounts: [
               {
-                id: settlementData.participants[0].accounts[0].id,
-                reason: 'Transfers recorded for payer',
-                state: enums.transferStates.PS_TRANSFERS_RESERVED
-              }
-            ]
-          },
-          {
-            id: settlementData.participants[1].id,
-            accounts: [
-              {
-                id: settlementData.participants[1].accounts[0].id,
-                reason: 'Transfers recorded for payer',
-                state: enums.transferStates.PS_TRANSFERS_RECORDED
+                id: netRecipientAccountId,
+                reason: 'Transfers recorded for payee',
+                state: enums.settlementStates.PS_TRANSFERS_RECORDED,
+                externalReference: externalReferenceSample
               }
             ]
           }
         ]
       }
-      let res = await settlement.putById(settlementData.id, params, enums)
-      test.ok(res)
+      let res = await SettlementService.putById(settlementData.id, params, enums) // method to be verified
+      test.ok(res, 'settlement putById operation successful')
+
+      const settlementParticipantCurrencyRecord = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementData.id, netRecipientAccountId)
+      test.equal(settlementParticipantCurrencyRecord.settlementStateId, enums.settlementStates.PS_TRANSFERS_RECORDED, 'record for payee changed to PS_TRANSFERS_RECORDED')
+      test.equal(settlementParticipantCurrencyRecord.externalReference, externalReferenceSample, 'external reference is recorded')
+
+      netRecipientSettlementTransferId = settlementParticipantCurrencyRecord.settlementTransferId
+      const transferRecord = await TransferModel.getById(netRecipientSettlementTransferId)
+      test.ok(transferRecord, 'settlement transfer is created for payee')
+
+      const transferStateChangeRecord = await TransferStateChangeModel.getByTransferId(netRecipientSettlementTransferId)
+      test.equal(transferStateChangeRecord.transferStateId, enums.transferStates.RECEIVED_PREPARE, 'settlement transfer for payee is RECEIVED_PREPARE')
+
+      const transferParticipantRecords = await Models.getTransferParticipantsByTransferId(netRecipientSettlementTransferId)
+      const hubTransferParticipant = transferParticipantRecords.find(record => {
+        return record.transferParticipantRoleTypeId === enums.transferParticipantRoleTypes.HUB
+      })
+      const payeeTransferParticipant = transferParticipantRecords.find(record => {
+        return record.transferParticipantRoleTypeId === enums.transferParticipantRoleTypes.DFSP_POSITION
+      })
+      test.ok(hubTransferParticipant.amount < 0, `DR settlement transfer for SETTLEMENT_NET_RECIPIENT is negative for hub ${hubTransferParticipant.amount}`)
+      test.ok(payeeTransferParticipant.amount > 0, `CR settlement transfer for SETTLEMENT_NET_RECIPIENT is positive for payer ${payeeTransferParticipant.amount}`)
+
+      const settlementState = await SettlementStateChangeModel.getBySettlementId(settlementData.id)
+      test.equal(settlementState.settlementStateId, enums.settlementStates.PS_TRANSFERS_RECORDED, `settlement state is PS_TRANSFERS_RECORDED`)
+
       test.end()
     } catch (err) {
       Logger.error(`settlementTransferTest failed with error - ${err}`)
@@ -254,32 +259,57 @@ Test('SettlementTransfer should', async settlementTransferTest => {
 
   await settlementTransferTest.test('PS_TRANSFERS_RESERVED for PAYER & PAYEE', async test => {
     try {
-      let params = {
+      const params = {
         participants: [
           {
-            id: settlementData.participants[0].id,
+            id: netSettlementSenderId,
             accounts: [
               {
-                id: settlementData.participants[0].accounts[0].id,
-                reason: 'Transfers recorded for payer',
-                state: enums.transferStates.PS_TRANSFERS_RESERVED
+                id: netSenderAccountId,
+                reason: 'Transfers reserved for payer & payee',
+                state: enums.settlementStates.PS_TRANSFERS_RESERVED
               }
             ]
           },
           {
-            id: settlementData.participants[1].id,
+            id: netSettlementRecipientId,
             accounts: [
               {
-                id: settlementData.participants[1].accounts[0].id,
-                reason: 'Transfers recorded for payer',
-                state: enums.transferStates.PS_TRANSFERS_RESERVED
+                id: netRecipientAccountId,
+                reason: 'Transfers reserved for payer & payee',
+                state: enums.settlementStates.PS_TRANSFERS_RESERVED
               }
             ]
           }
         ]
       }
-      let res = await settlement.putById(settlementData.id, params, enums)
-      test.ok(res)
+      const initialPayerPosition = (await ParticipantPositionModel.getPositionByCurrencyId(netSenderAccountId)).value
+      const initialPayeePosition = (await ParticipantPositionModel.getPositionByCurrencyId(netRecipientAccountId)).value
+
+      let res = await SettlementService.putById(settlementData.id, params, enums) // method to be verified
+      test.ok(res, 'settlement putById operation successful')
+
+      const payerSettlementParticipantCurrencyRecord = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementData.id, netSenderAccountId)
+      test.equal(payerSettlementParticipantCurrencyRecord.settlementStateId, enums.settlementStates.PS_TRANSFERS_RESERVED, 'record for payer changed to PS_TRANSFERS_RESERVED')
+
+      const payeeSettlementParticipantCurrencyRecord = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementData.id, netRecipientAccountId)
+      test.equal(payeeSettlementParticipantCurrencyRecord.settlementStateId, enums.settlementStates.PS_TRANSFERS_RESERVED, 'record for payee changed to PS_TRANSFERS_RESERVED')
+
+      const settlementState = await SettlementStateChangeModel.getBySettlementId(settlementData.id)
+      test.equal(settlementState.settlementStateId, enums.settlementStates.PS_TRANSFERS_RESERVED, `settlement state is PS_TRANSFERS_RESERVED`)
+
+      const payerTransferStateChangeRecord = await TransferStateChangeModel.getByTransferId(netSenderSettlementTransferId)
+      test.equal(payerTransferStateChangeRecord.transferStateId, enums.transferStates.RESERVED, 'settlement transfer for payer is RESERVED')
+
+      const payeeTransferStateChangeRecord = await TransferStateChangeModel.getByTransferId(netRecipientSettlementTransferId)
+      test.equal(payeeTransferStateChangeRecord.transferStateId, enums.transferStates.RESERVED, 'settlement transfer for payee is RESERVED')
+
+      const currentPayerPosition = (await ParticipantPositionModel.getPositionByCurrencyId(netSenderAccountId)).value
+      test.equal(currentPayerPosition, initialPayerPosition, 'position for NET_SETTLEMENT_SENDER is not changed')
+
+      const currentPayeePosition = (await ParticipantPositionModel.getPositionByCurrencyId(netRecipientAccountId)).value
+      test.equal(currentPayeePosition, initialPayeePosition + netSettlementAmount, 'position for NET_SETTLEMENT_RECIPIENT is adjusted')
+
       test.end()
     } catch (err) {
       Logger.error(`settlementTransferTest failed with error - ${err}`)
@@ -290,32 +320,60 @@ Test('SettlementTransfer should', async settlementTransferTest => {
 
   await settlementTransferTest.test('PS_TRANSFERS_COMMITTED for PAYER & PAYEE', async test => {
     try {
-      let params = {
+      const params = {
         participants: [
           {
-            id: settlementData.participants[0].id,
+            id: netSettlementSenderId,
             accounts: [
               {
-                id: settlementData.participants[0].accounts[0].id,
-                reason: 'Transfers recorded for payer',
-                state: enums.transferStates.PS_TRANSFERS_COMMITTED
+                id: netSenderAccountId,
+                reason: 'Transfers committed for payer & payee',
+                state: enums.settlementStates.PS_TRANSFERS_COMMITTED
               }
             ]
           },
           {
-            id: settlementData.participants[1].id,
+            id: netSettlementRecipientId,
             accounts: [
               {
-                id: settlementData.participants[1].accounts[0].id,
-                reason: 'Transfers recorded for payer',
-                state: enums.transferStates.PS_TRANSFERS_COMMITTED
+                id: netRecipientAccountId,
+                reason: 'Transfers committed for payer & payee',
+                state: enums.settlementStates.PS_TRANSFERS_COMMITTED
               }
             ]
           }
         ]
       }
-      let res = await settlement.putById(settlementData.id, params, enums)
-      test.ok(res)
+      const initialPayerPosition = (await ParticipantPositionModel.getPositionByCurrencyId(netSenderAccountId)).value
+      const initialPayeePosition = (await ParticipantPositionModel.getPositionByCurrencyId(netRecipientAccountId)).value
+
+      let res = await SettlementService.putById(settlementData.id, params, enums) // method to be verified
+      test.ok(res, 'settlement putById operation successful')
+
+      const payerSettlementParticipantCurrencyRecord = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementData.id, netSenderAccountId)
+      test.equal(payerSettlementParticipantCurrencyRecord.settlementStateId, enums.settlementStates.PS_TRANSFERS_COMMITTED, 'record for payer changed to PS_TRANSFERS_COMMITTED')
+
+      const payeeSettlementParticipantCurrencyRecord = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementData.id, netRecipientAccountId)
+      test.equal(payeeSettlementParticipantCurrencyRecord.settlementStateId, enums.settlementStates.PS_TRANSFERS_COMMITTED, 'record for payee changed to PS_TRANSFERS_COMMITTED')
+
+      const settlementState = await SettlementStateChangeModel.getBySettlementId(settlementData.id)
+      test.equal(settlementState.settlementStateId, enums.settlementStates.PS_TRANSFERS_COMMITTED, 'settlement state is PS_TRANSFERS_COMMITTED')
+
+      const window = await SettlementWindowStateChangeModel.getBySettlementWindowId(settlementWindowId)
+      test.equal(window.settlementWindowStateId, enums.settlementWindowStates.PENDING_SETTLEMENT, 'window is still PENDING_SETTLEMENT')
+
+      const payerTransferStateChangeRecord = await TransferStateChangeModel.getByTransferId(netSenderSettlementTransferId)
+      test.equal(payerTransferStateChangeRecord.transferStateId, enums.transferStates.COMMITTED, 'settlement transfer for payer is COMMITTED')
+
+      const payeeTransferStateChangeRecord = await TransferStateChangeModel.getByTransferId(netRecipientSettlementTransferId)
+      test.equal(payeeTransferStateChangeRecord.transferStateId, enums.transferStates.COMMITTED, 'settlement transfer for payee is COMMITTED')
+
+      const currentPayerPosition = (await ParticipantPositionModel.getPositionByCurrencyId(netSenderAccountId)).value
+      test.equal(currentPayerPosition, initialPayerPosition - netSettlementAmount, 'position for NET_SETTLEMENT_SENDER is adjusted')
+
+      const currentPayeePosition = (await ParticipantPositionModel.getPositionByCurrencyId(netRecipientAccountId)).value
+      test.equal(currentPayeePosition, initialPayeePosition, 'position for NET_SETTLEMENT_RECIPIENT is unchanged')
+
       test.end()
     } catch (err) {
       Logger.error(`settlementTransferTest failed with error - ${err}`)
@@ -324,20 +382,18 @@ Test('SettlementTransfer should', async settlementTransferTest => {
     }
   })
 
-  await settlementTransferTest.test('finally disconnect database', async test => {
+  // TODO: SETTLED for PAYER and assert
+
+  // TODO: SETTLED for PAYER additional note and assert
+
+  // TODO: SETTLED for PAYEE / Settlement SETTLED and assert
+
+  await settlementTransferTest.test('finally disconnect open handles', async test => {
     try {
       await Db.disconnect()
-      test.pass('done')
-      test.end()
-    } catch (err) {
-      Logger.error(`settlementTransferTest failed with error - ${err}`)
-      test.fail()
-      test.end()
-    }
-  })
-
-  await settlementTransferTest.test('', async test => {
-    try {
+      test.pass('database connection closed')
+      await Producer.getProducer('topic-notification-event').disconnect()
+      test.pass('producer to topic-notification-event disconnected')
       test.end()
     } catch (err) {
       Logger.error(`settlementTransferTest failed with error - ${err}`)
