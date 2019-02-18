@@ -382,11 +382,113 @@ Test('SettlementTransfer should', async settlementTransferTest => {
     }
   })
 
-  // TODO: SETTLED for PAYER and assert
+  await settlementTransferTest.test('SETTLED for PAYER', async test => {
+    try {
+      const params = {
+        participants: [
+          {
+            id: netSettlementSenderId,
+            accounts: [
+              {
+                id: netSenderAccountId,
+                reason: 'Transfers settled for payer',
+                state: enums.settlementStates.SETTLED
+              }
+            ]
+          }
+        ]
+      }
 
-  // TODO: SETTLED for PAYER additional note and assert
+      let res = await SettlementService.putById(settlementData.id, params, enums)
+      test.ok(res, 'settlement putById operation successful')
 
-  // TODO: SETTLED for PAYEE / Settlement SETTLED and assert
+      const payerSettlementParticipantCurrencyRecord = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementData.id, netSenderAccountId)
+      test.equal(payerSettlementParticipantCurrencyRecord.settlementStateId, enums.settlementStates.SETTLED, 'record for payer changed to SETTLED')
+
+      const settlementState = await SettlementStateChangeModel.getBySettlementId(settlementData.id)
+      test.equal(settlementState.settlementStateId, enums.settlementStates.SETTLING, 'settlement state is SETTLING')
+
+      const window = await SettlementWindowStateChangeModel.getBySettlementWindowId(settlementWindowId)
+      test.equal(window.settlementWindowStateId, enums.settlementWindowStates.PENDING_SETTLEMENT, 'window is still PENDING_SETTLEMENT')
+
+      test.end()
+    } catch (err) {
+      Logger.error(`settlementTransferTest failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
+
+  await settlementTransferTest.test('update SETTLED for PAYER with external reference', async test => {
+    try {
+      let externalReferenceSample = 'tr98765432109876543210'
+      let reasonSample = 'Additional reason for SETTLED account'
+      const params = {
+        participants: [
+          {
+            id: netSettlementSenderId,
+            accounts: [
+              {
+                id: netSenderAccountId,
+                reason: reasonSample,
+                state: enums.settlementStates.SETTLED,
+                externalReference: externalReferenceSample
+              }
+            ]
+          }
+        ]
+      }
+
+      let res = await SettlementService.putById(settlementData.id, params, enums)
+      test.ok(res, 'settlement putById operation successful')
+
+      const payerSettlementParticipantCurrencyRecord = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementData.id, netSenderAccountId)
+      test.equal(payerSettlementParticipantCurrencyRecord.reason, reasonSample, 'Reason recorded')
+      test.equal(payerSettlementParticipantCurrencyRecord.externalReference, externalReferenceSample, 'External reference recorded')
+      test.end()
+    } catch (err) {
+      Logger.error(`settlementTransferTest failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
+
+  await settlementTransferTest.test('SETTLED for PAYEE', async test => {
+    try {
+      const params = {
+        participants: [
+          {
+            id: netSettlementRecipientId,
+            accounts: [
+              {
+                id: netRecipientAccountId,
+                reason: 'Payee: SETTLED, settlement: SETTLED',
+                state: enums.settlementStates.SETTLED
+              }
+            ]
+          }
+        ]
+      }
+
+      let res = await SettlementService.putById(settlementData.id, params, enums)
+      test.ok(res, 'settlement putById operation successful')
+
+      const payeeSettlementParticipantCurrencyRecord = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementData.id, netRecipientAccountId)
+      test.equal(payeeSettlementParticipantCurrencyRecord.settlementStateId, enums.settlementStates.SETTLED, 'record for payee changed to SETTLED')
+
+      const settlementState = await SettlementStateChangeModel.getBySettlementId(settlementData.id)
+      test.equal(settlementState.settlementStateId, enums.settlementStates.SETTLED, 'settlement state is SETTLED')
+
+      const window = await SettlementWindowStateChangeModel.getBySettlementWindowId(settlementWindowId)
+      test.equal(window.settlementWindowStateId, enums.settlementWindowStates.SETTLED, 'window is SETTLED')
+
+      test.end()
+    } catch (err) {
+      Logger.error(`settlementTransferTest failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
 
   await settlementTransferTest.test('finally disconnect open handles', async test => {
     try {
