@@ -56,6 +56,8 @@
         "lint": "eslint .",
         "test:coverage-check": "npm run test:coverage && istanbul check-coverage",
         "test:coverage": "istanbul cover tape -- 'test/unit/**/*.js'",
+        "test:int": "tape 'test/integration/**/*.test.js'",
+        "test:integration": "sh ./test/integration-runner.sh ./test/integration-runner.env",
         "regenerate": "yo swaggerize:test --framework hapi --apiPath './src/interface/swagger.json'"
     },
     "generator-swaggerize": {
