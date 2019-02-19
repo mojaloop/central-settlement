@@ -190,12 +190,11 @@ is_db_up() {
 
 start_simulator () {
   docker run --rm -td \
-    -p 8444:8444
+    -p 8444:8444 \
     --network $DOCKER_NETWORK \
     --name=$SIMULATOR_HOST \
-    --env TRANSFERS_ENDPOINT=http://host.docker.internal:3000
+    --env TRANSFERS_ENDPOINT=http://host.docker.internal:3000 \
     $SIMULATOR_IMAGE
-
 }
 
 is_simulator_up() {
@@ -204,11 +203,10 @@ is_simulator_up() {
 
 start_central_ledger () {
   docker run --rm -td \
-    -p 3001:3001
+    -p 3001:3001 \
     --network $DOCKER_NETWORK \
     --name=$CENTRAL_LEDGER_HOST \
     $CENTRAL_LEDGER_IMAGE
-
 }
 
 is_central_ledger_up() {
@@ -217,11 +215,10 @@ is_central_ledger_up() {
 
 start_ml_api_adapter () {
   docker run --rm -td \
-    -p 3000:3000
+    -p 3000:3000 \
     --network $DOCKER_NETWORK \
     --name=$ML_API_ADAPTER_HOST \
     $ML_API_ADAPTER_IMAGE
-
 }
 
 is_ml_api_adapter_up() {
@@ -234,7 +231,7 @@ stop_docker
 
 ## TODO: move after central-ledger is up and db migration is finished?
 >&1 echo "Building Docker Image $DOCKER_IMAGE:$DOCKER_TAG with $DOCKER_FILE"
-docker build --no-cache -t $DOCKER_IMAGE:$DOCKER_TAG -f $DOCKER_FILE .
+#    docker build --no-cache -t $DOCKER_IMAGE:$DOCKER_TAG -f $DOCKER_FILE .
 
 if [ "$?" != 0 ]
 then
@@ -279,15 +276,15 @@ until is_db_up; do
 done
 
 ## TODO: run migrations from central-ledger host
->&1 echo "Running migrations"
-ftest "npm run migrate"
-
-if [ "$?" != 0 ]
-then
-  >&2 echo "Migration failed...exiting"
-  clean_docker
-  exit 1
-fi
+#    >&1 echo "Running migrations"
+#    ftest "npm run migrate"
+#
+#    if [ "$?" != 0 ]
+#    then
+#      >&2 echo "Migration failed...exiting"
+#      clean_docker
+#      exit 1
+#    fi
 
 >&1 echo "Simulator is starting"
 start_simulator
@@ -337,27 +334,27 @@ until is_ml_api_adapter_up; do
   sleep 5
 done
 
->&1 echo "Integration tests are starting"
-run_test_command
-test_exit_code=$?
->&2 echo "Test exited with result code.... $test_exit_code ..."
-
->&1 echo "Displaying test logs"
-docker logs $APP_HOST
-
->&1 echo "Copy results to local directory"
-docker cp $APP_HOST:$DOCKER_WORKING_DIR/$APP_DIR_TEST_RESULTS $TEST_DIR
-
-if [ "$test_exit_code" == 0 ]
-then
-  >&1 echo "Showing results..."
-  cat $APP_DIR_TEST_RESULTS/$TEST_RESULTS_FILE
-else
-  >&2 echo "Integration tests failed...exiting"
-  >&2 echo "Test environment logs..."
-  docker logs $APP_HOST
-fi
-
-clean_docker
->&1 echo "Integration tests exited with code: $test_exit_code"
-exit "$test_exit_code"
+#    >&1 echo "Integration tests are starting"
+#    run_test_command
+#    test_exit_code=$?
+#    >&2 echo "Test exited with result code.... $test_exit_code ..."
+#
+#    >&1 echo "Displaying test logs"
+#    docker logs $APP_HOST
+#
+#    >&1 echo "Copy results to local directory"
+#    docker cp $APP_HOST:$DOCKER_WORKING_DIR/$APP_DIR_TEST_RESULTS $TEST_DIR
+#
+#    if [ "$test_exit_code" == 0 ]
+#    then
+#      >&1 echo "Showing results..."
+#      cat $APP_DIR_TEST_RESULTS/$TEST_RESULTS_FILE
+#    else
+#      >&2 echo "Integration tests failed...exiting"
+#      >&2 echo "Test environment logs..."
+#      docker logs $APP_HOST
+#    fi
+#
+#    clean_docker
+#    >&1 echo "Integration tests exited with code: $test_exit_code"
+#    exit "$test_exit_code"
