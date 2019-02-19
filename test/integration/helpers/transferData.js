@@ -26,6 +26,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
+const TestConfig = require('../../integration-config')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const fetch = require('node-fetch')
 const Uuid = require('uuid4')
@@ -46,23 +47,27 @@ const sleep = (ms) => {
 module.exports = () => {
   Test('PrepareTransferData should', prepareTransferDataTest => {
     const URI_PREFIX = 'http'
-    const HOST_IP = '127.0.0.1'
-    const CENTRAL_LEDGER_PORT = 3001
+    const CENTRAL_LEDGER_HOST = TestConfig.CENTRAL_LEDGER_HOST
+    const CENTRAL_LEDGER_PORT = TestConfig.CENTRAL_LEDGER_PORT
     const CENTRAL_LEDGER_BASE = ''
-    const ML_API_ADAPTER_PORT = 3000
+    const ML_API_ADAPTER_HOST = TestConfig.ML_API_ADAPTER_HOST
+    const ML_API_ADAPTER_PORT = TestConfig.ML_API_ADAPTER_PORT
     const ML_API_ADAPTER_BASE = ''
-    const SIMULATOR_PORT = 8444
+    const SIMULATOR_REMOTE_HOST = TestConfig.SIMULATOR_REMOTE_HOST
+    const SIMULATOR_REMOTE_PORT = TestConfig.SIMULATOR_REMOTE_PORT
+    const SIMULATOR_HOST = TestConfig.SIMULATOR_HOST
+    const SIMULATOR_PORT = TestConfig.SIMULATOR_PORT
     const SIMULATOR_CORR_ENDPOINT = '/payeefsp/correlationid'
     const payerFsp = `fsp${rand8()}`
     const payeeFsp = `fsp${rand8()}`
     const fspList = [
       {
         fspName: payerFsp,
-        endpointBase: `${URI_PREFIX}://${HOST_IP}:${SIMULATOR_PORT}/payerfsp`
+        endpointBase: `${URI_PREFIX}://${SIMULATOR_REMOTE_HOST}:${SIMULATOR_REMOTE_PORT}/payerfsp`
       },
       {
         fspName: payeeFsp,
-        endpointBase: `${URI_PREFIX}://${HOST_IP}:${SIMULATOR_PORT}/payeefsp`
+        endpointBase: `${URI_PREFIX}://${SIMULATOR_REMOTE_HOST}:${SIMULATOR_REMOTE_PORT}/payeefsp`
       }
     ]
     const currency = 'USD'
@@ -87,9 +92,9 @@ module.exports = () => {
       test.end()
     })
 
-    prepareTransferDataTest.test('check if Hub accounts exist', async test => {
+    prepareTransferDataTest.test('check if Hub accounts exists', async test => {
       try {
-        let url = `${URI_PREFIX}://${HOST_IP}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/Hub/accounts?currency=${currency}`
+        let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/Hub/accounts?currency=${currency}`
         let opts = { method: 'GET' }
         let res = await fetch(url, opts)
         test.equal(res.status, 200, 'returned 200 OK')
@@ -110,7 +115,7 @@ module.exports = () => {
           test.pass(`${currency} HUB_RECONCILIATION found`)
         } else {
           try {
-            let url = `${URI_PREFIX}://${HOST_IP}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/Hub/accounts`
+            let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/Hub/accounts`
             let headers = {
               'Content-Type': 'application/json'
             }
@@ -135,7 +140,7 @@ module.exports = () => {
           test.pass(`${currency} HUB_MULTILATERAL_SETTLEMENT found`)
         } else {
           try {
-            let url = `${URI_PREFIX}://${HOST_IP}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/Hub/accounts`
+            let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/Hub/accounts`
             let headers = {
               'Content-Type': 'application/json'
             }
@@ -167,7 +172,7 @@ module.exports = () => {
     prepareTransferDataTest.test('add participant and participant account', async test => {
       for (let fsp of fspList) {
         try {
-          let url = `${URI_PREFIX}://${HOST_IP}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants`
+          let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants`
           let headers = {
             'Content-Type': 'application/json'
           }
@@ -194,7 +199,7 @@ module.exports = () => {
     prepareTransferDataTest.test('add participant account limits', async test => {
       for (let fsp of fspList) {
         try {
-          let url = `${URI_PREFIX}://${HOST_IP}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/initialPositionAndLimits`
+          let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/initialPositionAndLimits`
           let headers = {
             'Content-Type': 'application/json'
           }
@@ -228,7 +233,7 @@ module.exports = () => {
       }
       for (let fsp of fspList) {
         try {
-          let url = `${URI_PREFIX}://${HOST_IP}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/endpoints`
+          let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/endpoints`
           let body = {
             type: 'FSPIOP_CALLBACK_URL_TRANSFER_POST',
             value: `${fsp.endpointBase}/transfers`
@@ -255,7 +260,7 @@ module.exports = () => {
       }
       for (let fsp of fspList) {
         try {
-          let url = `${URI_PREFIX}://${HOST_IP}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/endpoints`
+          let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/endpoints`
           let body = {
             type: 'FSPIOP_CALLBACK_URL_TRANSFER_PUT',
             value: `${fsp.endpointBase}/transfers/{{transferId}}`
@@ -282,7 +287,7 @@ module.exports = () => {
       }
       for (let fsp of fspList) {
         try {
-          let url = `${URI_PREFIX}://${HOST_IP}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/endpoints`
+          let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/endpoints`
           let body = {
             type: 'FSPIOP_CALLBACK_URL_TRANSFER_ERROR',
             value: `${fsp.endpointBase}//transfers/{{transferId}}/error`
@@ -314,7 +319,7 @@ module.exports = () => {
         'FSPIOP-Source': payerFsp,
         'FSPIOP-Destination': payeeFsp
       }
-      let url = `${URI_PREFIX}://${HOST_IP}:${ML_API_ADAPTER_PORT}${ML_API_ADAPTER_BASE}/transfers`
+      let url = `${URI_PREFIX}://${ML_API_ADAPTER_HOST}:${ML_API_ADAPTER_PORT}${ML_API_ADAPTER_BASE}/transfers`
       let body = {
         transferId,
         payerFsp,
@@ -339,7 +344,7 @@ module.exports = () => {
         body: JSON.stringify(body)
       }
 
-      let simulatorUrl = `${URI_PREFIX}://${HOST_IP}:${SIMULATOR_PORT}${SIMULATOR_CORR_ENDPOINT}/${transferId}`
+      let simulatorUrl = `${URI_PREFIX}://${SIMULATOR_HOST}:${SIMULATOR_PORT}${SIMULATOR_CORR_ENDPOINT}/${transferId}`
 
       try {
         let res = await fetch(url, opts)

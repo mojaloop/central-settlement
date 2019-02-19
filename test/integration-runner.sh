@@ -30,7 +30,7 @@ if [ $# -ne 1 ]; then
   echo " - TEST_RESULTS_FILE: Name of integration test results xml file"
   echo " - TEST_CMD: Integration test command to be executed"
   echo ""
-  echo " * IMPORTANT: Ensure you have the required env in the test/.env to execute the application"
+  # echo " * IMPORTANT: Ensure you have the required env in the test/central-ledger.env to execute the application"
   echo ""
   exit 1
 fi
@@ -62,30 +62,23 @@ stop_docker() {
   >&1 echo "$APP_HOST environment is shutting down"
   (docker stop $APP_HOST && docker rm $APP_HOST) > /dev/null 2>&1
   >&1 echo "Deleting test network: $DOCKER_NETWORK"
-  docker network rm integration-test-net
+  docker network rm $DOCKER_NETWORK
 }
 
 clean_docker() {
   stop_docker
 }
 
-ftest() {
+fcmd_centralledger() {
   docker run -i --rm \
     --link $KAFKA_HOST \
     --link $DB_HOST \
     --network $DOCKER_NETWORK \
     --env HOST_IP="$APP_HOST" \
-    --env KAFKA_HOST="$KAFKA_HOST" \
-    --env KAFKA_ZOO_PORT="$KAFKA_ZOO_PORT" \
-    --env DB_HOST=$DB_HOST \
-    --env DB_PORT=$DB_PORT \
-    --env DB_USER=$DB_USER \
-    --env DB_PASSWORD=$DB_PASSWORD \
-    --env DB_NAME=$DB_NAME \
-    --env TEST_DIR=$TEST_DIR \
-    $DOCKER_IMAGE:$DOCKER_TAG \
+    --env CLEDG_DATABASE_URI="mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
+    $CENTRAL_LEDGER_IMAGE:$CENTRAL_LEDGER_TAG \
     /bin/sh \
-    -c "source $TEST_DIR/.env; $@"
+    -c "$@"
 }
 
 run_test_command() {
@@ -96,22 +89,22 @@ run_test_command() {
     --network $DOCKER_NETWORK \
     --name $APP_HOST \
     --env HOST_IP="$APP_HOST" \
-    --env KAFKA_HOST="$KAFKA_HOST" \
-    --env KAFKA_ZOO_PORT="$KAFKA_ZOO_PORT" \
-    --env DB_HOST=$DB_HOST \
-    --env DB_PORT=$DB_PORT \
-    --env DB_USER=$DB_USER \
-    --env DB_PASSWORD=$DB_PASSWORD \
-    --env DB_NAME=$DB_NAME \
     --env TEST_DIR=$TEST_DIR \
+    --env CSET_DATABASE_URI="mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
+    --env SIMULATOR_HOST=$SIMULATOR_HOST \
+    --env SIMULATOR_PORT=$SIMULATOR_PORT \
+    --env CENTRAL_LEDGER_HOST=$CENTRAL_LEDGER_HOST \
+    --env CENTRAL_LEDGER_PORT=$CENTRAL_LEDGER_PORT \
+    --env ML_API_ADAPTER_HOST=$ML_API_ADAPTER_HOST \
+    --env ML_API_ADAPTER_PORT=$ML_API_ADAPTER_PORT \
     $DOCKER_IMAGE:$DOCKER_TAG \
     /bin/sh \
-    -c "source $TEST_DIR/.env; $TEST_CMD"
+    -c "$TEST_CMD"
 }
 
 fcurl() {
+  # echo "docker run --rm -i --network=$DOCKER_NETWORK  --entrypoint curl \"jlekie/curl:latest\" --silent --head --fail \"$@\""
   docker run --rm -i \
-    --link $ENDPOINT_HOST \
     --network $DOCKER_NETWORK \
     --entrypoint curl \
     "jlekie/curl:latest" \
@@ -193,8 +186,8 @@ start_simulator () {
     -p 8444:8444 \
     --network $DOCKER_NETWORK \
     --name=$SIMULATOR_HOST \
-    --env TRANSFERS_ENDPOINT=http://host.docker.internal:3000 \
-    $SIMULATOR_IMAGE
+    --env TRANSFERS_ENDPOINT=http://${ML_API_ADAPTER_HOST}:3000 \
+    $SIMULATOR_IMAGE:$SIMULATOR_IMAGE_TAG
 }
 
 is_simulator_up() {
@@ -206,7 +199,9 @@ start_central_ledger () {
     -p 3001:3001 \
     --network $DOCKER_NETWORK \
     --name=$CENTRAL_LEDGER_HOST \
-    $CENTRAL_LEDGER_IMAGE
+    --volume ${PWD}/test/integration-config-centralledger.json:/opt/central-ledger/config/default.json \
+    --env CLEDG_DATABASE_URI="mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
+    $CENTRAL_LEDGER_IMAGE:$CENTRAL_LEDGER_TAG
 }
 
 is_central_ledger_up() {
@@ -218,7 +213,8 @@ start_ml_api_adapter () {
     -p 3000:3000 \
     --network $DOCKER_NETWORK \
     --name=$ML_API_ADAPTER_HOST \
-    $ML_API_ADAPTER_IMAGE
+    --volume ${PWD}/test/integration-config-mlapiadapter.json:/opt/ml-api-adapter/config/default.json \
+    $ML_API_ADAPTER_IMAGE:$ML_API_ADAPTER_TAG
 }
 
 is_ml_api_adapter_up() {
@@ -227,57 +223,55 @@ is_ml_api_adapter_up() {
 
 # Script execution
 
-stop_docker
+#    stop_docker
 
-## TODO: move after central-ledger is up and db migration is finished?
 >&1 echo "Building Docker Image $DOCKER_IMAGE:$DOCKER_TAG with $DOCKER_FILE"
 #    docker build --no-cache -t $DOCKER_IMAGE:$DOCKER_TAG -f $DOCKER_FILE .
 
-if [ "$?" != 0 ]
-then
-  >&2 echo "Build failed...exiting"
-  clean_docker
-  exit 1
-fi
-
->&1 echo "Creating test network: $DOCKER_NETWORK"
-docker network create $DOCKER_NETWORK
-
->&1 echo "Kafka is starting"
-start_kafka
-
-if [ "$?" != 0 ]
-then
-  >&2 echo "Starting Kafka failed...exiting"
-  clean_docker
-  exit 1
-fi
-
->&1 echo "Waiting for Kafka to start"
-until is_kafka_up; do
-  >&1 printf "."
-  sleep 5
-done
-
->&1 echo "DB is starting"
-start_db
-
-if [ "$?" != 0 ]
-then
-  >&2 echo "Starting DB failed...exiting"
-  clean_docker
-  exit 1
-fi
-
->&2 echo "Waiting for DB to start"
-until is_db_up; do
-  >&2 printf "."
-  sleep 5
-done
-
-## TODO: run migrations from central-ledger host
+#    if [ "$?" != 0 ]
+#    then
+#      >&2 echo "Build failed...exiting"
+#      clean_docker
+#      exit 1
+#    fi
+#
+#    >&1 echo "Creating test network: $DOCKER_NETWORK"
+#    docker network create $DOCKER_NETWORK
+#
+#    >&1 echo "Kafka is starting"
+#    start_kafka
+#
+#    if [ "$?" != 0 ]
+#    then
+#      >&2 echo "Starting Kafka failed...exiting"
+#      clean_docker
+#      exit 1
+#    fi
+#
+#    >&1 echo "Waiting for Kafka to start"
+#    until is_kafka_up; do
+#      >&1 printf "."
+#      sleep 5
+#    done
+#
+#    >&1 echo "DB is starting"
+#    start_db
+#
+#    if [ "$?" != 0 ]
+#    then
+#      >&2 echo "Starting DB failed...exiting"
+#      clean_docker
+#      exit 1
+#    fi
+#
+#    >&2 echo "Waiting for DB to start"
+#    until is_db_up; do
+#      >&2 printf "."
+#      sleep 5
+#    done
+#
 #    >&1 echo "Running migrations"
-#    ftest "npm run migrate"
+#    fcmd_centralledger "apk add --no-cache nodejs-npm && npm install npm-run-all && npm run migrate"
 #
 #    if [ "$?" != 0 ]
 #    then
@@ -285,75 +279,75 @@ done
 #      clean_docker
 #      exit 1
 #    fi
-
->&1 echo "Simulator is starting"
-start_simulator
-
-if [ "$?" != 0 ]
-then
-  >&2 echo "Starting Simulator failed...exiting"
-  clean_docker
-  exit 1
-fi
-
->&2 echo "Waiting for Simulator to start"
-until is_simulator_up; do
-  >&2 printf "."
-  sleep 5
-done
-
->&1 echo "Central-ledger is starting"
-start_central_ledger
-
-if [ "$?" != 0 ]
-then
-  >&2 echo "Starting Central-ledger failed...exiting"
-  clean_docker
-  exit 1
-fi
-
->&2 echo "Waiting for Central-ledger to start"
-until is_central_ledger_up; do
-  >&2 printf "."
-  sleep 5
-done
-
->&1 echo "Ml-api-adapter is starting"
-start_ml_api_adapter
-
-if [ "$?" != 0 ]
-then
-  >&2 echo "Starting Ml-api-adapter failed...exiting"
-  clean_docker
-  exit 1
-fi
-
->&2 echo "Waiting for Ml-api-adapter to start"
-until is_ml_api_adapter_up; do
-  >&2 printf "."
-  sleep 5
-done
-
-#    >&1 echo "Integration tests are starting"
-#    run_test_command
-#    test_exit_code=$?
-#    >&2 echo "Test exited with result code.... $test_exit_code ..."
 #
-#    >&1 echo "Displaying test logs"
-#    docker logs $APP_HOST
+#    >&1 echo "Simulator is starting"
+#    echo $SIMULATOR_IMAGE && start_simulator
 #
-#    >&1 echo "Copy results to local directory"
-#    docker cp $APP_HOST:$DOCKER_WORKING_DIR/$APP_DIR_TEST_RESULTS $TEST_DIR
-#
-#    if [ "$test_exit_code" == 0 ]
+#    if [ "$?" != 0 ]
 #    then
-#      >&1 echo "Showing results..."
-#      cat $APP_DIR_TEST_RESULTS/$TEST_RESULTS_FILE
-#    else
-#      >&2 echo "Integration tests failed...exiting"
-#      >&2 echo "Test environment logs..."
-#      docker logs $APP_HOST
+#      >&2 echo "Starting Simulator failed...exiting"
+#      clean_docker
+#      exit 1
 #    fi
+#
+#    >&2 echo "Waiting for Simulator to start"
+#    until is_simulator_up; do
+#      >&2 printf "."
+#      sleep 5
+#    done
+#
+#    >&1 echo "Central-ledger is starting"
+#    start_central_ledger
+#
+#    if [ "$?" != 0 ]
+#    then
+#      >&2 echo "Starting Central-ledger failed...exiting"
+#      clean_docker
+#      exit 1
+#    fi
+#
+#    >&2 echo "Waiting for Central-ledger to start"
+#    until is_central_ledger_up; do
+#      >&2 printf "."
+#      sleep 5
+#    done
+#
+#    >&1 echo "Ml-api-adapter is starting"
+#    start_ml_api_adapter
+#
+#    if [ "$?" != 0 ]
+#    then
+#      >&2 echo "Starting Ml-api-adapter failed...exiting"
+#      clean_docker
+#      exit 1
+#    fi
+#
+#    >&2 echo "Waiting for Ml-api-adapter to start"
+#    until is_ml_api_adapter_up; do
+#      >&2 printf "."
+#      sleep 5
+#    done
+
+    >&1 echo "Integration tests are starting"
+    run_test_command
+    test_exit_code=$?
+    >&2 echo "Test exited with result code.... $test_exit_code ..."
+
+    >&1 echo "Displaying test logs"
+    docker logs $APP_HOST
+
+    >&1 echo "Copy results to local directory"
+    docker cp $APP_HOST:$DOCKER_WORKING_DIR/$APP_DIR_TEST_RESULTS $TEST_DIR
+
+    if [ "$test_exit_code" == 0 ]
+    then
+      >&1 echo "Showing results..."
+      cat $APP_DIR_TEST_RESULTS/$TEST_RESULTS_FILE
+    else
+      >&2 echo "Integration tests failed...exiting"
+      >&2 echo "Test environment logs..."
+      docker logs $APP_HOST
+    fi
 #
 #    clean_docker
 #    >&1 echo "Integration tests exited with code: $test_exit_code"

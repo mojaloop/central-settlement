@@ -23,7 +23,7 @@
             },
             "rdkafkaConf": {
               "debug": "all",
-              "metadata.broker.list": "localhost:9092",
+              "metadata.broker.list": "kafka-int:9092",
               "client.id": "cs-prod-notification-event",
               "event_cb": true,
               "compression.codec": "none",

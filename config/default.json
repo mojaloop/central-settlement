@@ -1,7 +1,7 @@
 {
   "PORT": 3007,
   "HOSTNAME": "http://central-settlements.local",
-  "DATABASE_URI" : "mysql://central_ledger:password@localhost:3306/central_ledger",
+  "DATABASE_URI" : "mysql://central_ledger:cVq8iFqaLuHy8jjKuA@localhost:3306/central_ledger_integration",
   "TRANSFER_VALIDITY_SECONDS": "432000",
   "HUB_PARTICIPANT": {
     "ID": 1,
