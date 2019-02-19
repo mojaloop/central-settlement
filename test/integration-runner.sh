@@ -223,132 +223,130 @@ is_ml_api_adapter_up() {
 
 # Script execution
 
-#    stop_docker
-
 >&1 echo "Building Docker Image $DOCKER_IMAGE:$DOCKER_TAG with $DOCKER_FILE"
-#    docker build --no-cache -t $DOCKER_IMAGE:$DOCKER_TAG -f $DOCKER_FILE .
+docker build --no-cache -t $DOCKER_IMAGE:$DOCKER_TAG -f $DOCKER_FILE .
 
-#    if [ "$?" != 0 ]
-#    then
-#      >&2 echo "Build failed...exiting"
-#      clean_docker
-#      exit 1
-#    fi
-#
-#    >&1 echo "Creating test network: $DOCKER_NETWORK"
-#    docker network create $DOCKER_NETWORK
-#
-#    >&1 echo "Kafka is starting"
-#    start_kafka
-#
-#    if [ "$?" != 0 ]
-#    then
-#      >&2 echo "Starting Kafka failed...exiting"
-#      clean_docker
-#      exit 1
-#    fi
-#
-#    >&1 echo "Waiting for Kafka to start"
-#    until is_kafka_up; do
-#      >&1 printf "."
-#      sleep 5
-#    done
-#
-#    >&1 echo "DB is starting"
-#    start_db
-#
-#    if [ "$?" != 0 ]
-#    then
-#      >&2 echo "Starting DB failed...exiting"
-#      clean_docker
-#      exit 1
-#    fi
-#
-#    >&2 echo "Waiting for DB to start"
-#    until is_db_up; do
-#      >&2 printf "."
-#      sleep 5
-#    done
-#
-#    >&1 echo "Running migrations"
-#    fcmd_centralledger "apk add --no-cache nodejs-npm && npm install npm-run-all && npm run migrate"
-#
-#    if [ "$?" != 0 ]
-#    then
-#      >&2 echo "Migration failed...exiting"
-#      clean_docker
-#      exit 1
-#    fi
-#
-#    >&1 echo "Simulator is starting"
-#    echo $SIMULATOR_IMAGE && start_simulator
-#
-#    if [ "$?" != 0 ]
-#    then
-#      >&2 echo "Starting Simulator failed...exiting"
-#      clean_docker
-#      exit 1
-#    fi
-#
-#    >&2 echo "Waiting for Simulator to start"
-#    until is_simulator_up; do
-#      >&2 printf "."
-#      sleep 5
-#    done
-#
-#    >&1 echo "Central-ledger is starting"
-#    start_central_ledger
-#
-#    if [ "$?" != 0 ]
-#    then
-#      >&2 echo "Starting Central-ledger failed...exiting"
-#      clean_docker
-#      exit 1
-#    fi
-#
-#    >&2 echo "Waiting for Central-ledger to start"
-#    until is_central_ledger_up; do
-#      >&2 printf "."
-#      sleep 5
-#    done
-#
-#    >&1 echo "Ml-api-adapter is starting"
-#    start_ml_api_adapter
-#
-#    if [ "$?" != 0 ]
-#    then
-#      >&2 echo "Starting Ml-api-adapter failed...exiting"
-#      clean_docker
-#      exit 1
-#    fi
-#
-#    >&2 echo "Waiting for Ml-api-adapter to start"
-#    until is_ml_api_adapter_up; do
-#      >&2 printf "."
-#      sleep 5
-#    done
+if [ "$?" != 0 ]
+then
+  >&2 echo "Build failed...exiting"
+  clean_docker
+  exit 1
+fi
 
-    >&1 echo "Integration tests are starting"
-    run_test_command
-    test_exit_code=$?
-    >&2 echo "Test exited with result code.... $test_exit_code ..."
+>&1 echo "Creating test network: $DOCKER_NETWORK"
+docker network create $DOCKER_NETWORK
 
-    >&1 echo "Displaying test logs"
-    docker logs $APP_HOST
+>&1 echo "Kafka is starting"
+start_kafka
 
-    >&1 echo "Copy results to local directory"
-    docker cp $APP_HOST:$DOCKER_WORKING_DIR/$APP_DIR_TEST_RESULTS $TEST_DIR
+if [ "$?" != 0 ]
+then
+  >&2 echo "Starting Kafka failed...exiting"
+  clean_docker
+  exit 1
+fi
 
-    if [ "$test_exit_code" == 0 ]
-    then
-      >&1 echo "Showing results..."
-      cat $APP_DIR_TEST_RESULTS/$TEST_RESULTS_FILE
-    else
-      >&2 echo "Integration tests failed...exiting"
-      >&2 echo "Test environment logs..."
-      docker logs $APP_HOST
-    fi
-#
-#    clean_docker
-#    >&1 echo "Integration tests exited with code: $test_exit_code"
-#    exit "$test_exit_code"
+>&1 echo "Waiting for Kafka to start"
+until is_kafka_up; do
+  >&1 printf "."
+  sleep 5
+done
+
+>&1 echo "DB is starting"
+start_db
+
+if [ "$?" != 0 ]
+then
+  >&2 echo "Starting DB failed...exiting"
+  clean_docker
+  exit 1
+fi
+
+>&2 echo "Waiting for DB to start"
+until is_db_up; do
+  >&2 printf "."
+  sleep 5
+done
+
+>&1 echo "Running migrations"
+fcmd_centralledger "apk add --no-cache nodejs-npm && npm install npm-run-all && npm run migrate"
+
+if [ "$?" != 0 ]
+then
+  >&2 echo "Migration failed...exiting"
+  clean_docker
+  exit 1
+fi
+
+>&1 echo "Simulator is starting"
+echo $SIMULATOR_IMAGE && start_simulator
+
+if [ "$?" != 0 ]
+then
+  >&2 echo "Starting Simulator failed...exiting"
+  clean_docker
+  exit 1
+fi
+
+>&2 echo "Waiting for Simulator to start"
+until is_simulator_up; do
+  >&2 printf "."
+  sleep 5
+done
+
+>&1 echo "Central-ledger is starting"
+start_central_ledger
+
+if [ "$?" != 0 ]
+then
+  >&2 echo "Starting Central-ledger failed...exiting"
+  clean_docker
+  exit 1
+fi
+
+>&2 echo "Waiting for Central-ledger to start"
+until is_central_ledger_up; do
+  >&2 printf "."
+  sleep 5
+done
+
+>&1 echo "Ml-api-adapter is starting"
+start_ml_api_adapter
+
+if [ "$?" != 0 ]
+then
+  >&2 echo "Starting Ml-api-adapter failed...exiting"
+  clean_docker
+  exit 1
+fi
+
+>&2 echo "Waiting for Ml-api-adapter to start"
+until is_ml_api_adapter_up; do
+  >&2 printf "."
+  sleep 5
+done
+
+>&1 echo "Integration tests are starting"
+run_test_command
+test_exit_code=$?
+>&2 echo "Test exited with result code.... $test_exit_code ..."
+
+>&1 echo "Displaying test logs"
+docker logs $APP_HOST
+
+>&1 echo "Copy results to local directory"
+docker cp $APP_HOST:$DOCKER_WORKING_DIR/$APP_DIR_TEST_RESULTS $TEST_DIR
+
+if [ "$test_exit_code" == 0 ]
+then
+  >&1 echo "Showing results..."
+  cat $APP_DIR_TEST_RESULTS/$TEST_RESULTS_FILE
+else
+  >&2 echo "Integration tests failed...exiting"
+  >&2 echo "Test environment logs..."
+  docker logs $APP_HOST
+fi
+
+clean_docker
+>&1 echo "Integration tests exited with code: $test_exit_code"
+exit "$test_exit_code"
