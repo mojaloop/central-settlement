@@ -3,7 +3,6 @@
 >&2 echo "--==== Integration Tests Runner ====--"
 
 if [ $# -ne 1 ]; then
-  ## TODO: update comments section
   echo ""
   echo "Usage: $0 {env-file}"
   echo "{env-file} must contain the following variables:"
@@ -29,8 +28,18 @@ if [ $# -ne 1 ]; then
   echo " - TEST_DIR: Base directory for tests"
   echo " - TEST_RESULTS_FILE: Name of integration test results xml file"
   echo " - TEST_CMD: Integration test command to be executed"
-  echo ""
-  # echo " * IMPORTANT: Ensure you have the required env in the test/central-ledger.env to execute the application"
+  echo " - SIMULATOR_HOST: Simulator host name"
+  echo " - SIMULATOR_PORT: Simulator port"
+  echo " - SIMULATOR_IMAGE: Simulator image"
+  echo " - SIMULATOR_IMAGE_TAG: Simulator tag"
+  echo " - CENTRAL_LEDGER_HOST: central-ledger host name"
+  echo " - CENTRAL_LEDGER_PORT: central-ledger port"
+  echo " - CENTRAL_LEDGER_IMAGE: central-ledger image"
+  echo " - CENTRAL_LEDGER_TAG: central-ledger tag"
+  echo " - ML_API_ADAPTER_HOST: ml-api-adapter host"
+  echo " - ML_API_ADAPTER_PORT: ml-api-adapter port"
+  echo " - ML_API_ADAPTER_IMAGE: ml-api-adapter image"
+  echo " - ML_API_ADAPTER_TAG: ml-api-adapter tag"
   echo ""
   exit 1
 fi
@@ -51,11 +60,11 @@ mkdir -p $TEST_DIR/results
 stop_docker() {
   >&1 echo "Kafka is shutting down $KAFKA_HOST"
   (docker stop $KAFKA_HOST && docker rm $KAFKA_HOST) > /dev/null 2>&1
-  >&1 echo "Simulator is shutting down $SIMULATOR_HOST"
+  >&1 echo "$SIMULATOR_HOST environment is shutting down"
   (docker stop $SIMULATOR_HOST && docker rm $SIMULATOR_HOST) > /dev/null 2>&1
-  >&1 echo "Central-ledger is shutting down $CENTRAL_LEDGER_HOST"
+  >&1 echo "$CENTRAL_LEDGER_HOST environment is shutting down"
   (docker stop $CENTRAL_LEDGER_HOST && docker rm $CENTRAL_LEDGER_HOST) > /dev/null 2>&1
-  >&1 echo "Ml-api-adapter is shutting down $ML_API_ADAPTER_HOST"
+  >&1 echo "$ML_API_ADAPTER_HOST environment is shutting down"
   (docker stop $ML_API_ADAPTER_HOST && docker rm $ML_API_ADAPTER_HOST) > /dev/null 2>&1
   >&1 echo "$DB_HOST environment is shutting down"
   (docker stop $DB_HOST && docker rm $DB_HOST) > /dev/null 2>&1
@@ -103,7 +112,6 @@ run_test_command() {
 }
 
 fcurl() {
-  # echo "docker run --rm -i --network=$DOCKER_NETWORK  --entrypoint curl \"jlekie/curl:latest\" --silent --head --fail \"$@\""
   docker run --rm -i \
     --network $DOCKER_NETWORK \
     --entrypoint curl \
@@ -279,7 +287,7 @@ then
 fi
 
 >&1 echo "Simulator is starting"
-echo $SIMULATOR_IMAGE && start_simulator
+start_simulator
 
 if [ "$?" != 0 ]
 then
