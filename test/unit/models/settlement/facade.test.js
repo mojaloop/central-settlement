@@ -1145,7 +1145,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             })
           })
           ParticipantFacade.adjustLimits = sandbox.stub()
-          
+
           sandbox.stub(Utility, 'produceGeneralMessage').returns()
 
           let result = await SettlementFacade.settlementTransfersReserve(settlementId, transactionTimestamp, enums, trxStub)
