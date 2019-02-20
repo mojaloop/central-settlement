@@ -99,5 +99,74 @@ Test('SettlementParticipantCurrencyModel', async (settlementParticipantCurrencyM
     }
   })
 
+  await settlementParticipantCurrencyModelTest.test('settlementParticipantCurrencyModel should', async getAccountInSettlementTest => {
+    try {
+      await getAccountInSettlementTest.test('return settlement participant currency record if matched', async test => {
+        try {
+          const settlementId = 1
+          const accountId = 2
+          const settlementParticipantCurrencyRecord = {
+            settlementParticipantCurrencyId: 25,
+            settlementId,
+            participantCurrencyId: 39,
+            netAmount: '81.42',
+            createdDate: '2019-02-18T16:02:43.000Z',
+            currentStateChangeId: 70,
+            settlementTransferId: '8caf556a-523f-4008-aa32-37e4b6f644d3',
+            settlementStateId: 'PS_TRANSFERS_RECORDED',
+            reason: 'Transfers recorded for payer',
+            externalReference: null
+          }
+          const builderStub = sandbox.stub()
+          Db.settlementParticipantCurrency = {
+            query: sandbox.stub()
+          }
+          Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
+          Db.getKnex = sandbox.stub()
+          const selectStub = sandbox.stub()
+          const whereStub = sandbox.stub()
+          const andWhereStub = sandbox.stub()
+          const firstStub = sandbox.stub()
+          builderStub.innerJoin = sandbox.stub().returns({
+            select: selectStub.returns({
+              where: whereStub.returns({
+                andWhere: andWhereStub.returns({
+                  first: firstStub.returns(settlementParticipantCurrencyRecord)
+                })
+              })
+            })
+          })
+
+          let result = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementId, accountId)
+          test.ok(result, 'Result returned')
+          test.ok(builderStub.innerJoin.withArgs('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId').calledOnce, 'innerJoin with args ... called once')
+          test.ok(selectStub.withArgs('settlementParticipantCurrency.*', 'spcsc.settlementStateId', 'spcsc.reason', 'spcsc.externalReference').calledOnce, 'select with args ... called once')
+          test.ok(whereStub.withArgs({ settlementId }).calledOnce, 'where with args ... called once')
+          test.ok(andWhereStub.withArgs('participantCurrencyId', accountId).calledOnce, 'andWhere with args ... called once')
+          test.deepEqual(result, settlementParticipantCurrencyRecord, 'Result matched')
+
+          Db.settlementParticipantCurrency.query = sandbox.stub().throws(new Error('Error occured'))
+          try {
+            result = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementId, accountId)
+            test.fail('Error expected, but not thrown!')
+          } catch (err) {
+            test.equal(err.message, 'Error occured', `Error "${err.message}" thrown as expected`)
+          }
+          test.end()
+        } catch (err) {
+          Logger.error(`getAccountInSettlementTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await getAccountInSettlementTest.end()
+    } catch (err) {
+      Logger.error(`settlementParticipantCurrencyModelTest failed with error - ${err}`)
+      getAccountInSettlementTest.fail()
+      getAccountInSettlementTest.end()
+    }
+  })
+
   await settlementParticipantCurrencyModelTest.end()
 })

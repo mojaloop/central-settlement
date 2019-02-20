@@ -89,5 +89,69 @@ Test('SettlementModel', async (settlementWindowStateChangeModelTest) => {
     }
   })
 
+  await settlementWindowStateChangeModelTest.test('getBySettlementWindowId should', async getBySettlementWindowIdTest => {
+    try {
+      await getBySettlementWindowIdTest.test('return settlement windows state change record', async test => {
+        try {
+          const settlementWindowId = 1
+          const settlementWindowsStateChange = {
+            settlementWindowStateChangeId: 25,
+            settlementWindowId,
+            settlementWindowStateId: 'CLOSED',
+            reason: 'text',
+            createdDate: '2019-02-18T16:47:35.000Z'
+          }
+          Db.getKnex = sandbox.stub()
+          const knexStub = sandbox.stub()
+          Db.getKnex.returns(knexStub)
+          const whereStub = sandbox.stub()
+          const orderByStub = sandbox.stub()
+          const selectStub = sandbox.stub()
+          const firstStub = sandbox.stub()
+          knexStub.returns({
+            where: whereStub.returns({
+              orderBy: orderByStub.returns({
+                select: selectStub.returns({
+                  first: firstStub.returns(settlementWindowsStateChange)
+                })
+              })
+            })
+          })
+          const result = await SettlementWindowStateChangeModel.getBySettlementWindowId(settlementWindowId)
+          test.deepEqual(result, settlementWindowsStateChange, 'results match')
+          test.end()
+        } catch (err) {
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+
+      await getBySettlementWindowIdTest.test('throw error', async test => {
+        try {
+          const settlementWindowId = 1
+          Db.getKnex = sandbox.stub()
+          const knexStub = sandbox.stub().throws(new Error('Database unavailable'))
+          Db.getKnex.returns(knexStub)
+          try {
+            await SettlementWindowStateChangeModel.getBySettlementWindowId(settlementWindowId)
+            test.fail('Error expected, but not thrown!')
+          } catch (err) {
+            test.ok('Error thrown')
+          }
+          test.end()
+        } catch (err) {
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+
+      await getBySettlementWindowIdTest.end()
+    } catch (err) {
+      Logger.error(`getBySettlementWindowIdTest failed with error - ${err}`)
+      getBySettlementWindowIdTest.fail()
+      getBySettlementWindowIdTest.end()
+    }
+  })
+
   await settlementWindowStateChangeModelTest.end()
 })
