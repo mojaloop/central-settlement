@@ -19,41 +19,18 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * Georgi Georgiev <georgi.georgiev@modusbox.com>
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
  --------------
  ******/
 
 'use strict'
-
-const Db = require('../index')
-
-const create = async ({ settlementWindowId, state, reason }, enums = {}) => {
-  try {
-    return Db.settlementWindowStateChange.insert({
-      settlementWindowId,
-      settlementWindowStateId: enums[state.toUpperCase()],
-      reason
-    })
-  } catch (err) {
-    throw err
-  }
-}
-
-const getBySettlementWindowId = async (id) => {
-  try {
-    const knex = await Db.getKnex()
-    return knex('settlementWindowStateChange')
-      .where('settlementWindowId', id)
-      .orderBy('settlementWindowStateChangeId', 'desc')
-      .select('*')
-      .first()
-  } catch (err) {
-    throw err
-  }
-}
+const Db = require('../../../src/models')
 
 module.exports = {
-  create,
-  getBySettlementWindowId
+  getTransferParticipantsByTransferId: async function (transferId) {
+    try {
+      return Db.transferParticipant.find({ transferId })
+    } catch (e) {
+      throw e
+    }
+  }
 }

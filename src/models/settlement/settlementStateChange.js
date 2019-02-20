@@ -19,8 +19,6 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * Georgi Georgiev <georgi.georgiev@modusbox.com>
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
  --------------
  ******/
 
@@ -28,24 +26,12 @@
 
 const Db = require('../index')
 
-const create = async ({ settlementWindowId, state, reason }, enums = {}) => {
-  try {
-    return Db.settlementWindowStateChange.insert({
-      settlementWindowId,
-      settlementWindowStateId: enums[state.toUpperCase()],
-      reason
-    })
-  } catch (err) {
-    throw err
-  }
-}
-
-const getBySettlementWindowId = async (id) => {
+const getBySettlementId = async (id) => {
   try {
     const knex = await Db.getKnex()
-    return knex('settlementWindowStateChange')
-      .where('settlementWindowId', id)
-      .orderBy('settlementWindowStateChangeId', 'desc')
+    return knex('settlementStateChange')
+      .where('settlementId', id)
+      .orderBy('settlementStateChangeId', 'desc')
       .select('*')
       .first()
   } catch (err) {
@@ -54,6 +40,5 @@ const getBySettlementWindowId = async (id) => {
 }
 
 module.exports = {
-  create,
-  getBySettlementWindowId
+  getBySettlementId
 }
