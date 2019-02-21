@@ -18,19 +18,18 @@
         "registry": "https://registry.npmjs.org"
     },
     "dependencies": {
-        "@mojaloop/central-ledger": "3.7.1-snapshot",
-        "@mojaloop/central-services-auth": "0.2.0",
+        "@mojaloop/central-ledger": "5.2.0",
+        "@mojaloop/central-services-auth": "0.3.1",
         "@mojaloop/central-services-database": "3.1.0-snapshot",
-        "@mojaloop/central-services-error-handling": "0.5.1",
-        "@mojaloop/central-services-shared": "4.1.0-snapshot",
-        "@mojaloop/central-services-stream": "4.1.0-snapshot",
+        "@mojaloop/central-services-error-handling": "3.7.0-snapshot",
+        "@mojaloop/central-services-shared": "4.4.1-performance",
+        "@mojaloop/central-services-stream": "3.9.0-snapshot",
         "@mojaloop/forensic-logging-client": "0.5.1",
         "boom": "7.3.0",
-        "hapi": "17.6.0",
+        "hapi": "18.1.0",
         "hapi-openapi": "1.2.0",
         "hapi-pagination": "2.1.0",
         "rc": "1.2.8",
-        "swagmock": "1.0.0",
         "uuid4": "1.1.4"
     },
     "devDependencies": {
@@ -42,6 +41,7 @@
         "proxyquire": "2.1.0",
         "rewire": "^4.0.1",
         "sinon": "7.2.4",
+        "standard": "12.0.1",
         "swagmock": "1.0.0",
         "tap-xunit": "2.3.0",
         "tape": "4.10.1",
@@ -49,6 +49,8 @@
     },
     "scripts": {
         "start": "node src/server.js",
+        "pretest": "standard",
+        "standard": "standard",
         "test": "npm run test:unit | faucet",
         "test:unit": "tape 'test/unit/**/*.js'",
         "test:xunit": "tape 'test/unit/**/*.js' | tap-xunit",
