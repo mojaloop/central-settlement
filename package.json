@@ -18,7 +18,7 @@
         "registry": "https://registry.npmjs.org"
     },
     "dependencies": {
-        "@mojaloop/central-ledger": "3.7.1-snapshot",
+        "@mojaloop/central-ledger": "5.2.0",
         "@mojaloop/central-services-auth": "0.2.0",
         "@mojaloop/central-services-database": "3.1.0-snapshot",
         "@mojaloop/central-services-error-handling": "0.5.1",
