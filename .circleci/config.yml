@@ -127,6 +127,17 @@ defaults_Environment: &defaults_environment
     echo "Using CACHE_VERSION: ${CACHE_VERSION}"
     echo "${CACHE_VERSION}" > CACHE_VERSION.txt
 
+defaults_slack_announcement: &defaults_slack_announcement
+  name: Slack announcement for tag releases
+  command: |
+    curl -X POST \
+      $SLACK_WEBHOOK_ANNOUNCEMENT \
+      -H 'Content-type: application/json' \
+      -H 'cache-control: no-cache' \
+      -d "{
+      \"text\": \"*${CIRCLE_PROJECT_REPONAME}* - Release \`${CIRCLE_TAG}\`: https://github.com/mojaloop/${CIRCLE_PROJECT_REPONAME}/releases/tag/${CIRCLE_TAG}\"
+    }"
+
 jobs:
   setup:
     <<: *defaults_working_directory
@@ -328,6 +339,8 @@ jobs:
           <<: *defaults_build_docker_build
       - run:
           <<: *defaults_build_docker_publish
+      - run:
+          <<: *defaults_slack_announcement
 
   build:
     machine: true
@@ -344,6 +357,8 @@ jobs:
           <<: *defaults_build_docker_build
       - run:
           <<: *defaults_build_docker_publish
+      - run:
+          <<: *defaults_slack_announcement
 
   deploy-snapshot:
     <<: *defaults_working_directory
