@@ -18,7 +18,7 @@
         "registry": "https://registry.npmjs.org"
     },
     "dependencies": {
-        "@mojaloop/central-ledger": "3.7.1-snapshot",
+        "@mojaloop/central-ledger": "5.2.0",
         "@mojaloop/central-services-auth": "0.2.0",
         "@mojaloop/central-services-database": "3.1.0-snapshot",
         "@mojaloop/central-services-error-handling": "0.5.1",
@@ -37,13 +37,13 @@
         "eslint": "5.6.1",
         "faucet": "0.0.1",
         "istanbul": "1.1.0-alpha.1",
-        "node-fetch": "^2.3.0",
+        "node-fetch": "2.3.0",
         "pre-commit": "1.2.2",
         "proxyquire": "2.1.0",
-        "rewire": "^4.0.1",
+        "rewire": "4.0.1",
         "sinon": "6.3.5",
         "swagmock": "1.0.0",
-        "tap-xunit": "1.4.0",
+        "tap-xunit": "^2.3.0",
         "tape": "4.6.2",
         "tapes": "4.1.0"
     },
