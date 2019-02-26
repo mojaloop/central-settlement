@@ -76,12 +76,12 @@ Test('SettlementParticipantCurrencyModel', async (settlementParticipantCurrencyM
           test.ok(andWhereStub.withArgs('participantCurrencyId', accountId).calledOnce, 'where with args ... called once')
           test.equal(result, settlementParticipantCurrencyIdMock, 'Result matched')
 
-          Db.settlementParticipantCurrency.query = sandbox.stub().throws(new Error('Error occured'))
+          Db.settlementParticipantCurrency.query = sandbox.stub().throws(new Error('Error occurred'))
           try {
-            result = await SettlementParticipantCurrencyModel.getAccountInSettlement(params)
+            await SettlementParticipantCurrencyModel.getAccountInSettlement(params)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
-            test.equal(err.message, 'Error occured', `Error "${err.message}" thrown as expected`)
+            test.equal(err.message, 'Error occurred', `Error "${err.message}" thrown as expected`)
           }
           test.end()
         } catch (err) {
@@ -145,12 +145,12 @@ Test('SettlementParticipantCurrencyModel', async (settlementParticipantCurrencyM
           test.ok(andWhereStub.withArgs('participantCurrencyId', accountId).calledOnce, 'andWhere with args ... called once')
           test.deepEqual(result, settlementParticipantCurrencyRecord, 'Result matched')
 
-          Db.settlementParticipantCurrency.query = sandbox.stub().throws(new Error('Error occured'))
+          Db.settlementParticipantCurrency.query = sandbox.stub().throws(new Error('Error occurred'))
           try {
-            result = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementId, accountId)
+            await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementId, accountId)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
-            test.equal(err.message, 'Error occured', `Error "${err.message}" thrown as expected`)
+            test.equal(err.message, 'Error occurred', `Error "${err.message}" thrown as expected`)
           }
           test.end()
         } catch (err) {

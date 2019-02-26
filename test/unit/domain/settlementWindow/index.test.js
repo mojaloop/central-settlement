@@ -60,7 +60,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
           SettlementWindowModel.getById = sandbox.stub().returns()
           try {
-            result = await SettlementWindowService.getById(params, enums)
+            await SettlementWindowService.getById(params, enums)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
             test.ok(err instanceof Error, `Error ${err.message} thrown`)
@@ -98,7 +98,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
           SettlementWindowModel.getByParams = sandbox.stub().returns()
           try {
-            result = await SettlementWindowService.getByParams(params, enums)
+            await SettlementWindowService.getByParams(params, enums)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
             test.ok(err instanceof Error, `Error "${err.message}" thrown as expected`)
@@ -107,7 +107,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
           params = { query: {} }
           try {
-            result = await SettlementWindowService.getByParams(params, enums)
+            await SettlementWindowService.getByParams(params, enums)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
             test.pass(`Error "${err.message.substr(0, 50)} ..." thrown as expected`)
@@ -146,12 +146,12 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
           test.ok(SettlementWindowModel.close.withArgs(params, enums).calledOnce, 'SettlementWindowModel.close with args ... called once')
           test.ok(SettlementWindowModel.getById.withArgs({ settlementWindowId: settlementWindowIdMock }, enums).calledOnce, 'SettlementWindowModel.getById with args ... called once')
 
-          SettlementWindowModel.close = sandbox.stub().throws(new Error('Error occured'))
+          SettlementWindowModel.close = sandbox.stub().throws(new Error('Error occurred'))
           try {
-            result = await SettlementWindowService.close(params, enums)
+            await SettlementWindowService.close(params, enums)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
-            test.equal(err.message, 'Error occured', `Error "${err.message}" thrown as expected`)
+            test.equal(err.message, 'Error occurred', `Error "${err.message}" thrown as expected`)
             test.ok(SettlementWindowModel.close.withArgs(params, enums).calledOnce, 'SettlementWindowModel.close with args ... called once')
           }
 

@@ -1578,7 +1578,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                       Promise.resolve({
                         dfspPositionId: 1,
                         dfspPositionValue: 0,
-                        dfspAbortdValue: 0
+                        dfspAbortedValue: 0
                       })
                     )
                   })
@@ -1698,7 +1698,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                       Promise.resolve({
                         dfspPositionId: 1,
                         dfspPositionValue: 0,
-                        dfspAbortdValue: 0
+                        dfspAbortedValue: 0
                       })
                     )
                   })
@@ -1811,7 +1811,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                       Promise.resolve({
                         dfspPositionId: 1,
                         dfspPositionValue: 800,
-                        dfspAbortdValue: 0
+                        dfspAbortedValue: 0
                       })
                     )
                   })
@@ -3077,7 +3077,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           })
 
           await SettlementFacade.putById(1, payload['putById'][0], enums)
-          test.fail('Error is not trown!')
+          test.fail('Error is not thrown!')
           test.end()
         } catch (err) {
           Logger.error(`putById failed with error - ${err}`)

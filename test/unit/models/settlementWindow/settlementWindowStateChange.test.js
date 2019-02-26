@@ -66,12 +66,12 @@ Test('SettlementModel', async (settlementWindowStateChangeModelTest) => {
             reason
           }).calledOnce, 'insert with args ... called once')
 
-          Db.settlementWindowStateChange.insert = sandbox.stub().throws(new Error('Error occured'))
+          Db.settlementWindowStateChange.insert = sandbox.stub().throws(new Error('Error occurred'))
           try {
-            result = await SettlementWindowStateChangeModel.create({ settlementWindowId, state, reason })
+            await SettlementWindowStateChangeModel.create({ settlementWindowId, state, reason })
             test.fail('Error expected, but not thrown!')
           } catch (err) {
-            test.equal(err.message, 'Error occured', `Error "${err.message}" thrown as expected`)
+            test.equal(err.message, 'Error occurred', `Error "${err.message}" thrown as expected`)
           }
           test.end()
         } catch (err) {

@@ -44,11 +44,6 @@ const openAPIOptions = {
 const defaultConfig = {
   port: Config.PORT,
   cache: [
-    // {
-    //   name: 'memCache',
-    //   engine: require('catbox-memory'),
-    //   partition: 'cache'
-    // }
     {
       provider: {
         constructor: require('catbox-memory'),

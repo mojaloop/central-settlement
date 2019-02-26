@@ -31,7 +31,7 @@
 const Db = require('../index')
 
 module.exports = {
-  getBySettlementId: async function ({ settlementId }, enums = {}) {
+  getBySettlementId: async function ({ settlementId }) {
     try {
       return await Db.settlementTransferParticipant.query(builder => {
         return builder

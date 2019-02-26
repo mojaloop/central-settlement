@@ -28,7 +28,7 @@
 
 const Db = require('../index')
 
-const getAccountInSettlement = async ({ settlementId, accountId }, enums = {}) => {
+const getAccountInSettlement = async ({ settlementId, accountId }) => {
   try {
     let result = await Db.settlementParticipantCurrency.query(builder => {
       return builder

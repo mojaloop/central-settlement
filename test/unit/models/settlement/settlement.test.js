@@ -64,12 +64,12 @@ Test('SettlementModel', async (settlementModelTest) => {
             createdDate: settlement.createdDate
           }).calledOnce, 'insert with args ... called once')
 
-          Db.settlement.insert = sandbox.stub().throws(new Error('Error occured'))
+          Db.settlement.insert = sandbox.stub().throws(new Error('Error occurred'))
           try {
-            result = await SettlementModel.create(settlement)
+            await SettlementModel.create(settlement)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
-            test.equal(err.message, 'Error occured', `Error "${err.message}" thrown as expected`)
+            test.equal(err.message, 'Error occurred', `Error "${err.message}" thrown as expected`)
           }
           test.end()
         } catch (err) {
@@ -95,7 +95,7 @@ Test('SettlementModel', async (settlementModelTest) => {
           Db.settlement = {
             findOne: sandbox.stub()
           }
-          Db.settlement.findOne = sandbox.stub().throws(new Error('Error occured'))
+          Db.settlement.findOne = sandbox.stub().throws(new Error('Error occurred'))
           try {
             await SettlementModel.getById(settlementId)
             test.fail('Error expected, but not thrown!')
