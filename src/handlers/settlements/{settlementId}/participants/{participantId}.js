@@ -45,7 +45,7 @@ Logger.info('path ', Path.basename(__filename))
  */
 module.exports = {
   /**
-     * summary: Acknowledegement of settlement by updating with Settlements Id and Participant Id.
+     * summary: Acknowledgement of settlement by updating with Settlements Id and Participant Id.
      * description:
      * parameters: settlementId, participantId, settlementParticipantUpdatePayload
      * produces: application/json
@@ -68,7 +68,7 @@ module.exports = {
   },
 
   /**
-   * summary: Acknowledegement of settlement by updating with Settlements Id.
+   * summary: Acknowledgement of settlement by updating with Settlements Id.
    * description:
    * parameters: id, participantId, settlementUpdatePayload
    * produces: application/json

@@ -7,7 +7,6 @@ const P = require('bluebird')
 const Uuid = require('uuid4')
 
 const KafkaProducer = require('@mojaloop/central-services-stream').Kafka.Producer
-const Proxyquire = require('proxyquire')
 const Utility = require('../../../../src/handlers/lib/utility')
 
 const NOTIFICATION = 'notification'

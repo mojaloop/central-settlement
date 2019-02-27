@@ -43,7 +43,7 @@ module.exports = {
     }
   },
 
-  getByParams: async function (params, enums, options = {}) {
+  getByParams: async function (params, enums) {
     // 4 filters - at least one should be used
     if (hasFilters(params.query) && Object.keys(params.query).length < 5) {
       try {
@@ -63,7 +63,7 @@ module.exports = {
     }
   },
 
-  close: async function (params, enums, options = {}) {
+  close: async function (params, enums) {
     try {
       let settlementWindowId = await settlementWindowModel.close(params, enums)
       return await settlementWindowModel.getById({ settlementWindowId }, enums)

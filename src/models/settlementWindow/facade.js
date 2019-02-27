@@ -29,7 +29,7 @@
 const Db = require('../index')
 
 const Facade = {
-  getById: async function ({ settlementWindowId }, enums = {}) {
+  getById: async function ({ settlementWindowId }) {
     try {
       let result = await Db.settlementWindow.query(builder => {
         return builder
@@ -50,10 +50,10 @@ const Facade = {
     }
   },
 
-  getByListOfIds: async function (listOfIds, enums = {}) {
+  getByListOfIds: async function (listOfIds) {
     try {
       let result = await Db.settlementWindow.query(builder => {
-        var build = builder
+        const build = builder
           .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
           .select(
             'settlementWindow.settlementWindowId',
@@ -71,7 +71,7 @@ const Facade = {
     }
   },
 
-  getByParams: async function ({ query }, enums = {}) {
+  getByParams: async function ({ query }) {
     try {
       let { participantId, state, fromDateTime, toDateTime } = query
       let result = await Db.settlementWindow.query(builder => {
@@ -130,7 +130,7 @@ const Facade = {
         return await knex.transaction(async (trx) => {
           try {
             const transactionTimestamp = new Date()
-            let settlmentWindowStateChangeId = await knex('settlementWindowStateChange').transacting(trx)
+            let settlementWindowStateChangeId = await knex('settlementWindowStateChange').transacting(trx)
               .insert({
                 settlementWindowStateId: enums[state.toUpperCase()],
                 reason,
@@ -139,7 +139,7 @@ const Facade = {
               })
             await knex('settlementWindow').transacting(trx)
               .where({ settlementWindowId })
-              .update({ currentStateChangeId: settlmentWindowStateChangeId })
+              .update({ currentStateChangeId: settlementWindowStateChangeId })
             let newSettlementWindowId = await knex('settlementWindow').transacting(trx)
               .insert({ reason, createdDate: transactionTimestamp })
             let newSettlementWindowStateChangeId = await knex('settlementWindowStateChange').transacting(trx)
@@ -167,7 +167,7 @@ const Facade = {
       throw err
     }
   },
-  getBySettlementId: async function ({ settlementId }, enums = {}) {
+  getBySettlementId: async function ({ settlementId }) {
     try {
       return await Db.settlementSettlementWindow.query(builder => {
         return builder

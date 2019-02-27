@@ -30,7 +30,7 @@ const Boom = require('boom')
 const Settlements = require('../../../../../../domain/settlement')
 
 /**
- * Operations on /settl ements/{settlementId}/participants/{participantId}/accounts/{accountId}
+ * Operations on /settlements/{settlementId}/participants/{participantId}/accounts/{accountId}
  */
 module.exports = {
   /**
@@ -57,7 +57,7 @@ module.exports = {
   },
 
   /**
-   * summary: Acknowledegement of settlement by updating with Settlements Id.
+   * summary: Acknowledgement of settlement by updating with Settlements Id.
    * description:
    * parameters: id, participantId, settlementUpdatePayload
    * produces: application/json
