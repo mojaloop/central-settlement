@@ -71,7 +71,7 @@ const prepareParticipantsResult = function (participantCurrenciesList) {
 }
 
 module.exports = {
-  getById: async function ({ settlementId }, enums, options = {}) {
+  getById: async function ({ settlementId }, enums) {
     try {
       let settlement = await SettlementModel.getById({ settlementId }, enums)
       if (settlement) {
@@ -99,7 +99,7 @@ module.exports = {
   putById: SettlementModel.putById,
   abortById: SettlementModel.abortById,
 
-  getSettlementsByParams: async function (params, enums, options = {}) {
+  getSettlementsByParams: async function (params, enums) {
     // 7 filters - at least one should be used
     Object.keys(params.query).forEach(key => params.query[key] === undefined && delete params.query[key])
     if (Object.keys(params.query).length && Object.keys(params.query).length < 10) {
@@ -184,7 +184,7 @@ module.exports = {
     }
   },
 
-  settlementEventTrigger: async function (params, enums, options = {}) {
+  settlementEventTrigger: async function (params, enums) {
     let settlementWindowsIdList = params.settlementWindows
     let reason = params.reason
     try {
@@ -223,16 +223,15 @@ module.exports = {
     }
   },
 
-  getByIdParticipantAccount: async function ({ settlementId, participantId, accountId = null }, enums, options = {}) {
+  getByIdParticipantAccount: async function ({ settlementId, participantId, accountId = null }, enums) {
     try {
-      let settlementFound = false
       let participantFoundInSettlement = false
       let accountProvided = accountId > 0
       let participantAndAccountMatched = !accountProvided
       let accountFoundInSettlement = !accountProvided
 
       let settlement = await SettlementModel.getById({ settlementId }, enums) // 3
-      settlementFound = !!settlement
+      let settlementFound = !!settlement
 
       let settlementParticipantCurrencyIdList, account, settlementAccount
 

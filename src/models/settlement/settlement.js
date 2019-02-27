@@ -28,7 +28,7 @@
 
 const Db = require('../index')
 
-const create = async (settlement, enums = {}) => {
+const create = async (settlement) => {
   try {
     return Db.settlement.insert({
       reason: settlement.reason,

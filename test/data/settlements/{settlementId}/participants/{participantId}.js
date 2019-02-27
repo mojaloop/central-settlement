@@ -31,13 +31,13 @@
  ******/
 
 'use strict'
-var Mockgen = require('../../../mockgen.js')
+const Mockgen = require('../../../mockgen.js')
 /**
  * Operations on /settlements/{settlementId}/participants/{participantId}
  */
 module.exports = {
   /**
-     * summary: Acknowledegement of settlement by updating with Settlements Id and Participant Id.
+     * summary: Acknowledgement of settlement by updating with Settlements Id and Participant Id.
      * description:
      * parameters: settlementId, participantId, settlementParticipantUpdatePayload
      * produces: application/json

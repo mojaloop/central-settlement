@@ -31,10 +31,10 @@
  ******/
 
 'use strict'
-var Swagmock = require('swagmock')
-var Path = require('path')
-var apiPath = Path.resolve(__dirname, '../../src/interface/swagger.json')
-var mockgen
+const Swagmock = require('swagmock')
+const Path = require('path')
+const apiPath = Path.resolve(__dirname, '../../src/interface/swagger.json')
+let mockgen
 
 module.exports = function () {
   /**

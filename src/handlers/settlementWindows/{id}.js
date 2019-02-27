@@ -64,7 +64,7 @@ module.exports = {
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-  post: async function closeSettlementWindow (request, h) {
+  post: async function closeSettlementWindow (request) {
     const { state, reason } = request.payload
     const settlementWindowId = request.params.id
     try {

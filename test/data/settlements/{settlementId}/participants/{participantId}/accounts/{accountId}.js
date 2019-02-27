@@ -31,7 +31,7 @@
  ******/
 
 'use strict'
-var Mockgen = require('../../../../../mockgen.js')
+const Mockgen = require('../../../../../mockgen.js')
 /**
  * Operations on /settlements/{settlementId}/participants/{participantId}/accounts/{accountId}
  */
@@ -113,7 +113,7 @@ module.exports = {
     }
   },
   /**
-     * summary: Acknowledegement of settlement by updating the reason and state by Settlements Id, Participant Id and accounts Id.
+     * summary: Acknowledgement of settlement by updating the reason and state by Settlements Id, Participant Id and accounts Id.
      * description:
      * parameters: settlementId, participantId, accountId, settlementParticipantAccountUpdate
      * produces: application/json

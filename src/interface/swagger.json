@@ -485,7 +485,7 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Acknowledegement of settlement by updating with Settlement Id.",
+                "summary": "Acknowledgement of settlement by updating with Settlement Id.",
                 "operationId": "updateSettlementById",
                 "parameters": [
                     {
@@ -500,7 +500,7 @@
                         "name": "payload",
                         "description": "A JSON object containing settlement update info.",
                         "schema": {
-                            "$ref": "#/definitions/SettlementUpdatebySettlementIdPayload"
+                            "$ref": "#/definitions/SettlementUpdateBySettlementIdPayload"
                         },
                         "required": true
                     }
@@ -622,7 +622,7 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Acknowledegement of settlement by updating with Settlements Id and Participant Id.",
+                "summary": "Acknowledgement of settlement by updating with Settlements Id and Participant Id.",
                 "operationId": "updateSettlementBySettlementParticipant",
                 "parameters": [
                     {
@@ -644,7 +644,7 @@
                         "name": "payload",
                         "description": "A JSON object containing settlement update info.",
                         "schema": {
-                            "$ref": "#/definitions/SettlementUpdateBySettlementPartricipantPayload"
+                            "$ref": "#/definitions/SettlementUpdateBySettlementParticipantPayload"
                         },
                         "required": true
                     }
@@ -773,7 +773,7 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Acknowledegement of settlement by updating the reason and state by Settlements Id, Participant Id and accounts Id.",
+                "summary": "Acknowledgement of settlement by updating the reason and state by Settlements Id, Participant Id and accounts Id.",
                 "operationId": "updateSettlementBySettlementParticipantAccount",
                 "parameters": [
                     {
@@ -872,7 +872,7 @@
                 }
             }
         },
-        "SettlementUpdatebySettlementIdPayload": {
+        "SettlementUpdateBySettlementIdPayload": {
             "type": "object",
             "properties": {
                 "state": {
@@ -931,7 +931,7 @@
                 }
             }
         },
-        "SettlementUpdateBySettlementPartricipantPayload": {
+        "SettlementUpdateBySettlementParticipantPayload": {
             "type": "object",
             "properties": {
                 "accounts": {
@@ -946,7 +946,7 @@
             "type": "object",
             "properties": {
                 "id": {
-                    "description": "Paricipant Currency Id",
+                    "description": "Participant Currency Id",
                     "type": "integer"
                 },
                 "reason": {

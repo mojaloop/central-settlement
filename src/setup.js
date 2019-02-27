@@ -45,15 +45,15 @@ const defaultConfig = {
   port: Config.PORT,
   cache: [
     {
-      name: 'memCache',
-      engine: require('catbox-memory'),
-      partition: 'cache'
+      provider: {
+        constructor: require('catbox-memory'),
+        options: {
+          partition: 'cache'
+        }
+      },
+      name: 'memCache'
     }
-  ] // ,
-  // debug: {
-  //   request: ['error'],
-  //   log: ['error']
-  // }
+  ]
 }
 
 const getEnums = (id) => {

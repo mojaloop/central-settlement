@@ -385,11 +385,11 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
           Db.getKnex.returns(knexStub)
           const transactingStub = sandbox.stub()
-          const settlmentWindowStateChangeIdMock = 2
+          const settlementWindowStateChangeIdMock = 2
           const newSettlementWindowIdMock = [2]
           const newSettlementWindowStateChangeIdMock = 5
           let insertStub = sandbox.stub()
-          insertStub.onCall(0).returns(settlmentWindowStateChangeIdMock)
+          insertStub.onCall(0).returns(settlementWindowStateChangeIdMock)
           insertStub.onCall(1).returns(newSettlementWindowIdMock)
           insertStub.onCall(2).returns(newSettlementWindowStateChangeIdMock)
           const whereStub = sandbox.stub()
@@ -417,7 +417,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           }).calledOnce)
           test.ok(knexStub.withArgs('settlementWindow').calledThrice)
           test.ok(whereStub.withArgs({ settlementWindowId }).calledOnce)
-          test.ok(updateStub.withArgs({ currentStateChangeId: settlmentWindowStateChangeIdMock }).calledOnce)
+          test.ok(updateStub.withArgs({ currentStateChangeId: settlementWindowStateChangeIdMock }).calledOnce)
           test.ok(insertStub.withArgs({ reason, createdDate: now }).calledOnce)
           test.ok(insertStub.withArgs({
             settlementWindowId: newSettlementWindowIdMock[0],
@@ -431,7 +431,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
 
           try {
             insertStub.onCall(3).throws(new Error('Insert into settlementWindowStateChange failed'))
-            result = await SettlementWindowFacade.close(params, enums)
+            await SettlementWindowFacade.close(params, enums)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
             test.pass(`Error "${err.message}" thrown as expected`)

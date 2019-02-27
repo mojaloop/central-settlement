@@ -66,7 +66,7 @@ module.exports = {
   },
 
   /**
-     * summary: Acknowledegement of settlement by updating with Settlements Id.
+     * summary: Acknowledgement of settlement by updating with Settlements Id.
      * description:
      * parameters: id, settlementUpdatePayload
      * produces: application/json
