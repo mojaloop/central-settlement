@@ -1358,7 +1358,7 @@ const Facade = {
           .innerJoin('settlementWindow AS sw', 'sw.settlementWindowId', 'ssw.settlementWindowId')
           .innerJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'sw.currentStateChangeId')
           .innerJoin('settlementTransferParticipant AS stp', function () {
-            this.on('stp.settlementWindowId', 'settlement.settlementId')
+            this.on('stp.settlementId', 'settlement.settlementId')
               .andOn('stp.settlementWindowId', 'sw.settlementWindowId')
           })
           .innerJoin('settlementParticipantCurrency AS spc', function () {
