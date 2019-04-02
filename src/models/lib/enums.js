@@ -78,6 +78,23 @@ module.exports = {
       throw err
     }
   },
+  transferStateEnums: async function () {
+    try {
+      let transferStateEnum = {}
+      let transferStateEnumsList = await Db.transferState.find({})
+      if (transferStateEnumsList) {
+        for (let state of transferStateEnumsList) {
+          // apply distinct even though final result would contain distinct values
+          if (!transferStateEnum[`${state.enumeration}`]) {
+            transferStateEnum[`${state.enumeration}`] = state.enumeration
+          }
+        }
+        return transferStateEnum
+      }
+    } catch (err) {
+      throw err
+    }
+  },
   ledgerAccountTypes: async function () {
     try {
       let ledgerAccountTypeEnum = {}
