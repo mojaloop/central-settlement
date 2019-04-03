@@ -180,6 +180,52 @@ Test('Enums', async (enumsTest) => {
     }
   })
 
+  await enumsTest.test('transferStateEnums should', async transferStateEnumsTest => {
+    try {
+      await transferStateEnumsTest.test('return', async test => {
+        try {
+          const states = [
+            { enumeration: 'RECEIVED' },
+            { enumeration: 'RESERVED' },
+            { enumeration: 'COMMITTED' },
+            { enumeration: 'ABORTED' },
+            { enumeration: 'ABORTED' }
+          ]
+          Db.transferState = { find: sandbox.stub().returns(states) }
+          let transferStateEnumsEnum = await Enums.transferStateEnums()
+          test.equal(Object.keys(transferStateEnumsEnum).length, states.length - 1, 'transfer states enum')
+
+          Db.transferState.find = sandbox.stub().returns(undefined)
+          transferStateEnumsEnum = await Enums.transferStateEnums()
+          test.notOk(transferStateEnumsEnum, 'undefined when no record is returned')
+          test.end()
+        } catch (err) {
+          Logger.error(`transferStateEnums failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await transferStateEnumsTest.test('throw error if database is unavailable', async test => {
+        try {
+          Db.transferState = { find: sandbox.stub().throws(new Error('Database unavailable')) }
+          await Enums.transferStateEnums()
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`transferStateEnums failed with error - ${err}`)
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+      await transferStateEnumsTest.end()
+    } catch (err) {
+      Logger.error(`enumsTest failed with error - ${err}`)
+      transferStateEnumsTest.fail()
+      transferStateEnumsTest.end()
+    }
+  })
+
   await enumsTest.test('ledgerAccountTypes should', async ledgerAccountTypesTest => {
     try {
       await ledgerAccountTypesTest.test('return', async test => {

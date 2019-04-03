@@ -160,6 +160,7 @@ Test('/settlements/{id}', async (settlementTest) => {
     sandbox.stub(Enums, 'settlementWindowStates').returns({})
     sandbox.stub(Enums, 'transferParticipantRoleTypes').returns({})
     sandbox.stub(Enums, 'transferStates').returns({})
+    sandbox.stub(Enums, 'transferStateEnums').returns({})
     sandbox.stub(settlement, 'putById').returns({})
     try {
       const requests = new Promise((resolve, reject) => {
@@ -218,6 +219,7 @@ Test('/settlements/{id}', async (settlementTest) => {
     sandbox.stub(Enums, 'settlementWindowStates').returns({})
     sandbox.stub(Enums, 'transferParticipantRoleTypes').returns({})
     sandbox.stub(Enums, 'transferStates').returns({})
+    sandbox.stub(Enums, 'transferStateEnums').returns({})
     sandbox.stub(settlement, 'abortById').returns({})
     try {
       const requests = new Promise((resolve, reject) => {
