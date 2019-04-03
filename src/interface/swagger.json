@@ -273,6 +273,10 @@
                         "type": "string",
                         "enum": [
                             "PENDING_SETTLEMENT",
+                            "PS_TRANSFERS_RECORDED",
+                            "PS_TRANSFERS_RESERVED",
+                            "PS_TRANSFERS_COMMITTED",
+                            "SETTLING",
                             "SETTLED",
                             "ABORTED"
                         ],

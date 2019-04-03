@@ -88,7 +88,8 @@ module.exports = {
         settlementStates: await request.server.methods.enums('settlementStates'),
         settlementWindowStates: await request.server.methods.enums('settlementWindowStates'),
         transferParticipantRoleTypes: await request.server.methods.enums('transferParticipantRoleTypes'),
-        transferStates: await request.server.methods.enums('transferStates')
+        transferStates: await request.server.methods.enums('transferStates'),
+        transferStateEnums: await request.server.methods.enums('transferStateEnums')
       }
       if (p.participants) {
         return await Settlements.putById(settlementId, request.payload, Enums)

@@ -1,6 +1,9 @@
 instrumentation:
   include-all-sources: true
-  excludes: ['**/test/**']
+  excludes: [
+    '**/test/**,
+    src/models/index.js'
+  ]
 check:
   global:
     statements: 90
