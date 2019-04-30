@@ -29,7 +29,7 @@ const InitServer = require('./../../../src/setup').initialize
 const Enums = require('./../../../src/models/lib/enums')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const settlement = require('./../../../src/domain/settlement')
-const Db = require('./../../../src/models')
+const Db = require('./../../../src/lib/db')
 /**
  * Test for /settlementWindows
  */

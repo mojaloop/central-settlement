@@ -28,7 +28,7 @@ const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const SettlementWindowStateChangeModel = require('../../../../src/models/settlementWindow/settlementWindowStateChange')
-const Db = require('../../../../src/models')
+const Db = require('../../../../src/lib/db')
 
 Test('SettlementModel', async (settlementWindowStateChangeModelTest) => {
   let sandbox

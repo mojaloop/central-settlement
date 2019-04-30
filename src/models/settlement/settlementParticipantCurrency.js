@@ -26,7 +26,7 @@
 
 'use strict'
 
-const Db = require('../index')
+const Db = require('../../lib/db')
 
 const getAccountInSettlement = async ({ settlementId, accountId }) => {
   try {

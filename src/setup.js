@@ -31,7 +31,7 @@
 const Hapi = require('hapi')
 const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
-const Db = require('./models')
+const Db = require('./lib/db')
 const Enums = require('./models/lib/enums')
 const Config = require('./lib/config')
 

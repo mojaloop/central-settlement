@@ -24,7 +24,7 @@
 
 'use strict'
 
-const Db = require('../index')
+const Db = require('../../lib/db')
 
 const getBySettlementId = async (id) => {
   try {

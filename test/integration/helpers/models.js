@@ -23,7 +23,7 @@
  ******/
 
 'use strict'
-const Db = require('../../../src/models')
+const Db = require('../../../src/lib/db')
 
 module.exports = {
   getTransferParticipantsByTransferId: async function (transferId) {
