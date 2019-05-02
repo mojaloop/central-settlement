@@ -28,7 +28,7 @@
 
 'use strict'
 
-const Db = require('../index')
+const Db = require('../../lib/db')
 
 module.exports = {
   getBySettlementId: async function ({ settlementId }) {

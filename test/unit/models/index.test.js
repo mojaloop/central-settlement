@@ -25,7 +25,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Logger = require('@mojaloop/central-services-shared').Logger
-const Db = require('../../../src/models')
+const Db = require('../../../src/lib/db')
 
 Test('Central Services Database', (test) => {
   try {

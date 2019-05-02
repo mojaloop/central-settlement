@@ -29,7 +29,7 @@ const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const SettlementParticipantCurrencyModel = require('../../../../src/models/settlement/settlementParticipantCurrency')
-const Db = require('../../../../src/models')
+const Db = require('../../../../src/lib/db')
 
 Test('SettlementParticipantCurrencyModel', async (settlementParticipantCurrencyModelTest) => {
   let sandbox

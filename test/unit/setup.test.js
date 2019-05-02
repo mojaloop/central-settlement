@@ -80,7 +80,7 @@ Test('Server Setup', async setupTest => {
         'hapi': HapiStub,
         'hapi-openapi': HapiOpenAPIStub,
         'path': PathStub,
-        './models': DbStub,
+        './lib/db': DbStub,
         './models/lib/enums': EnumsStub,
         './lib/config': ConfigStub,
         'catbox-memory': EngineStub
