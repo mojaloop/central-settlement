@@ -26,7 +26,7 @@
 
 'use strict'
 
-const Db = require('../index')
+const Db = require('../../lib/db')
 
 const checkParticipantAccountExists = async ({ participantId, accountId }, enums = {}) => {
   try {

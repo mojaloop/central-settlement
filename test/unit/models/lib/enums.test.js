@@ -28,7 +28,7 @@ const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Enums = require('../../../../src/models/lib/enums')
-const Db = require('../../../../src/models')
+const Db = require('../../../../src/lib/db')
 
 Test('Enums', async (enumsTest) => {
   let sandbox

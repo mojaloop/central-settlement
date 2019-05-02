@@ -2,7 +2,7 @@ instrumentation:
   include-all-sources: true
   excludes: [
     '**/test/**,
-    src/models/index.js'
+    src/lib/db.js'
   ]
 check:
   global:
