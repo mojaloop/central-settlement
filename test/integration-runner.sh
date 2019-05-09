@@ -306,7 +306,6 @@ done
 
 >&1 echo "Central-ledger is starting"
 start_central_ledger
-exit 0
 
 if [ "$?" != 0 ]
 then
