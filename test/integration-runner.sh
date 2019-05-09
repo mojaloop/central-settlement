@@ -232,9 +232,6 @@ is_ml_api_adapter_up() {
 }
 
 # Script execution
-docker ps
-exit 1
-
 >&1 echo "Building Docker Image $DOCKER_IMAGE:$DOCKER_TAG with $DOCKER_FILE"
 docker build --no-cache -t $DOCKER_IMAGE:$DOCKER_TAG -f $DOCKER_FILE .
 
@@ -261,6 +258,7 @@ fi
 >&1 echo "Waiting for Kafka to start"
 until is_kafka_up; do
   >&1 printf "."
+  docker ps
   sleep 5
 done
 
@@ -277,6 +275,7 @@ fi
 >&2 echo "Waiting for DB to start"
 until is_db_up; do
   >&2 printf "."
+  docker ps
   sleep 5
 done
 
@@ -303,6 +302,7 @@ fi
 >&2 echo "Waiting for Simulator to start"
 until is_simulator_up; do
   >&2 printf "."
+  docker ps
   sleep 5
 done
 
@@ -319,6 +319,7 @@ fi
 >&2 echo "Waiting for Central-ledger to start"
 until is_central_ledger_up; do
   >&2 printf "."
+  docker ps
   sleep 5
 done
 
