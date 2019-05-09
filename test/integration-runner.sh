@@ -258,7 +258,6 @@ fi
 >&1 echo "Waiting for Kafka to start"
 until is_kafka_up; do
   >&1 printf "."
-  docker ps
   sleep 5
 done
 
@@ -302,7 +301,6 @@ fi
 >&2 echo "Waiting for Simulator to start"
 until is_simulator_up; do
   >&2 printf "."
-  docker ps
   sleep 5
 done
 
@@ -319,7 +317,8 @@ fi
 >&2 echo "Waiting for Central-ledger to start"
 until is_central_ledger_up; do
   >&2 printf "."
-  docker ps
+  docker ps -a
+  docker logs $CENTRAL_LEDGER_HOST
   sleep 5
 done
 
