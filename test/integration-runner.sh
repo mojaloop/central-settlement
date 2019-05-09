@@ -232,6 +232,7 @@ is_ml_api_adapter_up() {
 }
 
 # Script execution
+exit 1
 
 >&1 echo "Building Docker Image $DOCKER_IMAGE:$DOCKER_TAG with $DOCKER_FILE"
 docker build --no-cache -t $DOCKER_IMAGE:$DOCKER_TAG -f $DOCKER_FILE .
@@ -306,7 +307,6 @@ done
 
 >&1 echo "Central-ledger is starting"
 start_central_ledger
-exit 1
 
 if [ "$?" != 0 ]
 then
