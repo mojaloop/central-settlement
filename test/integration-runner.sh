@@ -205,8 +205,7 @@ is_simulator_up() {
 }
 
 start_central_ledger () {
-  # docker run --rm -td \
-  docker run -td \
+  docker run --rm -td \
     -p 3001:3001 \
     --network $DOCKER_NETWORK \
     --name=$CENTRAL_LEDGER_HOST \
@@ -233,6 +232,7 @@ is_ml_api_adapter_up() {
 }
 
 # Script execution
+
 >&1 echo "Building Docker Image $DOCKER_IMAGE:$DOCKER_TAG with $DOCKER_FILE"
 docker build --no-cache -t $DOCKER_IMAGE:$DOCKER_TAG -f $DOCKER_FILE .
 
@@ -275,7 +275,6 @@ fi
 >&2 echo "Waiting for DB to start"
 until is_db_up; do
   >&2 printf "."
-  docker ps
   sleep 5
 done
 
@@ -307,6 +306,7 @@ done
 
 >&1 echo "Central-ledger is starting"
 start_central_ledger
+exit 0
 
 if [ "$?" != 0 ]
 then
@@ -318,8 +318,6 @@ fi
 >&2 echo "Waiting for Central-ledger to start"
 until is_central_ledger_up; do
   >&2 printf "."
-  docker ps -a
-  docker logs $CENTRAL_LEDGER_HOST
   sleep 5
 done
 
