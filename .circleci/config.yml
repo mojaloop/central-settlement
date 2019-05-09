@@ -232,7 +232,6 @@ jobs:
     machine: true
     <<: *defaults_working_directory
     steps:
-      - setup_remote_docker
       - checkout
       - run:
           <<: *defaults_environment
