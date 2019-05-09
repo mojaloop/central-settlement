@@ -205,7 +205,8 @@ is_simulator_up() {
 }
 
 start_central_ledger () {
-  docker run --rm -td \
+  # docker run --rm -td \
+  docker run -td \
     -p 3001:3001 \
     --network $DOCKER_NETWORK \
     --name=$CENTRAL_LEDGER_HOST \
