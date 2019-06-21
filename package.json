@@ -1,7 +1,7 @@
 {
     "name": "central-settlement",
     "description": "Central settlements hosted by a scheme to record and make settlements",
-    "version": "6.1.2",
+    "version": "6.4.0",
     "license": "Apache-2.0",
     "private": true,
     "author": "ModusBox",
@@ -24,7 +24,7 @@
         "@mojaloop/central-services-auth": "5.2.1",
         "@mojaloop/central-services-database": "5.2.1",
         "@mojaloop/central-services-error-handling": "5.2.0",
-        "@mojaloop/central-services-shared": "5.2.0",
+        "@mojaloop/central-services-shared": "vessels-tech/central-services-shared#876a80e7e508580bbf639195bea646462ea22a38",
         "@mojaloop/central-services-stream": "5.2.0",
         "@mojaloop/forensic-logging-client": "5.2.0",
         "boom": "7.3.0",
@@ -42,6 +42,7 @@
         "faucet": "0.0.1",
         "istanbul": "1.1.0-alpha.1",
         "node-fetch": "2.3.0",
+        "nodemon": "^1.19.1",
         "pre-commit": "1.2.2",
         "proxyquire": "2.1.0",
         "rewire": "4.0.1",
@@ -54,6 +55,7 @@
     },
     "scripts": {
         "start": "node src/server.js",
+        "dev": "nodemon src/server.js",
         "pretest": "standard",
         "standard": "standard",
         "test": "npm run test:unit | faucet",
