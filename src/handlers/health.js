@@ -36,18 +36,19 @@ const { statusEnum, serviceName } = require('@mojaloop/central-services-shared')
 const Path = require('path')
 
 const packageJson = require('../../package.json')
-const { getSubServiceHealthBroker, getSubServiceHealthDatastore } = require('./lib/healthCheck/subServiceHealth')
+const { getSubServiceHealthDatastore } = require('./lib/healthCheck/subServiceHealth')
 
 
 Logger.info('path ', Path.basename(__filename))
 
-const healthCheck = new HealthCheck(packageJson, [
-  // getSubServiceHealthBroker,
-  getSubServiceHealthDatastore
-])
+//TODO: do we need to check the broker as well?
 
 module.exports = {
   get: async function getHealth(request, h) {
+    const healthCheck = new HealthCheck(packageJson, [
+      getSubServiceHealthDatastore
+    ])
+
     let responseBody
     let responseCode = 200
     try {
