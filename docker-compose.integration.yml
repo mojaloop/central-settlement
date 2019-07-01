@@ -11,13 +11,21 @@ services:
     links:
       - mysql
       - kafka
+      - central-ledger
+      - ml-api-adapter
+      - simulator
     ports:
       - "3007:3007"
     volumes:
-      # - ./docker/central-ledger/default.json:/opt/central-ledger/config/default.json
+      - ./docker/central-settlement/default.json:/opt/central-settlement/config/default.json
       - ./test:/opt/central-settlement/test
       - ./src:/opt/central-settlement/src
-    # environment:
+    environment:
+      - CENTRAL_LEDGER_HOST=central-ledger
+      - ML_API_ADAPTER_HOST=ml-api-adapter
+      - SIMULATOR_HOST=simulator
+      - SIMULATOR_REMOTE_HOST=simulator
+
     #   - CLEDG_DATABASE_URI=mysql://central_ledger:password@mysql:3306/central_ledger
     #   - CLEDG_SIDECAR__DISABLED=true
     command:

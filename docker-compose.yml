@@ -11,9 +11,9 @@ services:
       - kafka
     ports:
       - "3007:3007"
-    
-    # volumes:
-    #    - ./docker/central-ledger/default.json:/opt/central-ledger/config/default.json
+    volumes:
+       - ./docker/central-settlement/default.json:/opt/central-settlement/config/default.json
+
     # environment:
     #   - CLEDG_DATABASE_URI=mysql://central_ledger:password@mysql:3306/central_ledger
     #   - CLEDG_SIDECAR__DISABLED=true
@@ -62,6 +62,16 @@ services:
       - MYSQL_PASSWORD=${DBPASS:-password}
       - MYSQL_DATABASE=${DBUSER:-central_ledger}
       - MYSQL_ALLOW_EMPTY_PASSWORD=true
+  
+  simulator:
+    image: mojaloop/simulator
+    container_name: cs_simulator
+    links:
+      - ml-api-adapter
+    ports:
+      - "8444:8444"
+    environment:
+      - TRANSFERS_ENDPOINT=http://ml-api-adapter:3000
 
   mockserver:
     image: jamesdbloom/mockserver

@@ -70,5 +70,6 @@ docker exec -it cs_central-ledger sh
 npm run migrate
 
 #in a new shell
+docker exec -it cs_central-settlement sh
 npm run test:int
 ```

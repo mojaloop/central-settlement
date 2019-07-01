@@ -29,11 +29,13 @@ const Joi = require('joi')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Db = require('@mojaloop/central-services-database').Db
 
-const Handlers = {
-  index: require('../../../src/handlers/register'),
-  positions: require('../../../src/handlers/positions/handler'),
-  transfers: require('../../../src/handlers/transfers/handler')
-}
+const Config = require('../../../src/lib/config')
+
+// const Handlers = {
+//   // index: require('../../../src/handlers/lib ../../../src/handlers/register'),
+//   positions: require('../../../src/handlers/positions/handler'),
+//   transfers: require('../../../src/handlers/transfers/handler')
+// }
 const {
   createRequest,
   unwrapResponse
