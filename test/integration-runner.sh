@@ -279,7 +279,9 @@ until is_db_up; do
 done
 
 >&1 echo "Running migrations"
-fcmd_centralledger "apk add --no-cache nodejs-npm && npm install npm-run-all && npm run migrate"
+# fcmd_centralledger "apk add --no-cache nodejs-npm && npm install npm-run-all && npm run migrate"
+fcmd_centralledger "npm run migrate"
+
 
 if [ "$?" != 0 ]
 then

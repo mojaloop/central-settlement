@@ -24,7 +24,7 @@
         "@mojaloop/central-services-auth": "5.2.1",
         "@mojaloop/central-services-database": "5.2.1",
         "@mojaloop/central-services-error-handling": "5.2.0",
-        "@mojaloop/central-services-shared": "vessels-tech/central-services-shared#876a80e7e508580bbf639195bea646462ea22a38",
+        "@mojaloop/central-services-shared": "6.4.0",
         "@mojaloop/central-services-stream": "5.2.0",
         "@mojaloop/forensic-logging-client": "5.2.0",
         "boom": "7.3.0",

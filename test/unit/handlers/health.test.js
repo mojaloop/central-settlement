@@ -49,14 +49,13 @@ Test('/health', async healthTest => {
   healthTest.beforeEach(async t => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(HealthCheck.prototype, 'getHealth').resolves()
-    // sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    // server = await InitServer()
+
     t.end()
   })
 
   healthTest.afterEach(async t => {
-    // await server.stop()
     sandbox.restore()
+    
     t.end()
   })
 
