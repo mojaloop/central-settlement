@@ -61,7 +61,7 @@ npm install
 
 ##  3. <a name='RunningLocally'></a>Running Locally (with dependencies inside of docker)
 
-In this method, we will run core dependencies (`mongodb`, `kafka`) inside of docker containers, while running the `central-settlement` server on your local machine.
+In this method, we will run core dependencies (`mysql`, `kafka`) inside of docker containers, while running the `central-settlement` server on your local machine.
 
 > Alternatively, you can run the `central-settlement` inside of `docker-compose` with the rest of the dependencies to make the setup a little easier: [Running Inside Docker](#RunningInsideDocker).
 
@@ -69,7 +69,7 @@ In this method, we will run core dependencies (`mongodb`, `kafka`) inside of doc
 
 ```bash
 # start the dependencies inside of docker
-docker-compose up mongo kafka
+docker-compose up mysql kafka
 
 ```
 
@@ -151,7 +151,7 @@ npm run test:coverage
 
 
 #### Prerequisites:
-* `ml-api-adapter` and `central-ledger` services running (follow the [Running Inside Docker guide](#RunningInsideDocker) to get these services up and running)
+* `ml-api-adapter`, `central-ledger`, simulator and mockserver services running (follow the [Running Inside Docker guide](#RunningInsideDocker) to get these services up and running)
 * _Optionally_, run `central-timeout` , `cental-event-processor` as well.
 
 
