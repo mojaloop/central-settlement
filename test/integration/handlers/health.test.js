@@ -34,12 +34,13 @@ const {
   createRequest,
   unwrapResponse
 } = require('../../util')
+const healthHandler = require('../../../src/handlers/health')
 
 const debug = false
 
 
 
-Test('Root handler test', async handlersTest => {
+Test('Health Handler', async handlersTest => {
   let startTime = new Date()
   await Db.connect(Config.DATABASE_URI)
 
@@ -75,7 +76,7 @@ Test('Root handler test', async handlersTest => {
       const {
         responseBody,
         responseCode
-      } = await unwrapResponse((reply) => rootApiHandler.getHealth(createRequest({}), reply))
+      } = await unwrapResponse((reply) => healthHandler.get(createRequest({}), reply))
 
       // Assert
       const validationResult = Joi.validate(responseBody, expectedSchema) // We use Joi to validate the results as they rely on timestamps that are variable
