@@ -31,11 +31,11 @@ const Db = require('@mojaloop/central-services-database').Db
 
 const Config = require('../../../src/lib/config')
 
-// const Handlers = {
-//   // index: require('../../../src/handlers/lib ../../../src/handlers/register'),
-//   positions: require('../../../src/handlers/positions/handler'),
-//   transfers: require('../../../src/handlers/transfers/handler')
-// }
+const Handlers = {
+  // index: require('../../../src/handlers/lib ../../../src/handlers/register'),
+  positions: require('../../../src/handlers/positions/handler'),
+  transfers: require('../../../src/handlers/transfers/handler')
+}
 const {
   createRequest,
   unwrapResponse
@@ -49,93 +49,93 @@ Test('Root handler test', async handlersTest => {
   let startTime = new Date()
   await Db.connect(Config.DATABASE_URI)
 
-  // await handlersTest.test('registerAllHandlers should', async registerAllHandlers => {
-  //   await registerAllHandlers.test(`setup handlers`, async (test) => {
-  //     await Db.connect(Config.DATABASE_URI)
-  //     await Handlers.transfers.registerPrepareHandler()
-  //     await Handlers.positions.registerPositionHandler()
-  //     await Handlers.transfers.registerFulfilHandler()
+  await handlersTest.test('registerAllHandlers should', async registerAllHandlers => {
+    await registerAllHandlers.test(`setup handlers`, async (test) => {
+      await Db.connect(Config.DATABASE_URI)
+      await Handlers.transfers.registerPrepareHandler()
+      await Handlers.positions.registerPositionHandler()
+      await Handlers.transfers.registerFulfilHandler()
 
-  //     test.pass('done')
-  //     test.end()
-  //   })
+      test.pass('done')
+      test.end()
+    })
 
-  //   await registerAllHandlers.end()
-  // })
+    await registerAllHandlers.end()
+  })
 
   /* Health Check Tests */
 
   await handlersTest.test('healthCheck should', async healthCheckTest => {
-    // await healthCheckTest.test('get the basic health of the service', async (test) => {
-    //   // Arrange
-    //   const expectedSchema = {
-    //     status: Joi.string().valid('OK').required(),
-    //     uptime: Joi.number().required(),
-    //     startTime: Joi.date().iso().required(),
-    //     versionNumber: Joi.string().required(),
-    //     services: Joi.array().required()
-    //   }
-    //   const expectedStatus = 200
-    //   const expectedServices = [
-    //     { name: 'datastore', status: 'OK' }
-    //   ]
+    await healthCheckTest.test('get the basic health of the service', async (test) => {
+      // Arrange
+      const expectedSchema = {
+        status: Joi.string().valid('OK').required(),
+        uptime: Joi.number().required(),
+        startTime: Joi.date().iso().required(),
+        versionNumber: Joi.string().required(),
+        services: Joi.array().required()
+      }
+      const expectedStatus = 200
+      const expectedServices = [
+        { name: 'datastore', status: 'OK' }
+      ]
 
-    //   // Act
-    //   const {
-    //     responseBody,
-    //     responseCode
-    //   } = await unwrapResponse((reply) => rootApiHandler.getHealth(createRequest({}), reply))
+      // Act
+      const {
+        responseBody,
+        responseCode
+      } = await unwrapResponse((reply) => rootApiHandler.getHealth(createRequest({}), reply))
 
-    //   // Assert
-    //   const validationResult = Joi.validate(responseBody, expectedSchema) // We use Joi to validate the results as they rely on timestamps that are variable
-    //   test.equal(validationResult.error, null, 'The response matches the validation schema')
-    //   test.deepEqual(responseCode, expectedStatus, 'The response code matches')
-    //   test.deepEqual(responseBody.services, expectedServices, 'The sub-services are correct')
-    //   test.end()
-    // })
+      // Assert
+      const validationResult = Joi.validate(responseBody, expectedSchema) // We use Joi to validate the results as they rely on timestamps that are variable
+      test.equal(validationResult.error, null, 'The response matches the validation schema')
+      test.deepEqual(responseCode, expectedStatus, 'The response code matches')
+      test.deepEqual(responseBody.services, expectedServices, 'The sub-services are correct')
+      test.end()
+    })
 
     healthCheckTest.end()
   })
 
-  // await handlersTest.test('teardown', async (assert) => {
-  //   try {
-  //     await Db.disconnect()
-  //     assert.pass('database connection closed')
+  await handlersTest.test('teardown', async (assert) => {
+    try {
+      await Db.disconnect()
+      assert.pass('database connection closed')
 
-  //     let topics = [
-  //       'topic-transfer-prepare',
-  //       'topic-transfer-position',
-  //       'topic-transfer-fulfil',
-  //       'topic-notification-event'
-  //     ]
-  //     for (let topic of topics) {
-  //       try {
-  //         await Producer.getProducer(topic).disconnect()
-  //         assert.pass(`producer to ${topic} disconnected`)
-  //       } catch (err) {
-  //         assert.pass(err.message)
-  //       }
-  //     }
-  //     for (let topic of topics) {
-  //       try {
-  //         await Consumer.getConsumer(topic).disconnect()
-  //         assert.pass(`consumer to ${topic} disconnected`)
-  //       } catch (err) {
-  //         assert.pass(err.message)
-  //       }
-  //     }
+      let topics = [
+        'topic-transfer-prepare',
+        'topic-transfer-position',
+        'topic-transfer-fulfil',
+        'topic-notification-event'
+      ]
+      for (let topic of topics) {
+        try {
+          await Producer.getProducer(topic).disconnect()
+          assert.pass(`producer to ${topic} disconnected`)
+        } catch (err) {
+          assert.pass(err.message)
+        }
+      }
+      for (let topic of topics) {
+        try {
+          await Consumer.getConsumer(topic).disconnect()
+          assert.pass(`consumer to ${topic} disconnected`)
+        } catch (err) {
+          assert.pass(err.message)
+        }
+      }
 
-  //     if (debug) {
-  //       let elapsedTime = Math.round(((new Date()) - startTime) / 100) / 10
-  //       console.log(`handlers.test.js finished in (${elapsedTime}s)`)
-  //     }
-  //     assert.end()
-  //   } catch (err) {
-  //     Logger.error(`teardown failed with error - ${err}`)
-  //     assert.fail()
-  //     assert.end()
-  //   }
-  // })
+      if (debug) {
+        let elapsedTime = Math.round(((new Date()) - startTime) / 100) / 10
+        console.log(`handlers.test.js finished in (${elapsedTime}s)`)
+      }
+      assert.end()
+    } catch (err) {
+      Logger.error(`teardown failed with error - ${err}`)
+      assert.fail()
+      assert.end()
+    }
+  })
 
   handlersTest.end()
 })

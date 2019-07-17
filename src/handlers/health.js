@@ -33,35 +33,18 @@ const Boom = require('boom')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
 const { statusEnum, serviceName } = require('@mojaloop/central-services-shared').HealthCheck.HealthCheckEnums
+const { defaultHealthHandler } = require('@mojaloop/central-services-health')
 const Path = require('path')
 
 const packageJson = require('../../package.json')
 const { getSubServiceHealthDatastore } = require('./lib/healthCheck/subServiceHealth')
 
-
 Logger.info('path ', Path.basename(__filename))
 
-//TODO: do we need to check the broker as well?
+const healthCheck = new HealthCheck(packageJson, [
+  getSubServiceHealthDatastore
+])
 
 module.exports = {
-  get: async function getHealth(request, h) {
-    const healthCheck = new HealthCheck(packageJson, [
-      getSubServiceHealthDatastore
-    ])
-
-    let responseBody
-    let responseCode = 200
-    try {
-      responseBody = await healthCheck.getHealth()
-    } catch (err) {
-      Logger.error(err.message)
-    }
-
-    if (!responseBody || responseBody.status !== statusEnum.OK) {
-      // Gateway Error
-      responseCode = 502
-    }
-
-    return h.response(responseBody).code(responseCode)
-  }
+  get: defaultHealthHandler(healthCheck)
 }

@@ -25,36 +25,10 @@
 'use strict'
 
 
-
-// const mongoose = require('mongoose')
 const { statusEnum, serviceName } = require('@mojaloop/central-services-shared').HealthCheck.HealthCheckEnums
 const Logger = require('@mojaloop/central-services-shared').Logger
 
 const MigrationLockModel = require('../../../models/misc/migrationLock')
-
-/**
- * @function getSubServiceHealthBroker
- *
- * @description Gets the health for the broker
- * //TODO: can we actually get a healthCheck for a producer? 
- * There is no getMetadata method for a producer
- * @returns Promise<SubServiceHealth> The SubService health object for the broker
- */
-// const getSubServiceHealthBroker = async () => {
-//   const consumerTopics = Consumer.getListOfTopics()
-//   let status = statusEnum.OK
-//   try {
-//     await Promise.all(consumerTopics.map(t => Consumer.isConsumerConnected(t)))
-//   } catch (err) {
-//     Logger.debug(`getSubServiceHealthBroker failed with error ${err.message}.`)
-//     status = statusEnum.DOWN
-//   }
-
-//   return {
-//     name: serviceName.broker,
-//     status
-//   }
-// }
 
 /**
  * @function getSubServiceHealthDatastore
@@ -85,6 +59,5 @@ const getSubServiceHealthDatastore = async () => {
 }
 
 module.exports = {
-  // getSubServiceHealthBroker,
   getSubServiceHealthDatastore
 }
