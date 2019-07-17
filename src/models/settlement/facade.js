@@ -26,7 +26,7 @@
 
 'use strict'
 
-const Boom = require('boom')
+const Boom = require('@hapi/boom')
 const Db = require('../../lib/db')
 const Uuid = require('uuid4')
 const Crypto = require('crypto')
