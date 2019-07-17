@@ -30,12 +30,6 @@ const Logger = require('@mojaloop/central-services-shared').Logger
 const Db = require('@mojaloop/central-services-database').Db
 
 const Config = require('../../../src/lib/config')
-
-const Handlers = {
-  // index: require('../../../src/handlers/lib ../../../src/handlers/register'),
-  positions: require('../../../src/handlers/positions/handler'),
-  transfers: require('../../../src/handlers/transfers/handler')
-}
 const {
   createRequest,
   unwrapResponse
@@ -52,9 +46,6 @@ Test('Root handler test', async handlersTest => {
   await handlersTest.test('registerAllHandlers should', async registerAllHandlers => {
     await registerAllHandlers.test(`setup handlers`, async (test) => {
       await Db.connect(Config.DATABASE_URI)
-      await Handlers.transfers.registerPrepareHandler()
-      await Handlers.positions.registerPositionHandler()
-      await Handlers.transfers.registerFulfilHandler()
 
       test.pass('done')
       test.end()
@@ -102,39 +93,12 @@ Test('Root handler test', async handlersTest => {
       await Db.disconnect()
       assert.pass('database connection closed')
 
-      let topics = [
-        'topic-transfer-prepare',
-        'topic-transfer-position',
-        'topic-transfer-fulfil',
-        'topic-notification-event'
-      ]
-      for (let topic of topics) {
-        try {
-          await Producer.getProducer(topic).disconnect()
-          assert.pass(`producer to ${topic} disconnected`)
-        } catch (err) {
-          assert.pass(err.message)
-        }
-      }
-      for (let topic of topics) {
-        try {
-          await Consumer.getConsumer(topic).disconnect()
-          assert.pass(`consumer to ${topic} disconnected`)
-        } catch (err) {
-          assert.pass(err.message)
-        }
-      }
-
-      if (debug) {
-        let elapsedTime = Math.round(((new Date()) - startTime) / 100) / 10
-        console.log(`handlers.test.js finished in (${elapsedTime}s)`)
-      }
-      assert.end()
     } catch (err) {
       Logger.error(`teardown failed with error - ${err}`)
       assert.fail()
-      assert.end()
     }
+
+    assert.end()
   })
 
   handlersTest.end()
