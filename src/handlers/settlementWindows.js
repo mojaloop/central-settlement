@@ -31,7 +31,7 @@
 
 'use strict'
 
-const Boom = require('boom')
+const Boom = require('@hapi/boom')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Path = require('path')
 const settlementWindows = require('./../domain/settlementWindow')
