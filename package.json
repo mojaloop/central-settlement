@@ -1,7 +1,7 @@
 {
     "name": "central-settlement",
     "description": "Central settlements hosted by a scheme to record and make settlements",
-    "version": "7.1.0",
+    "version": "7.1.1",
     "license": "Apache-2.0",
     "private": true,
     "author": "ModusBox",
@@ -27,6 +27,7 @@
         "@mojaloop/central-services-auth": "5.2.1",
         "@mojaloop/central-services-database": "5.2.1",
         "@mojaloop/central-services-error-handling": "7.1.1",
+        "@mojaloop/central-services-health": "7.0.0",
         "@mojaloop/central-services-shared": "6.4.1",
         "@mojaloop/central-services-stream": "6.2.2",
         "@mojaloop/forensic-logging-client": "5.2.0",
@@ -37,11 +38,13 @@
         "uuid4": "1.1.4"
     },
     "devDependencies": {
+        "@hapi/joi": "15.1.0",
         "bluebird": "3.5.3",
         "eslint": "5.14.1",
         "faucet": "0.0.1",
         "istanbul": "1.1.0-alpha.1",
         "node-fetch": "2.3.0",
+        "nodemon": "1.19.1",
         "pre-commit": "1.2.2",
         "proxyquire": "2.1.0",
         "rewire": "4.0.1",
@@ -54,6 +57,7 @@
     },
     "scripts": {
         "start": "node src/server.js",
+        "dev": "nodemon src/server.js",
         "pretest": "standard",
         "standard": "standard",
         "test": "npm run test:unit | faucet",
