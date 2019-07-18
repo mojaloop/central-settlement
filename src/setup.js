@@ -46,7 +46,7 @@ const defaultConfig = {
   cache: [
     {
       provider: {
-        constructor: require('catbox-memory'),
+        constructor: require('@hapi/catbox-memory'),
         options: {
           partition: 'cache'
         }
