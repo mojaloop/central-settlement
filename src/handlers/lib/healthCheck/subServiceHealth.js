@@ -24,7 +24,6 @@
  ******/
 'use strict'
 
-
 const { statusEnum, serviceName } = require('@mojaloop/central-services-shared').HealthCheck.HealthCheckEnums
 const Logger = require('@mojaloop/central-services-shared').Logger
 

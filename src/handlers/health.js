@@ -22,17 +22,16 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
-* Lewis Daly <lewis@vesselstech.com>
+ * VesselsTech
+ - Lewis Daly <lewis@vesselstech.com>
 
  --------------
  ******/
 
 'use strict'
 
-const Boom = require('boom')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
-const { statusEnum, serviceName } = require('@mojaloop/central-services-shared').HealthCheck.HealthCheckEnums
 const { defaultHealthHandler } = require('@mojaloop/central-services-health')
 const Path = require('path')
 

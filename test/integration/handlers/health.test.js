@@ -36,14 +36,7 @@ const {
 } = require('../../util')
 const healthHandler = require('../../../src/handlers/health')
 
-const debug = false
-
-
-
 Test('Health Handler', async handlersTest => {
-  let startTime = new Date()
-  await Db.connect(Config.DATABASE_URI)
-
   await handlersTest.test('registerAllHandlers should', async registerAllHandlers => {
     await registerAllHandlers.test(`setup handlers`, async (test) => {
       await Db.connect(Config.DATABASE_URI)
@@ -93,7 +86,6 @@ Test('Health Handler', async handlersTest => {
     try {
       await Db.disconnect()
       assert.pass('database connection closed')
-
     } catch (err) {
       Logger.error(`teardown failed with error - ${err}`)
       assert.fail()

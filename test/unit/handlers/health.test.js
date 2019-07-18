@@ -25,49 +25,39 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Joi = require('@hapi/joi')
-const Logger = require('@mojaloop/central-services-shared').Logger
 
 const src = `../../../src`
-const Mockgen = require('../../data/mockgen.js')
-const InitServer = require(`${src}/setup`).initialize
-const Enums = require(`${src}/models/lib/enums`)
-const Db = require(`${src}/lib/db`)
-const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
-
-const subServiceHealth = require(`${src}/handlers/lib/healthCheck/subServiceHealth`)
 const getHealth = require(`${src}/handlers/health`).get
+const MigrationLockModel = require(`${src}/models/misc/migrationLock`)
+
 const {
   createRequest,
   unwrapResponse
 } = require('../../util')
 
 Test('/health', async healthTest => {
-  let server
   let sandbox
 
   healthTest.beforeEach(async t => {
     sandbox = Sinon.createSandbox()
-    sandbox.stub(HealthCheck.prototype, 'getHealth').resolves()
 
     t.end()
   })
 
   healthTest.afterEach(async t => {
     sandbox.restore()
-    
+
     t.end()
   })
 
   healthTest.test('getHealth', getHealthTest => {
-    getHealthTest.test('returns the correct response when the health check is up', async test => {
+    getHealthTest.test('returns the correct response when the subservices are up', async test => {
       // Arrange
-      HealthCheck.prototype.getHealth.resolves({status: 'OK'})
-      const expectedResponseCode= 200
-    
+      sandbox.stub(MigrationLockModel, 'getIsMigrationLocked').returns(false)
+      const expectedResponseCode = 200
+
       // Act
       const {
-        responseBody,
         responseCode
       } = await unwrapResponse((reply) => getHealth(createRequest({ query: { detailed: true } }), reply))
 
@@ -76,30 +66,13 @@ Test('/health', async healthTest => {
       test.end()
     })
 
-    getHealthTest.test('returns the correct response when the health check is down', async test => {
+    getHealthTest.test('returns the correct response when a subservice is down', async test => {
       // Arrange
-      HealthCheck.prototype.getHealth.resolves(new Error('getHealth() failed'))
-      const expectedResponseCode= 502
-    
+      sandbox.stub(MigrationLockModel, 'getIsMigrationLocked').throws(new Error('DB Down'))
+      const expectedResponseCode = 502
+
       // Act
       const {
-        responseBody,
-        responseCode
-      } = await unwrapResponse((reply) => getHealth(createRequest({ query: { detailed: true } }), reply))
-
-      // Assert
-      test.deepEqual(responseCode, expectedResponseCode, 'The response code matches')
-      test.end()
-    })
-
-    getHealthTest.test('is down when there is no response body', async test => {
-      // Arrange
-      HealthCheck.prototype.getHealth.resolves(undefined)
-      const expectedResponseCode= 502
-    
-      // Act
-      const {
-        responseBody,
         responseCode
       } = await unwrapResponse((reply) => getHealth(createRequest({ query: { detailed: true } }), reply))
 

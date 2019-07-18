@@ -6,19 +6,15 @@ const { statusEnum, serviceName } = require('@mojaloop/central-services-shared')
 
 const MigrationLockModel = require('../../../../../src/models/misc/migrationLock')
 
-
 const {
-  getSubServiceHealthBroker,
   getSubServiceHealthDatastore
-  } = require('../../../../../src/handlers/lib/healthCheck/subServiceHealth')
+} = require('../../../../../src/handlers/lib/healthCheck/subServiceHealth')
 
 Test('SubServiceHealth test', function (subServiceHealthTest) {
   let sandbox
 
   subServiceHealthTest.beforeEach(t => {
     sandbox = Sinon.createSandbox()
-    // sandbox.stub(MigrationLockModel, 'getIsMigrationLocked')
-    // sandbox.stub(Consumer, 'isConsumerConnected')
 
     t.end()
   })
@@ -74,7 +70,6 @@ Test('SubServiceHealth test', function (subServiceHealthTest) {
 
     datastoreTest.end()
   })
-
 
   subServiceHealthTest.end()
 })

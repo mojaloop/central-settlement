@@ -48,7 +48,6 @@ const unwrapResponse = async (asyncFunction) => {
   }
 }
 
-
 module.exports = {
   createRequest,
   unwrapResponse
