@@ -77,7 +77,7 @@ Test('Server Setup', async setupTest => {
       EngineStub = sandbox.stub()
 
       SetupProxy = Proxyquire('../../src/setup', {
-        'hapi': HapiStub,
+        '@hapi/hapi': HapiStub,
         'hapi-openapi': HapiOpenAPIStub,
         'path': PathStub,
         './lib/db': DbStub,
