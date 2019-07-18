@@ -28,7 +28,7 @@
 
 'use strict'
 
-const Hapi = require('hapi')
+const Hapi = require('@hapi/hapi')
 const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
 const Db = require('./lib/db')
@@ -46,7 +46,7 @@ const defaultConfig = {
   cache: [
     {
       provider: {
-        constructor: require('catbox-memory'),
+        constructor: require('@hapi/catbox-memory'),
         options: {
           partition: 'cache'
         }

@@ -80,7 +80,7 @@ module.exports = () => {
         COMMITTED: 'COMMITTED'
       }
     }
-    const sleepMilliseconds = 750
+    const sleepMilliseconds = 1000
 
     let sandbox
     prepareTransferDataTest.beforeEach(test => {
@@ -290,7 +290,7 @@ module.exports = () => {
           let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/endpoints`
           let body = {
             type: 'FSPIOP_CALLBACK_URL_TRANSFER_ERROR',
-            value: `${fsp.endpointBase}//transfers/{{transferId}}/error`
+            value: `${fsp.endpointBase}/transfers/{{transferId}}/error`
           }
           let opts = {
             method: 'POST',
