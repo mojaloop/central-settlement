@@ -80,7 +80,7 @@ module.exports = () => {
         COMMITTED: 'COMMITTED'
       }
     }
-    const sleepMilliseconds = 750
+    const sleepMilliseconds = 1000
 
     let sandbox
     prepareTransferDataTest.beforeEach(test => {
