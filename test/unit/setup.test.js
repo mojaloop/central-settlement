@@ -77,13 +77,13 @@ Test('Server Setup', async setupTest => {
       EngineStub = sandbox.stub()
 
       SetupProxy = Proxyquire('../../src/setup', {
+        '@hapi/catbox-memory': EngineStub,
         '@hapi/hapi': HapiStub,
         'hapi-openapi': HapiOpenAPIStub,
         'path': PathStub,
         './lib/db': DbStub,
         './models/lib/enums': EnumsStub,
-        './lib/config': ConfigStub,
-        'catbox-memory': EngineStub
+        './lib/config': ConfigStub
       })
     } catch (err) {
       Logger.error(`setupTest failed with error - ${err}`)

@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "@hapi/boom": "7.4.2",
+        "@hapi/catbox-memory": "4.1.0",
         "@hapi/hapi": "18.3.1",
         "@mojaloop/central-ledger": "5.2.1",
         "@mojaloop/central-services-auth": "5.2.1",
@@ -29,7 +30,6 @@
         "@mojaloop/central-services-shared": "6.4.1",
         "@mojaloop/central-services-stream": "6.2.2",
         "@mojaloop/forensic-logging-client": "5.2.0",
-        "catbox-memory": "4.0.1",
         "hapi-openapi": "1.2.2",
         "hapi-pagination": "2.1.0",
         "mustache": "3.0.1",
