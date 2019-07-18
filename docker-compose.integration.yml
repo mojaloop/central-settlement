@@ -25,9 +25,6 @@ services:
       - ML_API_ADAPTER_HOST=ml-api-adapter
       - SIMULATOR_HOST=simulator
       - SIMULATOR_REMOTE_HOST=simulator
-
-    #   - CLEDG_DATABASE_URI=mysql://central_ledger:password@mysql:3306/central_ledger
-    #   - CLEDG_SIDECAR__DISABLED=true
     command:
       - tail 
       - -f 

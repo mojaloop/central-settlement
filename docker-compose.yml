@@ -14,11 +14,6 @@ services:
     volumes:
        - ./docker/central-settlement/default.json:/opt/central-settlement/config/default.json
 
-    # environment:
-    #   - CLEDG_DATABASE_URI=mysql://central_ledger:password@mysql:3306/central_ledger
-    #   - CLEDG_SIDECAR__DISABLED=true
-
-
   central-ledger:
     image: mojaloop/central-ledger:latest
     container_name: cs_central-ledger
@@ -41,10 +36,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      # override the default values with our own - this is because the KAFKA_HOST env variable is ignored for some reason
       - ./docker/ml-api-adapter/default.json:/opt/ml-api-adapter/config/default.json
-    
-    # TODO: we should be able to remove this - I think the image command is broken
     command:
       - "node"
       - "src/api/index.js"
