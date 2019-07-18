@@ -33,7 +33,7 @@
 'use strict'
 
 const settlementWindow = require('../../domain/settlementWindow/index')
-const Boom = require('boom')
+const Boom = require('@hapi/boom')
 
 /**
  * Operations on /settlementWindows/{id}

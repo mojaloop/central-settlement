@@ -33,7 +33,7 @@
 
 'use strict'
 
-const Boom = require('boom')
+const Boom = require('@hapi/boom')
 
 const Settlements = require('../../domain/settlement')
 const Logger = require('@mojaloop/central-services-shared').Logger
