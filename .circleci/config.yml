@@ -339,8 +339,6 @@ jobs:
       - run:
           name: Install general dependencies
           command: *defaults_Dependencies
-      - run:
-          <<: *defaults_environment
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
@@ -363,8 +361,6 @@ jobs:
       - run:
           name: Install general dependencies
           command: *defaults_Dependencies
-      - run:
-          <<: *defaults_environment
       - run:
           <<: *defaults_license_scanner
       - restore_cache:
