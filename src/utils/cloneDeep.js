@@ -34,8 +34,8 @@ const cloneDeep = (obj) => {
     return newObj
   }
   newObj = {}
-  for (let i in obj) {
-    if (obj.hasOwnProperty(i)) {
+  for (const i in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, i)) {
       newObj[i] = cloneDeep(obj[i])
     }
   }

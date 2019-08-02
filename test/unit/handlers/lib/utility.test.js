@@ -66,9 +66,9 @@ Test('Utility Test', utilityTest => {
 
   utilityTest.test('getKafkaConfig should', getKafkaConfigTest => {
     getKafkaConfigTest.test('return the Kafka config from the default.json', test => {
-      let producer = 'PRODUCER'
-      let functionality = 'notification'
-      let action = 'event'
+      const producer = 'PRODUCER'
+      const functionality = 'notification'
+      const action = 'event'
       const config = Utility.getKafkaConfig(producer, functionality.toUpperCase(), action.toUpperCase())
       test.ok(config.rdkafkaConf !== undefined)
       test.ok(config.options !== undefined)
@@ -77,9 +77,9 @@ Test('Utility Test', utilityTest => {
 
     getKafkaConfigTest.test('throw and error if Kafka config not in default.json', test => {
       try {
-        let producer = 'PRODUCER'
-        let functionality = 'notification'
-        let action = 'event'
+        const producer = 'PRODUCER'
+        const functionality = 'notification'
+        const action = 'event'
         Utility.getKafkaConfig(producer, functionality, action)
         test.fail('Error not thrown')
         test.end()

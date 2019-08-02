@@ -50,7 +50,7 @@ module.exports = {
     const settlementWindowId = request.params.id
     try {
       const Enums = await request.server.methods.enums('settlementWindowStates')
-      let settlementWindowResult = await settlementWindow.getById({ settlementWindowId }, Enums, request.server.log)
+      const settlementWindowResult = await settlementWindow.getById({ settlementWindowId }, Enums, request.server.log)
       return h.response(settlementWindowResult)
     } catch (e) {
       request.server.log('error', e)

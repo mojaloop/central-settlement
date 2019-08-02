@@ -27,10 +27,6 @@ const Db = require('../../../src/lib/db')
 
 module.exports = {
   getTransferParticipantsByTransferId: async function (transferId) {
-    try {
-      return Db.transferParticipant.find({ transferId })
-    } catch (e) {
-      throw e
-    }
+    return Db.transferParticipant.find({ transferId })
   }
 }

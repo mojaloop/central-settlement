@@ -949,7 +949,14 @@
                 },
                 "state": {
                     "type": "string",
-                    "example": "CLOSED"
+                    "enum": [
+                        "PENDING_SETTLEMENT",
+                        "PS_TRANSFERS_RECORDED",
+                        "PS_TRANSFERS_RESERVED",
+                        "PS_TRANSFERS_COMMITTED",
+                        "SETTLED"
+                    ],
+                    "example": "SETTLED"
                 },
                 "externalReference": {
                     "type": "string",
@@ -993,7 +1000,10 @@
             "properties": {
                 "state": {
                     "type": "string",
-                    "example": "CLOSED"
+                    "example": "CLOSED",
+                    "enum": [
+                        "CLOSED"
+                    ]
                 },
                 "reason": {
                     "type": "string",
@@ -1010,7 +1020,14 @@
             "properties": {
                 "state": {
                     "type": "string",
-                    "example": "CLOSED"
+                    "enum": [
+                        "PENDING_SETTLEMENT",
+                        "PS_TRANSFERS_RECORDED",
+                        "PS_TRANSFERS_RESERVED",
+                        "PS_TRANSFERS_COMMITTED",
+                        "SETTLED"
+                    ],
+                    "example": "SETTLED"
                 },
                 "reason": {
                     "type": "string",

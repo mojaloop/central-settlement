@@ -54,7 +54,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
       await getByIdTest.test('return settlement window', async test => {
         try {
           SettlementWindowModel.getById = sandbox.stub().returns(settlementWindowMock)
-          let result = await SettlementWindowService.getById(params, enums, options)
+          const result = await SettlementWindowService.getById(params, enums, options)
           test.ok(result, 'Result returned')
           test.ok(SettlementWindowModel.getById.withArgs(params, enums).calledOnce, 'SettlementWindowModel.getById with args ... called once')
 
@@ -92,7 +92,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
       await getByParamsTest.test('return settlement windows', async test => {
         try {
           SettlementWindowModel.getByParams = sandbox.stub().returns(settlementWindowsMock)
-          let result = await SettlementWindowService.getByParams(params, enums, options)
+          const result = await SettlementWindowService.getByParams(params, enums, options)
           test.ok(result, 'Result returned')
           test.ok(SettlementWindowModel.getByParams.withArgs(params, enums).calledOnce, 'SettlementWindowModel.getByParams with args ... called once')
 
@@ -131,7 +131,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
   await settlementWindowServiceTest.test('close should', async closeTest => {
     try {
-      let params = { id: 1 }
+      const params = { id: 1 }
       const enums = {}
       const options = { logger: Logger }
       const settlementWindowIdMock = 1
@@ -141,7 +141,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
         try {
           SettlementWindowModel.close = sandbox.stub().returns(settlementWindowIdMock)
           SettlementWindowModel.getById = sandbox.stub().returns(settlementWindowMock)
-          let result = await SettlementWindowService.close(params, enums, options)
+          const result = await SettlementWindowService.close(params, enums, options)
           test.ok(result, 'Result returned')
           test.ok(SettlementWindowModel.close.withArgs(params, enums).calledOnce, 'SettlementWindowModel.close with args ... called once')
           test.ok(SettlementWindowModel.getById.withArgs({ settlementWindowId: settlementWindowIdMock }, enums).calledOnce, 'SettlementWindowModel.getById with args ... called once')

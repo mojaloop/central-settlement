@@ -80,7 +80,7 @@ Test('Server Setup', async setupTest => {
         '@hapi/catbox-memory': EngineStub,
         '@hapi/hapi': HapiStub,
         'hapi-openapi': HapiOpenAPIStub,
-        'path': PathStub,
+        path: PathStub,
         './lib/db': DbStub,
         './models/lib/enums': EnumsStub,
         './lib/config': ConfigStub
@@ -101,7 +101,7 @@ Test('Server Setup', async setupTest => {
     try {
       await initTest.test('test 1', async test => {
         try {
-          let server = await SetupProxy.initialize()
+          const server = await SetupProxy.initialize()
           test.ok(server, 'return server object')
           test.ok(HapiStub.Server.calledOnce, 'Hapi.Server called once')
           test.ok(DbStub.connect.calledOnce, 'Db.connect called once')
@@ -122,7 +122,7 @@ Test('Server Setup', async setupTest => {
         try {
           const e = new Error('Database unavailable')
           DbStub.connect = sandbox.stub().throws(e)
-          let consoleErrorStub = sandbox.stub(console, 'error')
+          const consoleErrorStub = sandbox.stub(console, 'error')
           await SetupProxy.initialize()
           test.ok(consoleErrorStub.withArgs(e).calledOnce)
           consoleErrorStub.restore()
