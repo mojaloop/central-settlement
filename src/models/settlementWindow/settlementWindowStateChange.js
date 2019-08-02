@@ -29,28 +29,20 @@
 const Db = require('../../lib/db')
 
 const create = async ({ settlementWindowId, state, reason }, enums = {}) => {
-  try {
-    return Db.settlementWindowStateChange.insert({
-      settlementWindowId,
-      settlementWindowStateId: enums[state.toUpperCase()],
-      reason
-    })
-  } catch (err) {
-    throw err
-  }
+  return Db.settlementWindowStateChange.insert({
+    settlementWindowId,
+    settlementWindowStateId: enums[state.toUpperCase()],
+    reason
+  })
 }
 
 const getBySettlementWindowId = async (id) => {
-  try {
-    const knex = await Db.getKnex()
-    return knex('settlementWindowStateChange')
-      .where('settlementWindowId', id)
-      .orderBy('settlementWindowStateChangeId', 'desc')
-      .select('*')
-      .first()
-  } catch (err) {
-    throw err
-  }
+  const knex = await Db.getKnex()
+  return knex('settlementWindowStateChange')
+    .where('settlementWindowId', id)
+    .orderBy('settlementWindowStateChangeId', 'desc')
+    .select('*')
+    .first()
 }
 
 module.exports = {

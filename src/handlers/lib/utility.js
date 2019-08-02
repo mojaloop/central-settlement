@@ -226,8 +226,8 @@ const createGeneralTopicConf = (functionality, action, partition = 0, opaqueKey 
  * @returns {object} - Returns a boolean: true if successful, or throws and error if failed
  */
 const produceGeneralMessage = async (functionality, action, message, state) => {
-  let functionalityMapped = functionality
-  let actionMapped = action
+  const functionalityMapped = functionality
+  const actionMapped = action
   return Kafka.Producer.produceMessage(updateMessageProtocolMetadata(message, functionality, action, state),
     createGeneralTopicConf(functionalityMapped, actionMapped),
     getKafkaConfig(ENUMS.PRODUCER, functionalityMapped.toUpperCase(), actionMapped.toUpperCase()))

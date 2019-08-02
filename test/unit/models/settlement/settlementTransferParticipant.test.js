@@ -71,7 +71,7 @@ Test('SettlementTransferParticipantModel', async (settlementTransferParticipantM
             })
           })
 
-          let result = await SettlementTransferParticipantModel.getBySettlementId(params, enums)
+          const result = await SettlementTransferParticipantModel.getBySettlementId(params, enums)
           test.ok(result, 'Result returned')
           test.ok(builderStub.select.withArgs().calledOnce, 'select with args ... called once')
           test.ok(distinctStub.withArgs('settlementWindowId', 'participantCurrencyId').calledOnce, 'distinct with args ... called once')

@@ -69,7 +69,7 @@ Test('SettlementParticipantCurrencyModel', async (settlementParticipantCurrencyM
             })
           })
 
-          let result = await SettlementParticipantCurrencyModel.getAccountInSettlement(params, enums)
+          const result = await SettlementParticipantCurrencyModel.getAccountInSettlement(params, enums)
           test.ok(result, 'Result returned')
           test.ok(builderStub.select.withArgs('settlementParticipantCurrencyId').calledOnce, 'select with args ... called once')
           test.ok(whereStub.withArgs({ settlementId }).calledOnce, 'where with args ... called once')
@@ -137,7 +137,7 @@ Test('SettlementParticipantCurrencyModel', async (settlementParticipantCurrencyM
             })
           })
 
-          let result = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementId, accountId)
+          const result = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementId, accountId)
           test.ok(result, 'Result returned')
           test.ok(builderStub.innerJoin.withArgs('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId').calledOnce, 'innerJoin with args ... called once')
           test.ok(selectStub.withArgs('settlementParticipantCurrency.*', 'spcsc.settlementStateId', 'spcsc.reason', 'spcsc.externalReference').calledOnce, 'select with args ... called once')

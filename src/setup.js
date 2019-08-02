@@ -61,12 +61,8 @@ const getEnums = (id) => {
 }
 
 async function connectDatabase () {
-  try {
-    let db = await Db.connect(Config.DATABASE_URI)
-    return db
-  } catch (e) {
-    throw e
-  }
+  const db = await Db.connect(Config.DATABASE_URI)
+  return db
 }
 
 const createServer = async function (config, openAPIPluginOptions) {
@@ -108,7 +104,7 @@ const createServer = async function (config, openAPIPluginOptions) {
             server.log('response', request.response)
           } else {
             const error = request.response
-            let errorMessage = {
+            const errorMessage = {
               errorInformation: {
                 errorCode: error.statusCode,
                 errorDescription: error.message

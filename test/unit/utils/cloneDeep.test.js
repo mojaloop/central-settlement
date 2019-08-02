@@ -29,7 +29,7 @@ const Logger = require('@mojaloop/central-services-shared').Logger
 const cloneDeep = require('../../../src/utils/cloneDeep')
 
 Test('cloneDeep utility', (cloneDeepTest) => {
-  let input = {
+  const input = {
     prop1: 'value',
     prop2: {
       prop21: 'deep21'
@@ -41,11 +41,11 @@ Test('cloneDeep utility', (cloneDeepTest) => {
 
   cloneDeepTest.test('should copy object', test => {
     try {
-      let result = cloneDeep(input)
+      const result = cloneDeep(input)
       test.deepEqual(result, input, 'result matches the input')
       result.prop2.prop21 = 'test'
       test.notDeepEqual(result, input, 'result does not match the input after deep change')
-      let objAssign = Object.assign({}, input)
+      const objAssign = Object.assign({}, input)
       test.deepEqual(objAssign, input, 'object assign copied the object')
       objAssign.prop2.prop21 = 'test'
       test.deepEqual(objAssign, input, 'change in objAssign deep property affected the input')

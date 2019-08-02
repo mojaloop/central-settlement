@@ -27,7 +27,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-let Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-shared').Logger
 const Proxyquire = require('proxyquire')
 // const checkEmpty = require('./../../../src/utils/truthyProperty')
 
@@ -46,11 +46,11 @@ Test('loggerPlugin utility', async (loggerPluginTest) => {
 
   await loggerPluginTest.test('should register logger-plugin', async test => {
     try {
-      let serverStub = sandbox.stub()
+      const serverStub = sandbox.stub()
       serverStub.events = {
         on: sandbox.stub()
       }
-      let eventMock = {
+      const eventMock = {
         tags: ['tagged'],
         data: 'data'
       }
@@ -78,11 +78,11 @@ Test('loggerPlugin utility', async (loggerPluginTest) => {
 
   await loggerPluginTest.test('should log all logs', async test => {
     try {
-      let serverStub = sandbox.stub()
+      const serverStub = sandbox.stub()
       serverStub.events = {
         on: sandbox.stub()
       }
-      let eventMock = {
+      const eventMock = {
         tags: ['info'],
         data: 'data'
       }
@@ -110,11 +110,11 @@ Test('loggerPlugin utility', async (loggerPluginTest) => {
 
   await loggerPluginTest.test('should log errors', async test => {
     try {
-      let serverStub = sandbox.stub()
+      const serverStub = sandbox.stub()
       serverStub.events = {
         on: sandbox.stub()
       }
-      let eventMock = {
+      const eventMock = {
         tags: ['error'],
         error: new Error('error')
       }
@@ -142,11 +142,11 @@ Test('loggerPlugin utility', async (loggerPluginTest) => {
 
   await loggerPluginTest.test('should log for requests', async test => {
     try {
-      let serverStub = sandbox.stub()
+      const serverStub = sandbox.stub()
       serverStub.events = {
         on: sandbox.stub()
       }
-      let eventMock = {
+      const eventMock = {
         tags: ['request'],
         data: {
           method: 'method',
@@ -179,11 +179,11 @@ Test('loggerPlugin utility', async (loggerPluginTest) => {
 
   await loggerPluginTest.test('should log empty requests', async test => {
     try {
-      let serverStub = sandbox.stub()
+      const serverStub = sandbox.stub()
       serverStub.events = {
         on: sandbox.stub()
       }
-      let eventMock = {
+      const eventMock = {
         tags: ['request'],
         data: {
           method: 'method',
@@ -216,11 +216,11 @@ Test('loggerPlugin utility', async (loggerPluginTest) => {
 
   await loggerPluginTest.test('should log empty requests', async test => {
     try {
-      let serverStub = sandbox.stub()
+      const serverStub = sandbox.stub()
       serverStub.events = {
         on: sandbox.stub()
       }
-      let eventMock = {
+      const eventMock = {
         tags: ['response'],
         data: 'data'
       }

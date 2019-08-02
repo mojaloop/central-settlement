@@ -85,7 +85,7 @@ Test('SettlementService', async (settlementServiceTest) => {
 
       await getByIdTest.test('return settlement participant accounts', async test => {
         try {
-          let result = await SettlementService.getById({ settlementId }, enums, options)
+          const result = await SettlementService.getById({ settlementId }, enums, options)
           test.ok(result, 'Result returned')
           test.ok(SettlementModel.getById.withArgs({ settlementId }, enums).calledOnce, 'SettlementModel.getById with args ... called once')
           test.ok(SettlementWindowModel.getBySettlementId.withArgs({ settlementId }, enums).calledOnce, 'SettlementWindowModel.getBySettlementId with args ... called once')
@@ -177,7 +177,7 @@ Test('SettlementService', async (settlementServiceTest) => {
 
       await getSettlementsByParamsTest.test('return settlement participant accounts', async test => {
         try {
-          let result = await SettlementService.getSettlementsByParams(params, enums, options)
+          const result = await SettlementService.getSettlementsByParams(params, enums, options)
           test.ok(result, 'Result returned')
           test.ok(SettlementModel.getByParams.withArgs(params.query, enums).calledOnce, 'SettlementModel.getByParams with params ... called once')
           test.equal(result[0].id, settlementsMockData[0].settlementId)
@@ -305,7 +305,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           SettlementModel.settlementParticipantCurrency = {
             getParticipantCurrencyBySettlementId: sandbox.stub().returns(participantCurrenciesListMock)
           }
-          let result = await SettlementService.settlementEventTrigger(params, enums, options)
+          const result = await SettlementService.settlementEventTrigger(params, enums, options)
           test.ok(result, 'Result returned')
           const idList = [1, 2]
           const reason = params.reason
@@ -406,9 +406,9 @@ Test('SettlementService', async (settlementServiceTest) => {
         netAmount: 56,
         currency: 'USD'
       }]
-      let participantCurrencyIdMock = 1
+      const participantCurrencyIdMock = 1
       // let settlementParticipantCurrencyId = 1
-      let settlementParticipantCurrencyList = accountsMock
+      const settlementParticipantCurrencyList = accountsMock
       await getByIdParticipantAccountTest.test('return settlement participant accounts', async test => {
         try {
           SettlementModel.getById = sandbox.stub().returns(settlementMock)

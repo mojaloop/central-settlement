@@ -58,7 +58,7 @@ Test('SettlementModel', async (settlementWindowStateChangeModelTest) => {
             insert: sandbox.stub().returns(true)
           }
 
-          let result = await SettlementWindowStateChangeModel.create({ settlementWindowId, state, reason }, enums)
+          const result = await SettlementWindowStateChangeModel.create({ settlementWindowId, state, reason }, enums)
           test.ok(result, 'Result returned and matched')
           test.ok(Db.settlementWindowStateChange.insert.withArgs({
             settlementWindowId,
