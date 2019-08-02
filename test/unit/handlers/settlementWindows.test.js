@@ -59,11 +59,11 @@ Test('/settlementWindows', async (settlementWindowTest) => {
   await settlementWindowTest.test('test getSettlementWindowsByParams get operation', async (t) => {
     sandbox.stub(Enums, 'settlementWindowStates').returns({})
     sandbox.stub(settlementWindows, 'getByParams').returns({
-      'settlementWindowId': 8,
-      'state': 'CLOSED',
-      'reason': '8th window closed',
-      'createdDate': '2018-09-01T15:02:34.000Z',
-      'changedDate': '2018-09-01T16:24:37.000Z'
+      settlementWindowId: 8,
+      state: 'CLOSED',
+      reason: '8th window closed',
+      createdDate: '2018-09-01T15:02:34.000Z',
+      changedDate: '2018-09-01T16:24:37.000Z'
     })
     try {
       const requests = new Promise((resolve, reject) => {

@@ -31,14 +31,10 @@ const hasFilters = require('./../../utils/truthyProperty')
 
 module.exports = {
   getById: async function (params, enums) {
-    try {
-      let settlementWindow = await settlementWindowModel.getById(params, enums)
-      if (settlementWindow) return settlementWindow
-      else {
-        let err = new Error(`settlementWindowId: ${params.settlementWindowId} not found`)
-        throw err
-      }
-    } catch (err) {
+    const settlementWindow = await settlementWindowModel.getById(params, enums)
+    if (settlementWindow) return settlementWindow
+    else {
+      const err = new Error(`settlementWindowId: ${params.settlementWindowId} not found`)
       throw err
     }
   },
@@ -46,29 +42,21 @@ module.exports = {
   getByParams: async function (params, enums) {
     // 4 filters - at least one should be used
     if (hasFilters(params.query) && Object.keys(params.query).length < 5) {
-      try {
-        let settlementWindows = await settlementWindowModel.getByParams(params, enums)
-        if (settlementWindows && settlementWindows.length > 0) {
-          return settlementWindows
-        } else {
-          let err = new Error(`settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
-          throw err
-        }
-      } catch (err) {
+      const settlementWindows = await settlementWindowModel.getByParams(params, enums)
+      if (settlementWindows && settlementWindows.length > 0) {
+        return settlementWindows
+      } else {
+        const err = new Error(`settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
         throw err
       }
     } else {
-      let err = new Error('Use at least one parameter: participantId, state, fromDateTime, toDateTime')
+      const err = new Error('Use at least one parameter: participantId, state, fromDateTime, toDateTime')
       throw err
     }
   },
 
   close: async function (params, enums) {
-    try {
-      let settlementWindowId = await settlementWindowModel.close(params, enums)
-      return await settlementWindowModel.getById({ settlementWindowId }, enums)
-    } catch (err) {
-      throw err
-    }
+    const settlementWindowId = await settlementWindowModel.close(params, enums)
+    return settlementWindowModel.getById({ settlementWindowId }, enums)
   }
 }

@@ -59,7 +59,7 @@ module.exports = {
         ledgerAccountTypes: await request.server.methods.enums('ledgerAccountTypes')
       }
       const { settlementId, participantId } = request.params
-      let result = await Settlements.getByIdParticipantAccount({ settlementId, participantId }, Enums)
+      const result = await Settlements.getByIdParticipantAccount({ settlementId, participantId }, Enums)
       return h.response(result)
     } catch (e) {
       request.server.log('error', e)

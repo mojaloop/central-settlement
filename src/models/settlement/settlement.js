@@ -29,22 +29,14 @@
 const Db = require('../../lib/db')
 
 const create = async (settlement) => {
-  try {
-    return Db.settlement.insert({
-      reason: settlement.reason,
-      createdDate: settlement.createdDate
-    })
-  } catch (err) {
-    throw err
-  }
+  return Db.settlement.insert({
+    reason: settlement.reason,
+    createdDate: settlement.createdDate
+  })
 }
 
 const getById = async (id) => {
-  try {
-    return Db.settlement.findOne({ settlementId: id })
-  } catch (err) {
-    throw err
-  }
+  return Db.settlement.findOne({ settlementId: id })
 }
 
 module.exports = {

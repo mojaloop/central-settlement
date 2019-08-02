@@ -75,7 +75,7 @@ Test('ParticipantCurrencyModel', async (participantCurrencyModelTest) => {
             })
           })
 
-          let result = await ParticipantCurrencyModel.checkParticipantAccountExists(params, enums)
+          const result = await ParticipantCurrencyModel.checkParticipantAccountExists(params, enums)
           test.ok(result, 'Result returned')
           test.ok(builderStub.select.withArgs('participantCurrencyId').calledOnce, 'select with args ... called once')
           test.ok(whereStub.withArgs({ participantId }).calledOnce, 'where with args ... called once')

@@ -39,7 +39,7 @@ module.exports.plugin = {
           if (!(event.data instanceof Error)) {
             Logger.info(`::::::: ${event.tags[0].toUpperCase()} :::::::`)
             if (event.tags[0] === 'request') {
-              let request = event.data
+              const request = event.data
               Logger.info(`:: ${request.method.toUpperCase()} ${request.path}`)
               checkEmpty(request.payload) && Logger.info(`:: Payload: ${JSON.stringify(request.payload)}`)
               checkEmpty(request.params) && Logger.info(`:: Params: ${JSON.stringify(request.params)}`)
@@ -51,7 +51,7 @@ module.exports.plugin = {
               Logger.info(event.data)
             }
           } else {
-            let error = event.data
+            const error = event.data
             Logger.info(`::::::: ${event.tags[0].toUpperCase()} :::::::\n ${error.stack}`)
           }
           Logger.info(`::: END OF ${event.tags[0].toUpperCase()} ::::`)

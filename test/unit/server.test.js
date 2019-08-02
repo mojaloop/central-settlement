@@ -49,7 +49,7 @@ Test('Server', (serverTest) => {
 
   serverTest.test('should import setup and initialize', test => {
     try {
-      let initStub = sandbox.stub()
+      const initStub = sandbox.stub()
       Proxyquire('../../src/server', {
         './setup': {
           initialize: initStub
