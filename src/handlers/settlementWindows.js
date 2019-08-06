@@ -31,7 +31,7 @@
 
 'use strict'
 
-const Boom = require('boom')
+const Boom = require('@hapi/boom')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Path = require('path')
 const settlementWindows = require('./../domain/settlementWindow')
@@ -51,7 +51,7 @@ module.exports = {
   get: async function getSettlementWindowsByParams (request, h) {
     try {
       const Enums = await request.server.methods.enums('settlementWindowStates')
-      let settlementWindowResult = await settlementWindows.getByParams({ query: request.query }, Enums)
+      const settlementWindowResult = await settlementWindows.getByParams({ query: request.query }, Enums)
       return h.response(settlementWindowResult)
     } catch (e) {
       request.server.log('error', e)

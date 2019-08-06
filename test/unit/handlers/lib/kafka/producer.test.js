@@ -96,7 +96,7 @@ const topicConf = {
 
 Test('Producer', producerTest => {
   let sandbox
-  let config = {}
+  const config = {}
 
   producerTest.test('produceMessage should', produceMessageTest => {
     produceMessageTest.beforeEach(t => {
@@ -238,7 +238,7 @@ Test('Producer', producerTest => {
       // setup stubs for getProducer method
       const topicNameSuccess = 'topic1'
       const topicNameFailure = 'topic2'
-      let getProducerStub = sandbox.stub()
+      const getProducerStub = sandbox.stub()
       try {
         getProducerStub.returns(new KafkaProducer({}))
         getProducerStub.withArgs(topicNameFailure).throws(`No producer found for topic ${topicNameFailure}`)

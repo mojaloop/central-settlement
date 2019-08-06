@@ -31,13 +31,13 @@ const truthyProperty = require('../../../src/utils/truthyProperty')
 Test('truthyProperty utility', (truthyPropertyTest) => {
   truthyPropertyTest.test('should validate object properties are not all empty', test => {
     try {
-      let emptyProps = truthyProperty({ input: null })
+      const emptyProps = truthyProperty({ input: null })
       test.notOk(emptyProps, 'properties are empty')
-      let notObject = truthyProperty('string')
+      const notObject = truthyProperty('string')
       test.ok(notObject, 'not an object')
-      let emptyObject = truthyProperty({})
+      const emptyObject = truthyProperty({})
       test.notOk(emptyObject, 'object is empty')
-      let ok = truthyProperty({ input: 'something' })
+      const ok = truthyProperty({ input: 'something' })
       test.ok(ok, 'object is not empty')
       test.end()
     } catch (err) {

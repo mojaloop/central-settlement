@@ -28,7 +28,7 @@
 
 'use strict'
 
-const Hapi = require('hapi')
+const Hapi = require('@hapi/hapi')
 const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
 const Db = require('./lib/db')
@@ -46,7 +46,7 @@ const defaultConfig = {
   cache: [
     {
       provider: {
-        constructor: require('catbox-memory'),
+        constructor: require('@hapi/catbox-memory'),
         options: {
           partition: 'cache'
         }
@@ -61,12 +61,8 @@ const getEnums = (id) => {
 }
 
 async function connectDatabase () {
-  try {
-    let db = await Db.connect(Config.DATABASE_URI)
-    return db
-  } catch (e) {
-    throw e
-  }
+  const db = await Db.connect(Config.DATABASE_URI)
+  return db
 }
 
 const createServer = async function (config, openAPIPluginOptions) {
@@ -108,7 +104,7 @@ const createServer = async function (config, openAPIPluginOptions) {
             server.log('response', request.response)
           } else {
             const error = request.response
-            let errorMessage = {
+            const errorMessage = {
               errorInformation: {
                 errorCode: error.statusCode,
                 errorDescription: error.message

@@ -122,6 +122,11 @@ fcurl() {
     "$@"
 }
 
+# Make sure the service is a live, not necessarily healthy
+fcurl_alive() {
+  RESPONSE_CODE=$(fcurl "-s -I "$@" | grep HTTP/1.1 | awk {'print $2'}")
+}
+
 # Kafka functions
 
 start_kafka() {
@@ -197,6 +202,7 @@ start_simulator () {
     --network $DOCKER_NETWORK \
     --name=$SIMULATOR_HOST \
     --env TRANSFERS_ENDPOINT=http://${ML_API_ADAPTER_HOST}:3000 \
+    --env LOG_LEVEL=debug \
     $SIMULATOR_IMAGE:$SIMULATOR_IMAGE_TAG
 }
 
@@ -205,7 +211,7 @@ is_simulator_up() {
 }
 
 start_central_ledger () {
-  docker run --rm -td \
+  docker run -td \
     -p 3001:3001 \
     --network $DOCKER_NETWORK \
     --name=$CENTRAL_LEDGER_HOST \
@@ -224,7 +230,9 @@ start_ml_api_adapter () {
     --network $DOCKER_NETWORK \
     --name=$ML_API_ADAPTER_HOST \
     --volume ${PWD}/test/integration-config-mlapiadapter.json:/opt/ml-api-adapter/config/default.json \
-    $ML_API_ADAPTER_IMAGE:$ML_API_ADAPTER_TAG
+    --env MLAPI_ENDPOINT_HEALTH_URL="http://${CENTRAL_LEDGER_HOST}:3001/health" \
+    $ML_API_ADAPTER_IMAGE:$ML_API_ADAPTER_TAG \
+    sh -c "node src/api/index.js"
 }
 
 is_ml_api_adapter_up() {
@@ -279,7 +287,7 @@ until is_db_up; do
 done
 
 >&1 echo "Running migrations"
-fcmd_centralledger "apk add --no-cache nodejs-npm && npm install npm-run-all && npm run migrate"
+fcmd_centralledger "npm run migrate"
 
 if [ "$?" != 0 ]
 then

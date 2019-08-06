@@ -57,7 +57,7 @@ Test('SettlementModel', async (settlementModelTest) => {
             insert: sandbox.stub().returns(true)
           }
 
-          let result = await SettlementModel.create(settlement, enums)
+          const result = await SettlementModel.create(settlement, enums)
           test.ok(result, 'Result returned and matched')
           test.ok(Db.settlement.insert.withArgs({
             reason: settlement.reason,
@@ -120,7 +120,7 @@ Test('SettlementModel', async (settlementModelTest) => {
           Db.settlement = {
             findOne: sandbox.stub().returns(settlement)
           }
-          let result = await SettlementModel.getById(settlementId)
+          const result = await SettlementModel.getById(settlementId)
           test.deepEqual(result, settlement, 'results match')
           test.end()
         } catch (err) {

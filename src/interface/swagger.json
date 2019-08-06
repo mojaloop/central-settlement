@@ -11,6 +11,27 @@
         "https"
     ],
     "paths": {
+        "/health": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "deprecated": false,
+                "summary": "Gets the health of the service and sub-services (i.e. database).",
+                "operationId": "getHealth",
+                "tags": [
+                    "getHealth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A valid and health service."
+                    },
+                    "502": {
+                        "description": "API is live, but error connecting to required sub-service."
+                    }
+                }
+            }
+        },
         "/settlementWindows/{id}": {
             "get": {
                 "produces": [
@@ -928,7 +949,14 @@
                 },
                 "state": {
                     "type": "string",
-                    "example": "CLOSED"
+                    "enum": [
+                        "PENDING_SETTLEMENT",
+                        "PS_TRANSFERS_RECORDED",
+                        "PS_TRANSFERS_RESERVED",
+                        "PS_TRANSFERS_COMMITTED",
+                        "SETTLED"
+                    ],
+                    "example": "SETTLED"
                 },
                 "externalReference": {
                     "type": "string",
@@ -972,7 +1000,10 @@
             "properties": {
                 "state": {
                     "type": "string",
-                    "example": "CLOSED"
+                    "example": "CLOSED",
+                    "enum": [
+                        "CLOSED"
+                    ]
                 },
                 "reason": {
                     "type": "string",
@@ -989,7 +1020,14 @@
             "properties": {
                 "state": {
                     "type": "string",
-                    "example": "CLOSED"
+                    "enum": [
+                        "PENDING_SETTLEMENT",
+                        "PS_TRANSFERS_RECORDED",
+                        "PS_TRANSFERS_RESERVED",
+                        "PS_TRANSFERS_COMMITTED",
+                        "SETTLED"
+                    ],
+                    "example": "SETTLED"
                 },
                 "reason": {
                     "type": "string",

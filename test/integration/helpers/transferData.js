@@ -80,7 +80,7 @@ module.exports = () => {
         COMMITTED: 'COMMITTED'
       }
     }
-    const sleepMilliseconds = 750
+    const sleepMilliseconds = 1000
 
     let sandbox
     prepareTransferDataTest.beforeEach(test => {
@@ -94,12 +94,12 @@ module.exports = () => {
 
     prepareTransferDataTest.test('check if Hub accounts exists', async test => {
       try {
-        let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/Hub/accounts?currency=${currency}`
-        let opts = { method: 'GET' }
-        let res = await fetch(url, opts)
+        const url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/Hub/accounts?currency=${currency}`
+        const opts = { method: 'GET' }
+        const res = await fetch(url, opts)
         test.equal(res.status, 200, 'returned 200 OK')
 
-        let response = await res.json()
+        const response = await res.json()
         let hubReconciliationAccountExists = false
         let hubMLNSAccountExists = false
         if (response && response.length) {
@@ -115,20 +115,20 @@ module.exports = () => {
           test.pass(`${currency} HUB_RECONCILIATION found`)
         } else {
           try {
-            let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/Hub/accounts`
-            let headers = {
+            const url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/Hub/accounts`
+            const headers = {
               'Content-Type': 'application/json'
             }
-            let body = {
+            const body = {
               currency: 'USD',
               type: 'HUB_RECONCILIATION'
             }
-            let opts = {
+            const opts = {
               method: 'POST',
               headers,
               body: JSON.stringify(body)
             }
-            let res = await fetch(url, opts)
+            const res = await fetch(url, opts)
             test.equal(res.status, 201, 'returned 201 Created')
           } catch (err) {
             Logger.error(`creating HUB_RECONCILIATION failed with error - ${err}`)
@@ -140,20 +140,20 @@ module.exports = () => {
           test.pass(`${currency} HUB_MULTILATERAL_SETTLEMENT found`)
         } else {
           try {
-            let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/Hub/accounts`
-            let headers = {
+            const url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/Hub/accounts`
+            const headers = {
               'Content-Type': 'application/json'
             }
-            let body = {
+            const body = {
               currency: 'USD',
               type: 'HUB_MULTILATERAL_SETTLEMENT'
             }
-            let opts = {
+            const opts = {
               method: 'POST',
               headers,
               body: JSON.stringify(body)
             }
-            let res = await fetch(url, opts)
+            const res = await fetch(url, opts)
             test.equal(res.status, 201, 'returned 201 Created')
           } catch (err) {
             Logger.error(`creating HUB_MULTILATERAL_SETTLEMENT failed with error - ${err}`)
@@ -170,22 +170,22 @@ module.exports = () => {
     })
 
     prepareTransferDataTest.test('add participant and participant account', async test => {
-      for (let fsp of fspList) {
+      for (const fsp of fspList) {
         try {
-          let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants`
-          let headers = {
+          const url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants`
+          const headers = {
             'Content-Type': 'application/json'
           }
-          let body = {
+          const body = {
             name: fsp.fspName,
             currency: currency
           }
-          let opts = {
+          const opts = {
             method: 'POST',
             headers,
             body: JSON.stringify(body)
           }
-          let res = await fetch(url, opts)
+          const res = await fetch(url, opts)
           test.equal(res.status, 201, `returned 201 Created for ${fsp.fspName}`)
         } catch (err) {
           Logger.error(`prepareTransferDataTest failed with error - ${err}`)
@@ -197,13 +197,13 @@ module.exports = () => {
     })
 
     prepareTransferDataTest.test('add participant account limits', async test => {
-      for (let fsp of fspList) {
+      for (const fsp of fspList) {
         try {
-          let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/initialPositionAndLimits`
-          let headers = {
+          const url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/initialPositionAndLimits`
+          const headers = {
             'Content-Type': 'application/json'
           }
-          let body = {
+          const body = {
             currency: currency,
             limit: {
               type: 'NET_DEBIT_CAP',
@@ -211,12 +211,12 @@ module.exports = () => {
             },
             initialPosition: 0
           }
-          let opts = {
+          const opts = {
             method: 'POST',
             headers,
             body: JSON.stringify(body)
           }
-          let res = await fetch(url, opts)
+          const res = await fetch(url, opts)
           test.equal(res.status, 201, `returned 201 created limits for ${fsp.fspName}`)
         } catch (err) {
           Logger.error(`prepareTransferDataTest failed with error - ${err}`)
@@ -228,22 +228,22 @@ module.exports = () => {
     })
 
     prepareTransferDataTest.test('add participant FSPIOP_CALLBACK_URL_TRANSFER_POST endpoint', async test => {
-      let headers = {
+      const headers = {
         'Content-Type': 'application/json'
       }
-      for (let fsp of fspList) {
+      for (const fsp of fspList) {
         try {
-          let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/endpoints`
-          let body = {
+          const url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/endpoints`
+          const body = {
             type: 'FSPIOP_CALLBACK_URL_TRANSFER_POST',
             value: `${fsp.endpointBase}/transfers`
           }
-          let opts = {
+          const opts = {
             method: 'POST',
             headers,
             body: JSON.stringify(body)
           }
-          let res = await fetch(url, opts)
+          const res = await fetch(url, opts)
           test.equal(res.status, 201, `returned 201 created endpoint for ${fsp.fspName}`)
         } catch (err) {
           Logger.error(`prepareTransferDataTest failed with error - ${err}`)
@@ -255,22 +255,22 @@ module.exports = () => {
     })
 
     prepareTransferDataTest.test('add participant FSPIOP_CALLBACK_URL_TRANSFER_PUT endpoint', async test => {
-      let headers = {
+      const headers = {
         'Content-Type': 'application/json'
       }
-      for (let fsp of fspList) {
+      for (const fsp of fspList) {
         try {
-          let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/endpoints`
-          let body = {
+          const url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/endpoints`
+          const body = {
             type: 'FSPIOP_CALLBACK_URL_TRANSFER_PUT',
             value: `${fsp.endpointBase}/transfers/{{transferId}}`
           }
-          let opts = {
+          const opts = {
             method: 'POST',
             headers,
             body: JSON.stringify(body)
           }
-          let res = await fetch(url, opts)
+          const res = await fetch(url, opts)
           test.equal(res.status, 201, `returned 201 created endpoint for ${fsp.fspName}`)
         } catch (err) {
           Logger.error(`prepareTransferDataTest failed with error - ${err}`)
@@ -282,22 +282,22 @@ module.exports = () => {
     })
 
     prepareTransferDataTest.test('create FSPIOP_CALLBACK_URL_TRANSFER_ERROR endpoint', async test => {
-      let headers = {
+      const headers = {
         'Content-Type': 'application/json'
       }
-      for (let fsp of fspList) {
+      for (const fsp of fspList) {
         try {
-          let url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/endpoints`
-          let body = {
+          const url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/endpoints`
+          const body = {
             type: 'FSPIOP_CALLBACK_URL_TRANSFER_ERROR',
-            value: `${fsp.endpointBase}//transfers/{{transferId}}/error`
+            value: `${fsp.endpointBase}/transfers/{{transferId}}/error`
           }
-          let opts = {
+          const opts = {
             method: 'POST',
             headers,
             body: JSON.stringify(body)
           }
-          let res = await fetch(url, opts)
+          const res = await fetch(url, opts)
           test.equal(res.status, 201, `returned 201 created endpoint for ${fsp.fspName}`)
         } catch (err) {
           Logger.error(`prepareTransferDataTest failed with error - ${err}`)
@@ -309,18 +309,18 @@ module.exports = () => {
     })
 
     prepareTransferDataTest.test(`create a transfer for the amount of ${transferAmount} ${currency}`, async test => {
-      let currentDateGMT = new Date().toGMTString()
-      let expirationDate = new Date((new Date()).getTime() + (24 * 60 * 60 * 1000))
+      const currentDateGMT = new Date().toGMTString()
+      const expirationDate = new Date((new Date()).getTime() + (24 * 60 * 60 * 1000))
 
-      let headers = {
-        'Accept': 'application/vnd.interoperability.transfers+json;version=1.0',
+      const headers = {
+        Accept: 'application/vnd.interoperability.transfers+json;version=1.0',
         'Content-Type': 'application/vnd.interoperability.transfers+json;version=1.0',
-        'Date': currentDateGMT,
+        Date: currentDateGMT,
         'FSPIOP-Source': payerFsp,
         'FSPIOP-Destination': payeeFsp
       }
-      let url = `${URI_PREFIX}://${ML_API_ADAPTER_HOST}:${ML_API_ADAPTER_PORT}${ML_API_ADAPTER_BASE}/transfers`
-      let body = {
+      const url = `${URI_PREFIX}://${ML_API_ADAPTER_HOST}:${ML_API_ADAPTER_PORT}${ML_API_ADAPTER_BASE}/transfers`
+      const body = {
         transferId,
         payerFsp,
         payeeFsp,
@@ -338,23 +338,23 @@ module.exports = () => {
           }]
         }
       }
-      let opts = {
+      const opts = {
         method: 'POST',
         headers,
         body: JSON.stringify(body)
       }
 
-      let simulatorUrl = `${URI_PREFIX}://${SIMULATOR_HOST}:${SIMULATOR_PORT}${SIMULATOR_CORR_ENDPOINT}/${transferId}`
+      const simulatorUrl = `${URI_PREFIX}://${SIMULATOR_HOST}:${SIMULATOR_PORT}${SIMULATOR_CORR_ENDPOINT}/${transferId}`
 
       try {
-        let res = await fetch(url, opts)
+        const res = await fetch(url, opts)
         test.equal(res.status, 202, `transfer PREPARE request returned 202 Accepted`)
 
         let transferCommitted = false
         for (let i = 0; i < 10; i++) {
-          let simulatorRes = await fetch(simulatorUrl)
+          const simulatorRes = await fetch(simulatorUrl)
           try {
-            let simulatorResponse = await simulatorRes.json()
+            const simulatorResponse = await simulatorRes.json()
             if (simulatorResponse && simulatorResponse.transferState === localEnum.transferStates.COMMITTED) {
               transferCommitted = true
               break

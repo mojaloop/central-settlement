@@ -57,3 +57,35 @@ Running the tests:
     npm run test:all
 
 Tests include code coverage via istanbul. See the test/ folder for testing scripts.
+
+### Running Integration Tests interactively
+
+If you want to run integration tests in a repetitive manner, you can startup the test containers using `docker-compose`, login to running `central-settlement` container like so:
+
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.integration.yml up
+
+#first time only:
+docker exec -it cs_central-ledger sh
+npm run migrate
+
+#in a new shell
+docker exec -it cs_central-settlement sh
+npm run test:int
+```
+
+## Auditing Dependencies
+
+We use `npm-audit-resolver` along with `npm audit` to check dependencies for vulnerabilities, and keep track of resolved dependencies with an `audit-resolv.json` file.
+
+To start a new resolution process, run:
+```bash
+npm run audit:resolve
+```
+
+You can then check to see if the CI will pass based on the current dependencies with:
+```bash
+npm run audit:check
+```
+
+And commit the changed `audit-resolv.json` to ensure that CircleCI will build correctly.

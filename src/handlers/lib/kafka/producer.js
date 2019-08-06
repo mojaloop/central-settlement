@@ -37,7 +37,7 @@
 const Producer = require('@mojaloop/central-services-stream').Kafka.Producer
 const Logger = require('@mojaloop/central-services-shared').Logger
 
-let listOfProducers = {}
+const listOfProducers = {}
 
 /**
  * @function ProduceMessage
@@ -86,14 +86,10 @@ const produceMessage = async (messageProtocol, topicConf, config) => {
  */
 const disconnect = async (topicName = null) => {
   if (topicName && typeof topicName === 'string') {
-    try {
-      await getProducer(topicName).disconnect()
-    } catch (e) {
-      throw e
-    }
+    await getProducer(topicName).disconnect()
   } else if (topicName === null) {
     let isError = false
-    let errorTopicList = []
+    const errorTopicList = []
 
     let tpName
     for (tpName in listOfProducers) {

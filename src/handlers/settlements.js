@@ -33,7 +33,7 @@
 
 'use strict'
 
-const Boom = require('boom')
+const Boom = require('@hapi/boom')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Path = require('path')
 const Settlements = require('./../domain/settlement')
@@ -54,7 +54,7 @@ module.exports = {
   get: async function getSettlementsByParams (request, h) {
     try {
       const Enums = await request.server.methods.enums('settlementStates')
-      let settlementResult = await Settlements.getSettlementsByParams({ query: request.query }, Enums)
+      const settlementResult = await Settlements.getSettlementsByParams({ query: request.query }, Enums)
       return h.response(settlementResult)
     } catch (e) {
       request.server.log('error', e)
@@ -77,7 +77,7 @@ module.exports = {
         transferParticipantRoleTypes: await request.server.methods.enums('transferParticipantRoleTypes'),
         ledgerEntryTypes: await request.server.methods.enums('ledgerEntryTypes')
       }
-      let settlementResult = await Settlements.settlementEventTrigger(request.payload, Enums)
+      const settlementResult = await Settlements.settlementEventTrigger(request.payload, Enums)
       return h.response(settlementResult)
     } catch (e) {
       request.server.log('error', e)

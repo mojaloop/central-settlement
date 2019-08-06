@@ -32,15 +32,11 @@ const Db = require('../../lib/db')
 
 module.exports = {
   getBySettlementId: async function ({ settlementId }) {
-    try {
-      return await Db.settlementTransferParticipant.query(builder => {
-        return builder
-          .select()
-          .distinct('settlementWindowId', 'participantCurrencyId')
-          .where({ settlementId })
-      })
-    } catch (err) {
-      throw err
-    }
+    return Db.settlementTransferParticipant.query(builder => {
+      return builder
+        .select()
+        .distinct('settlementWindowId', 'participantCurrencyId')
+        .where({ settlementId })
+    })
   }
 }

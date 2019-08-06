@@ -27,16 +27,12 @@
 const Db = require('../../lib/db')
 
 const getBySettlementId = async (id) => {
-  try {
-    const knex = await Db.getKnex()
-    return knex('settlementStateChange')
-      .where('settlementId', id)
-      .orderBy('settlementStateChangeId', 'desc')
-      .select('*')
-      .first()
-  } catch (err) {
-    throw err
-  }
+  const knex = await Db.getKnex()
+  return knex('settlementStateChange')
+    .where('settlementId', id)
+    .orderBy('settlementStateChangeId', 'desc')
+    .select('*')
+    .first()
 }
 
 module.exports = {

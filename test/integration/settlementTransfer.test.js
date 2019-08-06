@@ -68,7 +68,7 @@ PrepareTransferData()
 
 Test('SettlementTransfer should', async settlementTransferTest => {
   await Db.connect(Config.DATABASE_URI)
-  let enums = await getEnums()
+  const enums = await getEnums()
   let settlementWindowId
   let settlementData
 
@@ -93,8 +93,8 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       res = await SettlementWindowService.close(params, enums.settlementWindowStates) // method to be verified
       test.ok(res, 'close settlement window operation success')
 
-      let closedWindow = await SettlementWindowStateChangeModel.getBySettlementWindowId(settlementWindowId)
-      let openWindow = await SettlementWindowStateChangeModel.getBySettlementWindowId(res.settlementWindowId)
+      const closedWindow = await SettlementWindowStateChangeModel.getBySettlementWindowId(settlementWindowId)
+      const openWindow = await SettlementWindowStateChangeModel.getBySettlementWindowId(res.settlementWindowId)
       test.equal(closedWindow.settlementWindowStateId, enums.settlementWindowStates.CLOSED, `window id ${settlementWindowId} is CLOSED`)
       test.equal(openWindow.settlementWindowStateId, enums.settlementWindowStates.OPEN, `window id ${res.settlementWindowId} is OPEN`)
 
@@ -119,13 +119,13 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       settlementData = await SettlementService.settlementEventTrigger(params, enums) // method to be verified
       test.ok(settlementData, 'settlementEventTrigger operation success')
 
-      let settlementWindow = await SettlementWindowStateChangeModel.getBySettlementWindowId(settlementWindowId)
+      const settlementWindow = await SettlementWindowStateChangeModel.getBySettlementWindowId(settlementWindowId)
       test.equal(settlementWindow.settlementWindowStateId, enums.settlementWindowStates.PENDING_SETTLEMENT, `window id ${settlementWindowId} is PENDING_SETTLEMENT`)
 
-      let settlement = await SettlementModel.getById(settlementData.id)
+      const settlement = await SettlementModel.getById(settlementData.id)
       test.ok(settlement, `create settlement with id ${settlementData.id}`)
 
-      let settlementState = await SettlementStateChangeModel.getBySettlementId(settlementData.id)
+      const settlementState = await SettlementStateChangeModel.getBySettlementId(settlementData.id)
       test.equal(settlementState.settlementStateId, enums.settlementStates.PENDING_SETTLEMENT, `settlement state is PENDING_SETTLEMENT`)
       test.end()
     } catch (err) {
@@ -173,7 +173,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
           }
         ]
       }
-      let res = await SettlementService.putById(settlementData.id, params, enums) // method to be verified
+      const res = await SettlementService.putById(settlementData.id, params, enums) // method to be verified
       test.ok(res, 'settlement putById operation successful')
 
       const settlementParticipantCurrencyRecord = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementData.id, netSenderAccountId)
@@ -221,7 +221,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
           }
         ]
       }
-      let res = await SettlementService.putById(settlementData.id, params, enums) // method to be verified
+      const res = await SettlementService.putById(settlementData.id, params, enums) // method to be verified
       test.ok(res, 'settlement putById operation successful')
 
       const settlementParticipantCurrencyRecord = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementData.id, netRecipientAccountId)
@@ -285,7 +285,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       const initialPayerPosition = (await ParticipantPositionModel.getPositionByCurrencyId(netSenderAccountId)).value
       const initialPayeePosition = (await ParticipantPositionModel.getPositionByCurrencyId(netRecipientAccountId)).value
 
-      let res = await SettlementService.putById(settlementData.id, params, enums) // method to be verified
+      const res = await SettlementService.putById(settlementData.id, params, enums) // method to be verified
       test.ok(res, 'settlement putById operation successful')
 
       const payerSettlementParticipantCurrencyRecord = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementData.id, netSenderAccountId)
@@ -346,7 +346,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       const initialPayerPosition = (await ParticipantPositionModel.getPositionByCurrencyId(netSenderAccountId)).value
       const initialPayeePosition = (await ParticipantPositionModel.getPositionByCurrencyId(netRecipientAccountId)).value
 
-      let res = await SettlementService.putById(settlementData.id, params, enums) // method to be verified
+      const res = await SettlementService.putById(settlementData.id, params, enums) // method to be verified
       test.ok(res, 'settlement putById operation successful')
 
       const payerSettlementParticipantCurrencyRecord = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementData.id, netSenderAccountId)
@@ -398,7 +398,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
         ]
       }
 
-      let res = await SettlementService.putById(settlementData.id, params, enums)
+      const res = await SettlementService.putById(settlementData.id, params, enums)
       test.ok(res, 'settlement putById operation successful')
 
       const payerSettlementParticipantCurrencyRecord = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementData.id, netSenderAccountId)
@@ -420,8 +420,8 @@ Test('SettlementTransfer should', async settlementTransferTest => {
 
   await settlementTransferTest.test('update SETTLED for PAYER with external reference', async test => {
     try {
-      let externalReferenceSample = 'tr98765432109876543210'
-      let reasonSample = 'Additional reason for SETTLED account'
+      const externalReferenceSample = 'tr98765432109876543210'
+      const reasonSample = 'Additional reason for SETTLED account'
       const params = {
         participants: [
           {
@@ -438,7 +438,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
         ]
       }
 
-      let res = await SettlementService.putById(settlementData.id, params, enums)
+      const res = await SettlementService.putById(settlementData.id, params, enums)
       test.ok(res, 'settlement putById operation successful')
 
       const payerSettlementParticipantCurrencyRecord = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementData.id, netSenderAccountId)
@@ -469,7 +469,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
         ]
       }
 
-      let res = await SettlementService.putById(settlementData.id, params, enums)
+      const res = await SettlementService.putById(settlementData.id, params, enums)
       test.ok(res, 'settlement putById operation successful')
 
       const payeeSettlementParticipantCurrencyRecord = await SettlementParticipantCurrencyModel.getBySettlementAndAccount(settlementData.id, netRecipientAccountId)
