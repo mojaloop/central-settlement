@@ -33,7 +33,7 @@
 
 'use strict'
 
-const Boom = require('@hapi/boom')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Path = require('path')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Settlements = require('../../../../domain/settlement')
@@ -61,9 +61,9 @@ module.exports = {
       const { settlementId, participantId } = request.params
       const result = await Settlements.getByIdParticipantAccount({ settlementId, participantId }, Enums)
       return h.response(result)
-    } catch (e) {
-      request.server.log('error', e)
-      return Boom.badRequest(e)
+    } catch (err) {
+      request.server.log('error', err)
+      return ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   },
 
@@ -97,9 +97,9 @@ module.exports = {
         transferStates: await request.server.methods.enums('transferStates')
       }
       return await Settlements.putById(settlementId, universalPayload, Enums)
-    } catch (e) {
-      request.server.log('error', e)
-      return Boom.badRequest(e)
+    } catch (err) {
+      request.server.log('error', err)
+      return ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
 }

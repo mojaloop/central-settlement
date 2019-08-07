@@ -26,7 +26,7 @@
 
 'use strict'
 
-const Boom = require('@hapi/boom')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Db = require('../../lib/db')
 const Uuid = require('uuid4')
 const Crypto = require('crypto')
@@ -174,7 +174,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
       if (doCommit) {
         await trx.rollback
       }
-      throw err
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
 
@@ -346,7 +346,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
       if (doCommit) {
         await trx.rollback
       }
-      throw err
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
 
@@ -500,7 +500,7 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
       if (doCommit) {
         await trx.rollback
       }
-      throw err
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
 
@@ -673,7 +673,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
       if (doCommit) {
         await trx.rollback
       }
-      throw err
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
 
@@ -722,7 +722,7 @@ const Facade = {
           .forUpdate()
 
         if (!settlementData) {
-          return Boom.badRequest(new Error('Settlement not found'))
+          throw ErrorHandler.Factory.createInternalServerFSPIOPError('Settlement not found')
         } else {
           // seq-settlement-6.2.5, step 5
           const settlementAccountList = await knex('settlementParticipantCurrency AS spc')
@@ -897,20 +897,14 @@ const Facade = {
                   if (allAccounts[accountPayload.id] === undefined) {
                     participant.accounts.push({
                       id: accountPayload.id,
-                      errorInformation: {
-                        errorCode: 3000,
-                        errorDescription: 'Account not found'
-                      }
+                      errorInformation: ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.CLIENT_ERROR, 'Account not found').toApiErrorObject().errorInformation
                     })
                     // seq-settlement-6.2.5, step 21
                   } else if (participantPayload.id !== allAccounts[accountPayload.id].participantId) {
                     processedAccounts.push(accountPayload.id)
                     participant.accounts.push({
                       id: accountPayload.id,
-                      errorInformation: {
-                        errorCode: 3000,
-                        errorDescription: 'Participant and account mismatch'
-                      }
+                      errorInformation: ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.CLIENT_ERROR, 'Participant and account mismatch').toApiErrorObject().errorInformation
                     })
                     // seq-settlement-6.2.5, step 22
                   } else if (processedAccounts.indexOf(accountPayload.id) > -1) {
@@ -920,10 +914,7 @@ const Facade = {
                       reason: allAccounts[accountPayload.id].reason,
                       createdDate: allAccounts[accountPayload.id].createdDate,
                       netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount,
-                      errorInformation: {
-                        errorCode: 3000,
-                        errorDescription: 'Account already processed once'
-                      }
+                      errorInformation: ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.CLIENT_ERROR, 'Account already processed once').toApiErrorObject().errorInformation
                     })
                     // seq-settlement-6.2.5, step 23
                   } else if (allAccounts[accountPayload.id].state === accountPayload.state) {
@@ -1016,10 +1007,7 @@ const Facade = {
                       reason: allAccounts[accountPayload.id].reason,
                       createdDate: allAccounts[accountPayload.id].createdDate,
                       netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount,
-                      errorInformation: {
-                        errorCode: 3000,
-                        errorDescription: 'State change not allowed'
-                      }
+                      errorInformation: ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.CLIENT_ERROR, 'State change not allowed').toApiErrorObject().errorInformation
                     })
                   }
                 }
@@ -1162,7 +1150,7 @@ const Facade = {
         }
       } catch (err) {
         await trx.rollback
-        throw err
+        throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
   },
@@ -1176,7 +1164,7 @@ const Facade = {
     if (settlementData.state === enums.settlementStates.PS_TRANSFERS_COMMITTED ||
         settlementData.state === enums.settlementStates.SETTLING ||
         settlementData.state === enums.settlementStates.SETTLED) {
-      throw new Error('State change is not allowed')
+      throw ErrorHandler.Factory.createInternalServerFSPIOPError('State change is not allowed')
     } else if (settlementData.state === enums.settlementStates.ABORTED) {
       // seq-settlement-6.2.6, step 5
       const settlementStateChangeId = await knex('settlementStateChange')
@@ -1203,7 +1191,7 @@ const Facade = {
         .where('spcsc.settlementStateId', enums.settlementStates.PS_TRANSFERS_COMMITTED)
         .first()
       if (transferCommittedAccount !== undefined) {
-        throw new Error('At least one settlement transfer is committed')
+        throw ErrorHandler.Factory.createInternalServerFSPIOPError('At least one settlement transfer is committed')
       }
     }
 
@@ -1312,7 +1300,7 @@ const Facade = {
         }
       } catch (err) {
         await trx.rollback
-        throw err
+        throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
   },
@@ -1495,7 +1483,7 @@ const Facade = {
         return settlementId
       } catch (err) {
         await trx.rollback
-        throw err
+        throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
   },

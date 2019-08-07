@@ -42,6 +42,7 @@ const KafkaConfig = Config.KAFKA_CONFIG
 const Logger = require('@mojaloop/central-services-shared').Logger
 const Uuid = require('uuid4')
 const Kafka = require('./kafka')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * The Producer config required
@@ -129,8 +130,8 @@ const getKafkaConfig = (flow, functionality, action) => {
     const actionObject = functionalityObject[action]
     actionObject.config.logger = Logger
     return actionObject.config
-  } catch (e) {
-    throw new Error(`No config found for those parameters flow='${flow}', functionality='${functionality}', action='${action}'`)
+  } catch (err) {
+    throw ErrorHandler.Factory.createInternalServerFSPIOPError(`No config found for those parameters flow='${flow}', functionality='${functionality}', action='${action}'`, err)
   }
 }
 
@@ -182,9 +183,9 @@ const updateMessageProtocolMetadata = (messageProtocol, metadataType, metadataAc
 const generalTopicTemplate = (functionality, action) => {
   try {
     return Mustache.render(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, { functionality, action })
-  } catch (e) {
-    Logger.error(e)
-    throw e
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 

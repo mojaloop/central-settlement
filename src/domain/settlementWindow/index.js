@@ -28,14 +28,14 @@
 
 const settlementWindowModel = require('../../models/settlementWindow')
 const hasFilters = require('./../../utils/truthyProperty')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 module.exports = {
   getById: async function (params, enums) {
     const settlementWindow = await settlementWindowModel.getById(params, enums)
     if (settlementWindow) return settlementWindow
     else {
-      const err = new Error(`settlementWindowId: ${params.settlementWindowId} not found`)
-      throw err
+      throw ErrorHandler.Factory.createInternalServerFSPIOPError(`settlementWindowId: ${params.settlementWindowId} not found`)
     }
   },
 
@@ -46,12 +46,10 @@ module.exports = {
       if (settlementWindows && settlementWindows.length > 0) {
         return settlementWindows
       } else {
-        const err = new Error(`settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
-        throw err
+        throw ErrorHandler.Factory.createInternalServerFSPIOPError(`settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
       }
     } else {
-      const err = new Error('Use at least one parameter: participantId, state, fromDateTime, toDateTime')
-      throw err
+      throw ErrorHandler.Factory.createInternalServerFSPIOPError('Use at least one parameter: participantId, state, fromDateTime, toDateTime')
     }
   },
 
