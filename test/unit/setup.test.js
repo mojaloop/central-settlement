@@ -123,7 +123,7 @@ Test('Server Setup', async setupTest => {
           const e = new Error('Database unavailable')
           DbStub.connect = sandbox.stub().throws(e)
           const consoleErrorStub = sandbox.stub(console, 'error')
-          await SetupProxy.initialize() // throws error
+          await SetupProxy.initialize()
           test.ok(consoleErrorStub.withArgs(e).calledOnce)
           consoleErrorStub.restore()
           test.end()

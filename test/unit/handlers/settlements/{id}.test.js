@@ -30,7 +30,6 @@ const Enums = require('./../../../../src/models/lib/enums')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const settlement = require('./../../../../src/domain/settlement')
 const Db = require('./../../../../src/lib/db')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * Test for /settlementWindows
@@ -320,17 +319,9 @@ Test('/settlements/{id}', async (settlementTest) => {
       delete options.payload.participants
 
       const response = await server.inject(options)
-      t.equal(response.statusCode, 500, 'Bad Request response status')
-      Logger.info(response.statusCode)
-      const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(response)
-      Logger.info(fspiopError)
-      Logger.info(fspiopError.message)
-      const errorInfo = fspiopError.toApiErrorObject()
-      const errorInformation = errorInfo.errorInformation
-      Logger.info(errorInformation.errorDescription)
-      Logger.info(errorInformation.errorCode)
-      // t.equal(response.result.message, 'Internal server error', 'Error description matched')
-      // t.equal(errorInfo.errorDescription, 'Invalid request payload input', 'Error description matched')
+      t.equal(response.statusCode, 500, 'Response result status code matched')
+      t.equal(response.result.error, 'Internal Server Error', 'Response result error matched')
+      t.equal(response.result.message, 'An internal server error occurred', 'Response result message matched')
       t.end()
     } catch (e) {
       Logger.error(`testing error ${e}`)
