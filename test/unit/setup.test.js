@@ -118,35 +118,35 @@ Test('Server Setup', async setupTest => {
         }
       })
 
-      // await initTest.test('should catch errors and console.error output', async test => {
-      //   try {
-      //     const e = new Error('Database unavailable')
-      //     DbStub.connect = sandbox.stub().throws(e)
-      //     const consoleErrorStub = sandbox.stub(console, 'error')
-      //     await SetupProxy.initialize() // throws error
-      //     test.ok(consoleErrorStub.withArgs(e).calledOnce)
-      //     consoleErrorStub.restore()
-      //     test.end()
-      //   } catch (err) {
-      //     Logger.error(`init failed with error - ${err}`)
-      //     test.fail()
-      //     test.end()
-      //   }
-      // })
-      //
-      // await initTest.test('should catch errors after createServer and use server.log', async test => {
-      //   try {
-      //     const e = new Error('setHost error')
-      //     serverStub.plugins.openapi.setHost = sandbox.stub().throws(e)
-      //     await SetupProxy.initialize()
-      //     test.ok(serverStub.log.withArgs('error', e.message).calledOnce)
-      //     test.end()
-      //   } catch (err) {
-      //     Logger.error(`init failed with error - ${err}`)
-      //     test.fail()
-      //     test.end()
-      //   }
-      // })
+      await initTest.test('should catch errors and console.error output', async test => {
+        try {
+          const e = new Error('Database unavailable')
+          DbStub.connect = sandbox.stub().throws(e)
+          const consoleErrorStub = sandbox.stub(console, 'error')
+          await SetupProxy.initialize() // throws error
+          test.ok(consoleErrorStub.withArgs(e).calledOnce)
+          consoleErrorStub.restore()
+          test.end()
+        } catch (err) {
+          Logger.error(`init failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await initTest.test('should catch errors after createServer and use server.log', async test => {
+        try {
+          const e = new Error('setHost error')
+          serverStub.plugins.openapi.setHost = sandbox.stub().throws(e)
+          await SetupProxy.initialize()
+          test.ok(serverStub.log.withArgs('error', e.message).calledOnce)
+          test.end()
+        } catch (err) {
+          Logger.error(`init failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
 
       await initTest.test('invoke server method enums', async test => {
         try {

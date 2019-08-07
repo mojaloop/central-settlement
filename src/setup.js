@@ -66,48 +66,56 @@ async function connectDatabase () {
 }
 
 const createServer = async function (config, openAPIPluginOptions) {
-  const server = new Hapi.Server(config)
-  await connectDatabase()
-  await server.register([{
-    plugin: HapiOpenAPI,
-    options: openAPIPluginOptions
-  },
-  {
-    plugin: require('./utils/logger-plugin')
-  }])
-
-  server.method({
-    name: 'enums',
-    method: getEnums,
-    options: {
-      cache: {
-        cache: 'memCache',
-        expiresIn: 20 * 1000,
-        generateTimeout: 30 * 1000
-      }
-    }
-  })
-
-  server.ext([
+  try {
+    const server = new Hapi.Server(config)
+    await connectDatabase()
+    await server.register([{
+      plugin: HapiOpenAPI,
+      options: openAPIPluginOptions
+    },
     {
-      type: 'onPreHandler',
-      method: (request, h) => {
-        server.log('request', request)
-        return h.continue
-      }
-    }
-  ])
+      plugin: require('./utils/logger-plugin')
+    }])
 
-  await server.start()
-  return server
+    server.method({
+      name: 'enums',
+      method: getEnums,
+      options: {
+        cache: {
+          cache: 'memCache',
+          expiresIn: 20 * 1000,
+          generateTimeout: 30 * 1000
+        }
+      }
+    })
+
+    server.ext([
+      {
+        type: 'onPreHandler',
+        method: (request, h) => {
+          server.log('request', request)
+          return h.continue
+        }
+      }
+    ])
+
+    await server.start()
+    return server
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 const initialize = async (config = defaultConfig, openAPIPluginOptions = openAPIOptions) => {
   const server = await createServer(config, openAPIPluginOptions)
   if (server) {
-    server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
-    server.log('info', `Server running on ${server.info.host}:${server.info.port}`)
-    return server
+    try {
+      server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
+      server.log('info', `Server running on ${server.info.host}:${server.info.port}`)
+      return server
+    } catch (e) {
+      server.log('error', e.message)
+    }
   }
 }
 
