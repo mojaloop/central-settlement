@@ -49,7 +49,7 @@ module.exports = {
         throw ErrorHandler.Factory.createInternalServerFSPIOPError(`settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
       }
     } else {
-      throw ErrorHandler.Factory.createInternalServerFSPIOPError('Use at least one parameter: participantId, state, fromDateTime, toDateTime')
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Use at least one parameter: participantId, state, fromDateTime, toDateTime')
     }
   },
 

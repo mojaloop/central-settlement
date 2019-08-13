@@ -166,7 +166,7 @@ module.exports = {
         throw ErrorHandler.Factory.createInternalServerFSPIOPError('Settlements not found')
       }
     } else {
-      throw ErrorHandler.Factory.createInternalServerFSPIOPError('Use at least one parameter: state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId')
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Use at least one parameter: state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId')
     }
   },
 
