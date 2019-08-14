@@ -218,7 +218,7 @@ jobs:
             - dependency-cache-
       - run:
           name: Execute code coverage check
-          command: npm -s run cover
+          command: npm -s run test:coverage
       - store_artifacts:
           path: coverage
           prefix: test

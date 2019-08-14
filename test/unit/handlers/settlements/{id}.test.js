@@ -30,6 +30,7 @@ const Enums = require('./../../../../src/models/lib/enums')
 const Logger = require('@mojaloop/central-services-shared').Logger
 const settlement = require('./../../../../src/domain/settlement')
 const Db = require('./../../../../src/lib/db')
+
 /**
  * Test for /settlementWindows
  */
@@ -143,7 +144,7 @@ Test('/settlements/{id}', async (settlementTest) => {
         options.headers = mock.request.headers
       }
       const response = await server.inject(options)
-      t.equal(response.statusCode, 404, 'Ok response status')
+      t.equal(response.statusCode, 500, 'Ok response status')
       t.end()
     } catch (e) {
       Logger.error(`testing error ${e}`)
@@ -269,7 +270,7 @@ Test('/settlements/{id}', async (settlementTest) => {
     }
   })
 
-  await settlementTest.test('test settlements put operation :: invlidState', async (t) => {
+  await settlementTest.test('test settlements put operation :: invalidState', async (t) => {
     sandbox.stub(Enums, 'ledgerAccountTypes').returns({})
     sandbox.stub(Enums, 'ledgerEntryTypes').returns({})
     sandbox.stub(Enums, 'participantLimitTypes').returns({})
@@ -318,8 +319,9 @@ Test('/settlements/{id}', async (settlementTest) => {
       delete options.payload.participants
 
       const response = await server.inject(options)
-      t.equal(response.statusCode, 400, 'Bad Request response status')
-      t.equal(response.result.message.errorInformation.errorDescription, 'Invalid request payload input', 'Error description matched')
+      t.equal(response.statusCode, 500, 'Response result status code matched')
+      t.equal(response.result.error, 'Internal Server Error', 'Response result error matched')
+      t.equal(response.result.message, 'An internal server error occurred', 'Response result message matched')
       t.end()
     } catch (e) {
       Logger.error(`testing error ${e}`)
@@ -376,7 +378,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       delete options.payload.reason
 
       const response = await server.inject(options)
-      t.equal(response.statusCode, 400, 'Bad Request response status')
+      t.equal(response.statusCode, 500, 'Bad Request response status')
       t.end()
     } catch (e) {
       Logger.error(`testing error ${e}`)
@@ -433,7 +435,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       delete options.payload.participants
 
       const response = await server.inject(options)
-      t.equal(response.statusCode, 400, 'Bad Request response status')
+      t.equal(response.statusCode, 500, 'Bad Request response status')
       t.end()
     } catch (e) {
       Logger.error(`testing error ${e}`)
@@ -486,7 +488,7 @@ Test('/settlements/{id}', async (settlementTest) => {
         options.headers = mock.request.headers
       }
       const response = await server.inject(options)
-      t.equal(response.statusCode, 400, 'Ok response status')
+      t.equal(response.statusCode, 500, 'Ok response status')
       t.end()
     } catch (e) {
       Logger.error(`testing error ${e}`)
