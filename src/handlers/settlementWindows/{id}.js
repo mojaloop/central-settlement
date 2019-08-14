@@ -33,7 +33,7 @@
 'use strict'
 
 const settlementWindow = require('../../domain/settlementWindow/index')
-const Boom = require('@hapi/boom')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 /**
  * Operations on /settlementWindows/{id}
@@ -52,9 +52,9 @@ module.exports = {
       const Enums = await request.server.methods.enums('settlementWindowStates')
       const settlementWindowResult = await settlementWindow.getById({ settlementWindowId }, Enums, request.server.log)
       return h.response(settlementWindowResult)
-    } catch (e) {
-      request.server.log('error', e)
-      return Boom.notFound(e.message)
+    } catch (err) {
+      request.server.log('error', err)
+      return ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   },
   /**
@@ -70,9 +70,9 @@ module.exports = {
     try {
       const Enums = await request.server.methods.enums('settlementWindowStates')
       return await settlementWindow.close({ settlementWindowId, state, reason }, Enums)
-    } catch (e) {
-      request.server.log('error', e)
-      return Boom.badRequest(e.message)
+    } catch (err) {
+      request.server.log('error', err)
+      return ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
 }

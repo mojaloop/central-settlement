@@ -55,5 +55,4 @@ jspm_packages
 .idea/
 **/*.iml
 
-#package-lock.json
 .history

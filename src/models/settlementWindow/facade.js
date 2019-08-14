@@ -27,6 +27,7 @@
 'use strict'
 
 const Db = require('../../lib/db')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 const Facade = {
   getById: async function ({ settlementWindowId }) {
@@ -106,10 +107,9 @@ const Facade = {
     const knex = await Db.getKnex()
     const settlementWindowCurrentState = await Facade.getById({ settlementWindowId })
     if (!settlementWindowCurrentState) {
-      throw new Error(`2001: Window ${settlementWindowId} does NOT EXIST'`)
+      throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Window ${settlementWindowId} does NOT EXIST`)
     } if (settlementWindowCurrentState && settlementWindowCurrentState.state !== enums.OPEN) {
-      const err = new Error(`2001: Window ${settlementWindowId} is not OPEN'`)
-      throw err
+      throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Window ${settlementWindowId} is not OPEN`)
     } else {
       return knex.transaction(async (trx) => {
         try {
@@ -140,11 +140,11 @@ const Facade = {
           return newSettlementWindowId[0]
         } catch (err) {
           await trx.rollback
-          throw err
+          throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
       })
         .catch((err) => {
-          throw err
+          throw ErrorHandler.Factory.reformatFSPIOPError(err)
         })
     }
   },
