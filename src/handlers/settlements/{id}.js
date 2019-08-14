@@ -33,7 +33,7 @@
 
 'use strict'
 
-const Boom = require('@hapi/boom')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 const Settlements = require('../../domain/settlement')
 const Logger = require('@mojaloop/central-services-shared').Logger
@@ -59,9 +59,9 @@ module.exports = {
       request.server.log('info', `get settlement by Id requested with id ${settlementId}`)
       const settlementResult = await Settlements.getById({ settlementId }, Enums)
       return h.response(settlementResult)
-    } catch (e) {
-      request.server.log('error', e)
-      return Boom.notFound(e.message)
+    } catch (err) {
+      request.server.log('error', err)
+      return ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   },
 
@@ -77,9 +77,9 @@ module.exports = {
     try {
       const p = request.payload
       if (p.participants && (p.state || p.reason || p.externalReference)) {
-        throw new Error('No other properties are allowed when participants is provided')
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'No other properties are allowed when participants is provided')
       } else if ((p.state && !p.reason) || (!p.state && p.reason)) {
-        throw new Error('State and reason are mandatory')
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MISSING_ELEMENT, 'State and reason are mandatory')
       }
       const Enums = {
         ledgerAccountTypes: await request.server.methods.enums('ledgerAccountTypes'),
@@ -96,11 +96,11 @@ module.exports = {
       } else if (p.state && p.state === Enums.settlementStates.ABORTED) {
         return await Settlements.abortById(settlementId, request.payload, Enums)
       } else {
-        throw new Error('Invalid request payload input')
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid request payload input')
       }
-    } catch (e) {
-      request.server.log('error', e)
-      return Boom.badRequest(e)
+    } catch (err) {
+      request.server.log('error', err)
+      return ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
 }

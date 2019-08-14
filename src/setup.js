@@ -96,25 +96,6 @@ const createServer = async function (config, openAPIPluginOptions) {
           server.log('request', request)
           return h.continue
         }
-      },
-      {
-        type: 'onPreResponse',
-        method: (request, h) => {
-          if (!request.response.isBoom) {
-            server.log('response', request.response)
-          } else {
-            const error = request.response
-            const errorMessage = {
-              errorInformation: {
-                errorCode: error.statusCode,
-                errorDescription: error.message
-              }
-            }
-            error.message = errorMessage
-            error.reformat()
-          }
-          return h.continue
-        }
       }
     ])
 

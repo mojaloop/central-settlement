@@ -142,7 +142,7 @@ Test('/settlementWindows/{id}', async (settlementWindowTest) => {
         options.headers = mock.request.headers
       }
       const response = await server.inject(options)
-      t.equal(response.statusCode, 404, 'Ok response status')
+      t.equal(response.statusCode, 500, 'Ok response status')
       t.end()
     } catch (e) {
       Logger.error(`testing error ${e}`)
@@ -235,7 +235,7 @@ Test('/settlementWindows/{id}', async (settlementWindowTest) => {
         options.headers = mock.request.headers
       }
       const response = await server.inject(options)
-      t.equal(response.statusCode, 400, 'Ok response status')
+      t.equal(response.statusCode, 500, 'Ok response status')
       t.end()
     } catch (e) {
       Logger.error(`testing error ${e}`)
