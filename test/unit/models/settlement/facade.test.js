@@ -33,6 +33,7 @@ const SettlementFacade = require('../../../../src/models/settlement/facade')
 const ParticipantFacade = require('@mojaloop/central-ledger/src/models/participant/facade')
 const Uuid = require('uuid4')
 const Utility = require('../../../../src/handlers/lib/utility')
+const FSPIOPError = require('@mojaloop/central-services-error-handling').Factory.FSPIOPError
 
 Test('Settlement facade', async (settlementFacadeTest) => {
   let sandbox
@@ -2444,13 +2445,14 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             })
           })
 
-          const result = await SettlementFacade.putById(1, payload['putById'][0], enums)
-          test.ok(result instanceof Error, 'Error is returned')
-          test.ok(result.isBoom, 'Error is boomified')
+          // const result =
+          await SettlementFacade.putById(1, payload['putById'][0], enums)
+          // test.ok(result instanceof FSPIOPError, 'Error is returned')
           test.end()
         } catch (err) {
-          Logger.error(`putById failed with error - ${err}`)
-          test.fail()
+          test.ok(err instanceof FSPIOPError)
+          // Logger.error(`putById failed with error - ${err}`)
+          // test.fail()
           test.end()
         }
       })
@@ -2554,19 +2556,19 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.equal(result.participants[0].accounts.length, 6, 'Six accounts for first participant are affected')
           test.equal(result.participants[1].accounts.length, 1, 'One account for second participant is affected')
           test.equal(result.participants[0].accounts[0].id, 11, 'First account processed has id 11')
-          test.equal(result.participants[0].accounts[0].errorInformation.errorDescription, 'Account not found', 'First account returns error "Account not found"')
+          test.equal(result.participants[0].accounts[0].errorInformation.errorDescription, 'Client error - Account not found', 'First account returns error "Account not found"')
           test.equal(result.participants[0].accounts[1].id, 1, 'Second account processed has id 1')
           test.equal(result.participants[0].accounts[1].state, 'PS_TRANSFERS_RECORDED', 'Second account is PS_TRANSFERS_RECORDED')
           test.equal(result.participants[0].accounts[2].id, 2, 'Third account processed has id 2')
           test.equal(result.participants[0].accounts[2].state, 'PS_TRANSFERS_RECORDED', 'Third account is PS_TRANSFERS_RECORDED')
           test.equal(result.participants[0].accounts[3].id, 1, 'Fourth account processed has id 1')
-          test.equal(result.participants[0].accounts[3].errorInformation.errorDescription, 'Account already processed once', 'Fourth account returns error "Account already processed once"')
+          test.equal(result.participants[0].accounts[3].errorInformation.errorDescription, 'Client error - Account already processed once', 'Fourth account returns error "Account already processed once"')
           test.equal(result.participants[0].accounts[4].id, 3, 'Fifth account processed has id 3')
           test.equal(result.participants[0].accounts[4].state, 'SETTLED', 'Fifth account state remains SETTLED')
           test.equal(result.participants[0].accounts[5].id, 4, 'Sixth account processed has id 4')
-          test.equal(result.participants[0].accounts[5].errorInformation.errorDescription, 'State change not allowed', 'Fourth account returns error "State change not allowed"')
+          test.equal(result.participants[0].accounts[5].errorInformation.errorDescription, 'Client error - State change not allowed', 'Fourth account returns error "State change not allowed"')
           test.equal(result.participants[1].accounts[0].id, 5, 'First account processed for second participant has id 5')
-          test.equal(result.participants[1].accounts[0].errorInformation.errorDescription, 'Participant and account mismatch', 'First account processed for second participant "Participant and account mismatch"')
+          test.equal(result.participants[1].accounts[0].errorInformation.errorDescription, 'Client error - Participant and account mismatch', 'First account processed for second participant "Participant and account mismatch"')
           test.end()
         } catch (err) {
           Logger.error(`putById failed with error - ${err}`)

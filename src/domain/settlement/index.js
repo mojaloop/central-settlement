@@ -35,6 +35,7 @@
 
 const SettlementModel = require('../../models/settlement')
 const SettlementWindowModel = require('../../models/settlementWindow')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 const prepareParticipantsResult = function (participantCurrenciesList) {
   const participantAccounts = {}
@@ -83,8 +84,7 @@ module.exports = {
         participants
       }
     } else {
-      const err = new Error('2001 TODO Settlement not found')
-      throw err
+      throw ErrorHandler.Factory.createInternalServerFSPIOPError('2001 TODO Settlement not found')
     }
   },
 
@@ -163,12 +163,10 @@ module.exports = {
         })
         return result
       } else {
-        const err = new Error('Settlements not found')
-        throw err
+        throw ErrorHandler.Factory.createInternalServerFSPIOPError('Settlements not found')
       }
     } else {
-      const err = new Error('Use at least one parameter: state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId')
-      throw err
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Use at least one parameter: state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId')
     }
   },
 
@@ -179,16 +177,14 @@ module.exports = {
     // validate windows state
     const settlementWindows = await SettlementWindowModel.getByListOfIds(idList, enums.settlementWindowStates)
     if (settlementWindows && settlementWindows.length !== idList.length) {
-      const err = new Error('At least one settlement window does not exist')
-      throw err
+      throw ErrorHandler.Factory.createInternalServerFSPIOPError('At least one settlement window does not exist')
     }
 
     for (const settlementWindow of settlementWindows) {
       const { state } = settlementWindow
       if (state !== enums.settlementWindowStates.CLOSED &&
           state !== enums.settlementWindowStates.ABORTED) {
-        const err = new Error('At least one settlement window is not in CLOSED or ABORTED state')
-        throw err
+        throw ErrorHandler.Factory.createInternalServerFSPIOPError('At least one settlement window is not in CLOSED or ABORTED state')
       }
     }
     const settlementId = await SettlementModel.triggerEvent({ idList, reason }, enums)
@@ -264,13 +260,13 @@ module.exports = {
       }
     } else {
       if (!settlementFound) {
-        throw new Error('Settlement not found')
+        throw ErrorHandler.Factory.createInternalServerFSPIOPError('Settlement not found')
       } else if (!participantFoundInSettlement) {
-        throw new Error('Participant not in settlement')
+        throw ErrorHandler.Factory.createInternalServerFSPIOPError('Participant not in settlement')
       } else if (!participantAndAccountMatched) {
-        throw new Error('Provided account does not match any participant position account')
+        throw ErrorHandler.Factory.createInternalServerFSPIOPError('Provided account does not match any participant position account')
       } else { // else if (!accountFoundInSettlement) { // else if changed to else for achieving 100% branch coverage (else path not taken)
-        throw new Error('Account not in settlement')
+        throw ErrorHandler.Factory.createInternalServerFSPIOPError('Account not in settlement')
       }
     }
 

@@ -218,7 +218,7 @@ jobs:
             - dependency-cache-
       - run:
           name: Execute code coverage check
-          command: npm -s run cover
+          command: npm -s run test:coverage
       - store_artifacts:
           path: coverage
           prefix: test
@@ -348,7 +348,7 @@ jobs:
           command: mkdir -p ./audit/results
       - run:
           name: Check for new npm vulnerabilities
-          command: npm run audit:check -- --json > ./audit/results/auditResults.json 
+          command: npm run audit:check --silent -- --json > ./audit/results/auditResults.json 
       - store_artifacts:
           path: ./audit/results
           prefix: audit
