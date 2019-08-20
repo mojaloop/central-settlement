@@ -20,7 +20,7 @@
         "registry": "https://registry.npmjs.org"
     },
     "dependencies": {
-        "@hapi/catbox-memory": "4.1.0",
+        "@hapi/catbox-memory": "4.1.1",
         "@hapi/hapi": "18.3.1",
         "@mojaloop/central-ledger": "5.2.1",
         "@mojaloop/central-services-auth": "5.2.1",
