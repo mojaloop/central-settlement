@@ -564,17 +564,14 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
       for (const { transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount,
         dfspName, currencyId } of settlementTransferList) {
         // Persist transfer fulfilment and transfer state change
-        const transferFulfilmentId = Uuid()
         await knex('transferFulfilmentDuplicateCheck')
           .insert({
-            transferFulfilmentId,
             transferId
           })
           .transacting(trx)
 
         await knex('transferFulfilment')
           .insert({
-            transferFulfilmentId,
             transferId,
             ilpFulfilment: 0,
             completedDate: transactionTimestamp,
