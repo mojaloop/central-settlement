@@ -237,8 +237,10 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
 
   const trxFunction = async (trx, doCommit = true) => {
     try {
-      for (const { transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount,
-        dfspName, currencyId } of settlementTransferList) {
+      for (const {
+        transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount,
+        dfspName, currencyId
+      } of settlementTransferList) {
         // Persist transfer state change
         transferStateChangeId = await knex('transferStateChange')
           .insert({
@@ -409,8 +411,10 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
 
   const trxFunction = async (trx, doCommit = true) => {
     try {
-      for (const { transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount, isReserved,
-        dfspName, currencyId } of settlementTransferList) {
+      for (const {
+        transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount, isReserved,
+        dfspName, currencyId
+      } of settlementTransferList) {
         // Persist transfer state change
         await knex('transferStateChange')
           .insert({
@@ -561,8 +565,10 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
 
   const trxFunction = async (trx, doCommit = true) => {
     try {
-      for (const { transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount,
-        dfspName, currencyId } of settlementTransferList) {
+      for (const {
+        transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount,
+        dfspName, currencyId
+      } of settlementTransferList) {
         // Persist transfer fulfilment and transfer state change
         await knex('transferFulfilmentDuplicateCheck')
           .insert({
