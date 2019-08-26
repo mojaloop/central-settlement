@@ -126,7 +126,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       test.ok(settlement, `create settlement with id ${settlementData.id}`)
 
       const settlementState = await SettlementStateChangeModel.getBySettlementId(settlementData.id)
-      test.equal(settlementState.settlementStateId, enums.settlementStates.PENDING_SETTLEMENT, `settlement state is PENDING_SETTLEMENT`)
+      test.equal(settlementState.settlementStateId, enums.settlementStates.PENDING_SETTLEMENT, 'settlement state is PENDING_SETTLEMENT')
       test.end()
     } catch (err) {
       Logger.error(`settlementTransferTest failed with error - ${err}`)
@@ -246,7 +246,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       test.ok(payeeTransferParticipant.amount > 0, `CR settlement transfer for SETTLEMENT_NET_RECIPIENT is positive for payer ${payeeTransferParticipant.amount}`)
 
       const settlementState = await SettlementStateChangeModel.getBySettlementId(settlementData.id)
-      test.equal(settlementState.settlementStateId, enums.settlementStates.PS_TRANSFERS_RECORDED, `settlement state is PS_TRANSFERS_RECORDED`)
+      test.equal(settlementState.settlementStateId, enums.settlementStates.PS_TRANSFERS_RECORDED, 'settlement state is PS_TRANSFERS_RECORDED')
 
       test.end()
     } catch (err) {
@@ -295,7 +295,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       test.equal(payeeSettlementParticipantCurrencyRecord.settlementStateId, enums.settlementStates.PS_TRANSFERS_RESERVED, 'record for payee changed to PS_TRANSFERS_RESERVED')
 
       const settlementState = await SettlementStateChangeModel.getBySettlementId(settlementData.id)
-      test.equal(settlementState.settlementStateId, enums.settlementStates.PS_TRANSFERS_RESERVED, `settlement state is PS_TRANSFERS_RESERVED`)
+      test.equal(settlementState.settlementStateId, enums.settlementStates.PS_TRANSFERS_RESERVED, 'settlement state is PS_TRANSFERS_RESERVED')
 
       const payerTransferStateChangeRecord = await TransferStateChangeModel.getByTransferId(netSenderSettlementTransferId)
       test.equal(payerTransferStateChangeRecord.transferStateId, enums.transferStates.RESERVED, 'settlement transfer for payer is RESERVED')
