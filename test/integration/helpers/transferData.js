@@ -348,7 +348,7 @@ module.exports = () => {
 
       try {
         const res = await fetch(url, opts)
-        test.equal(res.status, 202, `transfer PREPARE request returned 202 Accepted`)
+        test.equal(res.status, 202, 'transfer PREPARE request returned 202 Accepted')
 
         let transferCommitted = false
         for (let i = 0; i < 10; i++) {
