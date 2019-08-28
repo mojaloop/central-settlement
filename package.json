@@ -32,7 +32,7 @@
         "@mojaloop/forensic-logging-client": "5.2.0",
         "hapi-openapi": "1.2.2",
         "hapi-pagination": "3.0.0",
-        "mustache": "3.0.2",
+        "mustache": "3.0.3",
         "rc": "1.2.8",
         "uuid4": "1.1.4"
     },
