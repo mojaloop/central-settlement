@@ -84,7 +84,7 @@ module.exports = {
         participants
       }
     } else {
-      throw ErrorHandler.Factory.createInternalServerFSPIOPError('2001 TODO Settlement not found')
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement not found')
     }
   },
 
