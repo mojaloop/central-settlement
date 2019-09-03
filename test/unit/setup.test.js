@@ -105,7 +105,7 @@ Test('Server Setup', async setupTest => {
           test.ok(server, 'return server object')
           test.ok(HapiStub.Server.calledOnce, 'Hapi.Server called once')
           test.ok(DbStub.connect.calledOnce, 'Db.connect called once')
-          test.ok(serverStub.register.calledOnce, 'server.register called once')
+          test.equal(serverStub.register.callCount, 7, 'server.register called 7 times')
           test.ok(serverStub.method.calledOnce, 'server.method called once')
           test.ok(serverStub.start.calledOnce, 'server.start called once')
           test.ok(serverStub.plugins.openapi.setHost.calledOnce, 'server.plugins.openapi.setHost called once')
