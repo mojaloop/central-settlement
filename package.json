@@ -25,7 +25,7 @@
         "@mojaloop/central-ledger": "7.4.0",
         "@mojaloop/central-services-auth": "5.2.1",
         "@mojaloop/central-services-database": "7.4.0",
-        "@mojaloop/central-services-error-handling": "7.3.0",
+        "@mojaloop/central-services-error-handling": "7.4.3",
         "@mojaloop/central-services-health": "7.0.0",
         "@mojaloop/central-services-shared": "7.4.3",
         "@mojaloop/central-services-stream": "6.2.2",
