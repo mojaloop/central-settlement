@@ -137,7 +137,6 @@ const initialize = async (config = defaultConfig, openAPIPluginOptions = openAPI
 module.exports = {
   initialize,
   __testonly__: {
-    getEnums,
-    createServer
+    getEnums
   }
 }
