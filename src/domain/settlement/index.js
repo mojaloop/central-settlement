@@ -163,7 +163,7 @@ module.exports = {
         })
         return result
       } else {
-        throw ErrorHandler.Factory.createInternalServerFSPIOPError('Settlements not found')
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlements not found')
       }
     } else {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Use at least one parameter: state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId')
@@ -177,14 +177,14 @@ module.exports = {
     // validate windows state
     const settlementWindows = await SettlementWindowModel.getByListOfIds(idList, enums.settlementWindowStates)
     if (settlementWindows && settlementWindows.length !== idList.length) {
-      throw ErrorHandler.Factory.createInternalServerFSPIOPError('At least one settlement window does not exist')
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'At least one provided settlement window does not exist')
     }
 
     for (const settlementWindow of settlementWindows) {
       const { state } = settlementWindow
       if (state !== enums.settlementWindowStates.CLOSED &&
           state !== enums.settlementWindowStates.ABORTED) {
-        throw ErrorHandler.Factory.createInternalServerFSPIOPError('At least one settlement window is not in CLOSED or ABORTED state')
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'At least one settlement window is not in closed or aborted state')
       }
     }
     const settlementId = await SettlementModel.triggerEvent({ idList, reason }, enums)
@@ -260,13 +260,13 @@ module.exports = {
       }
     } else {
       if (!settlementFound) {
-        throw ErrorHandler.Factory.createInternalServerFSPIOPError('Settlement not found')
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement not found')
       } else if (!participantFoundInSettlement) {
-        throw ErrorHandler.Factory.createInternalServerFSPIOPError('Participant not in settlement')
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Participant not in settlement')
       } else if (!participantAndAccountMatched) {
-        throw ErrorHandler.Factory.createInternalServerFSPIOPError('Provided account does not match any participant position account')
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Provided account does not match any participant position account')
       } else { // else if (!accountFoundInSettlement) { // else if changed to else for achieving 100% branch coverage (else path not taken)
-        throw ErrorHandler.Factory.createInternalServerFSPIOPError('Account not in settlement')
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Account not in settlement')
       }
     }
 

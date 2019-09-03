@@ -35,7 +35,7 @@ module.exports = {
     const settlementWindow = await settlementWindowModel.getById(params, enums)
     if (settlementWindow) return settlementWindow
     else {
-      throw ErrorHandler.Factory.createInternalServerFSPIOPError(`settlementWindowId: ${params.settlementWindowId} not found`)
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `settlementWindowId: ${params.settlementWindowId} not found`)
     }
   },
 
@@ -46,7 +46,7 @@ module.exports = {
       if (settlementWindows && settlementWindows.length > 0) {
         return settlementWindows
       } else {
-        throw ErrorHandler.Factory.createInternalServerFSPIOPError(`settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
       }
     } else {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Use at least one parameter: participantId, state, fromDateTime, toDateTime')
