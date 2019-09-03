@@ -101,9 +101,28 @@ Test('Server Setup', async setupTest => {
     try {
       await initTest.test('test 1', async test => {
         try {
-          const server = await SetupProxy.initialize()
+          const errorToThrow = new Error('Throw Boom error')
+
+          const HapiStubThrowError = {
+            Server: sandbox.stub().callsFake((opt) => {
+              opt.routes.validate.failAction(sandbox.stub(), sandbox.stub(), errorToThrow)
+              return serverStub
+            })
+          }
+
+          const SetupProxy1 = Proxyquire('../../src/setup', {
+            '@hapi/catbox-memory': EngineStub,
+            '@hapi/hapi': HapiStubThrowError,
+            'hapi-openapi': HapiOpenAPIStub,
+            path: PathStub,
+            './lib/db': DbStub,
+            './models/lib/enums': EnumsStub,
+            './lib/config': ConfigStub
+          })
+
+          const server = await SetupProxy1.initialize()
           test.ok(server, 'return server object')
-          test.ok(HapiStub.Server.calledOnce, 'Hapi.Server called once')
+          test.ok(HapiStubThrowError.Server.calledOnce, 'Hapi.Server called once')
           test.ok(DbStub.connect.calledOnce, 'Db.connect called once')
           test.equal(serverStub.register.callCount, 7, 'server.register called 7 times')
           test.ok(serverStub.method.calledOnce, 'server.method called once')

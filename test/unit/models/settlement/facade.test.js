@@ -1898,26 +1898,30 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             andOn: sandbox.stub()
           })
           const join1Stub = sandbox.stub().callsArgOn(1, context)
-          const join2Stub = sandbox.stub().callsArgOn(1, context)
           const leftJoin1Stub = sandbox.stub().callsArgOn(1, context)
+          const leftJoin2Stub = sandbox.stub().callsArgOn(1, context)
+          const join2Stub = sandbox.stub().callsArgOn(1, context)
           const join3Stub = sandbox.stub().callsArgOn(1, context)
-          const join4Stub = sandbox.stub().callsArgOn(1, context)
           knexStub.returns({
             join: join1Stub.returns({
-              leftJoin: join2Stub.returns({
+              leftJoin: sandbox.stub().returns({
                 leftJoin: leftJoin1Stub.returns({
-                  join: join3Stub.returns({
-                    join: sandbox.stub().returns({
-                      join: sandbox.stub().returns({
-                        join: join4Stub.returns({
-                          select: sandbox.stub().returns({
-                            where: sandbox.stub().returns({
-                              whereNull: sandbox.stub().returns({
-                                transacting: sandbox.stub().returns(
-                                  Promise.resolve(
-                                    stubData.settlementTransfersAbort.settlementTransferList
-                                  )
-                                )
+                  leftJoin: sandbox.stub().returns({
+                    leftJoin: leftJoin2Stub.returns({
+                      join: join2Stub.returns({
+                        join: sandbox.stub().returns({
+                          join: sandbox.stub().returns({
+                            join: join3Stub.returns({
+                              select: sandbox.stub().returns({
+                                where: sandbox.stub().returns({
+                                  whereNull: sandbox.stub().returns({
+                                    transacting: sandbox.stub().returns(
+                                      Promise.resolve(
+                                        stubData.settlementTransfersAbort.settlementTransferList
+                                      )
+                                    )
+                                  })
+                                })
                               })
                             })
                           })
@@ -1925,6 +1929,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                       })
                     })
                   })
+
                 })
               })
             }),
@@ -3112,6 +3117,28 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
   await settlementFacadeTest.test('abortById should', async abortByIdTest => {
     try {
+      await abortByIdTest.test('throw error if settlement not found', async test => {
+        try {
+          const settlementId = 1
+          const settlementResultStub = null
+
+          sandbox.stub(Db, 'getKnex')
+          const knexStub = sandbox.stub()
+
+          Db.getKnex.returns(knexStub)
+          sandbox.stub(SettlementFacade, 'getById')
+          SettlementFacade.getById.returns(settlementResultStub)
+
+          await SettlementFacade.abortById({ settlementId }, {}, enums)
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`abortById failed with error - ${err}`)
+          test.ok('Error thrown')
+          test.end()
+        }
+      })
+
       await abortByIdTest.test('throw error if state change is not allowed - PS_TRANSFERS_COMMITTED', async test => {
         try {
           const settlementId = 1
