@@ -107,9 +107,9 @@ const Facade = {
     const knex = await Db.getKnex()
     const settlementWindowCurrentState = await Facade.getById({ settlementWindowId })
     if (!settlementWindowCurrentState) {
-      throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Window ${settlementWindowId} does NOT EXIST`)
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Window ${settlementWindowId} does not exist`)
     } if (settlementWindowCurrentState && settlementWindowCurrentState.state !== enums.OPEN) {
-      throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Window ${settlementWindowId} is not OPEN`)
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Window ${settlementWindowId} is not open`)
     } else {
       return knex.transaction(async (trx) => {
         try {

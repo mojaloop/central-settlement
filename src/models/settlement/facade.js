@@ -725,7 +725,7 @@ const Facade = {
           .forUpdate()
 
         if (!settlementData) {
-          throw ErrorHandler.Factory.createInternalServerFSPIOPError('Settlement not found')
+          throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement not found')
         } else {
           // seq-settlement-6.2.5, step 5
           const settlementAccountList = await knex('settlementParticipantCurrency AS spc')
@@ -1164,10 +1164,13 @@ const Facade = {
     // seq-settlement-6.2.6, step 3
     const settlementData = await Facade.getById({ settlementId })
 
+    if (!settlementData) {
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement not found')
+    }
     if (settlementData.state === enums.settlementStates.PS_TRANSFERS_COMMITTED ||
         settlementData.state === enums.settlementStates.SETTLING ||
         settlementData.state === enums.settlementStates.SETTLED) {
-      throw ErrorHandler.Factory.createInternalServerFSPIOPError('State change is not allowed')
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'State change is not allowed')
     } else if (settlementData.state === enums.settlementStates.ABORTED) {
       // seq-settlement-6.2.6, step 5
       const settlementStateChangeId = await knex('settlementStateChange')
@@ -1194,7 +1197,7 @@ const Facade = {
         .where('spcsc.settlementStateId', enums.settlementStates.PS_TRANSFERS_COMMITTED)
         .first()
       if (transferCommittedAccount !== undefined) {
-        throw ErrorHandler.Factory.createInternalServerFSPIOPError('At least one settlement transfer is committed')
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'At least one settlement transfer is committed')
       }
     }
 
