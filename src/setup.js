@@ -31,9 +31,12 @@
 const Hapi = require('@hapi/hapi')
 const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
+const Boom = require('@hapi/boom')
+const ErrorHandling = require('@mojaloop/central-services-error-handling')
 const Db = require('./lib/db')
 const Enums = require('./models/lib/enums')
 const Config = require('./lib/config')
+const Plugins = require('./plugins')
 
 // TODO: add to common config
 const openAPIOptions = {
@@ -43,6 +46,18 @@ const openAPIOptions = {
 
 const defaultConfig = {
   port: Config.PORT,
+  routes: {
+    validate: {
+      options: ErrorHandling.validateRoutes(),
+      failAction: async (request, h, err) => {
+        throw Boom.boomify(err)
+      }
+    },
+    payload: {
+      parse: true,
+      output: 'stream'
+    }
+  },
   cache: [
     {
       provider: {
@@ -98,7 +113,7 @@ const createServer = async function (config, openAPIPluginOptions) {
         }
       }
     ])
-
+    await Plugins.registerPlugins(server)
     await server.start()
     return server
   } catch (e) {
