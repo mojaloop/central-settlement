@@ -3,7 +3,7 @@
     "description": "Central settlements hosted by a scheme to record and make settlements",
     "version": "7.5.0",
     "license": "Apache-2.0",
-    "private": true,
+    "private": false,
     "author": "ModusBox",
     "contributors": [
         "Georgi Georgiev <georgi.georgiev@modusbox.com>",
