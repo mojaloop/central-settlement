@@ -45,7 +45,7 @@
         "uuid4": "1.1.4"
     },
     "devDependencies": {
-        "@hapi/joi": "15.1.1",
+        "@hapi/joi": "16.0.1",
         "bluebird": "3.5.5",
         "eslint": "6.3.0",
         "faucet": "0.0.1",
