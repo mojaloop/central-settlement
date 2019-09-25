@@ -319,9 +319,9 @@ Test('/settlements/{id}', async (settlementTest) => {
       delete options.payload.participants
 
       const response = await server.inject(options)
-      t.equal(response.statusCode, 500, 'Response result status code matched')
-      t.equal(response.result.error, 'Internal Server Error', 'Response result error matched')
-      t.equal(response.result.message, 'An internal server error occurred', 'Response result message matched')
+      t.equal(response.statusCode, 400, 'Bad Request http status code matched')
+      t.equal(response.result.errorInformation.errorCode, '3100', 'Response result error code matched')
+      t.equal(response.result.errorInformation.errorDescription, 'Generic validation error - Invalid request payload input', 'Response result message matched')
       t.end()
     } catch (e) {
       Logger.error(`testing error ${e}`)
@@ -378,7 +378,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       delete options.payload.reason
 
       const response = await server.inject(options)
-      t.equal(response.statusCode, 500, 'Bad Request response status')
+      t.equal(response.statusCode, 400, 'Bad Request response status')
       t.end()
     } catch (e) {
       Logger.error(`testing error ${e}`)
@@ -488,7 +488,7 @@ Test('/settlements/{id}', async (settlementTest) => {
         options.headers = mock.request.headers
       }
       const response = await server.inject(options)
-      t.equal(response.statusCode, 500, 'Ok response status')
+      t.equal(response.statusCode, 400, 'Bad Request response status')
       t.end()
     } catch (e) {
       Logger.error(`testing error ${e}`)

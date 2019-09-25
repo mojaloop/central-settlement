@@ -38,7 +38,7 @@ const healthHandler = require('../../../src/handlers/health')
 
 Test('Health Handler', async handlersTest => {
   await handlersTest.test('registerAllHandlers should', async registerAllHandlers => {
-    await registerAllHandlers.test(`setup handlers`, async (test) => {
+    await registerAllHandlers.test('setup handlers', async (test) => {
       await Db.connect(Config.DATABASE_URI)
 
       test.pass('done')

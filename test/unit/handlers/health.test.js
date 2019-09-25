@@ -26,7 +26,7 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 
-const src = `../../../src`
+const src = '../../../src'
 const getHealth = require(`${src}/handlers/health`).get
 const MigrationLockModel = require(`${src}/models/misc/migrationLock`)
 
