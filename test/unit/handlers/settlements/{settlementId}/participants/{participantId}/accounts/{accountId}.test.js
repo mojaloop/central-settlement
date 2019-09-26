@@ -30,7 +30,7 @@ const Sinon = require('sinon')
 const Mockgen = require('../../../../../../../data/mockgen.js')
 const InitServer = require('./../../../../../../../../src/setup').initialize
 const Enums = require('./../../../../../../../../src/models/lib/enums')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const settlement = require('./../../../../../../../../src/domain/settlement')
 const Db = require('./../../../../../../../../src/lib/db')
 

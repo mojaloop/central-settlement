@@ -1,0 +1,35 @@
+{
+  "decisions": {
+    "1065|@mojaloop/central-ledger>@mojaloop/central-services-database>lodash": {
+      "madeAt": 0,
+      "decision": "ignore"
+    },
+    "1065|@mojaloop/central-ledger>lodash": {
+      "madeAt": 0,
+      "decision": "ignore"
+    },
+    "1065|@mojaloop/central-services-database>lodash": {
+      "madeAt": 0,
+      "decision": "ignore"
+    },
+    "812|@mojaloop/central-ledger>jsdoc>marked": {
+      "madeAt": 0,
+      "decision": "ignore"
+    },
+    "1164|@mojaloop/central-ledger>hapi-swagger>handlebars": {
+      "decision": "fix",
+      "madeAt": 1569516924315
+    },
+    "1164|nyc>istanbul-reports>handlebars": {
+      "decision": "fix",
+      "madeAt": 1569516924315
+    },
+    "1168|@mojaloop/central-ledger>hapi>subtext": {
+      "decision": "ignore",
+      "madeAt": 1569516943758,
+      "expiresAt": 1570121699979
+    }
+  },
+  "rules": {},
+  "version": 1
+}
