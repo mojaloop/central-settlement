@@ -25,8 +25,8 @@
 'use strict'
 
 const Test = require('tape')
-const Joi = require('joi')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Joi = require('@hapi/joi')
+const Logger = require('@mojaloop/central-services-logger')
 const Db = require('@mojaloop/central-services-database').Db
 
 const Config = require('../../../src/lib/config')
@@ -72,8 +72,8 @@ Test('Health Handler', async handlersTest => {
       } = await unwrapResponse((reply) => healthHandler.get(createRequest({}), reply))
 
       // Assert
-      const validationResult = Joi.validate(responseBody, expectedSchema) // We use Joi to validate the results as they rely on timestamps that are variable
-      test.equal(validationResult.error, null, 'The response matches the validation schema')
+      const validationResult = Joi.object().validate(responseBody, expectedSchema) // We use Joi to validate the results as they rely on timestamps that are variable
+      test.equal(validationResult.error, undefined, 'The response matches the validation schema')
       test.deepEqual(responseCode, expectedStatus, 'The response code matches')
       test.deepEqual(responseBody.services, expectedServices, 'The sub-services are correct')
       test.end()

@@ -26,7 +26,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const Proxyquire = require('proxyquire')
 
 Test('Settlement Window Model Index', async (settlementWindowIndexTest) => {
