@@ -30,7 +30,7 @@
 
 'use strict'
 
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
 const { defaultHealthHandler } = require('@mojaloop/central-services-health')
 const Path = require('path')

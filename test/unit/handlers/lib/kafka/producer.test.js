@@ -37,7 +37,7 @@ const KafkaProducer = require('@mojaloop/central-services-stream').Kafka.Produce
 const Producer = require(`${src}/handlers/lib/kafka/producer`)
 const P = require('bluebird')
 const Uuid = require('uuid4')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const FSPIOPError = require('@mojaloop/central-services-error-handling').Factory.FSPIOPError
 
 const transfer = {

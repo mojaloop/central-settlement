@@ -25,7 +25,7 @@
  --------------
  ******/
 
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const checkEmpty = require('./truthyProperty')
 module.exports.plugin = {
   name: 'logger-plugin',

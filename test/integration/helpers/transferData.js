@@ -27,7 +27,7 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const TestConfig = require('../../integration-config')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const fetch = require('node-fetch')
 const Uuid = require('uuid4')
 
