@@ -5,13 +5,9 @@
     "DISABLED": false,
     "RUN_DATA_MIGRATIONS": true
   },
-  "ENABLE_TOKEN_AUTH": false,
-  "ENABLE_BASIC_AUTH": false,
-  "LEDGER_ACCOUNT_NAME": "LedgerName",
-  "LEDGER_ACCOUNT_PASSWORD": "LedgerPassword",
   "AMOUNT": {
-    "PRECISION": 10,
-    "SCALE": 2
+    "PRECISION": 18,
+    "SCALE": 4
   },
   "SIDECAR": {
     "DISABLED": true,
@@ -27,6 +23,10 @@
   "MONGODB": {
     "DISABLED": true,
     "URI": "mongodb://localhost:27017/mlos"
+  },
+  "ERROR_HANDLING": {
+    "includeCauseExtension": true,
+    "truncateCause": false
   },
   "HANDLERS": {
     "DISABLED": false,
@@ -52,7 +52,10 @@
       },
       "config": {
         "timeout": 5000,
-        "prefix": "moja_cl_"
+        "prefix": "moja_cl_",
+        "defaultLabels": {
+          "serviceName": "central-service"
+        }
       }
     }
   },
@@ -67,9 +70,6 @@
     ]
   },
   "INTERNAL_TRANSFER_VALIDITY_SECONDS": "432000",
-  "EMAIL_USER": "modusboxemailtest@gmail.com",
-  "EMAIL_PASSWORD": "April2o0%",
-  "EMAIL_SMTP": "smtp.gmail.com",
   "KAFKA": {
     "TOPIC_TEMPLATES": {
       "PARTICIPANT_TOPIC_TEMPLATE": {
@@ -223,29 +223,6 @@
             }
           }
         },
-        "REJECT": {
-          "config": {
-            "options": {
-              "mode": 2,
-              "batchSize": 1,
-              "pollFrequency": 10,
-              "recursiveTimeout": 100,
-              "messageCharset": "utf8",
-              "messageAsJSON": true,
-              "sync": true,
-              "consumeTimeout": 1000
-            },
-            "rdkafkaConf": {
-              "client.id": "cl-con-transfer-reject",
-              "group.id": "cl-group-transfer-reject",
-              "metadata.broker.list": "kafka-int:9092",
-              "socket.keepalive.enable": true
-            },
-            "topicConf": {
-              "auto.offset.reset": "earliest"
-            }
-          }
-        },
         "POSITION": {
           "config": {
             "options": {
@@ -344,24 +321,6 @@
             "rdkafkaConf": {
               "metadata.broker.list": "kafka-int:9092",
               "client.id": "cl-prod-transfer-fulfil",
-              "event_cb": true,
-              "dr_cb": true,
-              "socket.keepalive.enable": true,
-              "queue.buffering.max.messages": 10000000
-            },
-            "topicConf": {
-              "request.required.acks": "all"
-            }
-          }
-        },
-        "REJECT": {
-          "config": {
-            "options": {
-              "messageCharset": "utf8"
-            },
-            "rdkafkaConf": {
-              "metadata.broker.list": "kafka-int:9092",
-              "client.id": "cl-prod-transfer-reject",
               "event_cb": true,
               "dr_cb": true,
               "socket.keepalive.enable": true,

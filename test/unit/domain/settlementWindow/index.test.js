@@ -27,7 +27,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const SettlementWindowService = require('../../../../src/domain/settlementWindow')
 const SettlementWindowModel = require('../../../../src/models/settlementWindow')
 

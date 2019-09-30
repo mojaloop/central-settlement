@@ -35,7 +35,7 @@
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Path = require('path')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const Settlements = require('../../../../domain/settlement')
 
 Logger.info('path ', Path.basename(__filename))

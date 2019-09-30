@@ -2,6 +2,7 @@
   "PORT": 3000,
   "HOSTNAME": "http://ml-api-adapter",
   "ENDPOINT_SOURCE_URL": "http://central-ledger-int:3001",
+  "ENDPOINT_HEALTH_URL": "http://central-ledger-int:3001/health",
   "ENDPOINT_CACHE_CONFIG": {
     "expiresIn": 180000,
     "generateTimeout": 30000
@@ -10,6 +11,15 @@
     "TLS": {
       "rejectUnauthorized": true
     }
+  },
+  "MAX_CALLBACK_TIME_LAG_DILATION_MILLISECONDS": 200,
+  "MAX_FULFIL_TIMEOUT_DURATION_SECONDS": 300,
+  "TRANSFERS": {
+    "SEND_TRANSFER_CONFIRMATION_TO_PAYEE": true
+  },
+  "ERROR_HANDLING": {
+    "includeCauseExtension": false,
+    "truncateCause": true
   },
   "AMOUNT": {
     "PRECISION": 10,
@@ -26,7 +36,10 @@
       "DISABLED": true,
       "config": {
         "timeout": 5000,
-        "prefix": "moja_ml_"
+        "prefix": "moja_ml_",
+        "defaultLabels": {
+          "serviceName": "ml-service"
+        }
       }
     }
   },
@@ -35,18 +48,6 @@
       "GENERAL_TOPIC_TEMPLATE": {
         "TEMPLATE": "topic-{{functionality}}-{{action}}",
         "REGEX": "topic-(.*)-(.*)"
-      },
-      "NOTIFICATION_TOPIC_TEMPLATE": {
-        "TEMPLATE": "topic-notification-event",
-        "REGEX": "topic-notification-event"
-      },
-      "FULFIL_TOPIC_TEMPLATE": {
-        "TEMPLATE": "topic-transfer-fulfil",
-        "REGEX": "topic-transfer-fulfil"
-      },
-      "GET_TRANSFERS_TOPIC_TEMPLATE": {
-        "TEMPLATE": "topic-transfer-get",
-        "REGEX": "topic-transfer-get"
       }
     },
     "CONSUMER": {
