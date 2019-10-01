@@ -25,7 +25,7 @@
 'use strict'
 
 const Test = require('tapes')(require('tape'))
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const truthyProperty = require('../../../src/utils/truthyProperty')
 
 Test('truthyProperty utility', (truthyPropertyTest) => {

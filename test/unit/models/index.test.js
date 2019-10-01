@@ -24,7 +24,7 @@
 'use strict'
 
 const Test = require('tapes')(require('tape'))
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const Db = require('../../../src/lib/db')
 
 Test('Central Services Database', (test) => {

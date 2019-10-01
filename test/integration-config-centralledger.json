@@ -10,8 +10,8 @@
   "LEDGER_ACCOUNT_NAME": "LedgerName",
   "LEDGER_ACCOUNT_PASSWORD": "LedgerPassword",
   "AMOUNT": {
-    "PRECISION": 10,
-    "SCALE": 2
+    "PRECISION": 18,
+    "SCALE": 4
   },
   "SIDECAR": {
     "DISABLED": true,
@@ -27,6 +27,10 @@
   "MONGODB": {
     "DISABLED": true,
     "URI": "mongodb://localhost:27017/mlos"
+  },
+  "ERROR_HANDLING": {
+    "includeCauseExtension": true,
+    "truncateCause": false
   },
   "HANDLERS": {
     "DISABLED": false,
