@@ -26,7 +26,7 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Logger = require('@mojaloop/central-services-logger')
-const MlNumber = require('@mojaloop/ml-number')
+const MLNumber = require('@mojaloop/ml-number')
 const PrepareTransferData = require('./helpers/transferData')
 const Models = require('./helpers/models')
 const Config = require('../../src/lib/config')
@@ -308,7 +308,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       test.equal(currentPayerPosition, initialPayerPosition, 'position for NET_SETTLEMENT_SENDER is not changed')
 
       const currentPayeePosition = (await ParticipantPositionModel.getPositionByCurrencyId(netRecipientAccountId)).value
-      test.equal(currentPayeePosition, new MlNumber(initialPayeePosition).add(netSettlementAmount).toNumber(), 'position for NET_SETTLEMENT_RECIPIENT is adjusted')
+      test.equal(currentPayeePosition, new MLNumber(initialPayeePosition).add(netSettlementAmount).toNumber(), 'position for NET_SETTLEMENT_RECIPIENT is adjusted')
 
       test.end()
     } catch (err) {
