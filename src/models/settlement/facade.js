@@ -27,6 +27,7 @@
 'use strict'
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const MLNumber = require('@mojaloop/ml-number')
 const Db = require('../../lib/db')
 const Uuid = require('uuid4')
 const Crypto = require('crypto')
@@ -282,13 +283,13 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             // TODO: insert new limit with correct value for startAfterParticipantPositionChangeId
             await ParticipantFacade.adjustLimits(dfspAccountId, {
               type: 'NET_DEBIT_CAP',
-              value: netDebitCap + dfspAmount
+              value: new MLNumber(netDebitCap).add(dfspAmount).toNumber()
             }, trx)
           }
 
           // Persist dfsp latestPosition
           await knex('participantPosition')
-            .update('value', dfspPositionValue + dfspAmount)
+            .update('value', new MLNumber(dfspPositionValue).add(dfspAmount).toNumber())
             .where('participantPositionId', dfspPositionId)
             .transacting(trx)
 
@@ -297,7 +298,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             .insert({
               participantPositionId: dfspPositionId,
               transferStateChangeId: transferStateChangeId,
-              value: dfspPositionValue + dfspAmount,
+              value: new MLNumber(dfspPositionValue).add(dfspAmount).toNumber(),
               reservedValue: dfspReservedValue,
               createdDate: transactionTimestamp
             })
@@ -308,7 +309,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
           const destination = dfspName
           const payload = {
             currency: currencyId,
-            value: dfspPositionValue + dfspAmount,
+            value: new MLNumber(dfspPositionValue).add(dfspAmount).toNumber(),
             changedDate: new Date().toISOString()
           }
           const message = Facade.getNotificationMessage(action, destination, payload)
@@ -324,7 +325,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
 
           // Persist hub latestPosition
           await knex('participantPosition')
-            .update('value', hubPositionValue + hubAmount)
+            .update('value', new MLNumber(hubPositionValue).add(hubAmount).toNumber())
             .where('participantPositionId', hubPositionId)
             .transacting(trx)
 
@@ -333,7 +334,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             .insert({
               participantPositionId: hubPositionId,
               transferStateChangeId: transferStateChangeId,
-              value: hubPositionValue + hubAmount,
+              value: new MLNumber(hubPositionValue).add(hubAmount).toNumber(),
               reservedValue: 0,
               createdDate: transactionTimestamp
             })
@@ -616,7 +617,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
 
           // Persist dfsp latestPosition
           await knex('participantPosition')
-            .update('value', dfspPositionValue + dfspAmount)
+            .update('value', new MLNumber(dfspPositionValue).add(dfspAmount).toNumber())
             .where('participantPositionId', dfspPositionId)
             .transacting(trx)
 
@@ -625,7 +626,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             .insert({
               participantPositionId: dfspPositionId,
               transferStateChangeId: transferStateChangeId,
-              value: dfspPositionValue + dfspAmount,
+              value: new MLNumber(dfspPositionValue).add(dfspAmount).toNumber(),
               reservedValue: dfspReservedValue,
               createdDate: transactionTimestamp
             })
@@ -641,7 +642,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
 
           // Persist hub latestPosition
           await knex('participantPosition')
-            .update('value', hubPositionValue + hubAmount)
+            .update('value', new MLNumber(hubPositionValue).add(hubAmount).toNumber())
             .where('participantPositionId', hubPositionId)
             .transacting(trx)
 
@@ -650,7 +651,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             .insert({
               participantPositionId: hubPositionId,
               transferStateChangeId: transferStateChangeId,
-              value: hubPositionValue + hubAmount,
+              value: new MLNumber(hubPositionValue).add(hubAmount).toNumber(),
               reservedValue: 0,
               createdDate: transactionTimestamp
             })
@@ -661,7 +662,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
           const destination = dfspName
           const payload = {
             currency: currencyId,
-            value: dfspPositionValue + dfspAmount,
+            value: new MLNumber(dfspPositionValue).add(dfspAmount).toNumber(),
             changedDate: new Date().toISOString()
           }
           const message = Facade.getNotificationMessage(action, destination, payload)
