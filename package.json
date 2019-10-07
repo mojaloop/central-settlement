@@ -54,7 +54,7 @@
         "node-fetch": "2.6.0",
         "nodemon": "1.19.3",
         "npm-audit-resolver": "2.0.1",
-        "npm-check-updates": "3.1.23",
+        "npm-check-updates": "3.1.24",
         "nyc": "14.1.1",
         "pre-commit": "1.2.2",
         "proxyquire": "2.1.3",
