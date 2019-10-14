@@ -6,7 +6,7 @@
     "HOST": "db-int",
     "PORT": 3306,
     "USER": "central_ledger",
-    "PASSWORD": "cVq8iFqaLuHy8jjKuA",
+    "PASSWORD": "password",
     "SCHEMA": "central_ledger_integration",
     "POOL_MIN_SIZE": 10,
     "POOL_MAX_SIZE": 10,
