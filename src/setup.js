@@ -76,8 +76,7 @@ const getEnums = (id) => {
 }
 
 async function connectDatabase () {
-  const db = await Db.connect(Config.DATABASE_URI)
-  return db
+  return Db.connect(Config.DATABASE)
 }
 
 const createServer = async function (config, openAPIPluginOptions) {
