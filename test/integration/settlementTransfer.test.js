@@ -68,7 +68,7 @@ const getEnums = async () => {
 PrepareTransferData()
 
 Test('SettlementTransfer should', async settlementTransferTest => {
-  await Db.connect(Config.DATABASE_URI)
+  await Db.connect(Config.DATABASE)
   const enums = await getEnums()
   let settlementWindowId
   let settlementData

@@ -25,15 +25,6 @@ TBA
 ## Configuration
 
 Currently the only configuration, necessary is kept [here](./config/default.json)
-Example values are as follows:
-
-```json
-{
-  "PORT": 3007,
-  "HOSTNAME": "http://central-settlements.local",
-  "DATABASE_URI" : "mysql://central_ledger:password@localhost:3306/central_ledger"
-}
-```
 
 ## Environmental variables
 
