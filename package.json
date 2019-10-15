@@ -49,7 +49,7 @@
     },
     "devDependencies": {
         "@hapi/joi": "16.1.7",
-        "bluebird": "3.7.0",
+        "bluebird": "3.7.1",
         "eslint": "6.5.1",
         "faucet": "0.0.1",
         "node-fetch": "2.6.0",
