@@ -41,7 +41,7 @@
         "@now-ims/hapi-now-auth": "2.0.0",
         "blipp": "4.0.1",
         "hapi-auth-bearer-token": "6.2.1",
-        "hapi-openapi": "1.2.3",
+        "hapi-openapi": "1.2.4",
         "hapi-pagination": "3.0.0",
         "mustache": "3.1.0",
         "rc": "1.2.8",
