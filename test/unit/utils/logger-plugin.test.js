@@ -27,7 +27,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const Proxyquire = require('proxyquire')
 // const checkEmpty = require('./../../../src/utils/truthyProperty')
 
@@ -56,10 +56,8 @@ Test('loggerPlugin utility', async (loggerPluginTest) => {
       }
       const loggerInfoStub = sandbox.stub()
       const loggerPluginProxy = Proxyquire('../../../src/utils/logger-plugin', {
-        '@mojaloop/central-services-shared': {
-          Logger: {
-            info: loggerInfoStub
-          }
+        '@mojaloop/central-services-logger': {
+          info: loggerInfoStub
         }
       })
       serverStub.events.on.callsArgWith(1, eventMock)
@@ -88,10 +86,8 @@ Test('loggerPlugin utility', async (loggerPluginTest) => {
       }
       const loggerInfoStub = sandbox.stub()
       const loggerPluginProxy = Proxyquire('../../../src/utils/logger-plugin', {
-        '@mojaloop/central-services-shared': {
-          Logger: {
-            info: loggerInfoStub
-          }
+        '@mojaloop/central-services-logger': {
+          info: loggerInfoStub
         }
       })
       serverStub.events.on.callsArgWith(1, eventMock)
@@ -120,10 +116,8 @@ Test('loggerPlugin utility', async (loggerPluginTest) => {
       }
       const loggerInfoStub = sandbox.stub()
       const loggerPluginProxy = Proxyquire('../../../src/utils/logger-plugin', {
-        '@mojaloop/central-services-shared': {
-          Logger: {
-            info: loggerInfoStub
-          }
+        '@mojaloop/central-services-logger': {
+          info: loggerInfoStub
         }
       })
       serverStub.events.on.callsArgWith(1, eventMock)
@@ -156,10 +150,8 @@ Test('loggerPlugin utility', async (loggerPluginTest) => {
       const checkEmpty = Sinon.stub()
       const loggerInfoStub = sandbox.stub()
       const loggerPluginProxy = Proxyquire('../../../src/utils/logger-plugin', {
-        '@mojaloop/central-services-shared': {
-          Logger: {
-            info: loggerInfoStub
-          }
+        '@mojaloop/central-services-logger': {
+          info: loggerInfoStub
         }
       })
       checkEmpty.returns(1)
@@ -193,10 +185,8 @@ Test('loggerPlugin utility', async (loggerPluginTest) => {
       const checkEmpty = Sinon.stub()
       const loggerInfoStub = sandbox.stub()
       const loggerPluginProxy = Proxyquire('../../../src/utils/logger-plugin', {
-        '@mojaloop/central-services-shared': {
-          Logger: {
-            info: loggerInfoStub
-          }
+        '@mojaloop/central-services-logger': {
+          info: loggerInfoStub
         }
       })
       checkEmpty.returns(0)
@@ -226,10 +216,8 @@ Test('loggerPlugin utility', async (loggerPluginTest) => {
       }
       const loggerInfoStub = sandbox.stub()
       const loggerPluginProxy = Proxyquire('../../../src/utils/logger-plugin', {
-        '@mojaloop/central-services-shared': {
-          Logger: {
-            info: loggerInfoStub
-          }
+        '@mojaloop/central-services-logger': {
+          info: loggerInfoStub
         }
       })
       serverStub.events.on.callsArgWith(1, eventMock)

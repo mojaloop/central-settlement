@@ -84,7 +84,7 @@ fcmd_centralledger() {
     --link $DB_HOST \
     --network $DOCKER_NETWORK \
     --env HOST_IP="$APP_HOST" \
-    --env CLEDG_DATABASE_URI="mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
+    --volume ${PWD}/test/integration-config-centralledger.json:/opt/central-ledger/config/default.json \
     $CENTRAL_LEDGER_IMAGE:$CENTRAL_LEDGER_TAG \
     /bin/sh \
     -c "$@"
@@ -216,7 +216,6 @@ start_central_ledger () {
     --network $DOCKER_NETWORK \
     --name=$CENTRAL_LEDGER_HOST \
     --volume ${PWD}/test/integration-config-centralledger.json:/opt/central-ledger/config/default.json \
-    --env CLEDG_DATABASE_URI="mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
     $CENTRAL_LEDGER_IMAGE:$CENTRAL_LEDGER_TAG
 }
 
@@ -355,7 +354,7 @@ docker logs $APP_HOST
 >&1 echo "Copy results to local directory"
 docker cp $APP_HOST:$DOCKER_WORKING_DIR/$APP_DIR_TEST_RESULTS $TEST_DIR
 
-if [ "$test_exit_code" == 0 ]
+if [ "$test_exit_code" = "0" ]
 then
   >&1 echo "Showing results..."
   cat $APP_DIR_TEST_RESULTS/$TEST_RESULTS_FILE

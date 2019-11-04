@@ -26,7 +26,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const ParticipantCurrencyModel = require('../../../../src/models/settlement/participantCurrency')
 const Db = require('../../../../src/lib/db')
 

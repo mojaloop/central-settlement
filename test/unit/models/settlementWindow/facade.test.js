@@ -28,7 +28,7 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Db = require('../../../../src/lib/db')
-const Logger = require('@mojaloop/central-services-shared').Logger
+const Logger = require('@mojaloop/central-services-logger')
 const SettlementWindowFacade = require('../../../../src/models/settlementWindow/facade')
 
 Logger.error('this is error')

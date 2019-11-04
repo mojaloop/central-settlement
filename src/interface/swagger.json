@@ -17,7 +17,8 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Gets the health of the service and sub-services (i.e. database).",
+                "description": "Gets the health of the service and sub-services (i.e. database).",
+                "summary": "getHealth",
                 "operationId": "getHealth",
                 "tags": [
                     "getHealth"
@@ -38,7 +39,8 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Returns a Settlement Window by id.",
+                "description": "Returns a Settlement Window by id.",
+                "summary": "getSettlementWindowById",
                 "operationId": "getSettlementWindowById",
                 "parameters": [
                     {
@@ -99,7 +101,8 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "If the settlementWindow is open, it can be closed and a new window is created. If it is already closed, return an error message. Returns the new settlement window.",
+                "description": "If the settlementWindow is open, it can be closed and a new window is created. If it is already closed, return an error message. Returns the new settlement window.",
+                "summary": "closeSettlementWindow",
                 "operationId": "closeSettlementWindow",
                 "parameters": [
                     {
@@ -167,7 +170,8 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Returns Settlement Windows as per parameter(s).",
+                "description": "Returns Settlement Windows as per parameter(s).",
+                "summary": "getSettlementWindowsByParams",
                 "operationId": "getSettlementWindowsByParams",
                 "parameters": [
                     {
@@ -257,7 +261,8 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Returns Settlements as per parameter(s).",
+                "description": "Returns Settlements as per parameter(s).",
+                "summary": "getSettlementsByParams",
                 "operationId": "getSettlementsByParams",
                 "parameters": [
                     {
@@ -387,7 +392,8 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Trigger the creation of a settlement, that does the calculation of the net settlement position per participant and marks all transfers in the affected windows as PENDING_SETTLEMENT. Returned dataset is the net settlement report for the settlementWindow",
+                "description": "Trigger the creation of a settlement, that does the calculation of the net settlement position per participant and marks all transfers in the affected windows as PENDING_SETTLEMENT. Returned dataset is the net settlement report for the settlementWindow",
+                "summary": "createSettlement",
                 "operationId": "createSettlement",
                 "parameters": [
                     {
@@ -449,7 +455,8 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Returns Settlement(s) as per parameters/filter criteria.",
+                "description": "Returns Settlement(s) as per parameters/filter criteria.",
+                "summary": "getSettlementById",
                 "operationId": "getSettlementById",
                 "parameters": [
                     {
@@ -510,7 +517,8 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Acknowledgement of settlement by updating with Settlement Id.",
+                "description": "Acknowledgement of settlement by updating with Settlement Id.",
+                "summary": "updateSettlementById",
                 "operationId": "updateSettlementById",
                 "parameters": [
                     {
@@ -579,7 +587,8 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Returns Settlement(s) as per filter criteria.",
+                "description": "Returns Settlement(s) as per filter criteria.",
+                "summary": "getSettlementBySettlementParticipant",
                 "operationId": "getSettlementBySettlementParticipant",
                 "parameters": [
                     {
@@ -647,7 +656,8 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Acknowledgement of settlement by updating with Settlements Id and Participant Id.",
+                "description": "Acknowledgement of settlement by updating with Settlements Id and Participant Id.",
+                "summary": "updateSettlementBySettlementParticipant",
                 "operationId": "updateSettlementBySettlementParticipant",
                 "parameters": [
                     {
@@ -723,7 +733,8 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Returns Settlement(s) as per filter criteria.",
+                "description": "Returns Settlement(s) as per filter criteria.",
+                "summary": "getSettlementBySettlementParticipantAccount",
                 "operationId": "getSettlementBySettlementParticipantAccount",
                 "parameters": [
                     {
@@ -798,7 +809,8 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "summary": "Acknowledgement of settlement by updating the reason and state by Settlements Id, Participant Id and accounts Id.",
+                "description": "Acknowledgement of settlement by updating the reason and state by Settlements Id, Participant Id and accounts Id.",
+                "summary": "updateSettlementBySettlementParticipantAccount",
                 "operationId": "updateSettlementBySettlementParticipantAccount",
                 "parameters": [
                     {
