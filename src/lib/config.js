@@ -1,4 +1,4 @@
-const RC = require('rc')('CSET', require('../../config/default.json'))
+const RC = require('parse-strings-in-object')(require('rc')('CSET', require('../../config/default.json')))
 
 module.exports = {
   HOSTNAME: RC.HOSTNAME.replace(/\/$/, ''),
