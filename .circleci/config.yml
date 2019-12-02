@@ -415,9 +415,13 @@ jobs:
   deploy:
     executor: helm-kube
     steps:
+      - checkout 
       - run:
           name: Install AWS CLI dependencies
           command: *defaults_awsCliDependencies
+      - run:
+          name: setup environment vars for release
+          command: ./.circleci/_set_up_deploy_envs.sh
       - run:
           <<: *defaults_deploy_prequisites
       - run:
