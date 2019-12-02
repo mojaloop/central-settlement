@@ -128,18 +128,6 @@ defaults_slack_announcement: &defaults_slack_announcement
       -d "{\"text\": \"*${CIRCLE_PROJECT_REPONAME}* - Release \`${CIRCLE_TAG}\`: https://github.com/mojaloop/${CIRCLE_PROJECT_REPONAME}/releases/tag/${CIRCLE_TAG}\"}"
 
 
-# defaults_Environment: &defaults_environment
-#   name: Set default environment
-#   command: |
-#     echo "Current CACHE_VERSION: ${CACHE_VERSION}"
-#     if [ -z "${CACHE_VERSION}" ];
-#     then
-#         echo 'export CACHE_VERSION="v0"' >> $BASH_ENV
-#         source $BASH_ENV
-#     fi
-#     echo "Using CACHE_VERSION: ${CACHE_VERSION}"
-#     echo "${CACHE_VERSION}" > CACHE_VERSION.txt
-
 ##
 # Executors
 #
@@ -256,8 +244,6 @@ jobs:
     executor: default-machine
     steps:
       - checkout
-      # - run:
-          # <<: *defaults_environment
       - restore_cache:
           key: dependency-cache-{{ checksum "CACHE_VERSION.txt" }}-{{ checksum "package.json" }}
       - run:
@@ -436,120 +422,6 @@ jobs:
           <<: *defaults_deploy_configure_helm
       - run:
           <<: *defaults_deploy_install_or_upgrade_helm_chart
-
-  # build-snapshot:
-  #   machine: true
-  #   <<: *defaults_working_directory
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: setup environment vars for SNAPSHOT release
-  #         command: |
-  #           echo 'export RELEASE_TAG=$RELEASE_TAG_SNAPSHOT' >> $BASH_ENV
-  #     - run:
-  #         <<: *defaults_build_docker_login
-  #     - run:
-  #         <<: *defaults_build_docker_build
-  #     - run:
-  #         <<: *defaults_build_docker_publish
-  #     - run:
-  #         <<: *defaults_slack_announcement
-
-  # build:
-  #   machine: true
-  #   # <<: *default_env
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: setup environment vars for LATEST release
-  #         command: |
-  #           echo 'export RELEASE_TAG=$RELEASE_TAG_PROD' >> $BASH_ENV
-  #     - run:
-  #         <<: *defaults_build_docker_login
-  #     - run:
-  #         <<: *defaults_build_docker_build
-  #     - run:
-  #         <<: *defaults_license_scanner
-  #     - run:
-  #         name: Run the license-scanner
-  #         command: cd /tmp/license-scanner && mode=docker dockerImage=$DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG make run
-  #     - store_artifacts:
-  #         path: /tmp/license-scanner/results
-  #         prefix: licenses
-  #     - run:
-  #         <<: *defaults_build_docker_publish
-  #     - run:
-  #         <<: *defaults_slack_announcement
-
-  # TODO: make sure the RELEASE_TAG is set up properly before the publish step...
-
-  # deploy-snapshot:
-  #   <<: *defaults_working_directory
-  #   <<: *defaults_docker_helm_kube
-  #   steps:
-  #     - run:
-  #         name: Install AWS CLI dependencies
-  #         command: *defaults_awsCliDependencies
-  #     - run:
-  #         name: setup environment vars for SNAPSHOT release
-  #         command: |
-  #           echo 'export HELM_VALUE_FILENAME=$K8_HELM_VALUE_FILENAME_SNAPSHOT' >> $BASH_ENV
-  #           echo 'export K8_CLUSTER_SERVER=$K8_CLUSTER_SERVER_SNAPSHOT' >> $BASH_ENV
-  #           echo 'export K8_RELEASE_NAME=$K8_RELEASE_NAME_SNAPSHOT' >> $BASH_ENV
-  #           echo 'export K8_NAMESPACE=$K8_NAMESPACE_SNAPSHOT' >> $BASH_ENV
-  #           echo 'export K8_USER_NAME=$K8_USER_NAME_SNAPSHOT' >> $BASH_ENV
-  #           echo 'export K8_USER_TOKEN=$K8_USER_TOKEN_SNAPSHOT' >> $BASH_ENV
-  #           echo 'export K8_HELM_CHART_NAME=$K8_HELM_CHART_NAME_SNAPSHOT' >> $BASH_ENV
-  #           echo 'export K8_HELM_CHART_VERSION=$K8_HELM_CHART_VERSION_SNAPSHOT' >> $BASH_ENV
-  #           echo 'export HELM_VALUE_SET_VALUES="--set central.centralhub.centralledger.containers.api.image.repository=$DOCKER_ORG/$CIRCLE_PROJECT_REPONAME --set central.centralhub.centralledger.containers.api.image.tag=$CIRCLE_TAG --set central.centralhub.centralledger.containers.admin.image.repository=$DOCKER_ORG/$CIRCLE_PROJECT_REPONAME --set central.centralhub.centralledger.containers.admin.image.tag=$CIRCLE_TAG"' >> $BASH_ENV
-  #     - run:
-  #         <<: *defaults_deploy_prequisites
-  #     - run:
-  #         <<: *defaults_deploy_config_kubernetes_cluster
-  #     - run:
-  #         <<: *defaults_deploy_config_kubernetes_credentials
-  #     - run:
-  #         <<: *defaults_deploy_config_kubernetes_context
-  #     - run:
-  #         <<: *defaults_deploy_set_kubernetes_context
-  #     - run:
-  #         <<: *defaults_deploy_configure_helm
-  #     - run:
-  #         <<: *defaults_deploy_install_or_upgrade_helm_chart
-
-  # deploy:
-  #   <<: *defaults_working_directory
-  #   <<: *defaults_docker_helm_kube
-  #   steps:
-  #     - run:
-  #         name: Install AWS CLI dependencies
-  #         command: *defaults_awsCliDependencies
-  #     - run:
-  #         name: setup environment vars for release
-  #         command: |
-  #           echo 'export HELM_VALUE_FILENAME=$K8_HELM_VALUE_FILENAME_PROD' >> $BASH_ENV
-  #           echo 'export K8_CLUSTER_SERVER=$K8_CLUSTER_SERVER_PROD' >> $BASH_ENV
-  #           echo 'export K8_RELEASE_NAME=$K8_RELEASE_NAME_PROD' >> $BASH_ENV
-  #           echo 'export K8_NAMESPACE=$K8_NAMESPACE_PROD' >> $BASH_ENV
-  #           echo 'export K8_USER_NAME=$K8_USER_NAME_PROD' >> $BASH_ENV
-  #           echo 'export K8_USER_TOKEN=$K8_USER_TOKEN_PROD' >> $BASH_ENV
-  #           echo 'export K8_HELM_CHART_NAME=$K8_HELM_CHART_NAME_PROD' >> $BASH_ENV
-  #           echo 'export K8_HELM_CHART_VERSION=$K8_HELM_CHART_VERSION_PROD' >> $BASH_ENV
-  #           echo 'export HELM_VALUE_SET_VALUES="--set central.centralhub.centralledger.containers.api.image.repository=$DOCKER_ORG/$CIRCLE_PROJECT_REPONAME --set central.centralhub.centralledger.containers.api.image.tag=$CIRCLE_TAG --set central.centralhub.centralledger.containers.admin.image.repository=$DOCKER_ORG/$CIRCLE_PROJECT_REPONAME --set central.centralhub.centralledger.containers.admin.image.tag=$CIRCLE_TAG"' >> $BASH_ENV
-  #     - run:
-  #         <<: *defaults_deploy_prequisites
-  #     - run:
-  #         <<: *defaults_deploy_config_kubernetes_cluster
-  #     - run:
-  #         <<: *defaults_deploy_config_kubernetes_credentials
-  #     - run:
-  #         <<: *defaults_deploy_config_kubernetes_context
-  #     - run:
-  #         <<: *defaults_deploy_set_kubernetes_context
-  #     - run:
-  #         <<: *defaults_deploy_configure_helm
-  #     - run:
-  #         <<: *defaults_deploy_install_or_upgrade_helm_chart
 
 ##
 # Workflows
