@@ -51,7 +51,7 @@
     "devDependencies": {
         "@hapi/joi": "16.1.8",
         "bluebird": "3.7.2",
-        "eslint": "6.7.2",
+        "eslint": "6.8.0",
         "faucet": "0.0.1",
         "node-fetch": "2.6.0",
         "nodemon": "2.0.1",
