@@ -34,7 +34,7 @@ const {
   createRequest,
   unwrapResponse
 } = require('../../util')
-const healthHandler = require('../../../src/handlers/health')
+const healthHandler = require('../../../src/api/handlers/health')
 
 Test('Health Handler', async handlersTest => {
   await handlersTest.test('registerAllHandlers should', async registerAllHandlers => {

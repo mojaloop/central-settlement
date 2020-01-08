@@ -41,7 +41,7 @@ const Plugins = require('./plugins')
 // TODO: add to common config
 const openAPIOptions = {
   api: Path.resolve(__dirname, './interface/swagger.json'),
-  handlers: Path.resolve(__dirname, './handlers')
+  handlers: Path.resolve(__dirname, './api/handlers')
 }
 
 const defaultConfig = {

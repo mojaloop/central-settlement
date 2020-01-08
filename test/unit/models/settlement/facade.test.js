@@ -32,7 +32,7 @@ const Logger = require('@mojaloop/central-services-logger')
 const SettlementFacade = require('../../../../src/models/settlement/facade')
 const ParticipantFacade = require('@mojaloop/central-ledger/src/models/participant/facade')
 const Uuid = require('uuid4')
-const Utility = require('../../../../src/handlers/lib/utility')
+const Utility = require('../../../../src/lib/utility')
 const FSPIOPError = require('@mojaloop/central-services-error-handling').Factory.FSPIOPError
 
 Test('Settlement facade', async (settlementFacadeTest) => {
