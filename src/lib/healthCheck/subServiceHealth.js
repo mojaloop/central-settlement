@@ -19,6 +19,9 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * ModusBox
+ - Georgi Georgiev <georgi.georgiev@modusbox.com
+
  * Lewis Daly <lewis@vesselstech.com>
  --------------
  ******/
@@ -26,8 +29,34 @@
 
 const { statusEnum, serviceName } = require('@mojaloop/central-services-shared').HealthCheck.HealthCheckEnums
 const Logger = require('@mojaloop/central-services-logger')
+const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 
 const MigrationLockModel = require('../../models/misc/migrationLock')
+
+/**
+ * @function getSubServiceHealthBroker
+ *
+ * @description
+ *   Gets the health for the broker, by checking that the consumer is
+ *   connected for each topic
+ *
+ * @returns Promise<SubServiceHealth> The SubService health object for the broker
+ */
+const getSubServiceHealthBroker = async () => {
+  const consumerTopics = Consumer.getListOfTopics()
+  let status = statusEnum.OK
+  try {
+    await Promise.all(consumerTopics.map(t => Consumer.isConnected(t)))
+  } catch (err) {
+    Logger.debug(`getSubServiceHealthBroker failed with error ${err.message}.`)
+    status = statusEnum.DOWN
+  }
+
+  return {
+    name: serviceName.broker,
+    status
+  }
+}
 
 /**
  * @function getSubServiceHealthDatastore
@@ -58,5 +87,6 @@ const getSubServiceHealthDatastore = async () => {
 }
 
 module.exports = {
+  getSubServiceHealthBroker,
   getSubServiceHealthDatastore
 }

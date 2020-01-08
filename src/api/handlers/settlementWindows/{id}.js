@@ -22,14 +22,13 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- * Miguel de Barros <miguel.debarros@modusbox.com>
-
+ * ModusBox
+ - Deon Botha <deon.botha@modusbox.com>
+ - Miguel de Barros <miguel.debarros@modusbox.com>
+ - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
-
 'use strict'
 
 const settlementWindow = require('../../../domain/settlementWindow/index')

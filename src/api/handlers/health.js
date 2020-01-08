@@ -32,12 +32,17 @@
 'use strict'
 
 const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
-const packageJson = require('../../../package.json')
 const { defaultHealthHandler } = require('@mojaloop/central-services-health')
-const { getSubServiceHealthDatastore } = require('../../lib/healthCheck/subServiceHealth')
+
+const packageJson = require('../../../package.json')
+const {
+  getSubServiceHealthDatastore,
+  getSubServiceHealthBroker
+} = require('../../lib/healthCheck/subServiceHealth')
 
 const healthCheck = new HealthCheck(packageJson, [
-  getSubServiceHealthDatastore
+  getSubServiceHealthDatastore,
+  getSubServiceHealthBroker
 ])
 
 module.exports = {
