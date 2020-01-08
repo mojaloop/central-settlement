@@ -35,18 +35,37 @@
 const Config = require('../../lib/config')
 const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 const Enum = require('@mojaloop/central-services-shared').Enum
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const ErrorHandling = require('@mojaloop/central-services-error-handling')
+// const EventSdk = require('@mojaloop/event-sdk')
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Logger = require('@mojaloop/central-services-logger')
+const Producer = require('@mojaloop/central-services-stream').Util.Producer
+const retry = require('async-retry')
+const SettlementWindowService = require('../../domain/settlementWindow')
 // const Time = require('@mojaloop/central-services-shared').Util.Time
+const Utility = require('@mojaloop/central-services-shared').Util
 
-const processWindow = async (error, messages) => {
+const location = { module: 'SettlementWindowHandler', method: '', path: '' } // var object used as pointer
+
+const consumerCommit = true
+const fromSwitch = true
+
+const retryDelay = Config.WINDOW_AGGREGATION_RETRY_INTERVAL
+const retryCount = Config.WINDOW_AGGREGATION_RETRY_COUNT
+const retryOpts = {
+  retries: retryCount,
+  minTimeout: retryDelay,
+  maxTimeout: retryDelay
+}
+
+const processSettlementWindow = async (error, messages) => {
   if (error) {
     Logger.error(error)
-    throw ErrorHandler.Factory.reformatFSPIOPError(error)
+    throw ErrorHandling.Factory.reformatFSPIOPError(error)
   }
   let message = {}
   try {
+    Logger.info(Utility.breadcrumb(location, { method: 'processSettlementWindow' }))
     if (Array.isArray(messages)) {
       message = messages[0]
     } else {
@@ -54,25 +73,49 @@ const processWindow = async (error, messages) => {
     }
     const payload = message.value.content.payload
     const metadata = message.value.metadata
-    const transferId = message.value.id
+    const action = metadata.event.action
+    const settlementWindowId = payload.settlementWindowId
+
+    const kafkaTopic = message.topic
+    const params = { message, kafkaTopic, decodedPayload: payload, consumer: Consumer, producer: Producer }
+
+    const actionLetter = action === Enum.Events.Event.Action.CLOSE ? Enum.Events.ActionLetter.close
+      : Enum.Events.ActionLetter.unknown
 
     if (!payload) {
-      Logger.info('AdminTransferHandler::validationFailed')
-      // TODO: Cannot be saved because no payload has been provided. What action should be taken?
-      return false
+      Logger.info(Utility.breadcrumb(location, `missingPayload--${actionLetter}1`))
+      const fspiopError = ErrorHandling.Factory.createInternalServerFSPIOPError('Settlement window handler missing payload')
+      const eventDetail = { functionality: Enum.Events.Event.Type.NOTIFICATION, action: Enum.Events.Event.Action.SETTLEMENT_WINDOW }
+      await Kafka.proceed(Config.KAFKA_CONFIG, params, { consumerCommit, fspiopError: fspiopError.toApiErrorObject(Config.ERROR_HANDLING), eventDetail, fromSwitch })
+      throw fspiopError
     }
 
-    payload.participantCurrencyId = metadata.request.params.id
-    // const enums = metadata.request.enums
-    // const transactionTimestamp = Time.getUTCString(new Date())
-    Logger.info(`AdminTransferHandler::${metadata.event.action}::${transferId}`)
-    const kafkaTopic = message.topic
-
+    Logger.info(Utility.breadcrumb(location, 'validationPassed'))
     await Kafka.commitMessageSync(Consumer, kafkaTopic, message)
-    return true
+
+    const settlementWindowClose = async (id) => {
+      // const enums = metadata.request.enums
+      // const transactionTimestamp = Time.getUTCString(new Date())
+      return true
+    }
+
+    await retry(async () => { // use bail(new Error('to break before max retries'))
+      const result = await settlementWindowClose(settlementWindowId)
+      const settlementWindow = result && (await SettlementWindowService.getById({ settlementWindowId }) || {})
+      if (result && settlementWindow.state !== Enum.Settlements.SettlementWindowState.CLOSED) {
+        Logger.info(Utility.breadcrumb(location, { path: 'windowCloseRetry' }))
+        const errorDescription = `Settlement window close failed after max retry count ${retryCount} has been exhausted in ${retryCount * retryDelay / 1000}s`
+        throw ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, errorDescription)
+      }
+      return result
+    }, retryOpts)
   } catch (err) {
-    Logger.error(err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    Logger.error(`${Utility.breadcrumb(location)}::${err.message}--0`)
+    // const fspiopError = ErrorHandling.Factory.reformatFSPIOPError(err)
+    // const state = new EventSdk.EventStateMetadata(EventSdk.EventStatusType.failed, fspiopError.apiErrorCode.code, fspiopError.apiErrorCode.message)
+    // await span.error(fspiopError, state)
+    // await span.finish(fspiopError.message, state)
+    return true
   }
 }
 
@@ -87,7 +130,7 @@ const processWindow = async (error, messages) => {
 const registerSettlementWindowHandler = async () => {
   try {
     const settlementWindowHandler = {
-      command: processWindow,
+      command: processSettlementWindow,
       topicName: Kafka.transformGeneralTopicName(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, Enum.Events.Event.Type.SETTLEMENT_WINDOW, Enum.Events.Event.Action.CLOSE),
       config: Kafka.getKafkaConfig(Config.KAFKA_CONFIG, Enum.Kafka.Config.CONSUMER, Enum.Events.Event.Type.SETTLEMENT_WINDOW.toUpperCase(), Enum.Events.Event.Action.CLOSE.toUpperCase())
     }
@@ -96,7 +139,7 @@ const registerSettlementWindowHandler = async () => {
     return true
   } catch (err) {
     Logger.error(err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandling.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -113,12 +156,12 @@ const registerAllHandlers = async () => {
     await registerSettlementWindowHandler()
     return true
   } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    throw ErrorHandling.Factory.reformatFSPIOPError(err)
   }
 }
 
 module.exports = {
-  processWindow,
+  processSettlementWindow,
   registerAllHandlers,
   registerSettlementWindowHandler
 }
