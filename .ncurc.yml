@@ -1,3 +1,6 @@
 {
-  "reject": []
+  "reject": [
+    "@hapi/joi",
+    "@hapi/inert"
+  ]
 }
