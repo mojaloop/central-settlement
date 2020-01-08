@@ -3,8 +3,11 @@
  --------------
  Copyright © 2017 Bill & Melinda Gates Foundation
  The Mojaloop files are made available by the Bill & Melinda Gates Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
+
  http://www.apache.org/licenses/LICENSE-2.0
+
  Unless required by applicable law or agreed to in writing, the Mojaloop files are distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
  Contributors
  --------------
  This is the official list of the Mojaloop project contributors for this file.
@@ -15,31 +18,34 @@
  Gates Foundation organization for an example). Those individuals should have
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
- * Gates Foundation
-- Name Surname <name.surname@gatesfoundation.com>
 
- * Georgi Georgiev <georgi.georgiev@modusbox.com>
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
+ * Gates Foundation
+ - Name Surname <name.surname@gatesfoundation.com>
+
+ * ModusBox
+ - Deon Botha <deon.botha@modusbox.com>
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
+ - Miguel de Barros <miguel.debarros@modusbox.com>
+ - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
-
 'use strict'
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const Settlements = require('../../../../../../../domain/settlement/index')
+const Settlements = require('../../../../../domain/settlement/index')
 
 /**
- * Operations on /settlements/{settlementId}/participants/{participantId}/accounts/{accountId}
+ * Operations on /settlements/{settlementId}/participants/{participantId}
  */
 module.exports = {
   /**
-   * summary: Returns Settlement(s) as per filter criteria.
-   * description:
-   * parameters: settlementId, participantId, accountId
-   * produces: application/json
-   * responses: 200, 400, 401, 404, 415, default
-   */
+     * summary: Acknowledgement of settlement by updating with Settlements Id and Participant Id.
+     * description:
+     * parameters: settlementId, participantId, settlementParticipantUpdatePayload
+     * produces: application/json
+     * responses: 200, 400, 401, 404, 415, default
+     */
 
   get: async function getSettlementBySettlementParticipantAccount (request, h) {
     try {
@@ -47,8 +53,9 @@ module.exports = {
         settlementWindowStates: await request.server.methods.enums('settlementWindowStates'),
         ledgerAccountTypes: await request.server.methods.enums('ledgerAccountTypes')
       }
-      const { settlementId, participantId, accountId } = request.params
-      const result = await Settlements.getByIdParticipantAccount({ settlementId, participantId, accountId }, Enums)
+      const settlementId = request.params.sid
+      const participantId = request.params.pid
+      const result = await Settlements.getByIdParticipantAccount({ settlementId, participantId }, Enums)
       return h.response(result)
     } catch (err) {
       request.server.log('error', err)
@@ -64,16 +71,15 @@ module.exports = {
    * responses: 200, 400, 401, 404, 415, default
    */
   put: async function updateSettlementById (request) {
-    const settlementId = request.params.settlementId
-    const participantId = request.params.participantId
-    const accountId = request.params.accountId
+    const settlementId = request.params.sid
+    const participantId = request.params.pid
     try {
-      const accounts = [Object.assign({}, request.payload, { id: accountId })]
+      const p = request.payload
       const universalPayload = {
         participants: [
           {
             id: participantId,
-            accounts
+            accounts: p.accounts
           }
         ]
       }

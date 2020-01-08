@@ -23,37 +23,59 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * ModusBox
- - Deon Botha <deon.botha@modusbox.com>
  - Georgi Georgiev <georgi.georgiev@modusbox.com>
  - Miguel de Barros <miguel.debarros@modusbox.com>
- - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- - Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
 'use strict'
 
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const settlementWindows = require('../../domain/settlementWindow/index')
-
 /**
- * Operations on /settlementWindows
+ * @module Handlers CLI Startup
  */
-module.exports = {
-  /**
-     * summary: Returns a Settlement Window(s) as per parameter(s).
-     * description:
-     * parameters: participantId, state, fromDateTime, toDateTime
-     * produces: application/json
-     * responses: 200, 400, 401, 404, 415, default
-     */
-  get: async function getSettlementWindowsByParams (request, h) {
-    try {
-      const Enums = await request.server.methods.enums('settlementWindowStates')
-      const settlementWindowResult = await settlementWindows.getByParams({ query: request.query }, Enums)
-      return h.response(settlementWindowResult)
-    } catch (err) {
-      request.server.log('error', err)
-      return ErrorHandler.Factory.reformatFSPIOPError(err)
+
+const Logger = require('@mojaloop/central-services-logger')
+const Config = require('../lib/config')
+const Setup = require('../shared/setup')
+const PJson = require('../../package.json')
+const HealthPlugin = require('./api/health/plugin')
+const MetricsPlugin = require('./api/metrics/plugin')
+const { Command } = require('commander')
+
+const Program = new Command()
+
+Program
+  .version(PJson.version)
+  .description('CLI to manage Handlers')
+
+Program.command('handler') // sub-command name, coffeeType = type, required
+  .alias('h') // alternative sub-command is `h`
+  .description('Start a specified Handler') // command description
+  .option('--settlementwindow', 'Start the Settlement Window Handler')
+  // function to execute when command is uses
+  .action(async (args) => {
+    const handlerList = []
+    if (args.settlementwindow && typeof args.settlementwindow === 'boolean') {
+      Logger.debug('CLI: Executing --settlementwindow')
+      const handler = {
+        type: 'settlementwindow',
+        enabled: true
+      }
+      handlerList.push(handler)
     }
-  }
+
+    module.exports = Setup.initialize({
+      service: 'handler',
+      port: Config.PORT,
+      modules: [HealthPlugin, MetricsPlugin],
+      handlers: handlerList,
+      runHandlers: true
+    })
+  })
+
+if (Array.isArray(process.argv) && process.argv.length > 2) {
+  // parse command line vars
+  Program.parse(process.argv)
+} else {
+  // display default help
+  Program.help()
 }

@@ -22,23 +22,19 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
+ * ModusBox
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
+
  * VesselsTech
  - Lewis Daly <lewis@vesselstech.com>
-
  --------------
  ******/
-
 'use strict'
 
-const Logger = require('@mojaloop/central-services-logger')
 const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
-const { defaultHealthHandler } = require('@mojaloop/central-services-health')
-const Path = require('path')
-
 const packageJson = require('../../../package.json')
+const { defaultHealthHandler } = require('@mojaloop/central-services-health')
 const { getSubServiceHealthDatastore } = require('../../lib/healthCheck/subServiceHealth')
-
-Logger.info('path ', Path.basename(__filename))
 
 const healthCheck = new HealthCheck(packageJson, [
   getSubServiceHealthDatastore
