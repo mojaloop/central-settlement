@@ -31,7 +31,7 @@ const Config = require('../../lib/config')
 const Enum = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const hasFilters = require('./../../utils/truthyProperty')
-const Kafka = require('@mojaloop/central-services-stream').Util
+const Producer = require('@mojaloop/central-services-stream').Util.Producer
 const KafkaUtil = require('@mojaloop/central-services-shared').Util.Kafka
 const SettlementWindowModel = require('../../models/settlementWindow')
 const StreamingProtocol = require('@mojaloop/central-services-shared').Util.StreamingProtocol
@@ -71,7 +71,7 @@ module.exports = {
     const messageProtocol = StreamingProtocol.createMessage(messageId, Enum.Http.Headers.FSPIOP.SWITCH.value, Enum.Http.Headers.FSPIOP.SWITCH.value, metadata, undefined, { settlementWindowId: params.settlementWindowId })
     const topicConfig = KafkaUtil.createGeneralTopicConf(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, Enum.Events.Event.Type.SETTLEMENT_WINDOW, Enum.Events.Event.Action.CLOSE)
     const kafkaConfig = KafkaUtil.getKafkaConfig(Config.KAFKA_CONFIG, Enum.Kafka.Config.PRODUCER, Enum.Events.Event.Type.SETTLEMENT_WINDOW.toUpperCase(), Enum.Events.Event.Action.CLOSE.toUpperCase())
-    await Kafka.Producer.produceMessage(messageProtocol, topicConfig, kafkaConfig)
+    await Producer.produceMessage(messageProtocol, topicConfig, kafkaConfig)
 
     return SettlementWindowModel.getById({ settlementWindowId }, enums)
   }

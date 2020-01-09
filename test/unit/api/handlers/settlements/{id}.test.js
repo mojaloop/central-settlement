@@ -25,7 +25,7 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Mockgen = require('../../../../data/mockgen.js')
-const InitServer = require('../../../../../src/setup').initialize
+const Base = require('../../../base')
 const Enums = require('../../../../../src/models/lib/enums')
 const Logger = require('@mojaloop/central-services-logger')
 const settlement = require('../../../../../src/domain/settlement/index')
@@ -48,7 +48,7 @@ Test('/settlements/{id}', async (settlementTest) => {
   settlementTest.beforeEach(async t => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    server = await InitServer()
+    server = await Base.setup()
     t.end()
   })
 

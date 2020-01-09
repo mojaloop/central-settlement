@@ -30,6 +30,8 @@ const Sinon = require('sinon')
 const Logger = require('@mojaloop/central-services-logger')
 const SettlementWindowService = require('../../../../src/domain/settlementWindow')
 const SettlementWindowModel = require('../../../../src/models/settlementWindow')
+const Producer = require('@mojaloop/central-services-stream').Util.Producer
+// require('leaked-handles').set({ fullStack: true, timeout: 15000, debugSockets: true })
 
 Test('SettlementWindowService', async (settlementWindowServiceTest) => {
   let sandbox
@@ -136,6 +138,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
       const options = { logger: Logger }
       const settlementWindowIdMock = 1
       const settlementWindowMock = { settlementWindowId: settlementWindowIdMock, state: 'CLOSED' }
+      Producer.produceMessage = sandbox.stub()
 
       await closeTest.test('close settlement window and return it', async test => {
         try {

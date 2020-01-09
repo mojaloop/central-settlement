@@ -42,7 +42,6 @@ const TransferModel = require('@mojaloop/central-ledger/src/models/transfer/tran
 const TransferStateChangeModel = require('@mojaloop/central-ledger/src/models/transfer/transferStateChange')
 const ParticipantPositionModel = require('@mojaloop/central-ledger/src/models/position/participantPosition')
 const Producer = require('../../src/lib/kafka/producer')
-// require('leaked-handles').set({ fullStack: true, timeout: 15000, debugSockets: true })
 
 const currency = 'USD'
 let netSettlementSenderId

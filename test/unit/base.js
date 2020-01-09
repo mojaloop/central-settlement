@@ -3,8 +3,11 @@
  --------------
  Copyright © 2017 Bill & Melinda Gates Foundation
  The Mojaloop files are made available by the Bill & Melinda Gates Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
+
  http://www.apache.org/licenses/LICENSE-2.0
+
  Unless required by applicable law or agreed to in writing, the Mojaloop files are distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
  Contributors
  --------------
  This is the official list of the Mojaloop project contributors for this file.
@@ -15,54 +18,25 @@
  Gates Foundation organization for an example). Those individuals should have
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
+
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Georgi Georgiev <georgi.georgiev@modusbox.com>
+ * ModusBox
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
-
 'use strict'
 
-const Test = require('tapes')(require('tape'))
-const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
-const Proxyquire = require('proxyquire')
+const ServerSetup = require('../../src/shared/setup')
+const ApiRoutes = require('../../src/api/routes')
+const getPort = require('get-port')
 
-Test('Server', (serverTest) => {
-  let sandbox
+const setup = async () => {
+  const port = await getPort()
+  return ServerSetup.createServer(port, [ApiRoutes])
+}
 
-  serverTest.beforeEach(test => {
-    try {
-      sandbox = Sinon.createSandbox()
-    } catch (err) {
-      Logger.error(`serverTest failed with error - ${err}`)
-      console.error(err.message)
-    }
-    test.end()
-  })
-
-  serverTest.afterEach(test => {
-    sandbox.restore()
-    test.end()
-  })
-
-  serverTest.test('should import setup and initialize', test => {
-    try {
-      const initStub = sandbox.stub()
-      Proxyquire('../../src/server', {
-        './setup': {
-          initialize: initStub
-        }
-      })
-      test.ok(initStub.withArgs().calledOnce)
-      test.end()
-    } catch (err) {
-      Logger.error(`serverTest failed with error - ${err}`)
-      test.fail()
-      test.end()
-    }
-  })
-
-  serverTest.end()
-})
+module.exports = {
+  setup
+}

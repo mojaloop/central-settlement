@@ -49,7 +49,7 @@ async function connectDatabase () {
 const createServer = async function (port, modules) {
   try {
     const server = new Hapi.Server({
-      port: Config.PORT,
+      port,
       routes: {
         validate: {
           options: ErrorHandling.validateRoutes(),
@@ -100,7 +100,17 @@ const createServer = async function (port, modules) {
     await Plugins.registerPlugins(server)
     await server.register(modules)
     await server.start()
-    return server
+
+    if (server) {
+      try {
+        server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
+        server.log('info', `Server running on ${server.info.host}:${server.info.port}`)
+        return server
+      } catch (e) {
+        server.log('error', e.message)
+        throw e
+      }
+    }
   } catch (e) {
     console.error(e)
   }

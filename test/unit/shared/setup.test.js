@@ -25,12 +25,13 @@
 
 'use strict'
 
-const Test = require('tapes')(require('tape'))
-const Sinon = require('sinon')
+const Config = require('../../../src/lib/config')
+const getPort = require('get-port')
 const Logger = require('@mojaloop/central-services-logger')
-const Proxyquire = require('proxyquire')
 const Path = require('path')
-const Config = require('../../src/lib/config')
+const Proxyquire = require('proxyquire')
+const Sinon = require('sinon')
+const Test = require('tapes')(require('tape'))
 
 Test('Server Setup', async setupTest => {
   let sandbox
@@ -76,14 +77,14 @@ Test('Server Setup', async setupTest => {
       ConfigStub = Config
       EngineStub = sandbox.stub()
 
-      SetupProxy = Proxyquire('../../src/setup', {
+      SetupProxy = Proxyquire('../../../src/shared/setup', {
         '@hapi/catbox-memory': EngineStub,
         '@hapi/hapi': HapiStub,
         'hapi-openapi': HapiOpenAPIStub,
         path: PathStub,
-        './lib/db': DbStub,
-        './models/lib/enums': EnumsStub,
-        './lib/config': ConfigStub
+        '../lib/db': DbStub,
+        '../models/lib/enums': EnumsStub,
+        '../lib/config': ConfigStub
       })
     } catch (err) {
       Logger.error(`setupTest failed with error - ${err}`)
@@ -110,17 +111,18 @@ Test('Server Setup', async setupTest => {
             })
           }
 
-          const SetupProxy1 = Proxyquire('../../src/setup', {
+          const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
             '@hapi/catbox-memory': EngineStub,
             '@hapi/hapi': HapiStubThrowError,
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
-            './lib/db': DbStub,
-            './models/lib/enums': EnumsStub,
-            './lib/config': ConfigStub
+            '../lib/db': DbStub,
+            '../models/lib/enums': EnumsStub,
+            '../lib/config': ConfigStub
           })
 
-          const server = await SetupProxy1.initialize()
+          const port = await getPort()
+          const server = await SetupProxy1.initialize({ service: 'api', port })
           test.ok(server, 'return server object')
           test.ok(HapiStubThrowError.Server.calledOnce, 'Hapi.Server called once')
           test.ok(DbStub.connect.calledOnce, 'Db.connect called once')
@@ -142,7 +144,8 @@ Test('Server Setup', async setupTest => {
           const e = new Error('Database unavailable')
           DbStub.connect = sandbox.stub().throws(e)
           const consoleErrorStub = sandbox.stub(console, 'error')
-          await SetupProxy.initialize()
+          const port = await getPort()
+          await SetupProxy.initialize({ service: 'api', port })
           test.ok(consoleErrorStub.withArgs(e).calledOnce)
           consoleErrorStub.restore()
           test.end()
@@ -153,11 +156,12 @@ Test('Server Setup', async setupTest => {
         }
       })
 
-      await initTest.test('should catch errors after createServer and use server.log', async test => {
+      await initTest.test('should catch errors after server.start and use server.log', async test => {
         try {
           const e = new Error('setHost error')
           serverStub.plugins.openapi.setHost = sandbox.stub().throws(e)
-          await SetupProxy.initialize()
+          const port = await getPort()
+          await SetupProxy.initialize({ service: 'api', port })
           test.ok(serverStub.log.withArgs('error', e.message).calledOnce)
           test.end()
         } catch (err) {

@@ -32,19 +32,19 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Mockgen = require('../../../../../../data/mockgen.js')
-const InitServer = require('../../../../../../../src/setup').initialize
+const Base = require('../../../../../base')
 const Enums = require('../../../../../../../src/models/lib/enums')
 const Logger = require('@mojaloop/central-services-logger')
 const settlement = require('../../../../../../../src/domain/settlement/index')
 const Db = require('../../../../../../../src/lib/db')
 
-Test('/settlements/{settlementId}/participants/{participantId}', async (settlementTest) => {
+Test('/settlements/{sid}/participants/{pid}', async (settlementTest) => {
   let server
   let sandbox
   settlementTest.beforeEach(async t => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
-    server = await InitServer()
+    server = await Base.setup()
     t.end()
   })
 
@@ -61,7 +61,7 @@ Test('/settlements/{settlementId}/participants/{participantId}', async (settleme
     try {
       const requests = new Promise((resolve, reject) => {
         Mockgen().requests({
-          path: '/settlements/{settlementId}/participants/{participantId}',
+          path: '/settlements/{sid}/participants/{pid}',
           operation: 'get'
         }, function (error, mock) {
           return error ? reject(error) : resolve(mock)
@@ -109,7 +109,7 @@ Test('/settlements/{settlementId}/participants/{participantId}', async (settleme
     try {
       const requests = new Promise((resolve, reject) => {
         Mockgen().requests({
-          path: '/settlements/{settlementId}/participants/{participantId}',
+          path: '/settlements/{sid}/participants/{pid}',
           operation: 'get'
         }, function (error, mock) {
           return error ? reject(error) : resolve(mock)
@@ -162,7 +162,7 @@ Test('/settlements/{settlementId}/participants/{participantId}', async (settleme
     try {
       const requests = new Promise((resolve, reject) => {
         Mockgen().requests({
-          path: '/settlements/{settlementId}/participants/{participantId}',
+          path: '/settlements/{sid}/participants/{pid}',
           operation: 'put'
         }, function (error, mock) {
           return error ? reject(error) : resolve(mock)
@@ -220,7 +220,7 @@ Test('/settlements/{settlementId}/participants/{participantId}', async (settleme
     try {
       const requests = new Promise((resolve, reject) => {
         Mockgen().requests({
-          path: '/settlements/{settlementId}/participants/{participantId}',
+          path: '/settlements/{sid}/participants/{pid}',
           operation: 'put'
         }, function (error, mock) {
           return error ? reject(error) : resolve(mock)
