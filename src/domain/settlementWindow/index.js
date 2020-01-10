@@ -60,19 +60,24 @@ module.exports = {
     }
   },
 
-  close: async function (params, enums) {
-    const settlementWindowId = await SettlementWindowModel.close(params, enums)
+  process: async function (params, enums) {
+    const settlementWindowId = await SettlementWindowModel.process(params, enums)
 
     const messageId = Uuid()
     const eventId = Uuid()
     const state = StreamingProtocol.createEventState(Enum.Events.EventStatus.SUCCESS.status, Enum.Events.EventStatus.SUCCESS.code, Enum.Events.EventStatus.SUCCESS.description)
     const event = StreamingProtocol.createEventMetadata(Enum.Events.Event.Type.SETTLEMENT_WINDOW, Enum.Events.Event.Action.CLOSE, state)
     const metadata = StreamingProtocol.createMetadata(eventId, event)
-    const messageProtocol = StreamingProtocol.createMessage(messageId, Enum.Http.Headers.FSPIOP.SWITCH.value, Enum.Http.Headers.FSPIOP.SWITCH.value, metadata, undefined, { settlementWindowId: params.settlementWindowId })
+    const messageProtocol = StreamingProtocol.createMessage(messageId, Enum.Http.Headers.FSPIOP.SWITCH.value, Enum.Http.Headers.FSPIOP.SWITCH.value, metadata, undefined, params)
     const topicConfig = KafkaUtil.createGeneralTopicConf(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, Enum.Events.Event.Type.SETTLEMENT_WINDOW, Enum.Events.Event.Action.CLOSE)
     const kafkaConfig = KafkaUtil.getKafkaConfig(Config.KAFKA_CONFIG, Enum.Kafka.Config.PRODUCER, Enum.Events.Event.Type.SETTLEMENT_WINDOW.toUpperCase(), Enum.Events.Event.Action.CLOSE.toUpperCase())
     await Producer.produceMessage(messageProtocol, topicConfig, kafkaConfig)
 
     return SettlementWindowModel.getById({ settlementWindowId }, enums)
+  },
+
+  close: async function (settlementWindowId, reason) {
+    await SettlementWindowModel.close(settlementWindowId, reason)
+    return SettlementWindowModel.getById({ settlementWindowId })
   }
 }

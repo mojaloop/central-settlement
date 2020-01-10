@@ -64,11 +64,11 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
   post: async function closeSettlementWindow (request) {
-    const { state, reason } = request.payload
+    const { reason } = request.payload
     const settlementWindowId = request.params.id
     try {
       const Enums = await request.server.methods.enums('settlementWindowStates')
-      return await settlementWindow.close({ settlementWindowId, state, reason }, Enums)
+      return await settlementWindow.process({ settlementWindowId, reason }, Enums)
     } catch (err) {
       request.server.log('error', err)
       return ErrorHandler.Factory.reformatFSPIOPError(err)

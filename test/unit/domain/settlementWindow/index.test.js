@@ -131,46 +131,46 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
     }
   })
 
-  await settlementWindowServiceTest.test('close should', async closeTest => {
+  await settlementWindowServiceTest.test('process should', async processTest => {
     try {
       const params = { id: 1 }
       const enums = {}
       const options = { logger: Logger }
       const settlementWindowIdMock = 1
-      const settlementWindowMock = { settlementWindowId: settlementWindowIdMock, state: 'CLOSED' }
+      const settlementWindowMock = { settlementWindowId: settlementWindowIdMock, state: 'PROCESSING' }
       Producer.produceMessage = sandbox.stub()
 
-      await closeTest.test('close settlement window and return it', async test => {
+      await processTest.test('process settlement window and return it', async test => {
         try {
-          SettlementWindowModel.close = sandbox.stub().returns(settlementWindowIdMock)
+          SettlementWindowModel.process = sandbox.stub().returns(settlementWindowIdMock)
           SettlementWindowModel.getById = sandbox.stub().returns(settlementWindowMock)
-          const result = await SettlementWindowService.close(params, enums, options)
+          const result = await SettlementWindowService.process(params, enums, options)
           test.ok(result, 'Result returned')
-          test.ok(SettlementWindowModel.close.withArgs(params, enums).calledOnce, 'SettlementWindowModel.close with args ... called once')
+          test.ok(SettlementWindowModel.process.withArgs(params, enums).calledOnce, 'SettlementWindowModel.process with args ... called once')
           test.ok(SettlementWindowModel.getById.withArgs({ settlementWindowId: settlementWindowIdMock }, enums).calledOnce, 'SettlementWindowModel.getById with args ... called once')
 
-          SettlementWindowModel.close = sandbox.stub().throws(new Error('Error occurred'))
+          SettlementWindowModel.process = sandbox.stub().throws(new Error('Error occurred'))
           try {
-            await SettlementWindowService.close(params, enums)
+            await SettlementWindowService.process(params, enums)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
             test.equal(err.message, 'Error occurred', `Error "${err.message}" thrown as expected`)
-            test.ok(SettlementWindowModel.close.withArgs(params, enums).calledOnce, 'SettlementWindowModel.close with args ... called once')
+            test.ok(SettlementWindowModel.process.withArgs(params, enums).calledOnce, 'SettlementWindowModel.process with args ... called once')
           }
 
           test.end()
         } catch (err) {
-          Logger.error(`closeTest failed with error - ${err}`)
+          Logger.error(`processTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
       })
 
-      await closeTest.end()
+      await processTest.end()
     } catch (err) {
       Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
-      closeTest.fail()
-      closeTest.end()
+      processTest.fail()
+      processTest.end()
     }
   })
 

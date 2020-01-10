@@ -33,6 +33,7 @@ const settlementWindowStateChange = require('./settlementWindowStateChange')
 module.exports = {
   getById: Facade.getById,
   getByParams: Facade.getByParams,
+  process: Facade.process,
   close: Facade.close,
   getByListOfIds: Facade.getByListOfIds,
   getBySettlementId: Facade.getBySettlementId,

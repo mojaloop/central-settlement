@@ -150,9 +150,9 @@ Test('/settlementWindows/{id}', async (settlementWindowTest) => {
       t.end()
     }
   })
-  await settlementWindowTest.test('test settlements put operation', async (t) => {
+  await settlementWindowTest.test('test settlementWindows post operation', async (t) => {
     sandbox.stub(Enums, 'settlementWindowStates').returns({})
-    sandbox.stub(settlementWindows, 'close').returns({})
+    sandbox.stub(settlementWindows, 'process').returns({})
     try {
       const requests = new Promise((resolve, reject) => {
         Mockgen().requests({
