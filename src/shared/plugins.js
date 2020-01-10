@@ -18,24 +18,57 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Georgi Georgiev <georgi.georgiev@modusbox.com>
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- * Miguel de Barros <miguel.debarros@modusbox.com>
-
+ * ModusBox
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
+'use strict'
 
-const Facade = require('./facade')
-const settlementWindowStateChange = require('./settlementWindowStateChange')
+const Package = require('../../package')
+const Inert = require('@hapi/inert')
+const Vision = require('@hapi/vision')
+const Blipp = require('blipp')
+const ErrorHandling = require('@mojaloop/central-services-error-handling')
+const RawPayloadToDataUri = require('@mojaloop/central-services-shared').Util.Hapi.HapiRawPayload
+/**
+ * @module src/shared/plugin
+ */
+
+const registerPlugins = async (server) => {
+  await server.register({
+    plugin: require('hapi-swagger'),
+    options: {
+      info: {
+        title: 'ml api adapter API Documentation',
+        version: Package.version
+      }
+    }
+  })
+
+  await server.register({
+    plugin: require('@hapi/good'),
+    options: {
+      ops: {
+        interval: 10000
+      }
+    }
+  })
+
+  await server.register({
+    plugin: require('@hapi/basic')
+  })
+
+  await server.register({
+    plugin: require('@now-ims/hapi-now-auth')
+  })
+
+  await server.register({
+    plugin: require('hapi-auth-bearer-token')
+  })
+
+  await server.register([Inert, Vision, Blipp, ErrorHandling, RawPayloadToDataUri])
+}
 
 module.exports = {
-  getById: Facade.getById,
-  getByParams: Facade.getByParams,
-  process: Facade.process,
-  close: Facade.close,
-  getByListOfIds: Facade.getByListOfIds,
-  getBySettlementId: Facade.getBySettlementId,
-  createSettlementWindow: settlementWindowStateChange.create
+  registerPlugins
 }

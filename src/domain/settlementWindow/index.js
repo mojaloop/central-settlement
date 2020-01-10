@@ -18,21 +18,28 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Georgi Georgiev <georgi.georgiev@modusbox.com>
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- * Miguel de Barros <miguel.debarros@modusbox.com>
+ * ModusBox
+ - Deon Botha <deon.botha@modusbox.com>
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
+ - Miguel de Barros <miguel.debarros@modusbox.com>
+ - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Valentin Genev <valentin.genev@modusbox.com>
 --------------
  ******/
 
-const settlementWindowModel = require('../../models/settlementWindow')
-const hasFilters = require('./../../utils/truthyProperty')
+const Config = require('../../lib/config')
+const Enum = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const hasFilters = require('./../../utils/truthyProperty')
+const Producer = require('@mojaloop/central-services-stream').Util.Producer
+const KafkaUtil = require('@mojaloop/central-services-shared').Util.Kafka
+const SettlementWindowModel = require('../../models/settlementWindow')
+const StreamingProtocol = require('@mojaloop/central-services-shared').Util.StreamingProtocol
+const Uuid = require('uuid4')
 
 module.exports = {
   getById: async function (params, enums) {
-    const settlementWindow = await settlementWindowModel.getById(params, enums)
+    const settlementWindow = await SettlementWindowModel.getById(params, enums)
     if (settlementWindow) return settlementWindow
     else {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `settlementWindowId: ${params.settlementWindowId} not found`)
@@ -42,7 +49,7 @@ module.exports = {
   getByParams: async function (params, enums) {
     // 4 filters - at least one should be used
     if (hasFilters(params.query) && Object.keys(params.query).length < 5) {
-      const settlementWindows = await settlementWindowModel.getByParams(params, enums)
+      const settlementWindows = await SettlementWindowModel.getByParams(params, enums)
       if (settlementWindows && settlementWindows.length > 0) {
         return settlementWindows
       } else {
@@ -53,8 +60,24 @@ module.exports = {
     }
   },
 
-  close: async function (params, enums) {
-    const settlementWindowId = await settlementWindowModel.close(params, enums)
-    return settlementWindowModel.getById({ settlementWindowId }, enums)
+  process: async function (params, enums) {
+    const settlementWindowId = await SettlementWindowModel.process(params, enums)
+
+    const messageId = Uuid()
+    const eventId = Uuid()
+    const state = StreamingProtocol.createEventState(Enum.Events.EventStatus.SUCCESS.status, Enum.Events.EventStatus.SUCCESS.code, Enum.Events.EventStatus.SUCCESS.description)
+    const event = StreamingProtocol.createEventMetadata(Enum.Events.Event.Type.SETTLEMENT_WINDOW, Enum.Events.Event.Action.CLOSE, state)
+    const metadata = StreamingProtocol.createMetadata(eventId, event)
+    const messageProtocol = StreamingProtocol.createMessage(messageId, Enum.Http.Headers.FSPIOP.SWITCH.value, Enum.Http.Headers.FSPIOP.SWITCH.value, metadata, undefined, params)
+    const topicConfig = KafkaUtil.createGeneralTopicConf(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, Enum.Events.Event.Type.SETTLEMENT_WINDOW, Enum.Events.Event.Action.CLOSE)
+    const kafkaConfig = KafkaUtil.getKafkaConfig(Config.KAFKA_CONFIG, Enum.Kafka.Config.PRODUCER, Enum.Events.Event.Type.SETTLEMENT_WINDOW.toUpperCase(), Enum.Events.Event.Action.CLOSE.toUpperCase())
+    await Producer.produceMessage(messageProtocol, topicConfig, kafkaConfig)
+
+    return SettlementWindowModel.getById({ settlementWindowId }, enums)
+  },
+
+  close: async function (settlementWindowId, reason) {
+    await SettlementWindowModel.close(settlementWindowId, reason)
+    return SettlementWindowModel.getById({ settlementWindowId })
   }
 }

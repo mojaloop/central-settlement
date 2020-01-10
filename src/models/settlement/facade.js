@@ -35,7 +35,7 @@ const Config = require('../../lib/config')
 const ParticipantFacade = require('@mojaloop/central-ledger/src/models/participant/facade')
 const cloneDeep = require('../../utils/cloneDeep')
 const Enums = require('../lib/enums')
-const Utility = require('../../handlers/lib/utility')
+const Utility = require('../../lib/utility')
 
 const getNotificationMessage = function (action, destination, payload) {
   return {
