@@ -42,6 +42,8 @@ const TransferModel = require('@mojaloop/central-ledger/src/models/transfer/tran
 const TransferStateChangeModel = require('@mojaloop/central-ledger/src/models/transfer/transferStateChange')
 const ParticipantPositionModel = require('@mojaloop/central-ledger/src/models/position/participantPosition')
 const Producer = require('../../src/lib/kafka/producer')
+const StreamProducer = require('@mojaloop/central-services-stream').Util.Producer
+// require('leaked-handles').set({ fullStack: true, timeout: 5000, debugSockets: true })
 
 const currency = 'USD'
 let netSettlementSenderId
@@ -85,18 +87,19 @@ Test('SettlementTransfer should', async settlementTransferTest => {
   await settlementTransferTest.test('close current window should', async test => {
     try {
       let params = { query: { state: enums.settlementWindowStates.OPEN } }
-      let res = await SettlementWindowService.getByParams(params) // method to be verified
-      settlementWindowId = res[0].settlementWindowId
+      const res1 = await SettlementWindowService.getByParams(params) // method to be verified
+      settlementWindowId = res1[0].settlementWindowId
       test.ok(settlementWindowId > 0, 'retrieve the OPEN window')
 
       params = { settlementWindowId: settlementWindowId, state: enums.settlementWindowStates.CLOSED, reason: 'text' }
-      res = await SettlementWindowService.close(params, enums.settlementWindowStates) // method to be verified
-      test.ok(res, 'close settlement window operation success')
+      const res2 = await SettlementWindowService.process(params, enums.settlementWindowStates)
+      const res3 = await SettlementWindowService.close(params.settlementWindowId, params.reason)
+      test.ok(res3, 'close settlement window operation success')
 
       const closedWindow = await SettlementWindowStateChangeModel.getBySettlementWindowId(settlementWindowId)
-      const openWindow = await SettlementWindowStateChangeModel.getBySettlementWindowId(res.settlementWindowId)
+      const openWindow = await SettlementWindowStateChangeModel.getBySettlementWindowId(res2.settlementWindowId)
       test.equal(closedWindow.settlementWindowStateId, enums.settlementWindowStates.CLOSED, `window id ${settlementWindowId} is CLOSED`)
-      test.equal(openWindow.settlementWindowStateId, enums.settlementWindowStates.OPEN, `window id ${res.settlementWindowId} is OPEN`)
+      test.equal(openWindow.settlementWindowStateId, enums.settlementWindowStates.OPEN, `window id ${res2.settlementWindowId} is OPEN`)
 
       test.end()
     } catch (err) {
@@ -495,6 +498,8 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       test.pass('database connection closed')
       await Producer.getProducer('topic-notification-event').disconnect()
       test.pass('producer to topic-notification-event disconnected')
+      await StreamProducer.getProducer('topic-settlementwindow-close').disconnect()
+      test.pass('producer to topic-settlementwindow-close disconnected')
       test.end()
     } catch (err) {
       Logger.error(`settlementTransferTest failed with error - ${err}`)

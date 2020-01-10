@@ -62,7 +62,8 @@ Test('Health Handler', async handlersTest => {
       }
       const expectedStatus = 200
       const expectedServices = [
-        { name: 'datastore', status: 'OK' }
+        { name: 'datastore', status: 'OK' },
+        { name: 'broker', status: 'OK' }
       ]
 
       // Act
