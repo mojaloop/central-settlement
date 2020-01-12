@@ -22,18 +22,19 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Georgi Georgiev <georgi.georgiev@modusbox.com>
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- * Miguel de Barros <miguel.debarros@modusbox.com>
+ * ModusBox
+ - Deon Botha <deon.botha@modusbox.com>
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
+ - Miguel de Barros <miguel.debarros@modusbox.com>
+ - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Valentin Genev <valentin.genev@modusbox.com>
 
  --------------
  ******/
-
 'use strict'
 
 const SettlementModel = require('../../models/settlement')
+const SettlementModelModel = require('../../models/settlement/settlementModel')
 const SettlementWindowModel = require('../../models/settlementWindow')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
@@ -171,8 +172,19 @@ module.exports = {
   },
 
   settlementEventTrigger: async function (params, enums) {
-    const settlementWindowsIdList = params.settlementWindows
+    // validate settlement model
+    const settlementModel = params.settlementModel
+    const settlementModelData = await SettlementModelModel.getByName(settlementModel)
+    if (!settlementModelData) {
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement model not found')
+    } else if (settlementModelData.settlementGranularityId !== enums.settlementGranularity.NET ||
+      settlementModelData.settlementInterchangeId !== enums.settlementInterchange.MULTILATERAL ||
+      settlementModelData.settlementDelayId !== enums.settlementDelay.DEFERRED) {
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid settlement model')
+    }
+
     const reason = params.reason
+    const settlementWindowsIdList = params.settlementWindows
     const idList = settlementWindowsIdList.map(v => v.id)
     // validate windows state
     const settlementWindows = await SettlementWindowModel.getByListOfIds(idList, enums.settlementWindowStates)
