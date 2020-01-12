@@ -1,5 +1,6 @@
 {
   "reject": [
+    "@hapi/good",
     "@hapi/hapi",
     "@hapi/inert",
     "@hapi/vision",

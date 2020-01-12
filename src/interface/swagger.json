@@ -1058,6 +1058,9 @@
         "SettlementEventPayload": {
             "type": "object",
             "properties": {
+                "settlementModel": {
+                    "type": "string"
+                },
                 "reason": {
                     "type": "string"
                 },
@@ -1071,6 +1074,7 @@
                 }
             },
             "required": [
+                "settlementModel",
                 "reason",
                 "settlementWindows"
             ]
