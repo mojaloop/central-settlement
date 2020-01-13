@@ -33,6 +33,7 @@
  ******/
 'use strict'
 
+const arrayDiff = require('lodash').difference
 const SettlementModel = require('../../models/settlement')
 const SettlementModelModel = require('../../models/settlement/settlementModel')
 const SettlementWindowModel = require('../../models/settlementWindow')
@@ -173,7 +174,7 @@ module.exports = {
 
   settlementEventTrigger: async function (params, enums) {
     // validate settlement model
-    const settlementModel = params.settlementModel
+    const { settlementModel, reason, settlementWindows } = params
     const settlementModelData = await SettlementModelModel.getByName(settlementModel)
     if (!settlementModelData) {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement model not found')
@@ -183,22 +184,16 @@ module.exports = {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid settlement model')
     }
 
-    const reason = params.reason
-    const settlementWindowsIdList = params.settlementWindows
-    const idList = settlementWindowsIdList.map(v => v.id)
-    // validate windows state
-    const settlementWindows = await SettlementWindowModel.getByListOfIds(idList, enums.settlementWindowStates)
-    if (settlementWindows && settlementWindows.length !== idList.length) {
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'At least one provided settlement window does not exist')
+    // validate windows content
+    const idList = settlementWindows.map(v => v.id)
+    const applicableWindows = await SettlementWindowModel.getByListOfIds(idList, settlementModelData, enums.settlementWindowStates)
+    const applicableIdList = applicableWindows.map(v => v.settlementWindowId)
+    const nonApplicableIdList = arrayDiff(idList, applicableIdList)
+    if (nonApplicableIdList.length) {
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Inapplicable windows ${nonApplicableIdList.join(', ')}`)
     }
 
-    for (const settlementWindow of settlementWindows) {
-      const { state } = settlementWindow
-      if (state !== enums.settlementWindowStates.CLOSED &&
-          state !== enums.settlementWindowStates.ABORTED) {
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'At least one settlement window is not in closed or aborted state')
-      }
-    }
+    // follow-up next
     const settlementId = await SettlementModel.triggerEvent({ idList, reason }, enums)
     const settlement = await SettlementModel.getById({ settlementId })
     const settlementWindowsList = await SettlementWindowModel.getBySettlementId({ settlementId })

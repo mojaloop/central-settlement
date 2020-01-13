@@ -100,6 +100,23 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
         })
       })
     })
+    builderStub.join.returns({
+      join: sandbox.stub().returns({
+        join: sandbox.stub().returns({
+          whereRaw: sandbox.stub().returns({
+            where: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                whereIn: sandbox.stub().returns({
+                  whereIn: sandbox.stub().returns({
+                    distinct: selectStub.returns(selectStubResult)
+                  })
+                })
+              })
+            })
+          })
+        })
+      })
+    })
     test.end()
   })
 
@@ -165,6 +182,17 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
     try {
       const listOfIds = [1, 2]
       const enums = {}
+      const settlementModelMock = {
+        currencyId: 'USD',
+        isActive: 1,
+        ledgerAccountTypeId: 1,
+        name: 'DEFERRED_NET_USD',
+        requireLiquidityCheck: 1,
+        settlementDelayId: 2,
+        settlementGranularityId: 2,
+        settlementInterchangeId: 2,
+        settlementModelId: 2
+      }
       const settlementWindowResultStub = [{
         settlementWindowId: 1,
         state: 'SETTLED'
@@ -176,17 +204,14 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
 
       await getByListOfIdsTest.test('retrieve settlement windows data by list of ids', async test => {
         try {
+          const knexStub = sandbox.stub()
+          Db.getKnex = sandbox.stub().returns(knexStub)
+          knexStub.raw = sandbox.stub()
           Db.settlementWindow.query.returns(Promise.resolve(settlementWindowResultStub))
 
-          const result = await SettlementWindowFacade.getByListOfIds(listOfIds, enums)
+          const result = await SettlementWindowFacade.getByListOfIds(listOfIds, settlementModelMock, enums)
           test.ok(result, 'Result returned')
-          test.ok(builderStub.leftJoin.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce)
-          test.ok(selectStub.withArgs('settlementWindow.settlementWindowId',
-            'swsc.settlementWindowStateId as state',
-            'swsc.reason as reason',
-            'settlementWindow.createdDate as createdDate',
-            'swsc.createdDate as changedDate').calledOnce)
-          test.ok(whereRawStub.withArgs(`settlementWindow.settlementWindowId IN (${listOfIds})`).calledOnce)
+          test.ok(builderStub.join.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce)
           test.end()
         } catch (err) {
           Logger.error(`getByListOfIds failed with error - ${err}`)
@@ -198,8 +223,11 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
       await getByListOfIdsTest.test('throw error if database is unavailable', async test => {
         try {
           e = new Error('Database unavailable')
+          const knexStub = sandbox.stub()
+          Db.getKnex = sandbox.stub().returns(knexStub)
+          knexStub.raw = sandbox.stub()
           Db.settlementWindow.query.throws(e)
-          await SettlementWindowFacade.getByListOfIds(listOfIds)
+          await SettlementWindowFacade.getByListOfIds(listOfIds, settlementModelMock, enums)
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
