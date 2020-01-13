@@ -26,6 +26,7 @@
  * Deon Botha <deon.botha@modusbox.com>
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
  * Miguel de Barros <miguel.debarros@modusbox.com>
+ * Juan Correa <juan.correa@modusbox.com>
 
  --------------
  ******/
@@ -34,6 +35,9 @@
 
 const settlementWindow = require('../../domain/settlementWindow/index')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Enum = require('@mojaloop/central-services-shared').Enum
+const EventSdk = require('@mojaloop/event-sdk')
+const LibUtil = require('../../lib/util')
 
 /**
  * Operations on /settlementWindows/{id}
@@ -47,6 +51,12 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
   get: async function getSettlementWindowById (request, h) {
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.SETTLEMENT_WINDOW, Enum.Events.Event.Action.GET)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: request.headers
+    }, EventSdk.AuditEventAction.start)
     const settlementWindowId = request.params.id
     try {
       const Enums = await request.server.methods.enums('settlementWindowStates')
@@ -65,6 +75,12 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
   post: async function closeSettlementWindow (request) {
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.SETTLEMENT_WINDOW, Enum.Events.Event.Action.POST)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: request.headers
+    }, EventSdk.AuditEventAction.start)
     const { state, reason } = request.payload
     const settlementWindowId = request.params.id
     try {

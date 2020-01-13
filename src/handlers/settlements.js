@@ -27,7 +27,7 @@
  * Deon Botha <deon.botha@modusbox.com>
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
  * Miguel de Barros <miguel.debarros@modusbox.com>
-
+ * Juan Correa <juan.correa@modusbox.com>
  --------------
  ******/
 
@@ -37,6 +37,9 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const Path = require('path')
 const Settlements = require('./../domain/settlement')
+const Enum = require('@mojaloop/central-services-shared').Enum
+const EventSdk = require('@mojaloop/event-sdk')
+const LibUtil = require('../lib/util')
 
 Logger.info('path ', Path.basename(__filename))
 
@@ -52,6 +55,12 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
   get: async function getSettlementsByParams (request, h) {
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.SETTLEMENT, Enum.Events.Event.Action.GET)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: request.headers
+    }, EventSdk.AuditEventAction.start)
     try {
       const Enums = await request.server.methods.enums('settlementStates')
       const settlementResult = await Settlements.getSettlementsByParams({ query: request.query }, Enums)
@@ -69,6 +78,12 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
   post: async function createSettlementEvent (request, h) {
+    const span = request.span
+    const spanTags = LibUtil.getSpanTags(request, Enum.Events.Event.Type.SETTLEMENT, Enum.Events.Event.Action.POST)
+    span.setTags(spanTags)
+    await span.audit({
+      headers: request.headers
+    }, EventSdk.AuditEventAction.start)
     try {
       const Enums = {
         settlementStates: await request.server.methods.enums('settlementStates'),
