@@ -29,8 +29,6 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 
-// const Logger = require('@mojaloop/central-services-logger')
-
 const Config = require('../../../../src/lib/config')
 const Routes = require('../../../../src/api/routes')
 const Setup = require('../../../../src/shared/setup')
@@ -41,7 +39,6 @@ Test('Api index', indexTest => {
   indexTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Setup)
-    //    sandbox.stub(Logger)
     test.end()
   })
 
@@ -51,16 +48,21 @@ Test('Api index', indexTest => {
   })
 
   indexTest.test('export should', exportTest => {
+
     exportTest.test('initialize server', async function (test) {
+
       const server = {
         start: sandbox.stub(),
         info: {
           uri: ''
         }
       }
+
       server.start.returns(Promise.resolve({}))
       Setup.initialize.returns(Promise.resolve(server))
+      
       await require('../../../../src/api/index')
+
       test.ok(Setup.initialize.calledWith({
         service: 'api',
         port: Config.PORT,
