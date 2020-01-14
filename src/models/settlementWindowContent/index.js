@@ -19,24 +19,15 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * ModuxBox
- - Deon Botha <deon.botha@modusbox.com>
  - Georgi Georgiev <georgi.georgiev@modusbox.com>
- - Miguel de Barros <miguel.debarros@modusbox.com>
- - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- - Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
 'use strict'
 
 const Facade = require('./facade')
-const settlementWindowStateChange = require('./settlementWindowStateChange')
+const settlementWindowContentStateChange = require('./settlementWindowContentStateChange')
 
 module.exports = {
-  getById: Facade.getById,
-  getByParams: Facade.getByParams,
-  process: Facade.process,
-  close: Facade.close,
-  getByListOfIds: Facade.getByListOfIds,
-  getBySettlementId: Facade.getBySettlementId,
-  createSettlementWindowState: settlementWindowStateChange.create
+  getApplicableByWindowIdList: Facade.getApplicableByWindowIdList,
+  createSettlementWindowContentState: settlementWindowContentStateChange.create
 }

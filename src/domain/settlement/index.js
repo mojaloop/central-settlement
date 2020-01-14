@@ -193,14 +193,20 @@ module.exports = {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Inapplicable windows ${nonApplicableIdList.join(', ')}`)
     }
 
-    // follow-up next
-    const settlementId = await SettlementModel.triggerEvent({ idList, reason }, enums)
+    // settlement event trigger
+    const settlementId = await SettlementModel.triggerSettlementEvent({ idList, reason }, settlementModelData, enums)
+
+    // retrieve resulting data for response
     const settlement = await SettlementModel.getById({ settlementId })
     const settlementWindowsList = await SettlementWindowModel.getBySettlementId({ settlementId })
+
+    const settlementWindowContentAll = 'TODO'
+
     const participantCurrenciesList = await SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({ settlementId })
     const participants = prepareParticipantsResult(participantCurrenciesList)
     return {
       id: settlement.settlementId,
+      settlementModel,
       state: settlement.state,
       reason: settlement.reason,
       createdDate: settlement.createdDate,

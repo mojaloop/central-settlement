@@ -18,25 +18,31 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * ModuxBox
- - Deon Botha <deon.botha@modusbox.com>
+ * ModusBox
  - Georgi Georgiev <georgi.georgiev@modusbox.com>
- - Miguel de Barros <miguel.debarros@modusbox.com>
- - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- - Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
 'use strict'
 
-const Facade = require('./facade')
-const settlementWindowStateChange = require('./settlementWindowStateChange')
+const Db = require('../../lib/db')
 
-module.exports = {
-  getById: Facade.getById,
-  getByParams: Facade.getByParams,
-  process: Facade.process,
-  close: Facade.close,
-  getByListOfIds: Facade.getByListOfIds,
-  getBySettlementId: Facade.getBySettlementId,
-  createSettlementWindowState: settlementWindowStateChange.create
+const Facade = {
+  getApplicableByWindowIdList: async function (idList, settlementModel, winStateEnum) {
+    const knex = await Db.getKnex()
+    return Db.settlementWindow.query(builder => {
+      const b = builder
+        .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
+        .join('settlementWindowContent AS swc', 'swc.settlementWindowId', 'settlementWindow.settlementWindowId')
+        .join('settlementWindowContentStateChange AS swcsc', 'swcsc.settlementWindowContentStateChangeId', 'swc.currentStateChangeId')
+        .whereRaw(`settlementWindow.settlementWindowId IN (${idList})`)
+        .where('swc.ledgerAccountTypeId', settlementModel.ledgerAccountTypeId)
+        .where('swc.currencyId', knex.raw('COALESCE(?, swc.currencyId)', settlementModel.currencyId))
+        .whereIn('swsc.settlementWindowStateId', [winStateEnum.CLOSED, winStateEnum.ABORTED, winStateEnum.PENDING_SETTLEMENT])
+        .whereIn('swcsc.settlementWindowStateId', [winStateEnum.CLOSED, winStateEnum.ABORTED])
+        .distinct('swc.settlementWindowContentId')
+      return b
+    })
+  }
 }
+
+module.exports = Facade
