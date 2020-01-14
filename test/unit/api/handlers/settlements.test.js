@@ -149,12 +149,15 @@ Test('/settlements', async (settlementTest) => {
       t.end()
     }
   })
-  await settlementTest.test('test settlements put operation', async (t) => {
+  await settlementTest.test('test settlements post operation', async (t) => {
+    sandbox.stub(Enums, 'ledgerEntryTypes').returns({})
+    sandbox.stub(Enums, 'settlementDelay').returns({})
+    sandbox.stub(Enums, 'settlementGranularity').returns({})
+    sandbox.stub(Enums, 'settlementInterchange').returns({})
     sandbox.stub(Enums, 'settlementStates').returns({})
     sandbox.stub(Enums, 'settlementWindowStates').returns({})
-    sandbox.stub(Enums, 'transferStates').returns({})
     sandbox.stub(Enums, 'transferParticipantRoleTypes').returns({})
-    sandbox.stub(Enums, 'ledgerEntryTypes').returns({})
+    sandbox.stub(Enums, 'transferStates').returns({})
     sandbox.stub(settlement, 'settlementEventTrigger').returns({})
     try {
       const requests = new Promise((resolve, reject) => {

@@ -55,19 +55,23 @@ const Facade = {
     })
   },
 
-  getByListOfIds: async function (listOfIds) {
+  getByListOfIds: async function (listOfIds, settlementModel, winStateEnum) {
+    const knex = await Db.getKnex()
     return Db.settlementWindow.query(builder => {
-      const build = builder
-        .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
-        .select(
-          'settlementWindow.settlementWindowId',
-          'swsc.settlementWindowStateId as state',
-          'swsc.reason as reason',
-          'settlementWindow.createdDate as createdDate',
-          'swsc.createdDate as changedDate'
-        )
+      const b = builder
+        .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
+        .join('settlementWindowContent AS swc', 'swc.settlementWindowId', 'settlementWindow.settlementWindowId')
+        .join('settlementWindowContentStateChange AS swcsc', 'swcsc.settlementWindowContentStateChangeId', 'swc.currentStateChangeId')
         .whereRaw(`settlementWindow.settlementWindowId IN (${listOfIds})`)
-      return build
+        .where('swc.ledgerAccountTypeId', settlementModel.ledgerAccountTypeId)
+        .where('swc.currencyId', knex.raw('COALESCE(?, swc.currencyId)', settlementModel.currencyId))
+        .whereIn('swsc.settlementWindowStateId', [winStateEnum.CLOSED, winStateEnum.ABORTED, winStateEnum.PENDING_SETTLEMENT])
+        .whereIn('swcsc.settlementWindowStateId', [winStateEnum.CLOSED, winStateEnum.ABORTED])
+        .distinct(
+          'settlementWindow.settlementWindowId',
+          'swsc.settlementWindowStateId as state'
+        )
+      return b
     })
   },
 
