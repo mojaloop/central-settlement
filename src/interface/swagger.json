@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "version": "1.1.0",
+        "version": "1.9.0",
         "title": "MOJALOOP Central Settlements",
         "description": "Mojaloop API for Settlements."
     },
@@ -1058,6 +1058,9 @@
         "SettlementEventPayload": {
             "type": "object",
             "properties": {
+                "settlementModel": {
+                    "type": "string"
+                },
                 "reason": {
                     "type": "string"
                 },
@@ -1071,6 +1074,7 @@
                 }
             },
             "required": [
+                "settlementModel",
                 "reason",
                 "settlementWindows"
             ]
