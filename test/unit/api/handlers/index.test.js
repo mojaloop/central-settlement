@@ -60,9 +60,7 @@ Test('Api index', indexTest => {
 
       server.start.returns(Promise.resolve({}))
       Setup.initialize.returns(Promise.resolve(server))
-      
       await require('../../../../src/api/index')
-
       test.ok(Setup.initialize.calledWith({
         service: 'api',
         port: Config.PORT,
