@@ -242,8 +242,7 @@ Test('SettlementService', async (settlementServiceTest) => {
 
   await settlementServiceTest.test('settlementEventTrigger should', async settlementEventTriggerTest => {
     try {
-      // TODO: #1097 follow-up
-
+      // TODO: Unit tests adjustment for full coverage, in correspondence to the introduced changes by story #1097 [@ggrg, @bothadeon, @lazolalucas]
       // const params = {
       //   reason: 'settlement trigger',
       //   settlementWindows: [

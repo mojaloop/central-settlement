@@ -48,9 +48,7 @@ Test('Api index', indexTest => {
   })
 
   indexTest.test('export should', exportTest => {
-
     exportTest.test('initialize server', async function (test) {
-
       const server = {
         start: sandbox.stub(),
         info: {
@@ -60,7 +58,7 @@ Test('Api index', indexTest => {
 
       server.start.returns(Promise.resolve({}))
       Setup.initialize.returns(Promise.resolve(server))
-      
+
       await require('../../../../src/api/index')
 
       test.ok(Setup.initialize.calledWith({

@@ -1369,7 +1369,12 @@ const Facade = {
       try {
         // insert new settlement
         const transactionTimestamp = new Date().toISOString().replace(/[TZ]/g, ' ').trim()
-        const settlementId = await knex('settlement').insert({ reason, createdDate: transactionTimestamp }).transacting(trx)
+        const settlementId = await knex('settlement').transacting(trx)
+          .insert({
+            reason,
+            createdDate: transactionTimestamp,
+            settlementModelId: settlementModel.settlementModelId
+          })
         const settlementSettlementWindowList = idList.map(settlementWindowId => {
           return {
             settlementId,
@@ -1392,17 +1397,18 @@ const Facade = {
           .whereIn('swsc.settlementWindowStateId', [enums.settlementWindowStates.CLOSED, enums.settlementWindowStates.ABORTED, enums.settlementWindowStates.PENDING_SETTLEMENT])
           .whereIn('swcsc.settlementWindowStateId', [enums.settlementWindowStates.CLOSED, enums.settlementWindowStates.ABORTED])
           .distinct('swc.settlementWindowContentId')
+        const swcIdArray = swcIdList.map(record => record.settlementWindowContentId)
 
         // bind requested settlementWindowContent and settlementContentAggregation records
         await knex('settlementWindowContent').transacting(trx)
-          .whereIn('settlementWindowContentId', swcIdList)
+          .whereIn('settlementWindowContentId', swcIdArray)
           .update({ settlementId })
         await knex('settlementContentAggregation').transacting(trx)
-          .whereIn('settlementWindowContentId', swcIdList)
+          .whereIn('settlementWindowContentId', swcIdArray)
           .update({ settlementId, currentStateId: enums.settlementWindowStates.PENDING_SETTLEMENT })
 
         // change settlementWindowContent records state
-        const settlementWindowContentStateChangeList = swcIdList.map(value => {
+        const settlementWindowContentStateChangeList = swcIdArray.map(value => {
           return {
             settlementWindowContentId: value,
             settlementWindowStateId: enums.settlementStates.PENDING_SETTLEMENT,
@@ -1419,9 +1425,9 @@ const Facade = {
         }
         const settlementWindowContentStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
         let updatePromises = []
-        for (let index = 0; index < swcIdList.length; index++) {
+        for (let index = 0; index < swcIdArray.length; index++) {
           updatePromises.push(await knex('settlementWindowContent').transacting(trx)
-            .where('settlementWindowContentId', swcIdList[index])
+            .where('settlementWindowContentId', swcIdArray[index])
             .update({ currentStateChangeId: settlementWindowContentStateChangeIdList[index] }))
         }
         await Promise.all(updatePromises)
@@ -1433,7 +1439,7 @@ const Facade = {
             this.from('settlementContentAggregation AS sca')
               .whereRaw('sca.settlementId = ?', settlementId[0])
               .groupBy('sca.settlementId', 'sca.participantCurrencyId')
-              .select('sca.settlementId', 'sca.participantCurrencyId', `'${transactionTimestamp}' AS createdDate`)
+              .select('sca.settlementId', 'sca.participantCurrencyId', knex.raw('? AS createdDate', transactionTimestamp))
               .sum('sca.amount AS netAmount')
           })
           .transacting(trx)

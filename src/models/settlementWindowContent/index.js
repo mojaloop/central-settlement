@@ -25,9 +25,10 @@
 'use strict'
 
 const Facade = require('./facade')
-const settlementWindowContentStateChange = require('./settlementWindowContentStateChange')
+const SettlementWindowContentStateChangeModel = require('./settlementWindowContentStateChange')
 
 module.exports = {
+  createSettlementWindowContentState: SettlementWindowContentStateChangeModel.create,
   getApplicableByWindowIdList: Facade.getApplicableByWindowIdList,
-  createSettlementWindowContentState: settlementWindowContentStateChange.create
+  getBySettlementId: Facade.getBySettlementId
 }
