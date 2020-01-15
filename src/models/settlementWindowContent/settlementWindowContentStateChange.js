@@ -18,25 +18,32 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * ModuxBox
- - Deon Botha <deon.botha@modusbox.com>
+ * ModusBox
  - Georgi Georgiev <georgi.georgiev@modusbox.com>
- - Miguel de Barros <miguel.debarros@modusbox.com>
- - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- - Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
 'use strict'
 
-const Facade = require('./facade')
-const settlementWindowStateChange = require('./settlementWindowStateChange')
+const Db = require('../../lib/db')
+
+const create = async ({ settlementWindowContentId, state, reason }, enums = {}) => {
+  return Db.settlementWindowContentStateChange.insert({
+    settlementWindowContentId,
+    settlementWindowStateId: enums[state.toUpperCase()],
+    reason
+  })
+}
+
+const getBySettlementWindowContentId = async (id) => {
+  const knex = await Db.getKnex()
+  return knex('settlementWindowContentStateChange')
+    .where('settlementWindowContentId', id)
+    .orderBy('settlementWindowContentStateChangeId', 'desc')
+    .select('*')
+    .first()
+}
 
 module.exports = {
-  getById: Facade.getById,
-  getByParams: Facade.getByParams,
-  process: Facade.process,
-  close: Facade.close,
-  getByListOfIds: Facade.getByListOfIds,
-  getBySettlementId: Facade.getBySettlementId,
-  createSettlementWindowState: settlementWindowStateChange.create
+  create,
+  getBySettlementWindowContentId
 }

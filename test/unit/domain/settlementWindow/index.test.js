@@ -123,7 +123,6 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
       })
 
       await getByParamsTest.end()
-
     } catch (err) {
       Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
       getByParamsTest.fail()

@@ -36,10 +36,11 @@
 const arrayDiff = require('lodash').difference
 const SettlementModel = require('../../models/settlement')
 const SettlementModelModel = require('../../models/settlement/settlementModel')
+const SettlementWindowContentModel = require('../../models/settlementWindowContent')
 const SettlementWindowModel = require('../../models/settlementWindow')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
-const prepareParticipantsResult = function (participantCurrenciesList) {
+const prepareParticipantsResult = (participantCurrenciesList) => {
   const participantAccounts = {}
   for (const account of participantCurrenciesList) {
     const { id } = account
@@ -67,6 +68,20 @@ const prepareParticipantsResult = function (participantCurrenciesList) {
     }
   }
   return Array.from(Object.keys(participantAccounts).map(participantId => participantAccounts[participantId]))
+}
+
+const groupSettlementWindowContentBySettlementWindow = (records) => {
+  const settlementWindows = {}
+  for (const record of records) {
+    const id = record.settlementWindowId
+    delete record.settlementWindowId
+    if (id in settlementWindows) {
+      settlementWindows[id].push(record)
+    } else {
+      settlementWindows[id] = record
+    }
+  }
+  return settlementWindows
 }
 
 module.exports = {
@@ -193,19 +208,28 @@ module.exports = {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Inapplicable windows ${nonApplicableIdList.join(', ')}`)
     }
 
-    // follow-up next
-    const settlementId = await SettlementModel.triggerEvent({ idList, reason }, enums)
+    // settlement event trigger
+    const settlementId = await SettlementModel.triggerSettlementEvent({ idList, reason }, settlementModelData, enums)
+
+    // retrieve resulting data for response
     const settlement = await SettlementModel.getById({ settlementId })
     const settlementWindowsList = await SettlementWindowModel.getBySettlementId({ settlementId })
+    const settlementWindowContentAll = await SettlementWindowContentModel.getBySettlementId(settlementId)
+    const settlementWindowsContent = groupSettlementWindowContentBySettlementWindow(settlementWindowContentAll)
+    const settlementWindowsWithContent = settlementWindowsList.map(record => {
+      record.content = settlementWindowsContent[record.id]
+      return record
+    })
     const participantCurrenciesList = await SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({ settlementId })
     const participants = prepareParticipantsResult(participantCurrenciesList)
     return {
       id: settlement.settlementId,
+      settlementModel,
       state: settlement.state,
       reason: settlement.reason,
       createdDate: settlement.createdDate,
       changedDate: settlement.changedDate,
-      settlementWindows: settlementWindowsList,
+      settlementWindows: settlementWindowsWithContent,
       participants
     }
   },
