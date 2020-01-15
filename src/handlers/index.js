@@ -37,9 +37,8 @@ const Logger = require('@mojaloop/central-services-logger')
 const Config = require('../lib/config')
 const Setup = require('../shared/setup')
 const PJson = require('../../package.json')
-const HealthPlugin = require('./api/health/plugin')
-const MetricsPlugin = require('./api/metrics/plugin')
 const { Command } = require('commander')
+const Routes = require('../api/routes')
 
 const Program = new Command()
 
@@ -66,7 +65,7 @@ Program.command('handler') // sub-command name, coffeeType = type, required
     module.exports = Setup.initialize({
       service: 'handler',
       port: Config.PORT,
-      modules: [HealthPlugin, MetricsPlugin],
+      modules: [Routes],
       handlers: handlerList,
       runHandlers: true
     })

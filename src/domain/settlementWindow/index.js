@@ -40,6 +40,7 @@ const Uuid = require('uuid4')
 module.exports = {
   getById: async function (params, enums) {
     const settlementWindow = await SettlementWindowModel.getById(params, enums)
+
     if (settlementWindow) return settlementWindow
     else {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `settlementWindowId: ${params.settlementWindowId} not found`)
@@ -71,6 +72,7 @@ module.exports = {
     const messageProtocol = StreamingProtocol.createMessage(messageId, Enum.Http.Headers.FSPIOP.SWITCH.value, Enum.Http.Headers.FSPIOP.SWITCH.value, metadata, undefined, params)
     const topicConfig = KafkaUtil.createGeneralTopicConf(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, Enum.Events.Event.Type.SETTLEMENT_WINDOW, Enum.Events.Event.Action.CLOSE)
     const kafkaConfig = KafkaUtil.getKafkaConfig(Config.KAFKA_CONFIG, Enum.Kafka.Config.PRODUCER, Enum.Events.Event.Type.SETTLEMENT_WINDOW.toUpperCase(), Enum.Events.Event.Action.CLOSE.toUpperCase())
+
     await Producer.produceMessage(messageProtocol, topicConfig, kafkaConfig)
 
     return SettlementWindowModel.getById({ settlementWindowId }, enums)

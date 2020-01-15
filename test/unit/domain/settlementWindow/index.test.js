@@ -142,7 +142,9 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
       await processTest.test('process settlement window and return it', async test => {
         try {
           SettlementWindowModel.process = sandbox.stub().returns(settlementWindowIdMock)
+
           SettlementWindowModel.getById = sandbox.stub().returns(settlementWindowMock)
+
           const result = await SettlementWindowService.process(params, enums, options)
           test.ok(result, 'Result returned')
           test.ok(SettlementWindowModel.process.withArgs(params, enums).calledOnce, 'SettlementWindowModel.process with args ... called once')
