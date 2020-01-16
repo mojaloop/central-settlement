@@ -56,12 +56,16 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
     Db.settlementWindow = {
       query: sandbox.stub()
     }
+    Db.transferFulfilment = {
+      query: sandbox.stub()
+    }
     Db.settlementSettlementWindow = {
       query: sandbox.stub()
     }
     builderStub = sandbox.stub()
     Db.settlementWindow.query.callsArgWith(0, builderStub)
     Db.settlementSettlementWindow.query.callsArgWith(0, builderStub)
+    Db.transferFulfilment.query.callsArgWith(0, builderStub)
     builderStub.leftJoin = sandbox.stub()
     builderStub.join = sandbox.stub()
     selectStub = sandbox.stub()
@@ -70,6 +74,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
     whereRawStub = sandbox.stub()
     orderByStub = sandbox.stub()
     distinctStub = sandbox.stub()
+
     selectStubResult = {
       first: firstStub.returns({
         where: whereStub
@@ -405,7 +410,8 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           })
 
           SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
-          SettlementWindowFacade.getTransfersCount = sandbox.stub().returns(transfersCountMock)
+          // SettlementWindowFacade.getTransfersCount = sandbox.stub().returns(transfersCountMock)
+          sandbox.stub(SettlementWindowFacade, 'getTransfersCount').returns(transfersCountMock)
           const result = await SettlementWindowFacade.process(params, enums)
           test.ok(result, 'Result returned')
           test.ok(SettlementWindowFacade.getById.withArgs({ settlementWindowId }).calledOnce)
@@ -539,5 +545,32 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
     }
   })
 
+  await settlementWindowFacadeTest.test('getTransfersCount should', async getTransfersCountTest => {
+    try {
+      const settlementWindowId = 1
+      const settlementWindowResultStub = () => { return { cnt: 1 } }
+
+      await getTransfersCountTest.test('retrieve number of transfers per settlement window id', async test => {
+        try {
+          Db.transferFulfilment = {
+            query: settlementWindowResultStub
+          }
+          // Db.transferFulfilment.query.returns(Promise.resolve(settlementWindowResultStub))
+          const result = await SettlementWindowFacade.getTransfersCount({ settlementWindowId })
+          test.ok(result, { cnt: 1 })
+          test.end()
+        } catch (err) {
+          Logger.error(`getTransfersCountTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+      await getTransfersCountTest.end()
+    } catch (err) {
+      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      getTransfersCountTest.fail()
+      getTransfersCountTest.end()
+    }
+  })
   settlementWindowFacadeTest.end()
 })
