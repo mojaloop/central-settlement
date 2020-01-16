@@ -28,7 +28,6 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const requireGlob = require('require-glob')
 const Handlers = require('../../../src/handlers/register')
 const Proxyquire = require('proxyquire')
 

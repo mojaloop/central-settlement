@@ -48,9 +48,7 @@ Test('Api index', indexTest => {
   })
 
   indexTest.test('export should', exportTest => {
-
     exportTest.test('initialize server', async function (test) {
-
       const server = {
         start: sandbox.stub(),
         info: {
