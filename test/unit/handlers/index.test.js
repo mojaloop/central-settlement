@@ -16,11 +16,11 @@
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
  * Gates Foundation
- -
- * Modusbox
  - Name Surname <name.surname@gatesfoundation.com>
- - Georgi Georgiev <georgi.georgiev@modusbox.com>
+
+ * Modusbox
  - Deon Botha <deon.botha@modusbox.com>
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
 
