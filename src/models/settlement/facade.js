@@ -1055,7 +1055,7 @@ const Facade = {
             const windowIdCheckList = windowsToCheck.map(v => v.settlementWindowId)
             const unsettledWindows = await knex('settlementWindowContent AS swc').transacting(trx)
               .join('settlementWindowContentStateChange AS swcsc', 'swcsc.settlementWindowContentStateChangeId', 'swc.currentStateChangeId')
-              .whereIn('swc.settlementWindowContentId', windowIdCheckList)
+              .whereIn('swc.settlementWindowId', windowIdCheckList)
               .whereNot('swcsc.settlementWindowStateId', enums.settlementWindowStates.SETTLED)
               .distinct('swc.settlementWindowId')
             const unsettledWindowIdList = unsettledWindows.map(v => v.settlementWindowId)
