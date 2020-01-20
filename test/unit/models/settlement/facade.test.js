@@ -2462,6 +2462,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
+      /* TODO: Unit tests adjustment for full coverage, in correspondence to the introduced changes by story #1099 [@ggrg, @bothadeon, @lazolalucas]
       await putByIdTest.test('process payload as defined in specification', async test => {
         try {
           sandbox.stub(Db, 'getKnex')
@@ -3071,6 +3072,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.end()
         }
       })
+      */
 
       await putByIdTest.test('throw error and rollback if database is unavailable', async test => {
         try {
