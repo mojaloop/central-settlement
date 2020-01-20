@@ -616,26 +616,29 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           trxStub.commit = sandbox.stub()
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
           Db.getKnex.returns(knexStub)
-          const transactingStub = sandbox.stub()
-          const settlementWindowStateChangeIdMock = 2
-          const newSettlementWindowIdMock = [2]
-          const newSettlementWindowStateChangeIdMock = 5
-          const insertStub = sandbox.stub()
-          insertStub.onCall(0).returns(settlementWindowStateChangeIdMock)
-          insertStub.onCall(1).returns(newSettlementWindowIdMock)
-          insertStub.onCall(2).returns(newSettlementWindowStateChangeIdMock)
-          const whereStub = sandbox.stub()
-          const updateStub = sandbox.stub()
-          knexStub.returns({
-            transacting: transactingStub.returns({
-              insert: insertStub,
-              where: whereStub.returns({
-                update: updateStub
-              })
-            })
-          })
 
           SettlementWindowFacade.getById = sandbox.stub().returns(undefined)
+          const result = await SettlementWindowFacade.close(params, enums)
+          test.ok(result, 'Result returned')
+          test.ok(SettlementWindowFacade.getById.withArgs({ settlementWindowId }).calledOnce)
+          test.end()
+        } catch (err) {
+          Logger.error('Close settlementwindow failed with error : ' + err)
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+
+      await closeTest.test('close the specified open window will throw an error if the current state is not "PROCESSING".', async test => {
+        try {
+          Db.getKnex = sandbox.stub()
+          const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub()
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          Db.getKnex.returns(knexStub)
+
+          SettlementWindowFacade.getById = sandbox.stub().returns('INVALID STATE')
           const result = await SettlementWindowFacade.close(params, enums)
           test.ok(result, 'Result returned')
           test.ok(SettlementWindowFacade.getById.withArgs({ settlementWindowId }).calledOnce)
