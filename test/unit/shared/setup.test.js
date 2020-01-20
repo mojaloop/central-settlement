@@ -44,10 +44,15 @@ Test('Server Setup', async setupTest => {
   let ConfigStub
   let EngineStub
   let SetupProxy
+  let RegisterHandlersStub
 
   setupTest.beforeEach(test => {
     try {
       sandbox = Sinon.createSandbox()
+
+      RegisterHandlersStub = {
+        registerAllHandlers: sandbox.stub().returns(Promise.resolve())
+      }
 
       serverStub = {
         register: sandbox.stub(),
@@ -176,6 +181,42 @@ Test('Server Setup', async setupTest => {
           test.end()
         }
       })
+
+      // maw
+      await initTest.test('test - handler service type and run handlers true', async test => {
+        try {
+          const errorToThrow = new Error('Throw Boom error')
+
+          const HapiStubThrowError = {
+            Server: sandbox.stub().callsFake((opt) => {
+              opt.routes.validate.failAction(sandbox.stub(), sandbox.stub(), errorToThrow)
+              return serverStub
+            })
+          }
+
+          const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
+            '../handlers/register': RegisterHandlersStub,
+            '@hapi/catbox-memory': EngineStub,
+            '@hapi/hapi': HapiStubThrowError,
+            'hapi-openapi': HapiOpenAPIStub,
+            path: PathStub,
+            '../lib/db': DbStub,
+            '../models/lib/enums': EnumsStub,
+            '../lib/config': ConfigStub
+          })
+
+          const port = await getPort()
+          const server = await SetupProxy1.initialize({ service: 'handler', port, modules: [], runHandlers: true })
+          test.ok(server, 'return server object')
+          test.ok(RegisterHandlersStub.registerAllHandlers.called)
+          test.end()
+        } catch (err) {
+          Logger.error(`init failed with error - ${err}`)
+          test.fail(`Should have not received an error: ${err}`)
+          test.end()
+        }
+      })
+      // maw
 
       await initTest.test('test 1 - invalid service type', async test => {
         try {
