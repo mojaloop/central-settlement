@@ -78,7 +78,7 @@ const groupSettlementWindowContentBySettlementWindow = (records) => {
     if (id in settlementWindows) {
       settlementWindows[id].push(record)
     } else {
-      settlementWindows[id] = record
+      settlementWindows[id] = [record]
     }
   }
   return settlementWindows

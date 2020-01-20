@@ -1014,13 +1014,13 @@ const Facade = {
             const scaContentToCheck = await knex('settlementContentAggregation').transacting(trx)
               .where('settlementId', settlementId)
               .whereIn('participantCurrencyId', settlementAccounts.settledIdList)
-              .distinct('settlementContentId')
-            const contentIdCheckList = scaContentToCheck.map(v => v.settlementContentId)
+              .distinct('settlementWindowContentId')
+            const contentIdCheckList = scaContentToCheck.map(v => v.settlementWindowContentId)
             const unsettledContent = await knex('settlementContentAggregation').transacting(trx)
-              .whereIn('settlementContentId', contentIdCheckList)
+              .whereIn('settlementWindowContentId', contentIdCheckList)
               .whereNot('currentStateId', enums.settlementWindowStates.SETTLED)
-              .distinct('settlementContentId')
-            const unsettledContentIdList = unsettledContent.map(v => v.settlementContentId)
+              .distinct('settlementWindowContentId')
+            const unsettledContentIdList = unsettledContent.map(v => v.settlementWindowContentId)
             const settledContentIdList = arrayDiff(contentIdCheckList, unsettledContentIdList)
 
             // persist settled content
@@ -1157,7 +1157,6 @@ const Facade = {
 
           await trx.commit
 
-          // TODO: @ggrg
           return {
             id: settlementId,
             state: settlementData.settlementStateId,
@@ -1510,9 +1509,9 @@ const Facade = {
         }
         const settlementWindowStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
         updatePromises = []
-        for (let index = 0; index < idList.length; index++) {
+        for (let index = 0; index < settlementWindowStateChangeList.length; index++) {
           updatePromises.push(await knex('settlementWindow').transacting(trx)
-            .where('settlementWindowId', idList[index])
+            .where('settlementWindowId', settlementWindowStateChangeList[index].settlementWindowId)
             .update({ currentStateChangeId: settlementWindowStateChangeIdList[index] }))
         }
         await Promise.all(updatePromises)
