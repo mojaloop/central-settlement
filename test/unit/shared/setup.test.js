@@ -100,7 +100,7 @@ Test('Server Setup', async setupTest => {
 
   await setupTest.test('init should', async initTest => {
     try {
-      await initTest.test('test 1', async test => {
+      await initTest.test('test 1 - API', async test => {
         try {
           const errorToThrow = new Error('Throw Boom error')
 
@@ -135,6 +135,76 @@ Test('Server Setup', async setupTest => {
         } catch (err) {
           Logger.error(`init failed with error - ${err}`)
           test.fail()
+          test.end()
+        }
+      })
+
+      await initTest.test('test 1 - handler', async test => {
+        try {
+          const errorToThrow = new Error('Throw Boom error')
+
+          const HapiStubThrowError = {
+            Server: sandbox.stub().callsFake((opt) => {
+              opt.routes.validate.failAction(sandbox.stub(), sandbox.stub(), errorToThrow)
+              return serverStub
+            })
+          }
+
+          const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
+            '@hapi/catbox-memory': EngineStub,
+            '@hapi/hapi': HapiStubThrowError,
+            'hapi-openapi': HapiOpenAPIStub,
+            path: PathStub,
+            '../lib/db': DbStub,
+            '../models/lib/enums': EnumsStub,
+            '../lib/config': ConfigStub
+          })
+
+          const port = await getPort()
+          const server = await SetupProxy1.initialize({ service: 'handler', port })
+          test.ok(server, 'return server object')
+          test.ok(HapiStubThrowError.Server.calledOnce, 'Hapi.Server called once')
+          test.ok(DbStub.connect.calledOnce, 'Db.connect called once')
+          test.equal(serverStub.register.callCount, 7, 'server.register called 7 times')
+          test.ok(serverStub.method.calledOnce, 'server.method called once')
+          test.ok(serverStub.start.calledOnce, 'server.start called once')
+          test.ok(serverStub.plugins.openapi.setHost.calledOnce, 'server.plugins.openapi.setHost called once')
+          test.end()
+        } catch (err) {
+          Logger.error(`init failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await initTest.test('test 1 - invalid service type', async test => {
+        try {
+          const errorToThrow = new Error('No valid service type')
+
+          const HapiStubThrowError = {
+            Server: sandbox.stub().callsFake((opt) => {
+              opt.routes.validate.failAction(sandbox.stub(), sandbox.stub(), errorToThrow)
+              return serverStub
+            })
+          }
+
+          const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
+            '@hapi/catbox-memory': EngineStub,
+            '@hapi/hapi': HapiStubThrowError,
+            'hapi-openapi': HapiOpenAPIStub,
+            path: PathStub,
+            '../lib/db': DbStub,
+            '../models/lib/enums': EnumsStub,
+            '../lib/config': ConfigStub
+          })
+
+          const port = await getPort()
+          const server = await SetupProxy1.initialize({ service: 'invalid', port })
+          test.fail(server, 'Invalid service type')
+          test.end()
+        } catch (err) {
+          Logger.error(`init failed with error - ${err}`)
+          test.pass()
           test.end()
         }
       })
