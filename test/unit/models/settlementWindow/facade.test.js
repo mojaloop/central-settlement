@@ -600,5 +600,113 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
       getTransfersCountTest.end()
     }
   })
+
+  await settlementWindowFacadeTest.test('close should', async closeTest => {
+    try {
+      const settlementWindowId = 1
+      const reason = 'close reason text'
+      const params = { settlementWindowId, reason }
+      const enums = { OPEN: 'OPEN' }
+
+      await closeTest.test('close the specified open window will throw an error if the current state is undefined.', async test => {
+        try {
+          Db.getKnex = sandbox.stub()
+          const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub()
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          Db.getKnex.returns(knexStub)
+          const transactingStub = sandbox.stub()
+          const settlementWindowStateChangeIdMock = 2
+          const newSettlementWindowIdMock = [2]
+          const newSettlementWindowStateChangeIdMock = 5
+          const insertStub = sandbox.stub()
+          insertStub.onCall(0).returns(settlementWindowStateChangeIdMock)
+          insertStub.onCall(1).returns(newSettlementWindowIdMock)
+          insertStub.onCall(2).returns(newSettlementWindowStateChangeIdMock)
+          const whereStub = sandbox.stub()
+          const updateStub = sandbox.stub()
+          knexStub.returns({
+            transacting: transactingStub.returns({
+              insert: insertStub,
+              where: whereStub.returns({
+                update: updateStub
+              })
+            })
+          })
+
+          SettlementWindowFacade.getById = sandbox.stub().returns(undefined)
+          const result = await SettlementWindowFacade.close(params, enums)
+          test.ok(result, 'Result returned')
+          test.ok(SettlementWindowFacade.getById.withArgs({ settlementWindowId }).calledOnce)
+          test.end()
+        } catch (err) {
+          Logger.error('Close settlementwindow failed with error : ' + err)
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+
+      /* await closeTest.test('throw error if the requested window is not open', async test => {
+        try {
+          const settlementWindowResultStub = () => { return { cnt: 1 } }
+          Db.transferFulfilment = {
+            query: settlementWindowResultStub
+          }
+
+          settlementWindowCurrentStateMock = { state: 'INVALID' }
+          SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
+          await SettlementWindowFacade.process(params)
+          test.fail('Error not thrown!')
+        } catch (err) {
+          Logger.error(`process failed with error - ${err}`)
+          test.ok(err instanceof Error, `Error "${err.message}" thrown as expected`)
+          test.end()
+        }
+      })
+
+      await closeTest.test('throw error if transfer count is 0', async test => {
+        try {
+          const settlementWindowResultStub = () => { return { cnt: 0 } }
+          Db.transferFulfilment = {
+            query: settlementWindowResultStub
+          }
+
+          settlementWindowCurrentStateMock = { state: 'OPEN' }
+          SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
+          await SettlementWindowFacade.process(params, enums)
+          test.fail('Error not thrown!')
+        } catch (err) {
+          Logger.error(`process failed with error - ${err}`)
+          test.ok(err instanceof Error, `Error "${err.message}" thrown as expected`)
+          test.end()
+        }
+      })
+
+      await closeTest.test('throw error if the requested window state is undefined does not exist', async test => {
+        try {
+          const settlementWindowResultStub = () => { return { cnt: 1 } }
+
+          Db.transferFulfilment = {
+            query: settlementWindowResultStub
+          }
+          settlementWindowCurrentStateMock = undefined
+          SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
+          await SettlementWindowFacade.process(params)
+          test.fail('Error not thrown!')
+        } catch (err) {
+          Logger.error(`process failed with error - ${err}`)
+          test.ok(err instanceof Error, `Error "${err.message}" thrown as expected`)
+          test.end()
+        }
+      }) */
+      await closeTest.end()
+    } catch (err) {
+      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      closeTest.fail()
+      closeTest.end()
+    }
+  })
+
   settlementWindowFacadeTest.end()
 })
