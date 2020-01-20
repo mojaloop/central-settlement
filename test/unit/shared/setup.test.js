@@ -51,7 +51,10 @@ Test('Server Setup', async setupTest => {
       sandbox = Sinon.createSandbox()
 
       RegisterHandlersStub = {
-        registerAllHandlers: sandbox.stub().returns(Promise.resolve())
+        registerAllHandlers: sandbox.stub().returns(Promise.resolve()),
+        settlementWindow: {
+          registerSettlementWindowHandler: sandbox.stub().returns(Promise.resolve())
+        }
       }
 
       serverStub = {
@@ -182,7 +185,92 @@ Test('Server Setup', async setupTest => {
         }
       })
 
-      // maw
+      await initTest.test('test - handler service type, run handlers true and a handler list', async test => {
+        try {
+          const errorToThrow = new Error('Throw Boom error')
+
+          const HapiStubThrowError = {
+            Server: sandbox.stub().callsFake((opt) => {
+              opt.routes.validate.failAction(sandbox.stub(), sandbox.stub(), errorToThrow)
+              return serverStub
+            })
+          }
+
+          const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
+            '../handlers/register': RegisterHandlersStub,
+            '@hapi/catbox-memory': EngineStub,
+            '@hapi/hapi': HapiStubThrowError,
+            'hapi-openapi': HapiOpenAPIStub,
+            path: PathStub,
+            '../lib/db': DbStub,
+            '../models/lib/enums': EnumsStub,
+            '../lib/config': ConfigStub
+          })
+
+          const settlementwindowHandler = {
+            type: 'settlementwindow',
+            enabled: true
+          }
+
+          const modulesList = [
+            settlementwindowHandler
+          ]
+
+          const port = await getPort()
+          const server = await SetupProxy1.initialize({ service: 'handler', port, modules: [], runHandlers: true, handlers: modulesList })
+          test.ok(server, 'return server object')
+          test.ok(RegisterHandlersStub.settlementWindow.registerSettlementWindowHandler.called)
+          test.end()
+        } catch (err) {
+          Logger.error(`init failed with error - ${err}`)
+          test.fail(`Should have not received an error: ${err}`)
+          test.end()
+        }
+      })
+
+      await initTest.test('test - handler service type, run handlers true a handler list and incorrect handler type', async test => {
+        try {
+          const errorToThrow = new Error('Throw Boom error')
+
+          const HapiStubThrowError = {
+            Server: sandbox.stub().callsFake((opt) => {
+              opt.routes.validate.failAction(sandbox.stub(), sandbox.stub(), errorToThrow)
+              return serverStub
+            })
+          }
+
+          const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
+            '../handlers/register': RegisterHandlersStub,
+            '@hapi/catbox-memory': EngineStub,
+            '@hapi/hapi': HapiStubThrowError,
+            'hapi-openapi': HapiOpenAPIStub,
+            path: PathStub,
+            '../lib/db': DbStub,
+            '../models/lib/enums': EnumsStub,
+            '../lib/config': ConfigStub
+          })
+
+          const settlementwindowHandler = {
+            type: 'invalidWindow',
+            enabled: true
+          }
+
+          const modulesList = [
+            settlementwindowHandler
+          ]
+
+          const port = await getPort()
+          const server = await SetupProxy1.initialize({ service: 'handler', port, modules: [], runHandlers: true, handlers: modulesList })
+          test.ok(server, 'return server object')
+          test.ok(RegisterHandlersStub.settlementWindow.registerSettlementWindowHandler.called)
+          test.end()
+        } catch (err) {
+          Logger.error(`init failed with error - ${err}`)
+          test.pass(`Should have failed with an error: ${err}`)
+          test.end()
+        }
+      })
+
       await initTest.test('test - handler service type and run handlers true', async test => {
         try {
           const errorToThrow = new Error('Throw Boom error')
@@ -216,7 +304,6 @@ Test('Server Setup', async setupTest => {
           test.end()
         }
       })
-      // maw
 
       await initTest.test('test 1 - invalid service type', async test => {
         try {
