@@ -692,21 +692,35 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           test.end()
         }
       })
-
-      /* await closeTest.test('close the specified open window succesfully.', async test => {
+      const knexStub = sandbox.stub()
+      knexStub.raw = sandbox.stub()
+      sandbox.stub(Db, 'getKnex').returns(knexStub)
+      await closeTest.test('close the specified open window successfully.', async test => {
         try {
-          // TransferService.prepare.returns(Promise.resolve(true))
-          // const error = new Error('An error has occurred')
-          // TransferService.prepare.returns(Promise.reject(error))
-          Db.getKnex = sandbox.stub()
           const knexStub = sandbox.stub()
-          const trxStub = sandbox.stub()
-          trxStub.commit = sandbox.stub()
-          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
-          Db.getKnex.returns(knexStub)
-
-          const insertStub = sandbox.stub()
+          knexStub.raw = sandbox.stub()
+          sandbox.stub(Db, 'getKnex').returns(knexStub)
           const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
+          const trxStub = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          const context = sandbox.stub()
+          // sandbox.stub(Db, 'getKnex').returns(knexStub)
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+
+          context.from = sandbox.stub().returns({
+            from: sandbox.stub().returns({
+              join: sandbox.stub().returns({
+                join: sandbox.stub().returns({
+                  where: sandbox.stub().returns({
+                    distinct: sandbox.stub()
+                  })
+                })
+              })
+            })
+          })
+          knexStub.from = sandbox.stub().returns({
+            insert: sandbox.stub().callsArgOn(0, context).returns({ transacting: sandbox.stub() })
+          })
 
           SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
           const result = await SettlementWindowFacade.close(params, enums)
@@ -718,7 +732,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           test.pass('Error thrown')
           test.end()
         }
-      }) */
+      })
 
       await closeTest.end()
     } catch (err) {
