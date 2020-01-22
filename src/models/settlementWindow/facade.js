@@ -175,7 +175,7 @@ const Facade = {
           const transactionTimestamp = new Date()
 
           // Insert settlementWindowContent
-          let builder = knex
+          /* let builder = knex
             .from(knex.raw('settlementWindowContent (settlementWindowId, ledgerAccountTypeId, currencyId, createdDate)'))
             .insert(function () {
               this.from('transferFulfilment AS tf')
@@ -186,10 +186,10 @@ const Facade = {
                   knex.raw('? AS ??', [transactionTimestamp, 'createdDate']))
             })
             .transacting(trx)
-          await builder
+          await builder */
 
           // Insert settlementContentAggregation
-          builder = knex
+          /* builder = knex
             .from(knex.raw('settlementContentAggregation (settlementWindowContentId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, currentStateId, createdDate, amount)'))
             .insert(function () {
               this.from('transferFulfilment AS tf')
@@ -208,10 +208,10 @@ const Facade = {
                 .sum('tp.amount AS amount')
             })
             .transacting(trx)
-          await builder
+          await builder */
 
           // Insert settlementWindowContentStateChange
-          builder = knex
+          /* builder = knex
             .from(knex.raw('settlementWindowContentStateChange (settlementWindowContentId, settlementWindowStateId, reason, createdDate)'))
             .insert(function () {
               this.from('settlementWindowContent AS swc')
@@ -222,10 +222,10 @@ const Facade = {
                   knex.raw('? AS ??', [transactionTimestamp, 'createdDate']))
             })
             .transacting(trx)
-          await builder
+          await builder */
 
           // Update settlementWindowContent pointers to current states, inserted by previous command
-          const settlementWindowContentStateChangeList = await knex('settlementWindowContentStateChange AS swcsc')
+          /* const settlementWindowContentStateChangeList = await knex('settlementWindowContentStateChange AS swcsc')
             .join('settlementWindowContent AS swc', 'swc.settlementWindowContentId', 'swcsc.settlementWindowContentId')
             .select('swc.settlementWindowContentId', 'swcsc.settlementWindowContentStateChangeId')
             .where('swc.settlementWindowId', settlementWindowId)
@@ -240,7 +240,7 @@ const Facade = {
                 .transacting(trx)
             )
           }
-          await Promise.all(updatePromises)
+          await Promise.all(updatePromises) */
 
           const settlementWindowStateChangeId = await knex('settlementWindowStateChange').transacting(trx)
             .insert({
