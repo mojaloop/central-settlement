@@ -22,14 +22,49 @@
  - Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
+
 'use strict'
 
-const Db = require('../../lib/db')
+const Test = require('tapes')(require('tape'))
+const Sinon = require('sinon')
+const Db = require('../../../../src/lib/db')
+const Logger = require('@mojaloop/central-services-logger')
+const Model = require('../../../../src/models/settlement/settlementModel.js')
 
-const getByName = async (name) => {
-  return Db.settlementModel.findOne({ name, isActive: 1 })
-}
+Test('SettlementModelModel', async (settlementModelModelTest) => {
+  let sandbox
 
-module.exports = {
-  getByName
-}
+  settlementModelModelTest.beforeEach(t => {
+    sandbox = Sinon.createSandbox()
+    t.end()
+  })
+
+  settlementModelModelTest.afterEach(t => {
+    sandbox.restore()
+    t.end()
+  })
+
+  settlementModelModelTest.test('getByName should return the settlementModel', async test => {
+    try {
+      const name = 'DEFERRED_NET'
+      const settlementModel = {
+        settlementModelId: 1,
+        name
+      }
+      Db.settlementModel = {
+        findOne: sandbox.stub()
+      }
+      Db.settlementModel.findOne.withArgs({ name, isActive: 1 }).returns(settlementModel)
+
+      const result = await Model.getByName(name)
+      test.deepEqual(result, settlementModel, 'Results Match')
+      test.end()
+    } catch (e) {
+      Logger.error(e)
+      test.fail('Error Thrown')
+      test.end()
+    }
+  })
+
+  settlementModelModelTest.end()
+})

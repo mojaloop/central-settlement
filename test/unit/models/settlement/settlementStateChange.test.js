@@ -18,10 +18,10 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
-  * Georgi Georgiev <georgi.georgiev@modusbox.com>
+ * ModusBox
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
-
 'use strict'
 
 const Test = require('tapes')(require('tape'))
@@ -43,7 +43,7 @@ Test('SettlementStateChangeModel', async (SettlementStateChangeModelTest) => {
     test.end()
   })
 
-  await SettlementStateChangeModelTest.test('settlementModel should', async getBySettlementIdTest => {
+  await SettlementStateChangeModelTest.test('settlementStateChangeModel should', async getBySettlementIdTest => {
     try {
       await getBySettlementIdTest.test('throw error', async test => {
         try {
