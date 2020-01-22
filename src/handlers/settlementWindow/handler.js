@@ -72,8 +72,6 @@ const closeSettlementWindow = async (error, messages) => {
     const payload = message.value.content.payload
     const metadata = message.value.metadata
     const action = metadata.event.action
-    const settlementWindowId = payload.settlementWindowId
-    const reason = payload.reason
 
     const kafkaTopic = message.topic
     const params = { message, kafkaTopic, decodedPayload: payload, consumer: Consumer, producer: Producer }
@@ -88,7 +86,8 @@ const closeSettlementWindow = async (error, messages) => {
       await Kafka.proceed(Config.KAFKA_CONFIG, params, { consumerCommit, fspiopError: fspiopError.toApiErrorObject(Config.ERROR_HANDLING), eventDetail, fromSwitch })
       throw fspiopError
     }
-
+    const settlementWindowId = payload.settlementWindowId
+    const reason = payload.reason
     Logger.info(Utility.breadcrumb(location, 'validationPassed'))
     await Kafka.commitMessageSync(Consumer, kafkaTopic, message)
 
@@ -102,6 +101,7 @@ const closeSettlementWindow = async (error, messages) => {
       Logger.info(Utility.breadcrumb(location, `done--${actionLetter}2`))
       return true
     }, retryOpts)
+    return true
   } catch (err) {
     Logger.error(`${Utility.breadcrumb(location)}::${err.message}--0`)
     return true
