@@ -708,17 +708,23 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
             join: sandbox.stub()
           }
 
+          /* Db.settlementWindowContent = {
+            insert: sandbox.stub()
+          } */
+
           Db.transferParticipant.join.callsArgWith(0, builderStub)
           Db.participantCurrency.join.callsArgWith(0, builderStub)
           Db.settlementWindowContent.join.callsArgWith(0, builderStub)
+          // maw
+          // Db.settlementWindowContent.insert.callsArgWith(1, builderStub)
 
-          const infoDataStub = {
+          /* const infoDataStub = {
             settlementWindowContentId: 4,
             settlementWindowContentStateChangeId: 4
-          }
+          } */
 
           // Insert settlementWindowContent
-          /* context.from = sandbox.stub().returns({
+          context.from = sandbox.stub().returns({
             join: sandbox.stub().returns({
               join: sandbox.stub().returns({
                 where: sandbox.stub().returns({
@@ -729,8 +735,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           })
           knexStub.from = sandbox.stub().returns({
             insert: sandbox.stub().callsArgOn(0, context).returns({ transacting: sandbox.stub() })
-          }) */
-
+          })
           // Insert settlementContentAggregation
           /* context.from = sandbox.stub().returns({
             join: sandbox.stub().returns({
@@ -784,7 +789,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
             })
           }) */
 
-          knexStub.withArgs('settlementWindowStateChange').returns({
+          /* knexStub.withArgs('settlementWindowStateChange').returns({
             transacting: sandbox.stub().returns({
               insert: sandbox.stub().returns(1)
             })
@@ -795,7 +800,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
                 update: sandbox.stub().returns(1)
               })
             })
-          })
+          }) */
 
           SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
           const result = await SettlementWindowFacade.close(params, enums)
