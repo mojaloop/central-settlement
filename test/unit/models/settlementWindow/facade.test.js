@@ -689,10 +689,13 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
       await closeTest.test('close the specified open window successfully.', async test => {
         try {
           const knexStub = sandbox.stub()
+
           knexStub.raw = sandbox.stub()
           Db.getKnex.returns(knexStub)
+
           const trxStub = sandbox.stub()
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+
           const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
           const context = sandbox.stub()
 
@@ -708,23 +711,17 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
             join: sandbox.stub()
           }
 
-          /* Db.settlementWindowContent = {
-            insert: sandbox.stub()
-          } */
-
           Db.transferParticipant.join.callsArgWith(0, builderStub)
           Db.participantCurrency.join.callsArgWith(0, builderStub)
           Db.settlementWindowContent.join.callsArgWith(0, builderStub)
-          // maw
-          // Db.settlementWindowContent.insert.callsArgWith(1, builderStub)
 
-          /* const infoDataStub = {
+          const infoDataStub = {
             settlementWindowContentId: 4,
             settlementWindowContentStateChangeId: 4
-          } */
+          }
 
           // Insert settlementWindowContent
-          context.from = sandbox.stub().returns({
+          /* context.from = sandbox.stub().returns({
             join: sandbox.stub().returns({
               join: sandbox.stub().returns({
                 where: sandbox.stub().returns({
@@ -735,11 +732,14 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           })
           knexStub.from = sandbox.stub().returns({
             insert: sandbox.stub().callsArgOn(0, context).returns({ transacting: sandbox.stub() })
-          })
+          }) */
           // Insert settlementContentAggregation
-          /* context.from = sandbox.stub().returns({
+          context.from = sandbox.stub().returns({
             join: sandbox.stub().returns({
               join: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  distinct: sandbox.stub()
+                }),
                 join: sandbox.stub().returns({
                   where: sandbox.stub().returns({
                     groupBy: sandbox.stub().returns({
@@ -750,6 +750,9 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
                   })
                 })
               })
+            }),
+            where: sandbox.stub().returns({
+              select: sandbox.stub()
             })
           })
           context.on = sandbox.stub().returns({
@@ -759,7 +762,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           })
           knexStub.from = sandbox.stub().returns({
             insert: sandbox.stub().callsArgOn(0, context).returns({ transacting: sandbox.stub() })
-          }) */
+          })
 
           // Insert settlementWindowContentStateChange
           /* context.from = sandbox.stub().returns({
@@ -772,7 +775,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           }) */
 
           // Update settlementWindowContent pointers to current states, inserted by previous command
-          /* knexStub.withArgs('settlementWindowContentStateChange AS swcsc').returns({
+          knexStub.withArgs('settlementWindowContentStateChange AS swcsc').returns({
             join: sandbox.stub().returns({
               select: sandbox.stub().returns({
                 where: sandbox.stub().returns({
@@ -787,9 +790,9 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
                 transacting: sandbox.stub()
               })
             })
-          }) */
+          })
 
-          /* knexStub.withArgs('settlementWindowStateChange').returns({
+          knexStub.withArgs('settlementWindowStateChange').returns({
             transacting: sandbox.stub().returns({
               insert: sandbox.stub().returns(1)
             })
@@ -800,7 +803,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
                 update: sandbox.stub().returns(1)
               })
             })
-          }) */
+          })
 
           SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
           const result = await SettlementWindowFacade.close(params, enums)
