@@ -44,6 +44,7 @@
         "hapi-auth-bearer-token": "6.2.1",
         "hapi-openapi": "1.2.6",
         "hapi-pagination": "3.0.0",
+        "lodash": "4.17.15",
         "mustache": "4.0.0",
         "parse-strings-in-object": "2.0.0",
         "rc": "1.2.8",

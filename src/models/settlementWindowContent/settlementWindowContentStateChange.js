@@ -18,57 +18,32 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Modusbox
- - Deon Botha <deon.botha@modusbox.com>
+ * ModusBox
  - Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
-
 'use strict'
 
-const Test = require('tapes')(require('tape'))
-const Sinon = require('sinon')
+const Db = require('../../lib/db')
 
-const Config = require('../../../../src/lib/config')
-const Routes = require('../../../../src/api/routes')
-const Setup = require('../../../../src/shared/setup')
-
-Test('Api index', indexTest => {
-  let sandbox
-
-  indexTest.beforeEach(test => {
-    sandbox = Sinon.createSandbox()
-    sandbox.stub(Setup)
-    test.end()
+const create = async ({ settlementWindowContentId, state, reason }, enums = {}) => {
+  return Db.settlementWindowContentStateChange.insert({
+    settlementWindowContentId,
+    settlementWindowStateId: enums[state.toUpperCase()],
+    reason
   })
+}
 
-  indexTest.afterEach(test => {
-    sandbox.restore()
-    test.end()
-  })
+const getBySettlementWindowContentId = async (id) => {
+  const knex = await Db.getKnex()
+  return knex('settlementWindowContentStateChange')
+    .where('settlementWindowContentId', id)
+    .orderBy('settlementWindowContentStateChangeId', 'desc')
+    .select('*')
+    .first()
+}
 
-  indexTest.test('export should', exportTest => {
-    exportTest.test('initialize server', async function (test) {
-      const server = {
-        start: sandbox.stub(),
-        info: {
-          uri: ''
-        }
-      }
-
-      server.start.returns(Promise.resolve({}))
-      Setup.initialize.returns(Promise.resolve(server))
-      await require('../../../../src/api/index')
-      test.ok(Setup.initialize.calledWith({
-        service: 'api',
-        port: Config.PORT,
-        runHandlers: !Config.HANDLERS_DISABLED,
-        modules: [Routes]
-      }))
-      test.end()
-    })
-    exportTest.end()
-  })
-
-  indexTest.end()
-})
+module.exports = {
+  create,
+  getBySettlementWindowContentId
+}

@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "version": "1.1.0",
+        "version": "1.9.1",
         "title": "MOJALOOP Central Settlements",
         "description": "Mojaloop API for Settlements."
     },
@@ -1058,6 +1058,9 @@
         "SettlementEventPayload": {
             "type": "object",
             "properties": {
+                "settlementModel": {
+                    "type": "string"
+                },
                 "reason": {
                     "type": "string"
                 },
@@ -1071,6 +1074,7 @@
                 }
             },
             "required": [
+                "settlementModel",
                 "reason",
                 "settlementWindows"
             ]
@@ -1103,11 +1107,47 @@
                 },
                 "changedDate": {
                     "type": "string"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SettlementWindowContent"
+                    }
                 }
             },
             "required": [
                 "id",
                 "state",
+                "createdDate"
+            ]
+        },
+        "SettlementWindowContent": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "ledgerAccountType": {
+                    "type": "string"
+                },
+                "currencyId": {
+                    "type": "string"
+                },
+                "createdDate": {
+                    "type": "string"
+                },
+                "changedDate": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "state",
+                "ledgerAccountType",
+                "currencyId",
                 "createdDate"
             ]
         },

@@ -66,11 +66,14 @@ module.exports = {
   post: async function createSettlementEvent (request, h) {
     try {
       const Enums = {
+        ledgerEntryTypes: await request.server.methods.enums('ledgerEntryTypes'),
+        settlementDelay: await request.server.methods.enums('settlementDelay'),
+        settlementGranularity: await request.server.methods.enums('settlementGranularity'),
+        settlementInterchange: await request.server.methods.enums('settlementInterchange'),
         settlementStates: await request.server.methods.enums('settlementStates'),
         settlementWindowStates: await request.server.methods.enums('settlementWindowStates'),
-        transferStates: await request.server.methods.enums('transferStates'),
         transferParticipantRoleTypes: await request.server.methods.enums('transferParticipantRoleTypes'),
-        ledgerEntryTypes: await request.server.methods.enums('ledgerEntryTypes')
+        transferStates: await request.server.methods.enums('transferStates')
       }
       const settlementResult = await Settlements.settlementEventTrigger(request.payload, Enums)
       return h.response(settlementResult)

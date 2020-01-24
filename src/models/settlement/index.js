@@ -22,15 +22,14 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Georgi Georgiev <georgi.georgiev@modusbox.com>
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- * Miguel de Barros <miguel.debarros@modusbox.com>
-
+ * ModusBox
+ - Deon Botha <deon.botha@modusbox.com>
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
+ - Miguel de Barros <miguel.debarros@modusbox.com>
+ - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
-
 'use strict'
 
 const settlementFacade = require('./facade')
@@ -41,7 +40,7 @@ const settlementParticipantCurrencyModel = require('./settlementParticipantCurre
 
 module.exports = {
   create: settlementModel.create,
-  triggerEvent: settlementFacade.knexTriggerEvent,
+  triggerSettlementEvent: settlementFacade.triggerSettlementEvent,
   getByParams: settlementFacade.getByParams,
   getById: settlementFacade.getById,
   putById: settlementFacade.putById,

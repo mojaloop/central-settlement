@@ -22,22 +22,25 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Georgi Georgiev <georgi.georgiev@modusbox.com>
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- * Miguel de Barros <miguel.debarros@modusbox.com>
+ * ModusBox
+ - Deon Botha <deon.botha@modusbox.com>
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
+ - Miguel de Barros <miguel.debarros@modusbox.com>
+ - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Valentin Genev <valentin.genev@modusbox.com>
 
  --------------
  ******/
-
 'use strict'
 
+const arrayDiff = require('lodash').difference
 const SettlementModel = require('../../models/settlement')
+const SettlementModelModel = require('../../models/settlement/settlementModel')
+const SettlementWindowContentModel = require('../../models/settlementWindowContent')
 const SettlementWindowModel = require('../../models/settlementWindow')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
-const prepareParticipantsResult = function (participantCurrenciesList) {
+const prepareParticipantsResult = (participantCurrenciesList) => {
   const participantAccounts = {}
   for (const account of participantCurrenciesList) {
     const { id } = account
@@ -65,6 +68,20 @@ const prepareParticipantsResult = function (participantCurrenciesList) {
     }
   }
   return Array.from(Object.keys(participantAccounts).map(participantId => participantAccounts[participantId]))
+}
+
+const groupSettlementWindowContentBySettlementWindow = (records) => {
+  const settlementWindows = {}
+  for (const record of records) {
+    const id = record.settlementWindowId
+    delete record.settlementWindowId
+    if (id in settlementWindows) {
+      settlementWindows[id].push(record)
+    } else {
+      settlementWindows[id] = [record]
+    }
+  }
+  return settlementWindows
 }
 
 module.exports = {
@@ -171,34 +188,48 @@ module.exports = {
   },
 
   settlementEventTrigger: async function (params, enums) {
-    const settlementWindowsIdList = params.settlementWindows
-    const reason = params.reason
-    const idList = settlementWindowsIdList.map(v => v.id)
-    // validate windows state
-    const settlementWindows = await SettlementWindowModel.getByListOfIds(idList, enums.settlementWindowStates)
-    if (settlementWindows && settlementWindows.length !== idList.length) {
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'At least one provided settlement window does not exist')
+    // validate settlement model
+    const { settlementModel, reason, settlementWindows } = params
+    const settlementModelData = await SettlementModelModel.getByName(settlementModel)
+    if (!settlementModelData) {
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement model not found')
+    } else if (settlementModelData.settlementGranularityId !== enums.settlementGranularity.NET ||
+      settlementModelData.settlementInterchangeId !== enums.settlementInterchange.MULTILATERAL ||
+      settlementModelData.settlementDelayId !== enums.settlementDelay.DEFERRED) {
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid settlement model')
     }
 
-    for (const settlementWindow of settlementWindows) {
-      const { state } = settlementWindow
-      if (state !== enums.settlementWindowStates.CLOSED &&
-          state !== enums.settlementWindowStates.ABORTED) {
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'At least one settlement window is not in closed or aborted state')
-      }
+    // validate windows content
+    const idList = settlementWindows.map(v => v.id)
+    const applicableWindows = await SettlementWindowModel.getByListOfIds(idList, settlementModelData, enums.settlementWindowStates)
+    const applicableIdList = applicableWindows.map(v => v.settlementWindowId)
+    const nonApplicableIdList = arrayDiff(idList, applicableIdList)
+    if (nonApplicableIdList.length) {
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Inapplicable windows ${nonApplicableIdList.join(', ')}`)
     }
-    const settlementId = await SettlementModel.triggerEvent({ idList, reason }, enums)
+
+    // settlement event trigger
+    const settlementId = await SettlementModel.triggerSettlementEvent({ idList, reason }, settlementModelData, enums)
+
+    // retrieve resulting data for response
     const settlement = await SettlementModel.getById({ settlementId })
     const settlementWindowsList = await SettlementWindowModel.getBySettlementId({ settlementId })
+    const settlementWindowContentAll = await SettlementWindowContentModel.getBySettlementId(settlementId)
+    const settlementWindowsContent = groupSettlementWindowContentBySettlementWindow(settlementWindowContentAll)
+    const settlementWindowsWithContent = settlementWindowsList.map(record => {
+      record.content = settlementWindowsContent[record.id]
+      return record
+    })
     const participantCurrenciesList = await SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({ settlementId })
     const participants = prepareParticipantsResult(participantCurrenciesList)
     return {
       id: settlement.settlementId,
+      settlementModel,
       state: settlement.state,
       reason: settlement.reason,
       createdDate: settlement.createdDate,
       changedDate: settlement.changedDate,
-      settlementWindows: settlementWindowsList,
+      settlementWindows: settlementWindowsWithContent,
       participants
     }
   },
