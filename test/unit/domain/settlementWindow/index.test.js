@@ -175,5 +175,33 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
     }
   })
 
+  await settlementWindowServiceTest.test('close should', async processTest => {
+    try {
+      const settlementWindowIdMock = 1
+      const settlementWindowMock = { settlementWindowId: settlementWindowIdMock, state: 'PROCESSING' }
+      Producer.produceMessage = sandbox.stub()
+
+      await processTest.test('close settlement window and return it', async test => {
+        try {
+          SettlementWindowModel.close = sandbox.stub().returns(settlementWindowIdMock)
+          SettlementWindowModel.getById = sandbox.stub().returns(settlementWindowMock)
+
+          const result = await SettlementWindowService.close(settlementWindowIdMock, '')
+          test.ok(result, 'Result returned')
+          test.end()
+        } catch (err) {
+          Logger.error(`processTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+      await processTest.end()
+    } catch (err) {
+      Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
+      processTest.fail()
+      processTest.end()
+    }
+  })
+
   await settlementWindowServiceTest.end()
 })
