@@ -50,7 +50,8 @@ const Facade = {
   getTransfersCount: async function ({ settlementWindowId }) {
     return Db.transferFulfilment.query(builder => {
       return builder
-        .count('* as cnt').first()
+        .count('* as cnt')
+        .first()
         .where('transferFulfilment.settlementWindowId', settlementWindowId)
     })
   },
