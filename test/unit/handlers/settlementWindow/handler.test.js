@@ -18,7 +18,9 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Lazola Lucas <lazola.lucas@modusbox.com>
+ * ModusBox
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
+ - Lazola Lucas <lazola.lucas@modusbox.com>
  --------------
  ******/
 'use strict'
@@ -33,6 +35,7 @@ const Uuid = require('uuid4')
 const Enum = require('@mojaloop/central-services-shared').Enum
 const SettlementWindowService = require('../../../../src/domain/settlementWindow/index')
 const SettlementWindowHandler = require('../../../../src/handlers/settlementWindow/handler')
+const Proxyquire = require('proxyquire')
 
 const payload = {
   settlementWindowId: '3',
@@ -242,7 +245,13 @@ Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
       SettlementWindowService.close.returns(Promise.resolve(openSettlementWindow))
-      const result = await SettlementWindowHandler.closeSettlementWindow(null, localMessages[0])
+
+      const retryStub = sandbox.stub().callsArg(0)
+      const SettlementWindowHandlerProxy = Proxyquire('../../../../src/handlers/settlementWindow/handler', {
+        'async-retry': retryStub
+      })
+
+      const result = await SettlementWindowHandlerProxy.closeSettlementWindow(null, localMessages[0])
       test.equal(result, true)
       test.end()
     })
@@ -255,7 +264,13 @@ Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
       SettlementWindowService.close.returns(Promise.resolve(openSettlementWindow))
-      const result = await SettlementWindowHandler.closeSettlementWindow(null, localMessages[0])
+
+      const retryStub = sandbox.stub().callsArg(0)
+      const SettlementWindowHandlerProxy = Proxyquire('../../../../src/handlers/settlementWindow/handler', {
+        'async-retry': retryStub
+      })
+
+      const result = await SettlementWindowHandlerProxy.closeSettlementWindow(null, localMessages[0])
       test.equal(result, true)
       test.end()
     })
@@ -271,9 +286,7 @@ Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
         test.ok('Error is thrown')
         test.end()
       }
-    }
-
-    )
+    })
 
     closeSettlementWindowTest.test('throw -Settlement window handler missing payload- when the payload is missing', async (test) => {
       const localMessages = Util.clone(messagesMissingPayload)

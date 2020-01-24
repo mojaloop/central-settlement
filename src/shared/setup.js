@@ -101,15 +101,13 @@ const createServer = async function (port, modules) {
     await server.register(modules)
     await server.start()
 
-    if (server) {
-      try {
-        server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
-        server.log('info', `Server running on ${server.info.host}:${server.info.port}`)
-        return server
-      } catch (e) {
-        server.log('error', e.message)
-        throw e
-      }
+    try {
+      server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
+      server.log('info', `Server running on ${server.info.host}:${server.info.port}`)
+      return server
+    } catch (e) {
+      server.log('error', e.message)
+      throw e
     }
   } catch (e) {
     console.error(e)
