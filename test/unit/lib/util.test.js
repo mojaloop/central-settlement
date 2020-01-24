@@ -16,58 +16,49 @@
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
  * Gates Foundation
- - Name Surname <name.surname@gatesfoundation.com>
+ * Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
 
 'use strict'
 
-const Package = require('../package')
-const Inert = require('@hapi/inert')
-const Vision = require('@hapi/vision')
-const Blipp = require('blipp')
-const ErrorHandling = require('@mojaloop/central-services-error-handling')
-const CentralServices = require('@mojaloop/central-services-shared')
-const RawPayloadToDataUri = require('@mojaloop/central-services-shared').Util.Hapi.HapiRawPayload
-/**
- * @module src/shared/plugin
- */
+const Test = require('tapes')(require('tape'))
+const Sinon = require('sinon')
+const LibUtil = require('../../../src/lib/util')
 
-const registerPlugins = async (server) => {
-  await server.register({
-    plugin: require('hapi-swagger'),
-    options: {
-      info: {
-        title: 'ml api adapter API Documentation',
-        version: Package.version
-      }
-    }
-  })
-
-  await server.register({
-    plugin: require('@hapi/good'),
-    options: {
-      ops: {
-        interval: 10000
-      }
-    }
-  })
-
-  await server.register({
-    plugin: require('@hapi/basic')
-  })
-
-  await server.register({
-    plugin: require('@now-ims/hapi-now-auth')
-  })
-
-  await server.register({
-    plugin: require('hapi-auth-bearer-token')
-  })
-
-  await server.register([Inert, Vision, Blipp, ErrorHandling, RawPayloadToDataUri, CentralServices.Util.Hapi.HapiEventPlugin])
+const headers = {
+  'fspiop-source': 'source',
+  'fspiop-destination': 'destination'
 }
+const transactionType = 'transactionType'
+const transactionAction = 'transactionAction'
 
-module.exports = {
-  registerPlugins
-}
+Test('/util', async (utilTest) => {
+  let sandbox
+  utilTest.beforeEach(async t => {
+    sandbox = Sinon.createSandbox()
+    t.end()
+  })
+
+  utilTest.afterEach(async t => {
+    sandbox.restore()
+    t.end()
+  })
+
+  utilTest.test('getSpanTags should', getSpanTagsTest => {
+    getSpanTagsTest.test('return a tag object', test => {
+      const expected = {
+        source: 'source',
+        destination: 'destination',
+        transactionType: 'transactionType',
+        transactionAction: 'transactionAction'
+      }
+      const result = LibUtil.getSpanTags({ headers }, transactionType, transactionAction)
+      test.deepEqual(result, expected, 'is equal')
+      test.end()
+    })
+    getSpanTagsTest.end()
+  })
+
+  await utilTest.end()
+})
