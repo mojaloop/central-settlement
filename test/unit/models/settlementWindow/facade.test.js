@@ -593,34 +593,6 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
     }
   })
 
-  await settlementWindowFacadeTest.test('getTransfersCount should', async getTransfersCountTest => {
-    try {
-      const settlementWindowId = 1
-      const settlementWindowResultStub = () => { return { cnt: 1 } }
-
-      await getTransfersCountTest.test('retrieve number of transfers per settlement window id', async test => {
-        try {
-          Db.transferFulfilment = {
-            query: settlementWindowResultStub
-          }
-          // Db.transferFulfilment.query.returns(Promise.resolve(settlementWindowResultStub))
-          const result = await SettlementWindowFacade.getTransfersCount({ settlementWindowId })
-          test.ok(result, { cnt: 1 })
-          test.end()
-        } catch (err) {
-          Logger.error(`getTransfersCountTest failed with error - ${err}`)
-          test.fail()
-          test.end()
-        }
-      })
-      await getTransfersCountTest.end()
-    } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
-      getTransfersCountTest.fail()
-      getTransfersCountTest.end()
-    }
-  })
-
   await settlementWindowFacadeTest.test('close should', async closeTest => {
     try {
       const settlementWindowId = 1
@@ -677,7 +649,6 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
           const result = await SettlementWindowFacade.close(params, enums)
           test.ok(result, 'Result returned')
-          // test.ok(SettlementWindowFacade.getById.withArgs({ settlementWindowId }).calledOnce)
           test.end()
         } catch (err) {
           Logger.error('Close settlementwindow failed with error : ' + err)
@@ -689,13 +660,10 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
       await closeTest.test('close the specified open window successfully.', async test => {
         try {
           const knexStub = sandbox.stub()
-
           knexStub.raw = sandbox.stub()
           Db.getKnex.returns(knexStub)
-
           const trxStub = sandbox.stub()
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
-
           const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
           const context = sandbox.stub()
 
@@ -720,19 +688,6 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
             settlementWindowContentStateChangeId: 4
           }
 
-          // Insert settlementWindowContent
-          /* context.from = sandbox.stub().returns({
-            join: sandbox.stub().returns({
-              join: sandbox.stub().returns({
-                where: sandbox.stub().returns({
-                  distinct: sandbox.stub()
-                })
-              })
-            })
-          })
-          knexStub.from = sandbox.stub().returns({
-            insert: sandbox.stub().callsArgOn(0, context).returns({ transacting: sandbox.stub() })
-          }) */
           // Insert settlementContentAggregation
           context.from = sandbox.stub().returns({
             join: sandbox.stub().returns({
@@ -747,7 +702,8 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
                         sum: sandbox.stub()
                       })
                     })
-                  })
+                  }),
+                  join: sandbox.stub().callsArgOn(1, context).returns()
                 })
               })
             }),
@@ -763,16 +719,6 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           knexStub.from = sandbox.stub().returns({
             insert: sandbox.stub().callsArgOn(0, context).returns({ transacting: sandbox.stub() })
           })
-
-          // Insert settlementWindowContentStateChange
-          /* context.from = sandbox.stub().returns({
-            where: sandbox.stub().returns({
-              select: sandbox.stub()
-            })
-          })
-          knexStub.from = sandbox.stub().returns({
-            insert: sandbox.stub().callsArgOn(0, context).returns({ transacting: sandbox.stub() })
-          }) */
 
           // Update settlementWindowContent pointers to current states, inserted by previous command
           knexStub.withArgs('settlementWindowContentStateChange AS swcsc').returns({
@@ -808,7 +754,6 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
           const result = await SettlementWindowFacade.close(params, enums)
           test.ok(result, true)
-          // test.ok(SettlementWindowFacade.getById.withArgs({ settlementWindowId }).calledOnce)
           test.end()
         } catch (err) {
           Logger.error('Close settlementwindow failed with error : ' + err)
@@ -816,6 +761,43 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           test.end()
         }
       })
+      await closeTest.end()
+    } catch (err) {
+      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      closeTest.fail()
+      closeTest.end()
+    }
+  })
+
+  await settlementWindowFacadeTest.test('getTransfersCount should', async closeTest => {
+    try {
+      await closeTest.test('should return the number of transfers in a window.', async test => {
+        try {
+          const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub()
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          const firstStub = sandbox.stub()
+          const whereStub = sandbox.stub()
+          const builderStub = sandbox.stub()
+          builderStub.count = sandbox.stub()
+          builderStub.count.returns({
+            first: firstStub.returns({
+              where: whereStub.returns(1)
+            })
+          })
+          Db.transferFulfilment.query.callsArgWith(0, builderStub)
+
+          const result = await SettlementWindowFacade.getTransfersCount({ settlementWindowId: 1 })
+          test.ok(result, 'Result returned')
+          test.end()
+        } catch (err) {
+          Logger.error('getTransferCount failed with error : ' + err)
+          test.pass('Error thrown as expected')
+          test.end()
+        }
+      })
+
       await closeTest.end()
     } catch (err) {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)

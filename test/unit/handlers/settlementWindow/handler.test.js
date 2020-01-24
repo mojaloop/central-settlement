@@ -88,6 +88,31 @@ const messageProtocol = {
   pp: ''
 }
 
+const messageProtocolActionNotClosed = {
+  id: Uuid(),
+  from: transfer.payerFsp,
+  to: transfer.payeeFsp,
+  type: 'application/json',
+  content: {
+    headers: { 'fspiop-destination': transfer.payerFsp },
+    uriParams: { id: transfer.transferId },
+    payload
+  },
+  metadata: {
+    event: {
+      id: Uuid(),
+      type: 'settlement',
+      action: 'notClose',
+      createdAt: new Date(),
+      state: {
+        status: 'success',
+        code: 0
+      }
+    }
+  },
+  pp: ''
+}
+
 const messageProtocolMissingPayload = {
   id: Uuid(),
   from: transfer.payerFsp,
@@ -118,6 +143,13 @@ const messages = [
   {
     topic: topicName,
     value: messageProtocol
+  }
+]
+
+const messagesActionNotClosed = [
+  {
+    topic: topicName,
+    value: messageProtocolActionNotClosed
   }
 ]
 const messagesMissingPayload = [
@@ -206,6 +238,19 @@ Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
         state: Enum.Settlements.SettlementWindowState.OPEN
       }
       const localMessages = Util.clone(messages)
+      await Consumer.createHandler(topicName, config, command)
+      Kafka.transformAccountToTopicName.returns(topicName)
+      Kafka.proceed.returns(true)
+      SettlementWindowService.close.returns(Promise.resolve(openSettlementWindow))
+      const result = await SettlementWindowHandler.closeSettlementWindow(null, localMessages[0])
+      test.equal(result, true)
+      test.end()
+    })
+    closeSettlementWindowTest.test('retry when the settlement window state is not CLOSED and the action is not closed', async (test) => {
+      const openSettlementWindow = {
+        state: Enum.Settlements.SettlementWindowState.OPEN
+      }
+      const localMessages = Util.clone(messagesActionNotClosed)
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
