@@ -185,6 +185,40 @@ Test('Server Setup', async setupTest => {
         }
       })
 
+      await initTest.test('test 2 - handler', async test => {
+        try {
+          const errorToThrow = new Error('Throw Boom error')
+
+          const HapiStubThrowError = {
+            Server: sandbox.stub().callsFake((opt) => {
+              opt.routes.validate.failAction(sandbox.stub(), sandbox.stub(), errorToThrow)
+              return serverStub
+            })
+          }
+
+          const Config2Stub = Object.assign({}, ConfigStub)
+          Config2Stub.HANDLERS_API_DISABLED = true
+          const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
+            '@hapi/catbox-memory': EngineStub,
+            '@hapi/hapi': HapiStubThrowError,
+            'hapi-openapi': HapiOpenAPIStub,
+            path: PathStub,
+            '../lib/db': DbStub,
+            '../models/lib/enums': EnumsStub,
+            '../lib/config': Config2Stub
+          })
+
+          const port = await getPort()
+          const server = await SetupProxy1.initialize({ service: 'handler', port })
+          test.notok(server, 'not create server object')
+          test.end()
+        } catch (err) {
+          Logger.error(`init failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
       await initTest.test('test - handler service type, run handlers true and a handler list', async test => {
         try {
           const errorToThrow = new Error('Throw Boom error')
@@ -211,9 +245,14 @@ Test('Server Setup', async setupTest => {
             type: 'settlementwindow',
             enabled: true
           }
+          const fakeHandler = {
+            type: 'fake',
+            enabled: false
+          }
 
           const modulesList = [
-            settlementwindowHandler
+            settlementwindowHandler,
+            fakeHandler
           ]
 
           const port = await getPort()
