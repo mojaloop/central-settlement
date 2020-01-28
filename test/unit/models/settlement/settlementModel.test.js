@@ -18,47 +18,53 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Georgi Georgiev <georgi.georgiev@modusbox.com>
+ * ModusBox
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
 
 'use strict'
 
 const Test = require('tapes')(require('tape'))
+const Sinon = require('sinon')
+const Db = require('../../../../src/lib/db')
 const Logger = require('@mojaloop/central-services-logger')
-const cloneDeep = require('../../../src/utils/cloneDeep')
+const Model = require('../../../../src/models/settlement/settlementModel.js')
 
-Test('cloneDeep utility', (cloneDeepTest) => {
-  const input = {
-    prop1: 'value',
-    prop2: {
-      prop21: 'deep21'
-    },
-    prop3: null,
-    prop4: [1, 2, 3],
-    prop5: Object.create({ notOwn: true })
-  }
+Test('SettlementModelModel', async (settlementModelModelTest) => {
+  let sandbox
 
-  cloneDeepTest.test('should copy object', test => {
+  settlementModelModelTest.beforeEach(t => {
+    sandbox = Sinon.createSandbox()
+    t.end()
+  })
+
+  settlementModelModelTest.afterEach(t => {
+    sandbox.restore()
+    t.end()
+  })
+
+  settlementModelModelTest.test('getByName should return the settlementModel', async test => {
     try {
-      const result = cloneDeep(input)
-      test.deepEqual(result, input, 'result matches the input')
-      result.prop2.prop21 = 'test'
-      test.notDeepEqual(result, input, 'result does not match the input after deep change')
-      const objAssign = Object.assign({}, input)
-      test.deepEqual(objAssign, input, 'object assign copied the object')
-      objAssign.prop2.prop21 = 'test'
-      test.deepEqual(objAssign, input, 'change in objAssign deep property affected the input')
-      test.deepEqual(result, input, 'now result matches the input')
-      test.ok(input.prop5.notOwn, 'not own property present in the input')
-      test.notOk(result.prop5.notOwn, 'not own property not copied')
+      const name = 'DEFERRED_NET'
+      const settlementModel = {
+        settlementModelId: 1,
+        name
+      }
+      Db.settlementModel = {
+        findOne: sandbox.stub()
+      }
+      Db.settlementModel.findOne.withArgs({ name, isActive: 1 }).returns(settlementModel)
+
+      const result = await Model.getByName(name)
+      test.deepEqual(result, settlementModel, 'Results Match')
       test.end()
-    } catch (err) {
-      Logger.error(`cloneDeep failed with error - ${err}`)
-      test.fail()
+    } catch (e) {
+      Logger.error(e)
+      test.fail('Error Thrown')
       test.end()
     }
   })
 
-  cloneDeepTest.end()
+  settlementModelModelTest.end()
 })

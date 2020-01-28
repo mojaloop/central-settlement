@@ -694,6 +694,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
           const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
           const context = sandbox.stub()
+          const context2 = sandbox.stub()
 
           Db.transferParticipant = {
             join: sandbox.stub()
@@ -717,21 +718,25 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           }
 
           // Insert settlementContentAggregation
+          context2.on = sandbox.stub().returns({
+            on: sandbox.stub().returns({
+              on: sandbox.stub()
+            })
+          })
           context.from = sandbox.stub().returns({
             join: sandbox.stub().returns({
               join: sandbox.stub().returns({
                 where: sandbox.stub().returns({
                   distinct: sandbox.stub()
                 }),
-                join: sandbox.stub().returns({
+                join: sandbox.stub().callsArgOn(1, context2).returns({
                   where: sandbox.stub().returns({
                     groupBy: sandbox.stub().returns({
                       select: sandbox.stub().returns({
                         sum: sandbox.stub()
                       })
                     })
-                  }),
-                  join: sandbox.stub().callsArgOn(1, context).returns()
+                  })
                 })
               })
             }),
@@ -739,11 +744,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
               select: sandbox.stub()
             })
           })
-          context.on = sandbox.stub().returns({
-            on: sandbox.stub().returns({
-              on: sandbox.stub()
-            })
-          })
+
           knexStub.from = sandbox.stub().returns({
             insert: sandbox.stub().callsArgOn(0, context).returns({ transacting: sandbox.stub() })
           })

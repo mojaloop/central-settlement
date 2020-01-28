@@ -396,5 +396,251 @@ Test('Enums', async (enumsTest) => {
     }
   })
 
+  await enumsTest.test('settlementDelay should', async settlementDelayTest => {
+    try {
+      await settlementDelayTest.test('return', async test => {
+        try {
+          const delays = [
+            { settlementDelayId: 1, name: 'IMMEDIATE' }
+          ]
+          Db.settlementDelay = { find: sandbox.stub().returns(delays) }
+          let settlementDelays = await Enums.settlementDelay()
+          test.equal(Object.keys(settlementDelays).length, delays.length, 'settlement delays')
+          Db.settlementDelay.find = sandbox.stub().returns(undefined)
+          settlementDelays = await Enums.settlementDelay()
+          test.notOk(settlementDelays, 'undefined when no record is returned')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementDelay failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await settlementDelayTest.test('throw error if database is unavailable', async test => {
+        try {
+          Db.settlementDelay = { find: sandbox.stub().throws(new Error('Database unavailable')) }
+          await Enums.settlementDelay()
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementDelay failed with error - ${err}`)
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+      await settlementDelayTest.end()
+    } catch (err) {
+      Logger.error(`enumsTest failed with error - ${err}`)
+      settlementDelayTest.fail()
+      settlementDelayTest.end()
+    }
+  })
+
+  await enumsTest.test('settlementDelayEnum should', async settlementDelayEnumTest => {
+    try {
+      await settlementDelayEnumTest.test('return', async test => {
+        try {
+          const delays = [
+            { settlementDelayId: 1, name: 'IMMEDIATE' }
+          ]
+          Db.settlementDelay = { find: sandbox.stub().returns(delays) }
+          let settlementDelayEnum = await Enums.settlementDelayEnums()
+          test.equal(Object.keys(settlementDelayEnum).length, delays.length, 'settlement delay enum')
+          Db.settlementDelay.find = sandbox.stub().returns(undefined)
+          settlementDelayEnum = await Enums.settlementDelayEnums()
+          test.notOk(settlementDelayEnum, 'undefined when no record is returned')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementDelay failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await settlementDelayEnumTest.test('throw error if database is unavailable', async test => {
+        try {
+          Db.settlementDelay = { find: sandbox.stub().throws(new Error('Database unavailable')) }
+          await Enums.settlementDelayEnums()
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementDelay failed with error - ${err}`)
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+      await settlementDelayEnumTest.end()
+    } catch (err) {
+      Logger.error(`enumsTest failed with error - ${err}`)
+      settlementDelayEnumTest.fail()
+      settlementDelayEnumTest.end()
+    }
+  })
+
+  await enumsTest.test('settlementGranularity should', async settlementGranularityTest => {
+    try {
+      await settlementGranularityTest.test('return', async test => {
+        try {
+          const granularityList = [
+            { settlementGranularityId: 1, name: 'GROSS' }
+          ]
+          Db.settlementGranularity = { find: sandbox.stub().returns(granularityList) }
+          let settlementGranularityList = await Enums.settlementGranularity()
+          test.equal(Object.keys(settlementGranularityList).length, granularityList.length, 'settlement granularity list')
+          Db.settlementGranularity.find = sandbox.stub().returns(undefined)
+          settlementGranularityList = await Enums.settlementGranularity()
+          test.notOk(settlementGranularityList, 'undefined when no record is returned')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementGranularity failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await settlementGranularityTest.test('throw error if database is unavailable', async test => {
+        try {
+          Db.settlementGranularity = { find: sandbox.stub().throws(new Error('Database unavailable')) }
+          await Enums.settlementGranularity()
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementGranularity failed with error - ${err}`)
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+      await settlementGranularityTest.end()
+    } catch (err) {
+      Logger.error(`enumsTest failed with error - ${err}`)
+      settlementGranularityTest.fail()
+      settlementGranularityTest.end()
+    }
+  })
+
+  await enumsTest.test('settlementGranularityEnum should', async settlementGranularityEnumTest => {
+    try {
+      await settlementGranularityEnumTest.test('return', async test => {
+        try {
+          const granularityList = [
+            { settlementGranularityId: 1, name: 'GROSS' }
+          ]
+          Db.settlementGranularity = { find: sandbox.stub().returns(granularityList) }
+          let settlementGranularityEnum = await Enums.settlementGranularityEnums()
+          test.equal(Object.keys(settlementGranularityEnum).length, granularityList.length, 'settlement Granularity enum')
+          Db.settlementGranularity.find = sandbox.stub().returns(undefined)
+          settlementGranularityEnum = await Enums.settlementGranularityEnums()
+          test.notOk(settlementGranularityEnum, 'undefined when no record is returned')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementGranularity failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await settlementGranularityEnumTest.test('throw error if database is unavailable', async test => {
+        try {
+          Db.settlementGranularity = { find: sandbox.stub().throws(new Error('Database unavailable')) }
+          await Enums.settlementGranularityEnums()
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementGranularity failed with error - ${err}`)
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+      await settlementGranularityEnumTest.end()
+    } catch (err) {
+      Logger.error(`enumsTest failed with error - ${err}`)
+      settlementGranularityEnumTest.fail()
+      settlementGranularityEnumTest.end()
+    }
+  })
+
+  await enumsTest.test('settlementInterchange should', async settlementInterchangeTest => {
+    try {
+      await settlementInterchangeTest.test('return', async test => {
+        try {
+          const interchangeList = [
+            { settlementInterchangeId: 1, name: 'BILATERAL' }
+          ]
+          Db.settlementInterchange = { find: sandbox.stub().returns(interchangeList) }
+          let settlementInterchangeList = await Enums.settlementInterchange()
+          test.equal(Object.keys(settlementInterchangeList).length, interchangeList.length, 'settlement interchange list')
+          Db.settlementInterchange.find = sandbox.stub().returns(undefined)
+          settlementInterchangeList = await Enums.settlementInterchange()
+          test.notOk(settlementInterchangeList, 'undefined when no record is returned')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementInterchange failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await settlementInterchangeTest.test('throw error if database is unavailable', async test => {
+        try {
+          Db.settlementInterchange = { find: sandbox.stub().throws(new Error('Database unavailable')) }
+          await Enums.settlementInterchange()
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementInterchange failed with error - ${err}`)
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+      await settlementInterchangeTest.end()
+    } catch (err) {
+      Logger.error(`enumsTest failed with error - ${err}`)
+      settlementInterchangeTest.fail()
+      settlementInterchangeTest.end()
+    }
+  })
+
+  await enumsTest.test('settlementInterchangeEnum should', async settlementInterchangeEnumTest => {
+    try {
+      await settlementInterchangeEnumTest.test('return', async test => {
+        try {
+          const interchangeList = [
+            { settlementInterchangeId: 1, name: 'GROSS' }
+          ]
+          Db.settlementInterchange = { find: sandbox.stub().returns(interchangeList) }
+          let settlementInterchangeEnum = await Enums.settlementInterchangeEnums()
+          test.equal(Object.keys(settlementInterchangeEnum).length, interchangeList.length, 'settlement interchange enum')
+          Db.settlementInterchange.find = sandbox.stub().returns(undefined)
+          settlementInterchangeEnum = await Enums.settlementInterchangeEnums()
+          test.notOk(settlementInterchangeEnum, 'undefined when no record is returned')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementInterchange failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await settlementInterchangeEnumTest.test('throw error if database is unavailable', async test => {
+        try {
+          Db.settlementInterchange = { find: sandbox.stub().throws(new Error('Database unavailable')) }
+          await Enums.settlementInterchangeEnums()
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementInterchange failed with error - ${err}`)
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
+      await settlementInterchangeEnumTest.end()
+    } catch (err) {
+      Logger.error(`enumsTest failed with error - ${err}`)
+      settlementInterchangeEnumTest.fail()
+      settlementInterchangeEnumTest.end()
+    }
+  })
+
   await enumsTest.end()
 })

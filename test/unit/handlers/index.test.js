@@ -33,115 +33,94 @@ const Proxyquire = require('proxyquire')
 const Routes = require('../../../src/api/routes')
 
 Test('cli', async (cliTest) => {
-  cliTest.beforeEach(test => {
-    console.log('start')
-    test.end()
-  })
-
-  cliTest.afterEach(test => {
-    console.log('end')
-    test.end()
-  })
-
-  cliTest.test('yes', async (test) => {
-    test.end()
-  })
-
   cliTest.test('Commander should', async (commanderTest) => {
     let sandbox
     let SetupStub
 
     commanderTest.beforeEach(test => {
       sandbox = Sinon.createSandbox()
-
       SetupStub = {
         initialize: sandbox.stub().returns(Promise.resolve())
       }
-
       process.argv = []
       Proxyquire.noPreserveCache() // enable no caching for module requires
-
       test.end()
     })
 
     commanderTest.afterEach(test => {
       sandbox.restore()
       Proxyquire.preserveCache()
-
       test.end()
     })
 
-    commanderTest.test('???  Start all Handlers up via all switches', async test => {
+    commanderTest.test('start all handlers up via switches', async test => {
       const argv = [
         'node',
         'index.js',
         'handler',
         '--settlementwindow'
       ]
-
       process.argv = argv
-
-      const Index = Proxyquire('../../../src/handlers/index', {
-        '../shared/setup': SetupStub
-      })
-
       const settlementwindowHandler = {
         type: 'settlementwindow',
         enabled: true
       }
-
       const handlerList = [
         settlementwindowHandler
       ]
-
       const initOptions = {
         service: 'handler',
         port: Config.PORT,
         modules: [Routes],
-        runMigrations: false,
         handlers: handlerList,
-        runHandlers: !Config.HANDLERS_DISABLED
+        runHandlers: true
       }
 
-      test.ok(Index)
-      test.notok(SetupStub.initialize.calledWith(initOptions))
+      const Handlers = Proxyquire('../../../src/handlers', {
+        '../shared/setup': SetupStub
+      })
+      test.ok(Handlers)
+      test.ok(SetupStub.initialize.calledWith(initOptions))
       test.end()
     })
 
-    commanderTest.test('??? argv Start all Handlers up via all switches', async test => {
+    commanderTest.test('init server without handlers', async test => {
+      const argv = [
+        'node',
+        'index.js',
+        'handler'
+      ]
+      process.argv = argv
+      const handlerList = []
+      const initOptions = {
+        service: 'handler',
+        port: Config.PORT,
+        modules: [Routes],
+        handlers: handlerList,
+        runHandlers: true
+      }
+
+      const Handlers = Proxyquire('../../../src/handlers', {
+        '../shared/setup': SetupStub
+      })
+      test.ok(Handlers)
+      test.ok(SetupStub.initialize.calledWith(initOptions))
+      test.end()
+    })
+
+    commanderTest.test('display help with invalid args', async test => {
       const argv = [
         'node',
         'index.js'
       ]
-
       process.argv = argv
-
       sandbox.stub(process, 'exit')
 
-      const Index = Proxyquire('../../../src/handlers/index', {
+      const Handlers = Proxyquire('../../../src/handlers', {
         '../shared/setup': SetupStub
       })
-
-      const settlementwindowHandler = {
-        type: 'settlementwindow',
-        enabled: true
-      }
-
-      const handlerList = [
-        settlementwindowHandler
-      ]
-
-      const initOptions = {
-        service: 'handler',
-        port: Config.PORT,
-        modules: [Routes],
-        runMigrations: false,
-        handlers: handlerList,
-        runHandlers: !Config.HANDLERS_DISABLED
-      }
-
-      test.ok(Index)
-      test.notok(SetupStub.initialize.calledWith(initOptions))
+      test.ok(Handlers)
+      test.notok(SetupStub.initialize.called)
       test.ok(process.exit.called)
       test.end()
     })
