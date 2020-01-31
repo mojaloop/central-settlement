@@ -40,19 +40,19 @@ const Uuid = require('uuid4')
 
 module.exports = {
   getById: async function (params, enums) {
-    const settlementWindow = await SettlementWindowModel.getById(params, enums) // check if params is correct
+    const settlementWindow = await SettlementWindowModel.getById(params) // check if params is correct
 
     if (settlementWindow) {
-      const settlementWindowContent = await SettlementWindowContentModel.getBySettlementId(settlementWindow.id)
+      const settlementWindowContent = await SettlementWindowContentModel.getBySettlementId(settlementWindow.settlementWindowId)
 
-      if (settlementWindowContent) {
+      if (settlementWindowContent || settlementWindowContent.length > 0) {
         settlementWindow.content = settlementWindowContent
         return settlementWindow
       } else {
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `settlementWindowContent for : ${settlementWindow.id} not found`)
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No records for settlementWidowContentId : ${params.settlementWindowId} found`)
       }
     } else {
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `settlementWindowId: ${params.settlementWindowId} not found`)
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No record for settlementWindowId: ${params.settlementWindowId} found`)
     }
   },
 
