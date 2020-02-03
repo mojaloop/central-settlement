@@ -87,6 +87,71 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
     }
   })
 
+  await settlementWindowServiceTest.test('getById should throw an error if no settlement window content is undefined', async getByIdTest => {
+    try {
+      const params = { settlementWindowId: 1 }
+      const enums = {}
+      const settlementWindowMock = { settlementWindowId: 1, content: { id: 11 } }
+
+      await getByIdTest.test('Throw an error when settlement window content is undefined', async test => {
+        try {
+          SettlementWindowContentModel.getBySettlementId = sandbox.stub().returns(undefined)
+          SettlementWindowModel.getById = sandbox.stub().returns(settlementWindowMock)
+          try {
+            await SettlementWindowService.getById(params, enums)
+            test.fail('Error expected, but not thrown!')
+          } catch (err) {
+            test.equal(err.message, 'No records for settlementWidowContentId : 1 found')
+          }
+          test.end()
+        } catch (err) {
+          Logger.error(`getByIdTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await getByIdTest.end()
+    } catch (err) {
+      Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
+      getByIdTest.fail()
+      getByIdTest.end()
+    }
+  })
+
+  await settlementWindowServiceTest.test('getById should throw an error if no settlement window content is found', async getByIdTest => {
+    try {
+      const params = { settlementWindowId: 1 }
+      const enums = {}
+      const settlementWindowMock = { settlementWindowId: 1, content: { } }
+      const settlementWindowContentMock = []
+
+      await getByIdTest.test('Throw an error when settlement window content is undefined', async test => {
+        try {
+          SettlementWindowContentModel.getBySettlementId = sandbox.stub().returns(settlementWindowContentMock)
+          SettlementWindowModel.getById = sandbox.stub().returns(settlementWindowMock)
+          try {
+            await SettlementWindowService.getById(params, enums)
+            test.pass('Error expected, but not thrown!')
+          } catch (err) {
+            test.equal(err.message, 'Cannot read property \'length\' of undefined')
+          }
+          test.end()
+        } catch (err) {
+          Logger.error(`getByIdTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await getByIdTest.end()
+    } catch (err) {
+      Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
+      getByIdTest.fail()
+      getByIdTest.end()
+    }
+  })
+
   await settlementWindowServiceTest.test('getByParams should', async getByParamsTest => {
     try {
       let params = { query: { participantId: 1, state: 'PENDING_SETTLEMENT' } }

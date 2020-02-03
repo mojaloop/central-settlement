@@ -45,7 +45,7 @@ module.exports = {
     if (settlementWindow) {
       const settlementWindowContent = await SettlementWindowContentModel.getBySettlementId(settlementWindow.settlementWindowId)
 
-      if (settlementWindowContent || settlementWindowContent.length > 0) {
+      if (settlementWindowContent) {
         settlementWindow.content = settlementWindowContent
         return settlementWindow
       } else {
