@@ -34,16 +34,25 @@ const hasFilters = require('./../../utils/truthyProperty')
 const Producer = require('@mojaloop/central-services-stream').Util.Producer
 const KafkaUtil = require('@mojaloop/central-services-shared').Util.Kafka
 const SettlementWindowModel = require('../../models/settlementWindow')
+const SettlementWindowContentModel = require('../../models/settlementWindowContent')
 const StreamingProtocol = require('@mojaloop/central-services-shared').Util.StreamingProtocol
 const Uuid = require('uuid4')
 
 module.exports = {
   getById: async function (params, enums) {
-    const settlementWindow = await SettlementWindowModel.getById(params, enums)
+    const settlementWindow = await SettlementWindowModel.getById(params) // check if params is correct
 
-    if (settlementWindow) return settlementWindow
-    else {
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `settlementWindowId: ${params.settlementWindowId} not found`)
+    if (settlementWindow) {
+      const settlementWindowContent = await SettlementWindowContentModel.getBySettlementId(settlementWindow.settlementWindowId)
+
+      if (settlementWindowContent) {
+        settlementWindow.content = settlementWindowContent
+        return settlementWindow
+      } else {
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No records for settlementWidowContentId : ${params.settlementWindowId} found`)
+      }
+    } else {
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No record for settlementWindowId: ${params.settlementWindowId} found`)
     }
   },
 
