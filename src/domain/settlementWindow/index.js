@@ -39,7 +39,7 @@ const StreamingProtocol = require('@mojaloop/central-services-shared').Util.Stre
 const Uuid = require('uuid4')
 
 module.exports = {
-  getById: async function (params, enums) {
+  getById: async function (params, enums, options) {
     const settlementWindow = await SettlementWindowModel.getById(params)
 
     if (settlementWindow) {
