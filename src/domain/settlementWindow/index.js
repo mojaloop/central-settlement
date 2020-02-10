@@ -40,10 +40,10 @@ const Uuid = require('uuid4')
 
 module.exports = {
   getById: async function (params, enums) {
-    const settlementWindow = await SettlementWindowModel.getById(params) // check if params is correct
+    const settlementWindow = await SettlementWindowModel.getById(params)
 
     if (settlementWindow) {
-      const settlementWindowContent = await SettlementWindowContentModel.getBySettlementId(settlementWindow.settlementWindowId)
+      const settlementWindowContent = await SettlementWindowContentModel.getBySettlementWindowId(settlementWindow.settlementWindowId)
 
       if (settlementWindowContent) {
         settlementWindow.content = settlementWindowContent

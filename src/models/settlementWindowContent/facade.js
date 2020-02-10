@@ -51,6 +51,15 @@ const Facade = {
       .where('swc.settlementId', id)
       .select('swc.settlementWindowContentId AS id', 'swc.settlementWindowId', 'swcsc.settlementWindowStateId AS state',
         'lat.name AS ledgerAccountType', 'swc.currencyId', 'swc.createdDate', 'swcsc.createdDate AS changedDate')
+  },
+  getBySettlementWindowId: async (id) => {
+    const knex = await Db.getKnex()
+    return knex('settlementWindowContent AS swc')
+      .join('settlementWindowContentStateChange AS swcsc', 'swcsc.settlementWindowContentStateChangeId', 'swc.currentStateChangeId')
+      .join('ledgerAccountType AS lat', 'lat.ledgerAccountTypeId', 'swc.ledgerAccountTypeId')
+      .where('swc.settlementWindowId', id)
+      .select('swc.settlementWindowContentId AS id', 'swc.settlementWindowId', 'swcsc.settlementWindowStateId AS state',
+        'lat.name AS ledgerAccountType', 'swc.currencyId', 'swc.createdDate', 'swcsc.createdDate AS changedDate')
   }
 }
 
