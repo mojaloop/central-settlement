@@ -30,5 +30,6 @@ const SettlementWindowContentStateChangeModel = require('./settlementWindowConte
 module.exports = {
   createSettlementWindowContentState: SettlementWindowContentStateChangeModel.create,
   getApplicableByWindowIdList: Facade.getApplicableByWindowIdList,
-  getBySettlementId: Facade.getBySettlementId
+  getBySettlementId: Facade.getBySettlementId,
+  getBySettlementWindowId: Facade.getBySettlementWindowId
 }

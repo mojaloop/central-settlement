@@ -1141,6 +1141,9 @@
                 },
                 "changedDate": {
                     "type": "string"
+                },
+                "settlementId": {
+                    "type": "integer"
                 }
             },
             "required": [
