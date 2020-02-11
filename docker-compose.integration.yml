@@ -1,0 +1,31 @@
+version: "3.7"
+services:
+  central-settlement:
+    build:
+      dockerfile: test-integration.Dockerfile
+      context: .
+      cache_from: 
+        - mojaloop/central-settlement
+        - central-settlement:test
+    container_name: cs_central-settlement
+    links:
+      - mysql
+      - kafka
+      - central-ledger
+      - ml-api-adapter
+      - simulator
+    ports:
+      - "3007:3007"
+    volumes:
+      - ./docker/central-settlement/default.json:/opt/central-settlement/config/default.json
+      - ./test:/opt/central-settlement/test
+      - ./src:/opt/central-settlement/src
+    environment:
+      - CENTRAL_LEDGER_HOST=central-ledger
+      - ML_API_ADAPTER_HOST=ml-api-adapter
+      - SIMULATOR_HOST=simulator
+      - SIMULATOR_REMOTE_HOST=simulator
+    command:
+      - tail 
+      - -f 
+      - /dev/null

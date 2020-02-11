@@ -1,0 +1,14 @@
+{
+  "decisions": {
+    "1300|@mojaloop/central-ledger>hapi-swagger>handlebars": {
+      "decision": "postpone",
+      "madeAt": 1573224238328
+    },
+    "1300|nyc>istanbul-reports>handlebars": {
+      "decision": "postpone",
+      "madeAt": 1573224238328
+    }
+  },
+  "rules": {},
+  "version": 1
+}
