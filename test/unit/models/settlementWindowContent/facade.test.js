@@ -163,7 +163,46 @@ Test('SettlementWindowContentFacade', async (settlementWindowContentModelTest) =
           test.end()
         }
       })
-
+      await getBySettlementWindowContentIdTest.test('return content by settlement window id', async test => {
+        try {
+          const settlementId = 1
+          const settlementWindowContent = [{
+            id: 1,
+            settlementWindowId: 1,
+            state: 'PENDING_SETTLEMENT',
+            ledgerAccountType: 1,
+            currencyId: 'USD',
+            createdDate: 'date',
+            changedDate: 'date'
+          }, {
+            id: 2,
+            settlementWindowId: 1,
+            state: 'SETTLED',
+            ledgerAccountType: 6,
+            currencyId: 'USD',
+            createdDate: 'date',
+            changedDate: 'date'
+          }]
+          Db.getKnex = sandbox.stub()
+          const knexStub = sandbox.stub()
+          Db.getKnex.returns(knexStub)
+          knexStub.returns({
+            join: sandbox.stub().returns({
+              join: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  select: sandbox.stub().returns(settlementWindowContent)
+                })
+              })
+            })
+          })
+          const result = await SettlementWindowContentFacade.getBySettlementWindowId(settlementId)
+          test.deepEqual(result, settlementWindowContent, 'results match')
+          test.end()
+        } catch (err) {
+          test.pass('Error thrown')
+          test.end()
+        }
+      })
       await getBySettlementWindowContentIdTest.end()
     } catch (err) {
       Logger.error(`getBySettlementWindowContentIdTest failed with error - ${err}`)
