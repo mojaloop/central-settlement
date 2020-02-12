@@ -62,6 +62,26 @@ Test('SettlementService', async (settlementServiceTest) => {
         id: 1,
         state: 'PENDING_SETTLEMENT'
       }]
+      const settlementWindowContentMock = [
+        {
+          id: 10,
+          state: 'PENDING_SETTLEMENT',
+          ledgerAccountType: 'POSITION',
+          currencyId: 'USD',
+          createdDate: '2020-02-07T11:07:07.000Z',
+          changedDate: '2020-02-07T09:07:07.000Z',
+          settlementId: 6
+        },
+        {
+          id: 11,
+          state: 'CLOSED',
+          ledgerAccountType: 'POSITION',
+          currencyId: 'TZS',
+          createdDate: '2020-02-07T11:07:07.000Z',
+          changedDate: '2020-02-07T11:07:07.000Z',
+          settlementId: null
+        }
+      ]
       const participantCurrenciesListMock = [{
         id: 1,
         participantCurrencyId: 1,
@@ -84,6 +104,7 @@ Test('SettlementService', async (settlementServiceTest) => {
       SettlementModel.settlementParticipantCurrency = {
         getParticipantCurrencyBySettlementId: sandbox.stub().returns(participantCurrenciesListMock)
       }
+      SettlementWindowContentModel.getBySettlementWindowId = sandbox.stub().returns(settlementWindowContentMock)
 
       await getByIdTest.test('return settlement participant accounts', async test => {
         try {
