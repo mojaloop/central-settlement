@@ -40,6 +40,12 @@ const SettlementWindowContentModel = require('../../models/settlementWindowConte
 const SettlementWindowModel = require('../../models/settlementWindow')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
+const prepareSettlementWindowsListWithContents = async (settlementWindowsList) => {
+  for (const settlementWindow of settlementWindowsList) {
+    settlementWindow.content = await SettlementWindowContentModel.getBySettlementWindowId(settlementWindow.id)
+  }
+}
+
 const prepareParticipantsResult = (participantCurrenciesList) => {
   const participantAccounts = {}
   for (const account of participantCurrenciesList) {
@@ -89,6 +95,7 @@ module.exports = {
     const settlement = await SettlementModel.getById({ settlementId }, enums)
     if (settlement) {
       const settlementWindowsList = await SettlementWindowModel.getBySettlementId({ settlementId }, enums)
+      await prepareSettlementWindowsListWithContents(settlementWindowsList)
       const participantCurrenciesList = await SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({ settlementId }, enums)
       const participants = prepareParticipantsResult(participantCurrenciesList)
       return {
