@@ -63,6 +63,7 @@ const settlementModels = [
     settlementInterchangeId: 2, // MULTILATERAL
     settlementDelayId: 2, // DEFERRED
     ledgerAccountTypeId: 1, // POSITION
+    autoPositionReset: true,
     currencyId: null
   },
   {
@@ -71,6 +72,7 @@ const settlementModels = [
     settlementInterchangeId: 2, // MULTILATERAL
     settlementDelayId: 2, // DEFERRED
     ledgerAccountTypeId: 1, // POSITION
+    autoPositionReset: true,
     currencyId: 'USD'
   }
 ]
