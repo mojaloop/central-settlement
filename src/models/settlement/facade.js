@@ -757,7 +757,8 @@ const Facade = {
         // seq-settlement-6.2.5, step 3
         const settlementData = await knex('settlement AS s')
           .join('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 's.currentStateChangeId')
-          .select('s.settlementId', 'ssc.settlementStateId', 'ssc.reason', 'ssc.createdDate')
+          .join('settlementModel AS sm', 'sm.settlementModelId', 's.settlementModelId')
+          .select('s.settlementId', 'ssc.settlementStateId', 'ssc.reason', 'ssc.createdDate', 'sm.autoPositionReset')
           .where('s.settlementId', settlementId)
           .first()
           .transacting(trx)
@@ -766,6 +767,9 @@ const Facade = {
         if (!settlementData) {
           throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement not found')
         } else {
+          const autoPositionReset = settlementData.autoPositionReset
+          delete settlementData.autoPositionReset
+
           // seq-settlement-6.2.5, step 5
           const settlementAccountList = await knex('settlementParticipantCurrency AS spc')
             .leftJoin('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'spc.currentStateChangeId')
@@ -853,115 +857,111 @@ const Facade = {
 
           // seq-settlement-6.2.5, step 11
           for (let participant in payload.participants) {
-            if (Object.prototype.hasOwnProperty.call(payload.participants, participant)) {
-              const participantPayload = payload.participants[participant]
-              participants.push({ id: participantPayload.id, accounts: [] })
-              const pi = participants.length - 1
-              participant = participants[pi]
-              // seq-settlement-6.2.5, step 12
-              for (const account in participantPayload.accounts) {
-                if (Object.prototype.hasOwnProperty.call(participantPayload.accounts, account)) {
-                  const accountPayload = participantPayload.accounts[account]
-                  // seq-settlement-6.2.5, step 13
-                  if (allAccounts[accountPayload.id] === undefined) {
-                    participant.accounts.push({
-                      id: accountPayload.id,
-                      errorInformation: ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.CLIENT_ERROR, 'Account not found').toApiErrorObject().errorInformation
-                    })
-                    // seq-settlement-6.2.5, step 14
-                  } else if (participantPayload.id !== allAccounts[accountPayload.id].participantId) {
-                    processedAccounts.push(accountPayload.id)
-                    participant.accounts.push({
-                      id: accountPayload.id,
-                      errorInformation: ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.CLIENT_ERROR, 'Participant and account mismatch').toApiErrorObject().errorInformation
-                    })
-                    // seq-settlement-6.2.5, step 15
-                  } else if (processedAccounts.indexOf(accountPayload.id) > -1) {
-                    participant.accounts.push({
-                      id: accountPayload.id,
-                      state: allAccounts[accountPayload.id].state,
-                      reason: allAccounts[accountPayload.id].reason,
-                      createdDate: allAccounts[accountPayload.id].createdDate,
-                      netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount,
-                      errorInformation: ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.CLIENT_ERROR, 'Account already processed once').toApiErrorObject().errorInformation
-                    })
-                    // seq-settlement-6.2.5, step 16
-                  } else if (allAccounts[accountPayload.id].state === accountPayload.state) {
-                    processedAccounts.push(accountPayload.id)
-                    participant.accounts.push({
-                      id: accountPayload.id,
-                      state: accountPayload.state,
-                      reason: accountPayload.reason,
-                      externalReference: accountPayload.externalReference,
-                      createdDate: transactionTimestamp,
-                      netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount
-                    })
-                    settlementParticipantCurrencyStateChange.push({
-                      settlementParticipantCurrencyId: allAccounts[accountPayload.id].key,
-                      settlementStateId: accountPayload.state,
-                      reason: accountPayload.reason,
-                      externalReference: accountPayload.externalReference
-                    })
-                    allAccounts[accountPayload.id].reason = accountPayload.reason
-                    allAccounts[accountPayload.id].createdDate = transactionTimestamp
-                    // seq-settlement-6.2.5, step 17
-                  } else if ((settlementData.settlementStateId === enums.settlementStates.PENDING_SETTLEMENT && accountPayload.state === enums.settlementStates.PS_TRANSFERS_RECORDED) ||
-                    (settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_RECORDED && accountPayload.state === enums.settlementStates.PS_TRANSFERS_RESERVED) ||
-                    (settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_RESERVED && accountPayload.state === enums.settlementStates.PS_TRANSFERS_COMMITTED) ||
-                    ((settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_COMMITTED || settlementData.settlementStateId === enums.settlementStates.SETTLING) &&
-                      accountPayload.state === enums.settlementStates.SETTLED)) {
-                    processedAccounts.push(accountPayload.id)
-                    participant.accounts.push({
-                      id: accountPayload.id,
-                      state: accountPayload.state,
-                      reason: accountPayload.reason,
-                      externalReference: accountPayload.externalReference,
-                      createdDate: transactionTimestamp,
-                      netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount
-                    })
-                    const spcsc = {
-                      settlementParticipantCurrencyId: allAccounts[accountPayload.id].key,
-                      settlementStateId: accountPayload.state,
-                      reason: accountPayload.reason,
-                      externalReference: accountPayload.externalReference,
-                      createdDate: transactionTimestamp
-                    }
-                    if (accountPayload.state === enums.settlementStates.PS_TRANSFERS_RECORDED) {
-                      spcsc.settlementTransferId = Uuid()
-                    }
-                    settlementParticipantCurrencyStateChange.push(spcsc)
-
-                    if (accountPayload.state === enums.settlementStates.PS_TRANSFERS_RECORDED) {
-                      settlementAccounts.pendingSettlementCount--
-                      settlementAccounts.psTransfersRecordedCount++
-                    } else if (accountPayload.state === enums.settlementStates.PS_TRANSFERS_RESERVED) {
-                      settlementAccounts.psTransfersRecordedCount--
-                      settlementAccounts.psTransfersReservedCount++
-                    } else if (accountPayload.state === enums.settlementStates.PS_TRANSFERS_COMMITTED) {
-                      settlementAccounts.psTransfersReservedCount--
-                      settlementAccounts.psTransfersCommittedCount++
-                    } else /* if (accountPayload.state === enums.settlementStates.SETTLED) */ { // disabled as else path is never taken
-                      settlementAccounts.psTransfersCommittedCount--
-                      settlementAccounts.settledCount++
-                      settlementAccounts.settledIdList.push(accountPayload.id)
-                    }
-                    settlementAccounts.changedIdList.push(accountPayload.id)
-                    allAccounts[accountPayload.id].state = accountPayload.state
-                    allAccounts[accountPayload.id].reason = accountPayload.reason
-                    allAccounts[accountPayload.id].externalReference = accountPayload.externalReference
-                    allAccounts[accountPayload.id].createdDate = transactionTimestamp
-                    // seq-settlement-6.2.5, step 18
-                  } else {
-                    participant.accounts.push({
-                      id: accountPayload.id,
-                      state: allAccounts[accountPayload.id].state,
-                      reason: allAccounts[accountPayload.id].reason,
-                      createdDate: allAccounts[accountPayload.id].createdDate,
-                      netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount,
-                      errorInformation: ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.CLIENT_ERROR, 'State change not allowed').toApiErrorObject().errorInformation
-                    })
-                  }
+            const participantPayload = payload.participants[participant]
+            participants.push({ id: participantPayload.id, accounts: [] })
+            const pi = participants.length - 1
+            participant = participants[pi]
+            // seq-settlement-6.2.5, step 12
+            for (const account in participantPayload.accounts) {
+              const accountPayload = participantPayload.accounts[account]
+              // seq-settlement-6.2.5, step 13
+              if (allAccounts[accountPayload.id] === undefined) {
+                participant.accounts.push({
+                  id: accountPayload.id,
+                  errorInformation: ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.CLIENT_ERROR, 'Account not found').toApiErrorObject().errorInformation
+                })
+                // seq-settlement-6.2.5, step 14
+              } else if (participantPayload.id !== allAccounts[accountPayload.id].participantId) {
+                processedAccounts.push(accountPayload.id)
+                participant.accounts.push({
+                  id: accountPayload.id,
+                  errorInformation: ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.CLIENT_ERROR, 'Participant and account mismatch').toApiErrorObject().errorInformation
+                })
+                // seq-settlement-6.2.5, step 15
+              } else if (processedAccounts.indexOf(accountPayload.id) > -1) {
+                participant.accounts.push({
+                  id: accountPayload.id,
+                  state: allAccounts[accountPayload.id].state,
+                  reason: allAccounts[accountPayload.id].reason,
+                  createdDate: allAccounts[accountPayload.id].createdDate,
+                  netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount,
+                  errorInformation: ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.CLIENT_ERROR, 'Account already processed once').toApiErrorObject().errorInformation
+                })
+                // seq-settlement-6.2.5, step 16
+              } else if (allAccounts[accountPayload.id].state === accountPayload.state) {
+                processedAccounts.push(accountPayload.id)
+                participant.accounts.push({
+                  id: accountPayload.id,
+                  state: accountPayload.state,
+                  reason: accountPayload.reason,
+                  externalReference: accountPayload.externalReference,
+                  createdDate: transactionTimestamp,
+                  netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount
+                })
+                settlementParticipantCurrencyStateChange.push({
+                  settlementParticipantCurrencyId: allAccounts[accountPayload.id].key,
+                  settlementStateId: accountPayload.state,
+                  reason: accountPayload.reason,
+                  externalReference: accountPayload.externalReference
+                })
+                allAccounts[accountPayload.id].reason = accountPayload.reason
+                allAccounts[accountPayload.id].createdDate = transactionTimestamp
+                // seq-settlement-6.2.5, step 17
+              } else if ((settlementData.settlementStateId === enums.settlementStates.PENDING_SETTLEMENT && accountPayload.state === enums.settlementStates.PS_TRANSFERS_RECORDED) ||
+                (settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_RECORDED && accountPayload.state === enums.settlementStates.PS_TRANSFERS_RESERVED) ||
+                (settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_RESERVED && accountPayload.state === enums.settlementStates.PS_TRANSFERS_COMMITTED) ||
+                ((settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_COMMITTED || settlementData.settlementStateId === enums.settlementStates.SETTLING) &&
+                  accountPayload.state === enums.settlementStates.SETTLED)) {
+                processedAccounts.push(accountPayload.id)
+                participant.accounts.push({
+                  id: accountPayload.id,
+                  state: accountPayload.state,
+                  reason: accountPayload.reason,
+                  externalReference: accountPayload.externalReference,
+                  createdDate: transactionTimestamp,
+                  netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount
+                })
+                const spcsc = {
+                  settlementParticipantCurrencyId: allAccounts[accountPayload.id].key,
+                  settlementStateId: accountPayload.state,
+                  reason: accountPayload.reason,
+                  externalReference: accountPayload.externalReference,
+                  createdDate: transactionTimestamp
                 }
+                if (accountPayload.state === enums.settlementStates.PS_TRANSFERS_RECORDED) {
+                  spcsc.settlementTransferId = Uuid()
+                }
+                settlementParticipantCurrencyStateChange.push(spcsc)
+
+                if (accountPayload.state === enums.settlementStates.PS_TRANSFERS_RECORDED) {
+                  settlementAccounts.pendingSettlementCount--
+                  settlementAccounts.psTransfersRecordedCount++
+                } else if (accountPayload.state === enums.settlementStates.PS_TRANSFERS_RESERVED) {
+                  settlementAccounts.psTransfersRecordedCount--
+                  settlementAccounts.psTransfersReservedCount++
+                } else if (accountPayload.state === enums.settlementStates.PS_TRANSFERS_COMMITTED) {
+                  settlementAccounts.psTransfersReservedCount--
+                  settlementAccounts.psTransfersCommittedCount++
+                } else /* if (accountPayload.state === enums.settlementStates.SETTLED) */ { // disabled as else path is never taken
+                  settlementAccounts.psTransfersCommittedCount--
+                  settlementAccounts.settledCount++
+                  settlementAccounts.settledIdList.push(accountPayload.id)
+                }
+                settlementAccounts.changedIdList.push(accountPayload.id)
+                allAccounts[accountPayload.id].state = accountPayload.state
+                allAccounts[accountPayload.id].reason = accountPayload.reason
+                allAccounts[accountPayload.id].externalReference = accountPayload.externalReference
+                allAccounts[accountPayload.id].createdDate = transactionTimestamp
+                // seq-settlement-6.2.5, step 18
+              } else {
+                participant.accounts.push({
+                  id: accountPayload.id,
+                  state: allAccounts[accountPayload.id].state,
+                  reason: allAccounts[accountPayload.id].reason,
+                  createdDate: allAccounts[accountPayload.id].createdDate,
+                  netSettlementAmount: allAccounts[accountPayload.id].netSettlementAmount,
+                  errorInformation: ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.CLIENT_ERROR, 'State change not allowed').toApiErrorObject().errorInformation
+                })
               }
             }
           }
@@ -995,12 +995,14 @@ const Facade = {
           }
           await Promise.all(updatePromises)
 
-          if (settlementData.settlementStateId === enums.settlementStates.PENDING_SETTLEMENT) {
-            await Facade.settlementTransfersPrepare(settlementId, transactionTimestamp, enums, trx)
-          } else if (settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_RECORDED) {
-            await Facade.settlementTransfersReserve(settlementId, transactionTimestamp, enums, trx)
-          } else if (settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_RESERVED) {
-            await Facade.settlementTransfersCommit(settlementId, transactionTimestamp, enums, trx)
+          if (autoPositionReset) {
+            if (settlementData.settlementStateId === enums.settlementStates.PENDING_SETTLEMENT) {
+              await Facade.settlementTransfersPrepare(settlementId, transactionTimestamp, enums, trx)
+            } else if (settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_RECORDED) {
+              await Facade.settlementTransfersReserve(settlementId, transactionTimestamp, enums, trx)
+            } else if (settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_RESERVED) {
+              await Facade.settlementTransfersCommit(settlementId, transactionTimestamp, enums, trx)
+            }
           }
 
           // seq-settlement-6.2.5, step 23
