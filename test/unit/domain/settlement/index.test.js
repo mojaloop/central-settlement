@@ -113,6 +113,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.ok(SettlementModel.getById.withArgs({ settlementId }, enums).calledOnce, 'SettlementModel.getById with args ... called once')
           test.ok(SettlementWindowModel.getBySettlementId.withArgs({ settlementId }, enums).calledOnce, 'SettlementWindowModel.getBySettlementId with args ... called once')
           test.ok(SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId.withArgs({ settlementId }, enums).calledOnce, 'SettlementModel.spc.getParticipantCurrencyBySettlementId with args ... called once')
+          test.ok(SettlementWindowContentModel.getBySettlementWindowId.withArgs(settlementWindowsListMock[0].id).calledOnce, 'SettlementWindowContentModel.getBySettlementWindowId with args ... called once')
           test.end()
         } catch (err) {
           Logger.error(`getByIdTest failed with error - ${err}`)
