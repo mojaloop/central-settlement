@@ -104,7 +104,7 @@ Test('SettlementService', async (settlementServiceTest) => {
       SettlementModel.settlementParticipantCurrency = {
         getParticipantCurrencyBySettlementId: sandbox.stub().returns(participantCurrenciesListMock)
       }
-      SettlementWindowContentModel.getBySettlementWindowId = sandbox.stub().returns(settlementWindowContentMock)
+      SettlementWindowContentModel.getBySettlementId = sandbox.stub().returns(settlementWindowContentMock)
 
       await getByIdTest.test('return settlement participant accounts', async test => {
         try {
@@ -113,7 +113,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.ok(SettlementModel.getById.withArgs({ settlementId }, enums).calledOnce, 'SettlementModel.getById with args ... called once')
           test.ok(SettlementWindowModel.getBySettlementId.withArgs({ settlementId }, enums).calledOnce, 'SettlementWindowModel.getBySettlementId with args ... called once')
           test.ok(SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId.withArgs({ settlementId }, enums).calledOnce, 'SettlementModel.spc.getParticipantCurrencyBySettlementId with args ... called once')
-          test.ok(SettlementWindowContentModel.getBySettlementWindowId.withArgs(settlementWindowsListMock[0].id).calledOnce, 'SettlementWindowContentModel.getBySettlementWindowId with args ... called once')
+          test.ok(SettlementWindowContentModel.getBySettlementId.withArgs(settlementId).calledOnce, 'SettlementWindowContentModel.getBySettlementId with args ... called once')
           test.end()
         } catch (err) {
           Logger.error(`getByIdTest failed with error - ${err}`)
