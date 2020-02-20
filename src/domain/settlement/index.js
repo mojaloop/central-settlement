@@ -193,10 +193,9 @@ module.exports = {
     const settlementModelData = await SettlementModelModel.getByName(settlementModel)
     if (!settlementModelData) {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement model not found')
-    } else if (settlementModelData.settlementGranularityId !== enums.settlementGranularity.NET ||
-      settlementModelData.settlementInterchangeId !== enums.settlementInterchange.MULTILATERAL ||
-      settlementModelData.settlementDelayId !== enums.settlementDelay.DEFERRED) {
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid settlement model')
+    } else if (settlementModelData.settlementGranularityId === enums.settlementGranularity.GROSS ||
+      settlementModelData.settlementDelayId === enums.settlementDelay.IMMEDIDATE) {
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement can not be created for GROSS or IMMEDIATE models')
     }
 
     // validate windows content

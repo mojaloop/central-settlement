@@ -401,7 +401,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.end()
         } catch (err) {
           Logger.error(`settlementEventTriggerTest failed with error - ${err}`)
-          test.equal(err.message, 'Invalid settlement model', `Error "${err.message}" thrown`)
+          test.equal(err.message, 'Settlement can not be created for GROSS or IMMEDIATE models', `Error "${err.message}" thrown`)
           test.end()
         }
       })
