@@ -1,4 +1,4 @@
-FROM node:10.15.3-alpine as builder
+FROM node:12.16.0-alpine as builder
 
 WORKDIR /opt/central-settlement
 
@@ -14,7 +14,7 @@ COPY config /opt/central-settlement/config
 COPY src /opt/central-settlement/src
 COPY README.md /opt/central-settlement
 
-FROM node:10.15.3-alpine
+FROM node:12.16.0-alpine
 WORKDIR /opt/central-settlement
 
 COPY --from=builder /opt/central-settlement .
