@@ -194,7 +194,7 @@ module.exports = {
     if (!settlementModelData) {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement model not found')
     } else if (settlementModelData.settlementGranularityId === enums.settlementGranularity.GROSS ||
-      settlementModelData.settlementDelayId === enums.settlementDelay.IMMEDIDATE) {
+      settlementModelData.settlementDelayId === enums.settlementDelay.IMMEDIATE) {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement can not be created for GROSS or IMMEDIATE models')
     }
 
