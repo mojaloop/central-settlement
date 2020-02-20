@@ -77,7 +77,7 @@
         "standard": "standard",
         "test": "npm run test:unit | faucet",
         "test:unit": "tape 'test/unit/**/*.js'",
-        "test:xunit": "tape 'test/unit/**/*.js' | tap-xunit",
+        "test:xunit": "tape 'test/unit/**/*.js'",
         "lint": "eslint .",
         "test:coverage-check": "npm run test:coverage && nyc check-coverage",
         "test:coverage": "nyc --reporter=lcov --reporter=text-summary tapes -- 'test/unit/**/**.test.js'",
