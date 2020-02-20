@@ -22,10 +22,6 @@
     "DISABLED": false,
     "RUN_DATA_MIGRATIONS": true
   },
-  "ENABLE_TOKEN_AUTH": false,
-  "ENABLE_BASIC_AUTH": false,
-  "LEDGER_ACCOUNT_NAME": "LedgerName",
-  "LEDGER_ACCOUNT_PASSWORD": "LedgerPassword",
   "AMOUNT": {
     "PRECISION": 18,
     "SCALE": 4
@@ -36,6 +32,14 @@
     "PORT": 5678,
     "CONNECT_TIMEOUT": 45000,
     "RECONNECT_INTERVAL": 5000
+  },
+  "ENABLE_TOKEN_AUTH": false,
+  "ENABLE_BASIC_AUTH": false,
+  "LEDGER_ACCOUNT_NAME": "LedgerName",
+  "LEDGER_ACCOUNT_PASSWORD": "LedgerPassword",
+  "DB_CONNECTION": {
+    "POOL_MIN": 10,
+    "POOL_MAX": 30
   },
   "MONGODB": {
     "DISABLED": true,
@@ -87,8 +91,13 @@
     ]
   },
   "INTERNAL_TRANSFER_VALIDITY_SECONDS": "432000",
+  "EMAIL_USER": "modusboxemailtest@gmail.com",
+  "EMAIL_PASSWORD": "April2o0%",
+  "EMAIL_SMTP": "smtp.gmail.com",
   "CACHE": {
-    "MAX_BYTE_SIZE": 10000000
+    "CACHE_ENABLED": false,
+    "MAX_BYTE_SIZE": 10000000,
+    "EXPIRES_IN_MS": 1000
   },
   "KAFKA": {
     "TOPIC_TEMPLATES": {

@@ -7,6 +7,11 @@
     "1300|nyc>istanbul-reports>handlebars": {
       "decision": "postpone",
       "madeAt": 1573224238328
+    },
+    "1482|@hapi/hapi": {
+      "decision": "ignore",
+      "madeAt": 1582123771440,
+      "expiresAt": 1582728550777
     }
   },
   "rules": {},
