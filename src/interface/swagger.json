@@ -210,7 +210,15 @@
                         "format": "date-time",
                         "description": "The end date for query (relates to central-ledger.settlementWindow.createdDate). Can be used together with `fromDateTime'. eg 2017-07-21T17:32:28Z\n",
                         "required": false
+                    },
+                    {
+                        "in": "query",
+                        "name": "currency",
+                        "type": "string",
+                        "description": "A valid currency to filter on.\n",
+                        "required": false
                     }
+
                 ],
                 "tags": [
                     "getSettlementWindowsByParams"

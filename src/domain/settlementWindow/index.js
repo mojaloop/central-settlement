@@ -24,6 +24,7 @@
  - Miguel de Barros <miguel.debarros@modusbox.com>
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
  - Valentin Genev <valentin.genev@modusbox.com>
+ - Lazola Lucas <lazola.lucas@modusbox.com>
 --------------
  ******/
 
@@ -58,15 +59,23 @@ module.exports = {
 
   getByParams: async function (params, enums) {
     // 4 filters - at least one should be used
-    if (hasFilters(params.query) && Object.keys(params.query).length < 5) {
+    if (hasFilters(params.query) && Object.keys(params.query).length < 10) {
       const settlementWindows = await SettlementWindowModel.getByParams(params, enums)
       if (settlementWindows && settlementWindows.length > 0) {
+        for (const settlementWindow of settlementWindows) {
+          const settlementWindowContent = await SettlementWindowContentModel.getBySettlementWindowId(settlementWindow.settlementWindowId)
+          if (settlementWindowContent) {
+            settlementWindow.content = settlementWindowContent
+          } else {
+            throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No records for settlementWidowContentId : ${settlementWindow.settlementWindowId} found`)
+          }
+        }
         return settlementWindows
       } else {
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
       }
     } else {
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Use at least one parameter: participantId, state, fromDateTime, toDateTime')
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Use at least one parameter: participantId, state, fromDateTime, toDateTime, currency')
     }
   },
 
