@@ -59,7 +59,7 @@ module.exports = {
 
   getByParams: async function (params, enums) {
     // 4 filters - at least one should be used
-    if (hasFilters(params.query) && Object.keys(params.query).length < 10) {
+    if (hasFilters(params.query) && Object.keys(params.query).length < 6) {
       const settlementWindows = await SettlementWindowModel.getByParams(params, enums)
       if (settlementWindows && settlementWindows.length > 0) {
         for (const settlementWindow of settlementWindows) {
