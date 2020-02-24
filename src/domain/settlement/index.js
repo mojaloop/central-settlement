@@ -40,6 +40,9 @@ const SettlementWindowContentModel = require('../../models/settlementWindowConte
 const SettlementWindowModel = require('../../models/settlementWindow')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
+let objectKeyName = ''
+let keyValueName = ''
+
 const prepareParticipantsResult = (participantCurrenciesList) => {
   const participantAccounts = {}
   for (const account of participantCurrenciesList) {
@@ -70,6 +73,28 @@ const prepareParticipantsResult = (participantCurrenciesList) => {
   return Array.from(Object.keys(participantAccounts).map(participantId => participantAccounts[participantId]))
 }
 
+function deleteJSONElement (obj) {
+  // Loop through this JSON object's properties
+  Object.keys(obj).forEach(function (key) {
+    const value = obj[key]
+
+    if (key === objectKeyName) {
+      for (var i = 0; i < value.length; i++) {
+        delete obj[key][i][keyValueName]
+      }
+    }
+    if (value) {
+      switch (typeof value) {
+        case 'object': // Recurse
+          deleteJSONElement(value, key)
+          break
+        case 'string':
+          break
+      }
+    }
+  })
+}
+
 const groupSettlementWindowContentBySettlementWindow = (records) => {
   const settlementWindows = {}
   for (const record of records) {
@@ -91,6 +116,16 @@ module.exports = {
       const settlementWindowsList = await SettlementWindowModel.getBySettlementId({ settlementId }, enums)
       const participantCurrenciesList = await SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({ settlementId }, enums)
       const participants = prepareParticipantsResult(participantCurrenciesList)
+
+      // Build settlement window content array and insert into settlement window list object
+      for (var key of Object.keys(settlementWindowsList)) {
+        settlementWindowsList[key].content = await SettlementWindowContentModel.getBySettlementId(settlementId)
+      }
+      // Response object : Remove "settlementWindowId": 1, from the "content": [ array of objects
+      objectKeyName = 'content'
+      keyValueName = 'settlementWindowId'
+      await deleteJSONElement(settlementWindowsList)
+
       return {
         id: settlement.settlementId,
         state: settlement.state,

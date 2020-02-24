@@ -62,6 +62,26 @@ Test('SettlementService', async (settlementServiceTest) => {
         id: 1,
         state: 'PENDING_SETTLEMENT'
       }]
+      const settlementWindowContentMock = [
+        {
+          id: 10,
+          state: 'PENDING_SETTLEMENT',
+          ledgerAccountType: 'POSITION',
+          currencyId: 'USD',
+          createdDate: '2020-02-07T11:07:07.000Z',
+          changedDate: '2020-02-07T09:07:07.000Z',
+          settlementId: 6
+        },
+        {
+          id: 11,
+          state: 'CLOSED',
+          ledgerAccountType: 'POSITION',
+          currencyId: 'TZS',
+          createdDate: '2020-02-07T11:07:07.000Z',
+          changedDate: '2020-02-07T11:07:07.000Z',
+          settlementId: null
+        }
+      ]
       const participantCurrenciesListMock = [{
         id: 1,
         participantCurrencyId: 1,
@@ -84,6 +104,7 @@ Test('SettlementService', async (settlementServiceTest) => {
       SettlementModel.settlementParticipantCurrency = {
         getParticipantCurrencyBySettlementId: sandbox.stub().returns(participantCurrenciesListMock)
       }
+      SettlementWindowContentModel.getBySettlementId = sandbox.stub().returns(settlementWindowContentMock)
 
       await getByIdTest.test('return settlement participant accounts', async test => {
         try {
@@ -92,6 +113,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.ok(SettlementModel.getById.withArgs({ settlementId }, enums).calledOnce, 'SettlementModel.getById with args ... called once')
           test.ok(SettlementWindowModel.getBySettlementId.withArgs({ settlementId }, enums).calledOnce, 'SettlementWindowModel.getBySettlementId with args ... called once')
           test.ok(SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId.withArgs({ settlementId }, enums).calledOnce, 'SettlementModel.spc.getParticipantCurrencyBySettlementId with args ... called once')
+          test.ok(SettlementWindowContentModel.getBySettlementId.withArgs(settlementId).calledOnce, 'SettlementWindowContentModel.getBySettlementId with args ... called once')
           test.end()
         } catch (err) {
           Logger.error(`getByIdTest failed with error - ${err}`)
