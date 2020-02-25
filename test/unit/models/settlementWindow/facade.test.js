@@ -256,7 +256,8 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
       const state = 'PENDING_SETTLEMENT'
       const fromDateTime = new Date('01-01-1970').toISOString()
       const toDateTime = new Date().toISOString()
-      let query = { participantId, state, fromDateTime, toDateTime }
+      const currency = 'USD'
+      let query = { participantId, state, fromDateTime, toDateTime, currency }
       const settlementWindowResultStub = [{
         settlementWindowId: 1,
         state: 'PENDING_SETTLEMENT'
@@ -288,6 +289,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           test.ok(whereStub.withArgs('swsc.settlementWindowStateId', state).calledOnce)
           test.ok(whereStub.withArgs('settlementWindow.createdDate', '>=', fromDateTime).calledOnce)
           test.ok(whereStub.withArgs('settlementWindow.createdDate', '<=', toDateTime).calledOnce)
+          test.ok(whereStub.withArgs('pc.currencyId', currency).calledOnce)
           test.end()
         } catch (err) {
           Logger.error(`getByParams failed with error - ${err}`)
@@ -330,10 +332,13 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
         try {
           Db.settlementWindow.query.returns(Promise.resolve(settlementWindowResultStub))
 
-          query = { state, fromDateTime, toDateTime }
+          query = { state, fromDateTime, toDateTime, currency }
           const result = await SettlementWindowFacade.getByParams({ query }, enums)
           test.ok(result, 'Result returned')
           test.ok(builderStub.leftJoin.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce)
+          test.ok(leftJoin2Stub.withArgs('transferFulfilment AS tf', 'tf.settlementWindowId', 'settlementWindow.settlementWindowId').calledOnce)
+          test.ok(leftJoin3Stub.withArgs('transferParticipant AS tp', 'tp.transferId', 'tf.transferId').calledOnce)
+          test.ok(leftJoin4Stub.withArgs('participantCurrency AS pc', 'pc.participantCurrencyId', 'tp.participantCurrencyId').calledOnce)
           test.ok(selectStub.withArgs('settlementWindow.settlementWindowId',
             'swsc.settlementWindowStateId as state',
             'swsc.reason as reason',
@@ -344,6 +349,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           test.ok(whereStub.withArgs('swsc.settlementWindowStateId', state).calledOnce)
           test.ok(whereStub.withArgs('settlementWindow.createdDate', '>=', fromDateTime).calledOnce)
           test.ok(whereStub.withArgs('settlementWindow.createdDate', '<=', toDateTime).calledOnce)
+          test.ok(whereStub.withArgs('pc.currencyId', currency).calledOnce)
           test.end()
         } catch (err) {
           Logger.error(`getByParams failed with error - ${err}`)
