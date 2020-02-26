@@ -77,11 +77,14 @@ const Facade = {
   },
 
   getByParams: async function ({ query }) {
-    const { participantId, state, fromDateTime, toDateTime } = query
+    const { participantId, state, fromDateTime, toDateTime, currency } = query
     return Db.settlementWindow.query(builder => {
       if (!participantId) {
         const b = builder
           .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
+          .leftJoin('transferFulfilment AS tf', 'tf.settlementWindowId', 'settlementWindow.settlementWindowId')
+          .leftJoin('transferParticipant AS tp', 'tp.transferId', 'tf.transferId')
+          .leftJoin('participantCurrency AS pc', 'pc.participantCurrencyId', 'tp.participantCurrencyId')
           .select(
             'settlementWindow.settlementWindowId',
             'swsc.settlementWindowStateId as state',
@@ -93,6 +96,7 @@ const Facade = {
         if (state) { b.where('swsc.settlementWindowStateId', state) }
         if (fromDateTime) { b.where('settlementWindow.createdDate', '>=', fromDateTime) }
         if (toDateTime) { b.where('settlementWindow.createdDate', '<=', toDateTime) }
+        if (currency) { b.where('pc.currencyId', currency) }
         return b
       } else {
         const b = builder
@@ -112,6 +116,7 @@ const Facade = {
         if (state) { b.where('swsc.settlementWindowStateId', state) }
         if (fromDateTime) { b.where('settlementWindow.createdDate', '>=', fromDateTime) }
         if (toDateTime) { b.where('settlementWindow.createdDate', '<=', toDateTime) }
+        if (currency) { b.where('pc.currencyId', currency) }
         return b
       }
     })
