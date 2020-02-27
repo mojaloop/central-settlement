@@ -116,7 +116,7 @@ module.exports = {
       const settlementWindowsList = await SettlementWindowModel.getBySettlementId({ settlementId }, enums)
       const participantCurrenciesList = await SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({ settlementId }, enums)
       const participants = prepareParticipantsResult(participantCurrenciesList)
-      const settlementModelModel = await SettlementModelModel.getById(settlement.settlementModelId)
+      // const settlementModelModel = await SettlementModelModel.getById(settlement.settlementModelId)
 
       // Build settlement window content array and insert into settlement window list object
       for (var key of Object.keys(settlementWindowsList)) {
@@ -129,7 +129,7 @@ module.exports = {
 
       return {
         id: settlement.settlementId,
-        settlementModel: settlementModelModel.name,
+        // settlementModel: settlementModelModel.name,
         state: settlement.state,
         reason: settlement.reason,
         createdDate: settlement.createdDate,
