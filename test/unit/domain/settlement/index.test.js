@@ -100,13 +100,26 @@ Test('SettlementService', async (settlementServiceTest) => {
         currency: 'ZAR',
         key: 2
       }]
+      const settlementModelModelNameMock = {
+        settlementModelId: 1,
+        name: 'DEFERRED_NET',
+        isActive: 1,
+        settlementGranularityId: 2,
+        settlementInterchangeId: 2,
+        settlementDelayId: 2,
+        currencyId: null,
+        requireLiquidityCheck: 1,
+        ledgerAccountTypeId: 1,
+        autoPositionReset: 1
+      }
+
       SettlementModel.getById = sandbox.stub().returns(settlementMock)
       SettlementWindowModel.getBySettlementId = sandbox.stub().returns(settlementWindowsListMock)
       SettlementModel.settlementParticipantCurrency = {
         getParticipantCurrencyBySettlementId: sandbox.stub().returns(participantCurrenciesListMock)
       }
-      // SettlementWindowContentModel.getBySettlementId = sandbox.stub().returns(settlementWindowContentMock)
       SettlementWindowContentModel.getBySettlementAndWindowId = sandbox.stub().returns(settlementWindowContentMock)
+      SettlementModelModel.getById = sandbox.stub().returns(settlementModelModelNameMock)
 
       await getByIdTest.test('return settlement participant accounts', async test => {
         try {
@@ -115,7 +128,6 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.ok(SettlementModel.getById.withArgs({ settlementId }, enums).calledOnce, 'SettlementModel.getById with args ... called once')
           test.ok(SettlementWindowModel.getBySettlementId.withArgs({ settlementId }, enums).calledOnce, 'SettlementWindowModel.getBySettlementId with args ... called once')
           test.ok(SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId.withArgs({ settlementId }, enums).calledOnce, 'SettlementModel.spc.getParticipantCurrencyBySettlementId with args ... called once')
-          // test.ok(SettlementWindowContentModel.getBySettlementId.withArgs(settlementId).calledOnce, 'SettlementWindowContentModel.getBySettlementId with args ... called once')
           test.ok(SettlementWindowContentModel.getBySettlementAndWindowId.withArgs(settlementId, settlementWindowId).calledOnce, 'SettlementWindowContentModel.getBySettlementAndWindowId with args ... called once')
           test.end()
         } catch (err) {

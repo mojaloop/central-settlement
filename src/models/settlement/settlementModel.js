@@ -30,6 +30,11 @@ const getByName = async (name) => {
   return Db.settlementModel.findOne({ name, isActive: 1 })
 }
 
+const getById = async (settlementModelId) => {
+  return Db.settlementModel.findOne({ settlementModelId, isActive: 1 })
+}
+
 module.exports = {
-  getByName
+  getByName,
+  getById
 }

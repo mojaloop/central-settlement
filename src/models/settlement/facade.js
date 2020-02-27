@@ -1332,6 +1332,7 @@ const Facade = {
       return builder
         .join('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 'settlement.currentStateChangeId')
         .select('settlement.settlementId',
+          'settlement.settlementModelId',
           'ssc.settlementStateId AS state',
           'ssc.reason',
           'settlement.createdDate',
