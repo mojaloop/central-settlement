@@ -31,5 +31,6 @@ module.exports = {
   createSettlementWindowContentState: SettlementWindowContentStateChangeModel.create,
   getApplicableByWindowIdList: Facade.getApplicableByWindowIdList,
   getBySettlementId: Facade.getBySettlementId,
-  getBySettlementWindowId: Facade.getBySettlementWindowId
+  getBySettlementWindowId: Facade.getBySettlementWindowId,
+  getBySettlementAndWindowId: Facade.getBySettlementAndWindowId
 }

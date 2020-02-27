@@ -119,7 +119,7 @@ module.exports = {
 
       // Build settlement window content array and insert into settlement window list object
       for (var key of Object.keys(settlementWindowsList)) {
-        settlementWindowsList[key].content = await SettlementWindowContentModel.getBySettlementId(settlementId)
+        settlementWindowsList[key].content = await SettlementWindowContentModel.getBySettlementAndWindowId(settlementId, settlementWindowsList[key].id)
       }
       // Response object : Remove "settlementWindowId": 1, from the "content": [ array of objects
       objectKeyName = 'content'
