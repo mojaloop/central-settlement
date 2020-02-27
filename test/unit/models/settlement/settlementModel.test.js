@@ -66,7 +66,7 @@ Test('SettlementModelModel', async (settlementModelModelTest) => {
     }
   })
 
-  /*settlementModelModelTest.test('getById should return the settlementModel', async test => {
+  /* settlementModelModelTest.test('getById should return the settlementModel', async test => {
     try {
       const settlementModelId = 1
       const settlementModel = {
@@ -95,6 +95,6 @@ Test('SettlementModelModel', async (settlementModelModelTest) => {
       test.fail('Error Thrown')
       test.end()
     }
-  })*/
+  }) */
   settlementModelModelTest.end()
 })
