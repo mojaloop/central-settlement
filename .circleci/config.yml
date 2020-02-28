@@ -48,7 +48,7 @@ defaults_license_scanner: &defaults_license_scanner
 executors:
   default-docker:
     working_directory: /home/circleci/project
-    docker:
+    docker: 
       - image: node:12.16.0-alpine
 
   default-machine:
