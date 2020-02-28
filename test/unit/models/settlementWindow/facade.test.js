@@ -56,12 +56,16 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
     Db.settlementWindow = {
       query: sandbox.stub()
     }
+    Db.transferFulfilment = {
+      query: sandbox.stub()
+    }
     Db.settlementSettlementWindow = {
       query: sandbox.stub()
     }
     builderStub = sandbox.stub()
     Db.settlementWindow.query.callsArgWith(0, builderStub)
     Db.settlementSettlementWindow.query.callsArgWith(0, builderStub)
+    Db.transferFulfilment.query.callsArgWith(0, builderStub)
     builderStub.leftJoin = sandbox.stub()
     builderStub.join = sandbox.stub()
     selectStub = sandbox.stub()
@@ -70,6 +74,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
     whereRawStub = sandbox.stub()
     orderByStub = sandbox.stub()
     distinctStub = sandbox.stub()
+
     selectStubResult = {
       first: firstStub.returns({
         where: whereStub
@@ -96,6 +101,23 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
         leftJoin: leftJoin3Stub.returns({
           leftJoin: leftJoin4Stub.returns({
             select: selectStub.returns(selectStubResult)
+          })
+        })
+      })
+    })
+    builderStub.join.returns({
+      join: sandbox.stub().returns({
+        join: sandbox.stub().returns({
+          whereRaw: sandbox.stub().returns({
+            where: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                whereIn: sandbox.stub().returns({
+                  whereIn: sandbox.stub().returns({
+                    distinct: selectStub.returns(selectStubResult)
+                  })
+                })
+              })
+            })
           })
         })
       })
@@ -165,6 +187,17 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
     try {
       const listOfIds = [1, 2]
       const enums = {}
+      const settlementModelMock = {
+        currencyId: 'USD',
+        isActive: 1,
+        ledgerAccountTypeId: 1,
+        name: 'DEFERRED_NET_USD',
+        requireLiquidityCheck: 1,
+        settlementDelayId: 2,
+        settlementGranularityId: 2,
+        settlementInterchangeId: 2,
+        settlementModelId: 2
+      }
       const settlementWindowResultStub = [{
         settlementWindowId: 1,
         state: 'SETTLED'
@@ -176,17 +209,14 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
 
       await getByListOfIdsTest.test('retrieve settlement windows data by list of ids', async test => {
         try {
+          const knexStub = sandbox.stub()
+          Db.getKnex = sandbox.stub().returns(knexStub)
+          knexStub.raw = sandbox.stub()
           Db.settlementWindow.query.returns(Promise.resolve(settlementWindowResultStub))
 
-          const result = await SettlementWindowFacade.getByListOfIds(listOfIds, enums)
+          const result = await SettlementWindowFacade.getByListOfIds(listOfIds, settlementModelMock, enums)
           test.ok(result, 'Result returned')
-          test.ok(builderStub.leftJoin.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce)
-          test.ok(selectStub.withArgs('settlementWindow.settlementWindowId',
-            'swsc.settlementWindowStateId as state',
-            'swsc.reason as reason',
-            'settlementWindow.createdDate as createdDate',
-            'swsc.createdDate as changedDate').calledOnce)
-          test.ok(whereRawStub.withArgs(`settlementWindow.settlementWindowId IN (${listOfIds})`).calledOnce)
+          test.ok(builderStub.join.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce)
           test.end()
         } catch (err) {
           Logger.error(`getByListOfIds failed with error - ${err}`)
@@ -198,8 +228,11 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
       await getByListOfIdsTest.test('throw error if database is unavailable', async test => {
         try {
           e = new Error('Database unavailable')
+          const knexStub = sandbox.stub()
+          Db.getKnex = sandbox.stub().returns(knexStub)
+          knexStub.raw = sandbox.stub()
           Db.settlementWindow.query.throws(e)
-          await SettlementWindowFacade.getByListOfIds(listOfIds)
+          await SettlementWindowFacade.getByListOfIds(listOfIds, settlementModelMock, enums)
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
@@ -223,7 +256,8 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
       const state = 'PENDING_SETTLEMENT'
       const fromDateTime = new Date('01-01-1970').toISOString()
       const toDateTime = new Date().toISOString()
-      let query = { participantId, state, fromDateTime, toDateTime }
+      const currency = 'USD'
+      let query = { participantId, state, fromDateTime, toDateTime, currency }
       const settlementWindowResultStub = [{
         settlementWindowId: 1,
         state: 'PENDING_SETTLEMENT'
@@ -255,6 +289,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           test.ok(whereStub.withArgs('swsc.settlementWindowStateId', state).calledOnce)
           test.ok(whereStub.withArgs('settlementWindow.createdDate', '>=', fromDateTime).calledOnce)
           test.ok(whereStub.withArgs('settlementWindow.createdDate', '<=', toDateTime).calledOnce)
+          test.ok(whereStub.withArgs('pc.currencyId', currency).calledOnce)
           test.end()
         } catch (err) {
           Logger.error(`getByParams failed with error - ${err}`)
@@ -297,10 +332,13 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
         try {
           Db.settlementWindow.query.returns(Promise.resolve(settlementWindowResultStub))
 
-          query = { state, fromDateTime, toDateTime }
+          query = { state, fromDateTime, toDateTime, currency }
           const result = await SettlementWindowFacade.getByParams({ query }, enums)
           test.ok(result, 'Result returned')
           test.ok(builderStub.leftJoin.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce)
+          test.ok(leftJoin2Stub.withArgs('transferFulfilment AS tf', 'tf.settlementWindowId', 'settlementWindow.settlementWindowId').calledOnce)
+          test.ok(leftJoin3Stub.withArgs('transferParticipant AS tp', 'tp.transferId', 'tf.transferId').calledOnce)
+          test.ok(leftJoin4Stub.withArgs('participantCurrency AS pc', 'pc.participantCurrencyId', 'tp.participantCurrencyId').calledOnce)
           test.ok(selectStub.withArgs('settlementWindow.settlementWindowId',
             'swsc.settlementWindowStateId as state',
             'swsc.reason as reason',
@@ -311,6 +349,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           test.ok(whereStub.withArgs('swsc.settlementWindowStateId', state).calledOnce)
           test.ok(whereStub.withArgs('settlementWindow.createdDate', '>=', fromDateTime).calledOnce)
           test.ok(whereStub.withArgs('settlementWindow.createdDate', '<=', toDateTime).calledOnce)
+          test.ok(whereStub.withArgs('pc.currencyId', currency).calledOnce)
           test.end()
         } catch (err) {
           Logger.error(`getByParams failed with error - ${err}`)
@@ -367,16 +406,17 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
     }
   })
 
-  await settlementWindowFacadeTest.test('close should', async closeTest => {
+  await settlementWindowFacadeTest.test('process should', async processTest => {
     try {
-      const settlementWindowCurrentStateMock = { state: 'OPEN' }
+      let settlementWindowCurrentStateMock = { state: 'OPEN' }
+      const transfersCountMock = { cnt: 1 }
       const settlementWindowId = 1
-      const state = 'CLOSED'
+      const state = 'PROCESSING'
       const reason = 'close reason text'
       const params = { settlementWindowId, state, reason }
       const enums = { OPEN: 'OPEN' }
 
-      await closeTest.test('close the specified open window and open a new one', async test => {
+      await processTest.test('process the specified open window and open a new one', async test => {
         try {
           Db.getKnex = sandbox.stub()
           const knexStub = sandbox.stub()
@@ -404,9 +444,11 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           })
 
           SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
-          const result = await SettlementWindowFacade.close(params, enums)
+          sandbox.stub(SettlementWindowFacade, 'getTransfersCount').returns(transfersCountMock)
+          const result = await SettlementWindowFacade.process(params, enums)
           test.ok(result, 'Result returned')
           test.ok(SettlementWindowFacade.getById.withArgs({ settlementWindowId }).calledOnce)
+          test.ok(SettlementWindowFacade.getTransfersCount.withArgs({ settlementWindowId }).calledOnce)
           test.ok(knexStub.withArgs('settlementWindowStateChange').calledTwice)
           test.equal(transactingStub.withArgs(trxStub).callCount, 5)
           test.ok(insertStub.withArgs({
@@ -425,54 +467,103 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
             reason,
             createdDate: now
           }).calledOnce)
-          test.end()
           test.ok(whereStub.withArgs({ settlementWindowId: newSettlementWindowIdMock }).calledOnce)
           test.ok(updateStub.withArgs({ currentStateChangeId: newSettlementWindowStateChangeIdMock }).calledOnce)
-
           try {
             insertStub.onCall(3).throws(new Error('Insert into settlementWindowStateChange failed'))
-            await SettlementWindowFacade.close(params, enums)
+            await SettlementWindowFacade.process(params, enums)
             test.fail('Error expected, but not thrown!')
+            test.end()
           } catch (err) {
             test.pass(`Error "${err.message}" thrown as expected`)
+            test.end()
           }
         } catch (err) {
-          Logger.error(`close failed with error - ${err}`)
-          test.fail()
+          Logger.error(`process failed with error - ${err}`)
           test.end()
         }
       })
 
-      await closeTest.test('throw error if the requested window is not open', async test => {
+      await processTest.test('throw error if the requested window is not open', async test => {
         try {
-          settlementWindowCurrentStateMock.state = 'CLOSED'
+          const settlementWindowResultStub = () => { return { cnt: 1 } }
+          Db.transferFulfilment = {
+            query: settlementWindowResultStub
+          }
+
+          settlementWindowCurrentStateMock = { state: 'INVALID' }
           SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
-          await SettlementWindowFacade.close(params)
+          await SettlementWindowFacade.process(params)
           test.fail('Error not thrown!')
+          test.end()
         } catch (err) {
-          Logger.error(`close failed with error - ${err}`)
+          Logger.error(`process failed with error - ${err}`)
           test.ok(err instanceof Error, `Error "${err.message}" thrown as expected`)
           test.end()
         }
       })
 
-      await closeTest.test('throw error if the requested window does not exist', async test => {
+      await processTest.test('throw error if transfer count is 0', async test => {
         try {
-          SettlementWindowFacade.getById = sandbox.stub().returns(undefined)
-          await SettlementWindowFacade.close(params)
+          const settlementWindowResultStub = () => { return { cnt: 0 } }
+          Db.transferFulfilment = {
+            query: settlementWindowResultStub
+          }
+
+          settlementWindowCurrentStateMock = { state: 'OPEN' }
+          SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
+          await SettlementWindowFacade.process(params, enums)
           test.fail('Error not thrown!')
+          test.end()
         } catch (err) {
-          Logger.error(`close failed with error - ${err}`)
+          Logger.error(`process failed with error - ${err}`)
           test.ok(err instanceof Error, `Error "${err.message}" thrown as expected`)
           test.end()
         }
       })
 
-      await closeTest.end()
+      await processTest.test('roll back when critical error occurred', async test => {
+        try {
+          const settlementWindowResultStub = () => { return { cnt: 1 } }
+          Db.transferFulfilment = {
+            query: settlementWindowResultStub
+          }
+
+          settlementWindowCurrentStateMock = { state: 'OPEN' }
+          SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
+          await SettlementWindowFacade.process(params, enums)
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`process failed with error - ${err}`)
+          test.ok(err instanceof Error, `Error "${err.message}" thrown as expected`)
+          test.end()
+        }
+      })
+
+      await processTest.test('throw error if the requested window state is undefined does not exist', async test => {
+        try {
+          const settlementWindowResultStub = () => { return { cnt: 1 } }
+
+          Db.transferFulfilment = {
+            query: settlementWindowResultStub
+          }
+          settlementWindowCurrentStateMock = undefined
+          SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
+          await SettlementWindowFacade.process(params)
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`process failed with error - ${err}`)
+          test.ok(err instanceof Error, `Error "${err.message}" thrown as expected`)
+          test.end()
+        }
+      })
+      await processTest.end()
     } catch (err) {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
-      closeTest.fail()
-      closeTest.end()
+      processTest.fail()
+      processTest.end()
     }
   })
 
@@ -533,6 +624,220 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
       Logger.error(`settlementFacadeTest failed with error - ${err}`)
       getBySettlementIdTest.fail()
       getBySettlementIdTest.end()
+    }
+  })
+
+  await settlementWindowFacadeTest.test('close should', async closeTest => {
+    try {
+      const settlementWindowId = 1
+      const reason = 'close reason text'
+      const params = { settlementWindowId, reason }
+      const enums = { OPEN: 'OPEN' }
+
+      await closeTest.test('close the specified open window will throw an error if the current state is undefined.', async test => {
+        try {
+          const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub()
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+
+          SettlementWindowFacade.getById = sandbox.stub().returns(undefined)
+          const result = await SettlementWindowFacade.close(params, enums)
+          test.ok(result, 'Result returned')
+          test.ok(SettlementWindowFacade.getById.withArgs({ settlementWindowId }).calledOnce)
+          test.end()
+        } catch (err) {
+          Logger.error('Close settlementwindow failed with error : ' + err)
+          test.pass('Error thrown as expected')
+          test.end()
+        }
+      })
+
+      await closeTest.test('close the specified open window will throw an error if the current state is not "PROCESSING".', async test => {
+        try {
+          const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub()
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+
+          SettlementWindowFacade.getById = sandbox.stub().returns('INVALID STATE')
+          const result = await SettlementWindowFacade.close(params, enums)
+          test.ok(result, 'Result returned')
+          test.ok(SettlementWindowFacade.getById.withArgs({ settlementWindowId }).calledOnce)
+          test.end()
+        } catch (err) {
+          Logger.error('Close settlementwindow failed with error : ' + err)
+          test.pass('Error thrown as expected')
+          test.end()
+        }
+      })
+
+      await closeTest.test('close the specified open window should roll back on error.', async test => {
+        try {
+          const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub()
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
+
+          SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
+          const result = await SettlementWindowFacade.close(params, enums)
+          test.ok(result, 'Result returned')
+          test.end()
+        } catch (err) {
+          Logger.error('Close settlementwindow failed with error : ' + err)
+          test.pass('Error thrown as expected')
+          test.end()
+        }
+      })
+
+      await closeTest.test('close the specified open window successfully.', async test => {
+        try {
+          const knexStub = sandbox.stub()
+          knexStub.raw = sandbox.stub()
+          Db.getKnex.returns(knexStub)
+          const trxStub = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
+          const context = sandbox.stub()
+          const context2 = sandbox.stub()
+
+          Db.transferParticipant = {
+            join: sandbox.stub()
+          }
+
+          Db.participantCurrency = {
+            join: sandbox.stub()
+          }
+
+          Db.settlementWindowContent = {
+            join: sandbox.stub()
+          }
+
+          Db.transferParticipant.join.callsArgWith(0, builderStub)
+          Db.participantCurrency.join.callsArgWith(0, builderStub)
+          Db.settlementWindowContent.join.callsArgWith(0, builderStub)
+
+          const infoDataStub = {
+            settlementWindowContentId: 4,
+            settlementWindowContentStateChangeId: 4
+          }
+
+          // Insert settlementContentAggregation
+          context2.on = sandbox.stub().returns({
+            on: sandbox.stub().returns({
+              on: sandbox.stub()
+            })
+          })
+          context.from = sandbox.stub().returns({
+            join: sandbox.stub().returns({
+              join: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  distinct: sandbox.stub()
+                }),
+                join: sandbox.stub().callsArgOn(1, context2).returns({
+                  where: sandbox.stub().returns({
+                    groupBy: sandbox.stub().returns({
+                      select: sandbox.stub().returns({
+                        sum: sandbox.stub()
+                      })
+                    })
+                  })
+                })
+              })
+            }),
+            where: sandbox.stub().returns({
+              select: sandbox.stub()
+            })
+          })
+
+          knexStub.from = sandbox.stub().returns({
+            insert: sandbox.stub().callsArgOn(0, context).returns({ transacting: sandbox.stub() })
+          })
+
+          // Update settlementWindowContent pointers to current states, inserted by previous command
+          knexStub.withArgs('settlementWindowContentStateChange AS swcsc').returns({
+            join: sandbox.stub().returns({
+              select: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns(Promise.resolve(infoDataStub))
+                })
+              })
+            })
+          })
+          knexStub.withArgs('settlementWindowContent').returns({
+            where: sandbox.stub().returns({
+              update: sandbox.stub().returns({
+                transacting: sandbox.stub()
+              })
+            })
+          })
+
+          knexStub.withArgs('settlementWindowStateChange').returns({
+            transacting: sandbox.stub().returns({
+              insert: sandbox.stub().returns(1)
+            })
+          })
+          knexStub.withArgs('settlementWindow').returns({
+            transacting: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                update: sandbox.stub().returns(1)
+              })
+            })
+          })
+
+          SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
+          const result = await SettlementWindowFacade.close(params, enums)
+          test.ok(result, true)
+          test.end()
+        } catch (err) {
+          Logger.error('Close settlementwindow failed with error : ' + err)
+          test.pass('Error thrown incorrectly')
+          test.end()
+        }
+      })
+      await closeTest.end()
+    } catch (err) {
+      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      closeTest.fail()
+      closeTest.end()
+    }
+  })
+
+  await settlementWindowFacadeTest.test('getTransfersCount should', async closeTest => {
+    try {
+      await closeTest.test('should return the number of transfers in a window.', async test => {
+        try {
+          const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub()
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          const firstStub = sandbox.stub()
+          const whereStub = sandbox.stub()
+          const builderStub = sandbox.stub()
+          builderStub.count = sandbox.stub()
+          builderStub.count.returns({
+            first: firstStub.returns({
+              where: whereStub.returns(1)
+            })
+          })
+          Db.transferFulfilment.query.callsArgWith(0, builderStub)
+
+          const result = await SettlementWindowFacade.getTransfersCount({ settlementWindowId: 1 })
+          test.ok(result, 'Result returned')
+          test.end()
+        } catch (err) {
+          Logger.error('getTransferCount failed with error : ' + err)
+          test.pass('Error thrown as expected')
+          test.end()
+        }
+      })
+
+      await closeTest.end()
+    } catch (err) {
+      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      closeTest.fail()
+      closeTest.end()
     }
   })
 

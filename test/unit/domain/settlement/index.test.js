@@ -18,19 +18,21 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Georgi Georgiev <georgi.georgiev@modusbox.com>
- * Valentin Genev <valentin.genev@modusbox.com>
+ * ModusBox
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
+ - Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
-
 'use strict'
 
-const Test = require('tapes')(require('tape'))
-const Sinon = require('sinon')
 const Logger = require('@mojaloop/central-services-logger')
-const SettlementService = require('../../../../src/domain/settlement')
+const Sinon = require('sinon')
 const SettlementModel = require('../../../../src/models/settlement')
+const SettlementModelModel = require('../../../../src/models/settlement/settlementModel')
+const SettlementService = require('../../../../src/domain/settlement')
+const SettlementWindowContentModel = require('../../../../src/models/settlementWindowContent')
 const SettlementWindowModel = require('../../../../src/models/settlementWindow')
+const Test = require('tapes')(require('tape'))
 
 Test('SettlementService', async (settlementServiceTest) => {
   let sandbox
@@ -243,6 +245,7 @@ Test('SettlementService', async (settlementServiceTest) => {
   await settlementServiceTest.test('settlementEventTrigger should', async settlementEventTriggerTest => {
     try {
       const params = {
+        settlementModel: 'DEFERRED_NET',
         reason: 'settlement trigger',
         settlementWindows: [
           { id: 1 },
@@ -252,13 +255,36 @@ Test('SettlementService', async (settlementServiceTest) => {
       const enums = {
         settlementWindowStates: {
           CLOSED: 'CLOSED'
+        },
+        settlementGranularity: {
+          NET: 'NET'
+        },
+        settlementInterchange: {
+          MULTILATERAL: 'MULTILATERAL'
+        },
+        settlementDelay: {
+          DEFERRED: 'DEFERRED'
         }
       }
       const options = {
         logger: Logger
       }
 
-      const settlementWindowsMock = [{ state: 'CLOSED' }, { state: 'CLOSED' }]
+      const settlementModelDataMock = [null, {
+        settlementGranularityId: 'GROSS'
+      }, {
+        settlementGranularityId: 'NET',
+        settlementInterchangeId: 'BILATERAL'
+      }, {
+        settlementGranularityId: 'NET',
+        settlementInterchangeId: 'MULTILATERAL',
+        settlementDelayId: 'IMMEDIATE'
+      }, {
+        settlementGranularityId: 'NET',
+        settlementInterchangeId: 'MULTILATERAL',
+        settlementDelayId: 'DEFERRED'
+      }]
+      const settlementWindowsMock = [{ settlementWindowId: 1, state: 'CLOSED' }, { settlementWindowId: 2, state: 'CLOSED' }]
       const settlementIdMock = 1
       const settlementMock = {
         settlementId: settlementIdMock,
@@ -277,6 +303,22 @@ Test('SettlementService', async (settlementServiceTest) => {
       }, {
         id: 2,
         state: 'PENDING_SETTLEMENT'
+      }]
+      const settlementWindowContentMock = [{
+        settlementWindowId: 1,
+        ledgerAccountTypeId: 1,
+        currencyId: 'USD',
+        settlementId: null
+      }, {
+        settlementWindowId: 1,
+        ledgerAccountTypeId: 6,
+        currencyId: 'USD',
+        settlementId: null
+      }, {
+        settlementWindowId: 2,
+        ledgerAccountTypeId: 1,
+        currencyId: 'USD',
+        settlementId: null
       }]
       const participantCurrenciesListMock = [{
         id: 1,
@@ -298,10 +340,12 @@ Test('SettlementService', async (settlementServiceTest) => {
 
       await settlementEventTriggerTest.test('create new settlement and return it', async test => {
         try {
+          SettlementModelModel.getByName = sandbox.stub().returns(settlementModelDataMock[settlementModelDataMock.length - 1])
           SettlementWindowModel.getByListOfIds = sandbox.stub().returns(settlementWindowsMock)
-          SettlementModel.triggerEvent = sandbox.stub().returns(settlementIdMock)
+          SettlementModel.triggerSettlementEvent = sandbox.stub().returns(settlementIdMock)
           SettlementModel.getById = sandbox.stub().returns(settlementMock)
           SettlementWindowModel.getBySettlementId = sandbox.stub().returns(settlementWindowsListMock)
+          SettlementWindowContentModel.getBySettlementId = sandbox.stub().returns(settlementWindowContentMock)
           SettlementModel.settlementParticipantCurrency = {
             getParticipantCurrencyBySettlementId: sandbox.stub().returns(participantCurrenciesListMock)
           }
@@ -309,8 +353,9 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.ok(result, 'Result returned')
           const idList = [1, 2]
           const reason = params.reason
-          test.ok(SettlementWindowModel.getByListOfIds.withArgs(idList, enums.settlementWindowStates).calledOnce, 'SettlementWindowModel.getByListOfIds with args ... called once')
-          test.ok(SettlementModel.triggerEvent.withArgs({ idList, reason }, enums).calledOnce, 'SettlementModel.triggerEvent with args ... called once')
+          const settlementModelData = settlementModelDataMock[settlementModelDataMock.length - 1]
+          test.ok(SettlementWindowModel.getByListOfIds.withArgs(idList, settlementModelData, enums.settlementWindowStates).calledOnce, 'SettlementWindowModel.getByListOfIds with args ... called once')
+          test.ok(SettlementModel.triggerSettlementEvent.withArgs({ idList, reason }, settlementModelData, enums).calledOnce, 'SettlementModel.triggerEvent with args ... called once')
           test.ok(SettlementWindowModel.getBySettlementId.withArgs({ settlementId: settlementIdMock }).calledOnce, 'SettlementWindowModel.getBySettlementId with args ... called once')
           test.ok(SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId.withArgs({ settlementId: settlementIdMock }).calledOnce, 'SettlementModel.spc.getParticipantCurrencyBySettlementId w/ args ... called once')
           test.equal(result.participants[0].accounts[1].state, participantCurrenciesListMock[1].state, 'Result property matched')
@@ -330,20 +375,33 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.end()
         } catch (err) {
           Logger.error(`settlementEventTriggerTest failed with error - ${err}`)
-          test.equal(err.message, 'At least one provided settlement window does not exist', `Error "${err.message}" thrown`)
+          test.equal(err.message, 'Inapplicable windows 1, 2', `Error "${err.message}" thrown`)
           test.end()
         }
       })
 
-      await settlementEventTriggerTest.test('throw if any input window is not CLOSED', async test => {
+      await settlementEventTriggerTest.test('throw when settlement model is not found', async test => {
         try {
-          SettlementWindowModel.getByListOfIds = sandbox.stub().returns([{ state: 'CLOSED' }, { state: 'OPEN' }])
+          SettlementModelModel.getByName = sandbox.stub().returns(settlementModelDataMock[0])
           await SettlementService.settlementEventTrigger(params, enums)
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
           Logger.error(`settlementEventTriggerTest failed with error - ${err}`)
-          test.equal(err.message, 'At least one settlement window is not in closed or aborted state', `Error "${err.message}" thrown`)
+          test.equal(err.message, 'Settlement model not found', `Error "${err.message}" thrown`)
+          test.end()
+        }
+      })
+
+      await settlementEventTriggerTest.test('throw when invalid settlement model is specified', async test => {
+        try {
+          SettlementModelModel.getByName = sandbox.stub().returns(settlementModelDataMock[1])
+          await SettlementService.settlementEventTrigger(params, enums)
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementEventTriggerTest failed with error - ${err}`)
+          test.equal(err.message, 'Settlement can not be created for GROSS or IMMEDIATE models', `Error "${err.message}" thrown`)
           test.end()
         }
       })

@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "version": "1.1.0",
+        "version": "1.9.1",
         "title": "MOJALOOP Central Settlements",
         "description": "Mojaloop API for Settlements."
     },
@@ -101,7 +101,7 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "description": "If the settlementWindow is open, it can be closed and a new window is created. If it is already closed, return an error message. Returns the new settlement window.",
+                "description": "Closes requested window and opens a new one.",
                 "summary": "closeSettlementWindow",
                 "operationId": "closeSettlementWindow",
                 "parameters": [
@@ -210,7 +210,15 @@
                         "format": "date-time",
                         "description": "The end date for query (relates to central-ledger.settlementWindow.createdDate). Can be used together with `fromDateTime'. eg 2017-07-21T17:32:28Z\n",
                         "required": false
+                    },
+                    {
+                        "in": "query",
+                        "name": "currency",
+                        "type": "string",
+                        "description": "A valid currency to filter on.\n",
+                        "required": false
                     }
+
                 ],
                 "tags": [
                     "getSettlementWindowsByParams"
@@ -392,7 +400,7 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "description": "Trigger the creation of a settlement, that does the calculation of the net settlement position per participant and marks all transfers in the affected windows as PENDING_SETTLEMENT. Returned dataset is the net settlement report for the settlementWindow",
+                "description": "Triggers settlement creation. Returns settlement report.",
                 "summary": "createSettlement",
                 "operationId": "createSettlement",
                 "parameters": [
@@ -581,7 +589,7 @@
                 }
             }
         },
-        "/settlements/{settlementId}/participants/{participantId}": {
+        "/settlements/{sid}/participants/{pid}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -593,14 +601,14 @@
                 "parameters": [
                     {
                         "in": "path",
-                        "name": "settlementId",
+                        "name": "sid",
                         "required": true,
                         "type": "integer",
                         "description": "A valid Settlement Id.\n"
                     },
                     {
                         "in": "path",
-                        "name": "participantId",
+                        "name": "pid",
                         "required": true,
                         "type": "integer",
                         "description": "A valid Participant Id.\n"
@@ -656,20 +664,20 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "description": "Acknowledgement of settlement by updating with Settlements Id and Participant Id.",
+                "description": "Acknowledgement of settlement by updating the reason and state by SP.",
                 "summary": "updateSettlementBySettlementParticipant",
                 "operationId": "updateSettlementBySettlementParticipant",
                 "parameters": [
                     {
                         "in": "path",
-                        "name": "settlementId",
+                        "name": "sid",
                         "description": "A valid Settlement Id.",
                         "required": true,
                         "type": "integer"
                     },
                     {
                         "in": "path",
-                        "name": "participantId",
+                        "name": "pid",
                         "description": "A valid Participant Id.",
                         "required": true,
                         "type": "integer"
@@ -727,7 +735,7 @@
                 }
             }
         },
-        "/settlements/{settlementId}/participants/{participantId}/accounts/{accountId}": {
+        "/settlements/{sid}/participants/{pid}/accounts/{aid}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -739,24 +747,24 @@
                 "parameters": [
                     {
                         "in": "path",
-                        "name": "settlementId",
+                        "name": "sid",
                         "required": true,
                         "type": "integer",
                         "description": "A valid Settlement Id.\n"
                     },
                     {
                         "in": "path",
-                        "name": "participantId",
+                        "name": "pid",
                         "required": true,
                         "type": "integer",
                         "description": "A valid Participant Id.\n"
                     },
                     {
                         "in": "path",
-                        "name": "accountId",
+                        "name": "aid",
                         "required": true,
                         "type": "integer",
-                        "description": "A valid Account Id.    \n"
+                        "description": "A valid Account Id.\n"
                     }
                 ],
                 "tags": [
@@ -809,27 +817,27 @@
                     "application/json"
                 ],
                 "deprecated": false,
-                "description": "Acknowledgement of settlement by updating the reason and state by Settlements Id, Participant Id and accounts Id.",
+                "description": "Acknowledgement of settlement by updating the reason and state by SPA.",
                 "summary": "updateSettlementBySettlementParticipantAccount",
                 "operationId": "updateSettlementBySettlementParticipantAccount",
                 "parameters": [
                     {
                         "in": "path",
-                        "name": "settlementId",
+                        "name": "sid",
                         "description": "A valid Settlement Id.",
                         "required": true,
                         "type": "integer"
                     },
                     {
                         "in": "path",
-                        "name": "participantId",
+                        "name": "pid",
                         "description": "A valid Participant Id.",
                         "required": true,
                         "type": "integer"
                     },
                     {
                         "in": "path",
-                        "name": "accountId",
+                        "name": "aid",
                         "description": "A valid Account Id.",
                         "required": true,
                         "type": "integer"
@@ -1058,6 +1066,9 @@
         "SettlementEventPayload": {
             "type": "object",
             "properties": {
+                "settlementModel": {
+                    "type": "string"
+                },
                 "reason": {
                     "type": "string"
                 },
@@ -1071,6 +1082,7 @@
                 }
             },
             "required": [
+                "settlementModel",
                 "reason",
                 "settlementWindows"
             ]
@@ -1103,11 +1115,50 @@
                 },
                 "changedDate": {
                     "type": "string"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SettlementWindowContent"
+                    }
                 }
             },
             "required": [
                 "id",
                 "state",
+                "createdDate"
+            ]
+        },
+        "SettlementWindowContent": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "ledgerAccountType": {
+                    "type": "string"
+                },
+                "currencyId": {
+                    "type": "string"
+                },
+                "createdDate": {
+                    "type": "string"
+                },
+                "changedDate": {
+                    "type": "string"
+                },
+                "settlementId": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "id",
+                "state",
+                "ledgerAccountType",
+                "currencyId",
                 "createdDate"
             ]
         },

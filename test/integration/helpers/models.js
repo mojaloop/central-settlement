@@ -18,7 +18,8 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Georgi Georgiev <georgi.georgiev@modusbox.com>
+ * ModusBox
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
 
@@ -28,5 +29,34 @@ const Db = require('../../../src/lib/db')
 module.exports = {
   getTransferParticipantsByTransferId: async function (transferId) {
     return Db.transferParticipant.find({ transferId })
+  },
+  settlementModel: {
+    create: async (record) => {
+      return Db.settlementModel.insert(record)
+    }
+  },
+  settlementWindowContent: {
+    getById: async (id) => {
+      return Db.settlementWindowContent.findOne({ settlementWindowContentId: id })
+    },
+    getByParams: async (params) => {
+      return Db.settlementWindowContent.find(params)
+    }
+  },
+  settlementWindowContentStateChange: {
+    getBySettlementWindowContentId: async (id) => {
+      return Db.settlementWindowContentStateChange.query(async builder => {
+        return builder
+          .where({ settlementWindowContentId: id })
+          .select('*')
+          .orderBy('settlementWindowContentStateChangeId', 'desc')
+          .first()
+      })
+    }
+  },
+  settlementWindowContentAggregation: {
+    getBySettlementWindowContentId: async (id) => {
+      return Db.settlementContentAggregation.find({ settlementWindowContentId: id })
+    }
   }
 }
