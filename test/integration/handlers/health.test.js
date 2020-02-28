@@ -34,7 +34,7 @@ const {
   createRequest,
   unwrapResponse
 } = require('../../util')
-const healthHandler = require('../../../src/handlers/health')
+const healthHandler = require('../../../src/api/handlers/health')
 
 Test('Health Handler', async handlersTest => {
   await handlersTest.test('registerAllHandlers should', async registerAllHandlers => {
@@ -62,7 +62,8 @@ Test('Health Handler', async handlersTest => {
       }
       const expectedStatus = 200
       const expectedServices = [
-        { name: 'datastore', status: 'OK' }
+        { name: 'datastore', status: 'OK' },
+        { name: 'broker', status: 'OK' }
       ]
 
       // Act

@@ -18,14 +18,15 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Georgi Georgiev <georgi.georgiev@modusbox.com>
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- * Miguel de Barros <miguel.debarros@modusbox.com>
-
+ * ModuxBox
+ - Deon Botha <deon.botha@modusbox.com>
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
+ - Miguel de Barros <miguel.debarros@modusbox.com>
+ - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
+ - Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
+'use strict'
 
 const Facade = require('./facade')
 const settlementWindowStateChange = require('./settlementWindowStateChange')
@@ -33,8 +34,9 @@ const settlementWindowStateChange = require('./settlementWindowStateChange')
 module.exports = {
   getById: Facade.getById,
   getByParams: Facade.getByParams,
+  process: Facade.process,
   close: Facade.close,
   getByListOfIds: Facade.getByListOfIds,
   getBySettlementId: Facade.getBySettlementId,
-  createSettlementWindow: settlementWindowStateChange.create
+  createSettlementWindowState: settlementWindowStateChange.create
 }

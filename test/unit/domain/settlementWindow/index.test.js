@@ -20,6 +20,7 @@
 
  * Georgi Georgiev <georgi.georgiev@modusbox.com>
  * Valentin Genev <valentin.genev@modusbox.com>
+ * Lazola Lucas <lazola.lucas@modusbox.com>
  --------------
  ******/
 
@@ -30,6 +31,8 @@ const Sinon = require('sinon')
 const Logger = require('@mojaloop/central-services-logger')
 const SettlementWindowService = require('../../../../src/domain/settlementWindow')
 const SettlementWindowModel = require('../../../../src/models/settlementWindow')
+const SettlementWindowContentModel = require('../../../../src/models/settlementWindowContent')
+const Producer = require('@mojaloop/central-services-stream').Util.Producer
 
 Test('SettlementWindowService', async (settlementWindowServiceTest) => {
   let sandbox
@@ -49,14 +52,17 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
       const params = { settlementWindowId: 1 }
       const enums = {}
       const options = { logger: Logger }
-      const settlementWindowMock = { settlementWindowId: 1 }
+      const settlementWindowMock = { settlementWindowId: 1, content: { id: 11 } }
+      const settlementWindowContentMock = { id: 11 }
 
       await getByIdTest.test('return settlement window', async test => {
         try {
+          SettlementWindowContentModel.getBySettlementWindowId = sandbox.stub().returns(settlementWindowContentMock)
           SettlementWindowModel.getById = sandbox.stub().returns(settlementWindowMock)
+
           const result = await SettlementWindowService.getById(params, enums, options)
           test.ok(result, 'Result returned')
-          test.ok(SettlementWindowModel.getById.withArgs(params, enums).calledOnce, 'SettlementWindowModel.getById with args ... called once')
+          test.ok(SettlementWindowModel.getById.withArgs(params).calledOnce, 'SettlementWindowModel.getById with args ... called once')
 
           SettlementWindowModel.getById = sandbox.stub().returns()
           try {
@@ -64,7 +70,72 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
             test.fail('Error expected, but not thrown!')
           } catch (err) {
             test.ok(err instanceof Error, `Error ${err.message} thrown`)
-            test.ok(SettlementWindowModel.getById.withArgs(params, enums).calledOnce, 'SettlementWindowModel.getById with args ... called once')
+            test.ok(SettlementWindowModel.getById.withArgs(params).calledOnce, 'SettlementWindowModel.getById with args ... called once')
+          }
+          test.end()
+        } catch (err) {
+          Logger.error(`getByIdTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await getByIdTest.end()
+    } catch (err) {
+      Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
+      getByIdTest.fail()
+      getByIdTest.end()
+    }
+  })
+
+  await settlementWindowServiceTest.test('getById should throw an error if no settlement window content is undefined', async getByIdTest => {
+    try {
+      const params = { settlementWindowId: 1 }
+      const enums = {}
+      const settlementWindowMock = { settlementWindowId: 1, content: { id: 11 } }
+
+      await getByIdTest.test('Throw an error when settlement window content is undefined', async test => {
+        try {
+          SettlementWindowContentModel.getBySettlementWindowId = sandbox.stub().returns(undefined)
+          SettlementWindowModel.getById = sandbox.stub().returns(settlementWindowMock)
+          try {
+            await SettlementWindowService.getById(params, enums)
+            test.fail('Error expected, but not thrown!')
+          } catch (err) {
+            test.equal(err.message, 'No records for settlementWidowContentId : 1 found')
+          }
+          test.end()
+        } catch (err) {
+          Logger.error(`getByIdTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await getByIdTest.end()
+    } catch (err) {
+      Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
+      getByIdTest.fail()
+      getByIdTest.end()
+    }
+  })
+
+  await settlementWindowServiceTest.test('getById should throw an error if no settlement window content is found', async getByIdTest => {
+    try {
+      const params = { settlementWindowId: 1 }
+      const enums = {}
+      const settlementWindowMock = { settlementWindowId: 1, content: { } }
+      const settlementWindowContentMock = []
+
+      await getByIdTest.test('Throw an error when settlement window content is undefined', async test => {
+        try {
+          SettlementWindowContentModel.getBySettlementId = sandbox.stub().returns(settlementWindowContentMock)
+          SettlementWindowModel.getById = sandbox.stub().returns(settlementWindowMock)
+          try {
+            await SettlementWindowService.getById(params, enums)
+            test.pass('Error expected, but not thrown!')
+          } catch (err) {
+            test.equal(err.message, 'No records for settlementWidowContentId : 1 found')
           }
           test.end()
         } catch (err) {
@@ -88,9 +159,13 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
       const enums = {}
       const options = { logger: Logger }
       const settlementWindowsMock = [{ settlementWindowId: 1 }, { settlementWindowId: 2 }]
+      const settlementWindowMock = { settlementWindowId: 1, content: { id: 11 } }
+      const settlementWindowContentMock = { id: 11 }
 
       await getByParamsTest.test('return settlement windows', async test => {
         try {
+          SettlementWindowContentModel.getBySettlementWindowId = sandbox.stub().returns(settlementWindowContentMock)
+          SettlementWindowModel.getById = sandbox.stub().returns(settlementWindowMock)
           SettlementWindowModel.getByParams = sandbox.stub().returns(settlementWindowsMock)
           const result = await SettlementWindowService.getByParams(params, enums, options)
           test.ok(result, 'Result returned')
@@ -129,45 +204,128 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
     }
   })
 
-  await settlementWindowServiceTest.test('close should', async closeTest => {
+  await settlementWindowServiceTest.test('getByParams should fail when no content is found', async getByParamsTest => {
     try {
-      const params = { id: 1 }
+      let params = { query: { participantId: 1, state: 'PENDING_SETTLEMENT' } }
       const enums = {}
       const options = { logger: Logger }
-      const settlementWindowIdMock = 1
-      const settlementWindowMock = { settlementWindowId: settlementWindowIdMock, state: 'CLOSED' }
+      const settlementWindowsMock = [{ settlementWindowId: 1 }, { settlementWindowId: 2 }]
+      const settlementWindowMock = { settlementWindowId: 1, content: { id: 11 } }
 
-      await closeTest.test('close settlement window and return it', async test => {
+      await getByParamsTest.test('return settlement windows', async test => {
         try {
-          SettlementWindowModel.close = sandbox.stub().returns(settlementWindowIdMock)
+          SettlementWindowContentModel.getBySettlementWindowId = sandbox.stub().returns(undefined)
           SettlementWindowModel.getById = sandbox.stub().returns(settlementWindowMock)
-          const result = await SettlementWindowService.close(params, enums, options)
-          test.ok(result, 'Result returned')
-          test.ok(SettlementWindowModel.close.withArgs(params, enums).calledOnce, 'SettlementWindowModel.close with args ... called once')
-          test.ok(SettlementWindowModel.getById.withArgs({ settlementWindowId: settlementWindowIdMock }, enums).calledOnce, 'SettlementWindowModel.getById with args ... called once')
-
-          SettlementWindowModel.close = sandbox.stub().throws(new Error('Error occurred'))
+          SettlementWindowModel.getByParams = sandbox.stub().returns(settlementWindowsMock)
           try {
-            await SettlementWindowService.close(params, enums)
+            await SettlementWindowService.getByParams(params, enums, options)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
-            test.equal(err.message, 'Error occurred', `Error "${err.message}" thrown as expected`)
-            test.ok(SettlementWindowModel.close.withArgs(params, enums).calledOnce, 'SettlementWindowModel.close with args ... called once')
+            test.equal(err.message, 'No records for settlementWidowContentId : 1 found')
+          }
+          SettlementWindowModel.getByParams = sandbox.stub().returns()
+          try {
+            await SettlementWindowService.getByParams(params, enums)
+            test.fail('Error expected, but not thrown!')
+          } catch (err) {
+            test.ok(err instanceof Error, `Error "${err.message}" thrown as expected`)
+            test.ok(SettlementWindowModel.getByParams.withArgs(params, enums).calledOnce, 'SettlementWindowModel.getByParams with args ... called once')
+          }
+
+          params = { query: {} }
+          try {
+            await SettlementWindowService.getByParams(params, enums)
+            test.fail('Error expected, but not thrown!')
+          } catch (err) {
+            test.pass(`Error "${err.message.substr(0, 50)} ..." thrown as expected`)
           }
 
           test.end()
         } catch (err) {
-          Logger.error(`closeTest failed with error - ${err}`)
+          Logger.error(`getByParamsTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
       })
 
-      await closeTest.end()
+      await getByParamsTest.end()
     } catch (err) {
       Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
-      closeTest.fail()
-      closeTest.end()
+      getByParamsTest.fail()
+      getByParamsTest.end()
+    }
+  })
+
+  await settlementWindowServiceTest.test('process should', async processTest => {
+    try {
+      const params = { id: 1 }
+      const enums = {}
+      const options = { logger: Logger }
+      const settlementWindowIdMock = 1
+      const settlementWindowMock = { settlementWindowId: settlementWindowIdMock, state: 'PROCESSING' }
+      Producer.produceMessage = sandbox.stub()
+
+      await processTest.test('process settlement window and return it', async test => {
+        try {
+          SettlementWindowModel.process = sandbox.stub().returns(settlementWindowIdMock)
+
+          SettlementWindowModel.getById = sandbox.stub().returns(settlementWindowMock)
+
+          const result = await SettlementWindowService.process(params, enums, options)
+          test.ok(result, 'Result returned')
+          test.ok(SettlementWindowModel.process.withArgs(params, enums).calledOnce, 'SettlementWindowModel.process with args ... called once')
+          test.ok(SettlementWindowModel.getById.withArgs({ settlementWindowId: settlementWindowIdMock }, enums).calledOnce, 'SettlementWindowModel.getById with args ... called once')
+
+          SettlementWindowModel.process = sandbox.stub().throws(new Error('Error occurred'))
+          try {
+            await SettlementWindowService.process(params, enums)
+            test.fail('Error expected, but not thrown!')
+          } catch (err) {
+            test.equal(err.message, 'Error occurred', `Error "${err.message}" thrown as expected`)
+            test.ok(SettlementWindowModel.process.withArgs(params, enums).calledOnce, 'SettlementWindowModel.process with args ... called once')
+          }
+
+          test.end()
+        } catch (err) {
+          Logger.error(`processTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await processTest.end()
+    } catch (err) {
+      Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
+      processTest.fail()
+      processTest.end()
+    }
+  })
+
+  await settlementWindowServiceTest.test('close should', async processTest => {
+    try {
+      const settlementWindowIdMock = 1
+      const settlementWindowMock = { settlementWindowId: settlementWindowIdMock, state: 'PROCESSING' }
+      Producer.produceMessage = sandbox.stub()
+
+      await processTest.test('close settlement window and return it', async test => {
+        try {
+          SettlementWindowModel.close = sandbox.stub().returns(settlementWindowIdMock)
+          SettlementWindowModel.getById = sandbox.stub().returns(settlementWindowMock)
+
+          const result = await SettlementWindowService.close(settlementWindowIdMock, '')
+          test.ok(result, 'Result returned')
+          test.end()
+        } catch (err) {
+          Logger.error(`processTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+      await processTest.end()
+    } catch (err) {
+      Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
+      processTest.fail()
+      processTest.end()
     }
   })
 

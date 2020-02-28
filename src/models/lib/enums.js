@@ -18,12 +18,12 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Georgi Georgiev <georgi.georgiev@modusbox.com>
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
+ * ModusBox
+ - Deon Botha <deon.botha@modusbox.com>
+ - Georgi Georgiev <georgi.georgiev@modusbox.com>
+ - Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
-
 'use strict'
 
 const Db = require('../../lib/db')
@@ -35,50 +35,6 @@ module.exports = {
     }
   },
 
-  settlementWindowStates: async function () {
-    const settlementWindowStateEnum = {}
-    const settlementWindowStateEnumsList = await Db.settlementWindowState.find({})
-    if (settlementWindowStateEnumsList) {
-      for (const state of settlementWindowStateEnumsList) {
-        settlementWindowStateEnum[`${state.enumeration}`] = state.settlementWindowStateId
-      }
-      return settlementWindowStateEnum
-    }
-  },
-  settlementStates: async function () {
-    const settlementStateEnum = {}
-
-    const settlementStateEnumsList = await Db.settlementState.find({})
-    if (settlementStateEnumsList) {
-      for (const state of settlementStateEnumsList) {
-        settlementStateEnum[`${state.enumeration}`] = state.settlementStateId
-      }
-      return settlementStateEnum
-    }
-  },
-  transferStates: async function () {
-    const transferStateEnum = {}
-    const transferStateEnumsList = await Db.transferState.find({})
-    if (transferStateEnumsList) {
-      for (const state of transferStateEnumsList) {
-        transferStateEnum[`${state.transferStateId}`] = state.transferStateId
-      }
-      return transferStateEnum
-    }
-  },
-  transferStateEnums: async function () {
-    const transferStateEnum = {}
-    const transferStateEnumsList = await Db.transferState.find({})
-    if (transferStateEnumsList) {
-      for (const state of transferStateEnumsList) {
-        // apply distinct even though final result would contain distinct values
-        if (!transferStateEnum[`${state.enumeration}`]) {
-          transferStateEnum[`${state.enumeration}`] = state.enumeration
-        }
-      }
-      return transferStateEnum
-    }
-  },
   ledgerAccountTypes: async function () {
     const ledgerAccountTypeEnum = {}
     const ledgerAccountTypeEnumsList = await Db.ledgerAccountType.find({})
@@ -99,6 +55,103 @@ module.exports = {
       return ledgerEntryTypeEnum
     }
   },
+  participantLimitTypes: async function () {
+    const participantLimitTypeEnum = {}
+    const participantLimitTypeEnumsList = await Db.participantLimitType.find({})
+    if (participantLimitTypeEnumsList) {
+      for (const state of participantLimitTypeEnumsList) {
+        participantLimitTypeEnum[`${state.name}`] = state.participantLimitTypeId
+      }
+      return participantLimitTypeEnum
+    }
+  },
+  settlementDelay: async function () {
+    const settlementDelayName = {}
+
+    const settlementDelayNamesList = await Db.settlementDelay.find({})
+    if (settlementDelayNamesList) {
+      for (const record of settlementDelayNamesList) {
+        settlementDelayName[`${record.name}`] = record.settlementDelayId
+      }
+      return settlementDelayName
+    }
+  },
+  settlementDelayEnums: async function () {
+    const settlementDelayEnum = {}
+
+    const settlementDelayEnumsList = await Db.settlementDelay.find({})
+    if (settlementDelayEnumsList) {
+      for (const record of settlementDelayEnumsList) {
+        settlementDelayEnum[`${record.name}`] = record.name
+      }
+      return settlementDelayEnum
+    }
+  },
+  settlementGranularity: async function () {
+    const settlementGranularityName = {}
+
+    const settlementGranularityNamesList = await Db.settlementGranularity.find({})
+    if (settlementGranularityNamesList) {
+      for (const record of settlementGranularityNamesList) {
+        settlementGranularityName[`${record.name}`] = record.settlementGranularityId
+      }
+      return settlementGranularityName
+    }
+  },
+  settlementGranularityEnums: async function () {
+    const settlementGranularityEnum = {}
+
+    const settlementGranularityEnumsList = await Db.settlementGranularity.find({})
+    if (settlementGranularityEnumsList) {
+      for (const record of settlementGranularityEnumsList) {
+        settlementGranularityEnum[`${record.name}`] = record.name
+      }
+      return settlementGranularityEnum
+    }
+  },
+  settlementInterchange: async function () {
+    const settlementInterchangeName = {}
+
+    const settlementInterchangeNamesList = await Db.settlementInterchange.find({})
+    if (settlementInterchangeNamesList) {
+      for (const record of settlementInterchangeNamesList) {
+        settlementInterchangeName[`${record.name}`] = record.settlementInterchangeId
+      }
+      return settlementInterchangeName
+    }
+  },
+  settlementInterchangeEnums: async function () {
+    const settlementInterchangeEnum = {}
+
+    const settlementInterchangeEnumsList = await Db.settlementInterchange.find({})
+    if (settlementInterchangeEnumsList) {
+      for (const record of settlementInterchangeEnumsList) {
+        settlementInterchangeEnum[`${record.name}`] = record.name
+      }
+      return settlementInterchangeEnum
+    }
+  },
+  settlementStates: async function () {
+    const settlementStateEnum = {}
+
+    const settlementStateEnumsList = await Db.settlementState.find({})
+    if (settlementStateEnumsList) {
+      for (const state of settlementStateEnumsList) {
+        settlementStateEnum[`${state.enumeration}`] = state.settlementStateId
+      }
+      return settlementStateEnum
+    }
+  },
+  settlementWindowStates: async function () {
+    const settlementWindowStateEnum = {}
+    const settlementWindowStateEnumsList = await Db.settlementWindowState.find({})
+    if (settlementWindowStateEnumsList) {
+      for (const state of settlementWindowStateEnumsList) {
+        settlementWindowStateEnum[`${state.enumeration}`] = state.settlementWindowStateId
+      }
+      return settlementWindowStateEnum
+    }
+  },
   transferParticipantRoleTypes: async function () {
     const transferParticipantRoleTypeEnum = {}
     const transferParticipantRoleTypeEnumsList = await Db.transferParticipantRoleType.find({})
@@ -109,14 +162,27 @@ module.exports = {
       return transferParticipantRoleTypeEnum
     }
   },
-  participantLimitTypes: async function () {
-    const participantLimitTypeEnum = {}
-    const participantLimitTypeEnumsList = await Db.participantLimitType.find({})
-    if (participantLimitTypeEnumsList) {
-      for (const state of participantLimitTypeEnumsList) {
-        participantLimitTypeEnum[`${state.name}`] = state.participantLimitTypeId
+  transferStateEnums: async function () {
+    const transferStateEnum = {}
+    const transferStateEnumsList = await Db.transferState.find({})
+    if (transferStateEnumsList) {
+      for (const state of transferStateEnumsList) {
+        // apply distinct even though final result would contain distinct values
+        if (!transferStateEnum[`${state.enumeration}`]) {
+          transferStateEnum[`${state.enumeration}`] = state.enumeration
+        }
       }
-      return participantLimitTypeEnum
+      return transferStateEnum
+    }
+  },
+  transferStates: async function () {
+    const transferStateEnum = {}
+    const transferStateEnumsList = await Db.transferState.find({})
+    if (transferStateEnumsList) {
+      for (const state of transferStateEnumsList) {
+        transferStateEnum[`${state.transferStateId}`] = state.transferStateId
+      }
+      return transferStateEnum
     }
   }
 }
