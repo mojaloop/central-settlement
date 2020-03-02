@@ -40,8 +40,8 @@ const SettlementWindowContentModel = require('../../models/settlementWindowConte
 const SettlementWindowModel = require('../../models/settlementWindow')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
-let objectKeyName = ''
-let keyValueName = ''
+const objectKeyName = 'content'
+const keyValueName = 'settlementWindowId'
 
 const prepareParticipantsResult = (participantCurrenciesList) => {
   const participantAccounts = {}
@@ -116,20 +116,16 @@ module.exports = {
       const settlementWindowsList = await SettlementWindowModel.getBySettlementId({ settlementId }, enums)
       const participantCurrenciesList = await SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({ settlementId }, enums)
       const participants = prepareParticipantsResult(participantCurrenciesList)
-      // const settlementModelModel = await SettlementModelModel.getById(settlement.settlementModelId)
 
       // Build settlement window content array and insert into settlement window list object
       for (var key of Object.keys(settlementWindowsList)) {
         settlementWindowsList[key].content = await SettlementWindowContentModel.getBySettlementAndWindowId(settlementId, settlementWindowsList[key].id)
       }
       // Response object : Remove "settlementWindowId": 1, from the "content": [ array of objects
-      objectKeyName = 'content'
-      keyValueName = 'settlementWindowId'
       await deleteJSONElement(settlementWindowsList)
 
       return {
         id: settlement.settlementId,
-        // settlementModel: settlementModelModel.name,
         state: settlement.state,
         reason: settlement.reason,
         createdDate: settlement.createdDate,
