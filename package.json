@@ -1,6 +1,6 @@
 {
     "name": "central-settlement",
-    "description": "Central settlements hosted by a scheme to record and make settlements.",
+    "description": "Central settlements hosted by a scheme to record and make settlements",
     "version": "9.2.2",
     "license": "Apache-2.0",
     "private": false,
