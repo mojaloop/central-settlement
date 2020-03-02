@@ -4,7 +4,6 @@
     "@hapi/inert",
     "@hapi/vision",
     "@hapi/joi",
-    "@mojaloop/central-services-database",
     "hapi-swagger"
   ]
 }
