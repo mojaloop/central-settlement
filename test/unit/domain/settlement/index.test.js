@@ -183,6 +183,33 @@ Test('SettlementService', async (settlementServiceTest) => {
       const options = {
         logger: Logger
       }
+      const settlementWindowContentMock = [
+        {
+          id: 10,
+          state: 'PENDING_SETTLEMENT',
+          ledgerAccountType: 'POSITION',
+          currencyId: 'USD',
+          createdDate: '2020-02-07T11:07:07.000Z',
+          changedDate: '2020-02-07T09:07:07.000Z',
+          settlementId: 6
+
+        },
+        {
+          id: 11,
+          state: 'CLOSED',
+          ledgerAccountType: 'POSITION',
+          currencyId: 'TZS',
+          createdDate: '2020-02-07T11:07:07.000Z',
+          changedDate: '2020-02-07T11:07:07.000Z',
+          settlementId: null
+
+        }
+      ]
+      const settlementWindowsListMock = [{
+        id: 1,
+        state: 'PENDING_SETTLEMENT',
+        reason: 'settlement window reason text'
+      }]
       const settlementsMockData = [{
         settlementId: 1,
         settlementStateId: 'PENDING_SETTLEMENT',
@@ -212,8 +239,9 @@ Test('SettlementService', async (settlementServiceTest) => {
         accountAmount: 100,
         accountCurrency: 'USD'
       }]
+      SettlementWindowModel.getBySettlementId = sandbox.stub().returns(settlementWindowsListMock)
+      SettlementWindowContentModel.getBySettlementAndWindowId = sandbox.stub().returns(settlementWindowContentMock)
       SettlementModel.getByParams = sandbox.stub().returns(settlementsMockData)
-
       await getSettlementsByParamsTest.test('return settlement participant accounts', async test => {
         try {
           const result = await SettlementService.getSettlementsByParams(params, enums, options)
