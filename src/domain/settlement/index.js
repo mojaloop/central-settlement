@@ -40,9 +40,6 @@ const SettlementWindowContentModel = require('../../models/settlementWindowConte
 const SettlementWindowModel = require('../../models/settlementWindow')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
-const objectKeyName = 'content'
-const keyValueName = 'settlementWindowId'
-
 const prepareParticipantsResult = (participantCurrenciesList) => {
   const participantAccounts = {}
   for (const account of participantCurrenciesList) {
@@ -73,28 +70,6 @@ const prepareParticipantsResult = (participantCurrenciesList) => {
   return Array.from(Object.keys(participantAccounts).map(participantId => participantAccounts[participantId]))
 }
 
-function deleteJSONElement (obj) {
-  // Loop through this JSON object's properties
-  Object.keys(obj).forEach(function (key) {
-    const value = obj[key]
-
-    if (key === objectKeyName) {
-      for (var i = 0; i < value.length; i++) {
-        delete obj[key][i][keyValueName]
-      }
-    }
-    if (value) {
-      switch (typeof value) {
-        case 'object': // Recurse
-          deleteJSONElement(value, key)
-          break
-        case 'string':
-          break
-      }
-    }
-  })
-}
-
 const groupSettlementWindowContentBySettlementWindow = (records) => {
   const settlementWindows = {}
   for (const record of records) {
@@ -121,8 +96,6 @@ module.exports = {
       for (var key of Object.keys(settlementWindowsList)) {
         settlementWindowsList[key].content = await SettlementWindowContentModel.getBySettlementAndWindowId(settlementId, settlementWindowsList[key].id)
       }
-      // Response object : Remove "settlementWindowId": 1, from the "content": [ array of objects
-      await deleteJSONElement(settlementWindowsList)
 
       return {
         id: settlement.settlementId,
@@ -157,7 +130,6 @@ module.exports = {
             for (var key of Object.keys(settlementWindowsList)) {
               settlementWindowsList[key].content = await SettlementWindowContentModel.getBySettlementAndWindowId(s.settlementId, settlementWindowsList[key].id)
             }
-            await deleteJSONElement(settlementWindowsList)
             settlements[s.settlementId] = {
               id: s.settlementId,
               state: s.settlementStateId,

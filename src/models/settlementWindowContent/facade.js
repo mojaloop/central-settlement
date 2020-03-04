@@ -67,7 +67,7 @@ const Facade = {
       .join('settlementWindowContentStateChange AS swcsc', 'swcsc.settlementWindowContentStateChangeId', 'swc.currentStateChangeId')
       .join('ledgerAccountType AS lat', 'lat.ledgerAccountTypeId', 'swc.ledgerAccountTypeId')
       .where({ 'swc.settlementId': settlementId, 'swc.settlementWindowId': settlementWindowId })
-      .select('swc.settlementWindowContentId AS id', 'swc.settlementWindowId', 'swcsc.settlementWindowStateId AS state',
+      .select('swc.settlementWindowContentId AS id', 'swcsc.settlementWindowStateId AS state',
         'lat.name AS ledgerAccountType', 'swc.currencyId', 'swc.createdDate', 'swcsc.createdDate AS changedDate')
   }
 }
