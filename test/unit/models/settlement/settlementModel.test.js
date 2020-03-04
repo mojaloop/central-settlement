@@ -65,6 +65,5 @@ Test('SettlementModelModel', async (settlementModelModelTest) => {
       test.end()
     }
   })
-
   settlementModelModelTest.end()
 })

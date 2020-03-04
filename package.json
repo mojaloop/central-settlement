@@ -10,7 +10,8 @@
         "Valentin Genev <valentin.genev@modusbox.com>",
         "Deon Botha <deon.botha@modusbox.com>",
         "Miguel de Barros <miguel.debarros@modusbox.com>",
-        "Rajiv Mothilal <rajiv.mothilal@modusbox.com>"
+        "Rajiv Mothilal <rajiv.mothilal@modusbox.com>",
+        "Lazola Lucas <lazola.lucas@modusbox.com>"
     ],
     "repository": {
         "type": "git",
@@ -25,7 +26,7 @@
         "@hapi/boom": "9.0.0",
         "@hapi/catbox-memory": "5.0.0",
         "@hapi/good": "9.0.0",
-        "@hapi/hapi": "18.4.0",
+        "@hapi/hapi": "18.4.1",
         "@hapi/inert": "5.2.2",
         "@hapi/vision": "5.5.4",
         "@mojaloop/central-ledger": "9.2.2",
@@ -57,7 +58,7 @@
         "node-fetch": "2.6.0",
         "nodemon": "2.0.2",
         "npm-audit-resolver": "2.2.0",
-        "npm-check-updates": "4.0.2",
+        "npm-check-updates": "4.0.3",
         "nyc": "15.0.0",
         "pre-commit": "1.2.2",
         "proxyquire": "2.1.3",

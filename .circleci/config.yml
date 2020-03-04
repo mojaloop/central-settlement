@@ -9,28 +9,28 @@ orbs:
 # YAML defaults templates, in alphabetical order
 ##
 defaults_Dependencies: &defaults_Dependencies |
-    apk --no-cache add git
-    apk --no-cache add ca-certificates
-    apk --no-cache add curl
-    apk --no-cache add openssh-client
-    apk --no-cache add bash
-    apk add --no-cache -t build-dependencies make gcc g++ python libtool autoconf automake
-    npm config set unsafe-perm true
-    npm install -g node-gyp
+  apk --no-cache add git
+  apk --no-cache add ca-certificates
+  apk --no-cache add curl
+  apk --no-cache add openssh-client
+  apk add --no-cache -t build-dependencies make gcc g++ python libtool autoconf automake
+  npm config set unsafe-perm true
+  npm install -g node-gyp
 
 defaults_awsCliDependencies: &defaults_awsCliDependencies |
-    apk --no-cache add \
-            python \
-            py-pip \
-            groff \
-            less \
-            mailcap
-    pip install --upgrade awscli==1.14.5 s3cmd==2.0.1 python-magic
-    apk -v --purge del py-pip
+  apk --no-cache add \
+          python \
+          py-pip \
+          groff \
+          less \
+          mailcap
+  pip install --upgrade awscli==1.14.5 s3cmd==2.0.1 python-magic
+  apk -v --purge del py-pip
 
 defaults_build_docker_build: &defaults_build_docker_build
-  name: Build Docker image
+  name: Build Docker $CIRCLE_TAG image
   command: |
+    echo "Building Docker image: $CIRCLE_TAG"
     docker build -t $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG .
 
 defaults_build_docker_login: &defaults_build_docker_login
@@ -45,6 +45,7 @@ defaults_build_docker_publish: &defaults_build_docker_publish
     docker push $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
     echo "Publishing $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG"
     docker push $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG
+
 
 defaults_deploy_config_kubernetes_cluster: &defaults_deploy_config_kubernetes_cluster
   name: Configure Kubernetes cluster
@@ -127,7 +128,6 @@ defaults_slack_announcement: &defaults_slack_announcement
       -H 'cache-control: no-cache' \
       -d "{\"text\": \"*${CIRCLE_PROJECT_REPONAME}* - Release \`${CIRCLE_TAG}\`: https://github.com/mojaloop/${CIRCLE_PROJECT_REPONAME}/releases/tag/${CIRCLE_TAG}\"}"
 
-
 ##
 # Executors
 #
@@ -136,7 +136,7 @@ defaults_slack_announcement: &defaults_slack_announcement
 executors:
   default-docker:
     working_directory: /home/circleci/project
-    docker: 
+    docker:
       - image: node:12.16.0-alpine
 
   default-machine:
@@ -145,7 +145,7 @@ executors:
 
   helm-kube:
     working_directory: /home/circleci/project
-    docker: 
+    docker:
       - image: hypnoglow/kubernetes-helm
 
 ##
@@ -164,9 +164,6 @@ jobs:
       - run:
           name: Access npm folder as root
           command: cd $(npm root -g)/npm
-      - run:
-          name: Install interledgerjs/five-bells-ledger-api-tests
-          command: npm install github:interledgerjs/five-bells-ledger-api-tests
       - run:
           name: Update NPM install
           command: npm install
@@ -188,16 +185,12 @@ jobs:
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
-            - dependency-cache-
+      - run:
+          name: Install tape, tapes and tap-xunit
+          command: npm install -g tape tapes tap-xunit
       - run:
           name: Create dir for test results
           command: mkdir -p ./test/results
-      - run:
-          name: Install tape and tap-xunit
-          command: npm install -g tape tap-xunit
-      - run:
-          name: Install tapes
-          command: npm install -g tapes
       - run:
           name: Execute unit tests
           command: npm -s run test:xunit > ./test/results/tape.xml
@@ -220,10 +213,9 @@ jobs:
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
-            - dependency-cache-
       - run:
           name: Execute code coverage check
-          command: npm -s run test:coverage
+          command: npm -s run test:coverage-check
       - store_artifacts:
           path: coverage
           prefix: test
@@ -235,7 +227,7 @@ jobs:
             if [ "${CIRCLE_BRANCH}" == "master" ];
             then
                 echo "Sending lcov.info to SonarQube..."
-                aws s3 cp coverage/lcov.info $AWS_S3_DIR_SONARQUBE/central-settlement/lcov.info
+                aws s3 cp coverage/lcov.info $AWS_S3_DIR_SONARQUBE/$CIRCLE_PROJECT_REPONAME/lcov.info
             else
                 echo "Not a release (env CIRCLE_BRANCH != 'master'), skipping sending lcov.info to SonarQube."
             fi
@@ -245,20 +237,21 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "CACHE_VERSION.txt" }}-{{ checksum "package.json" }}
+          key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: Create dir for test results
           command: mkdir -p ./test/results
       - run:
           name: Execute integration tests
           command: npm -s run test:integration
+          no_output_timeout: 25m
       - store_artifacts:
           path: ./test/results
           prefix: test
       - store_test_results:
           path: ./test/results
 
-  vulnerability-check:  
+  vulnerability-check:
     executor: default-docker
     steps:
       - checkout
@@ -266,9 +259,7 @@ jobs:
           name: Install general dependencies
           command: *defaults_Dependencies
       - restore_cache:
-          keys:
-            - dependency-cache-{{ checksum "package.json" }}
-            - dependency-cache-
+          key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: Create dir for test results
           command: mkdir -p ./audit/results
@@ -289,9 +280,7 @@ jobs:
       - run:
           <<: *defaults_license_scanner
       - restore_cache:
-          keys:
-            - dependency-cache-{{ checksum "package.json" }}
-            - dependency-cache-
+          key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: Prune non-production packages before running license-scanner
           command: npm prune --production
@@ -318,6 +307,7 @@ jobs:
 
   license-scan:
     executor: default-machine
+    # <<: *defaults_test_env
     steps:
       - attach_workspace:
           at: /tmp
@@ -372,7 +362,7 @@ jobs:
             aws s3 cp anchore-reports ${AWS_S3_DIR_ANCHORE_REPORTS}/${CIRCLE_PROJECT_REPONAME}/ --recursive
             aws s3 rm ${AWS_S3_DIR_ANCHORE_REPORTS}/latest/ --recursive --exclude "*" --include "${CIRCLE_PROJECT_REPONAME}*"
             aws s3 cp anchore-reports ${AWS_S3_DIR_ANCHORE_REPORTS}/latest/ --recursive
-        
+
             # TODO: Enable this when we want to increase the strictness of our security policies
             # failCount=$(cat anchore-reports/*policy*.json | grep 'fail' | wc -l)
             # echo "FailCount is: ${failCount}"
@@ -395,7 +385,7 @@ jobs:
       - run:
           <<: *defaults_build_docker_login
       - run:
-          name: setup environment vars for publish/deploy
+          name: setup environment vars for release/snapshot
           command: ./.circleci/_set_up_deploy_envs.sh
       - run:
           name: Re-tag pre built image
@@ -409,12 +399,12 @@ jobs:
   deploy:
     executor: helm-kube
     steps:
-      - checkout 
+      - checkout
       - run:
           name: Install AWS CLI dependencies
           command: *defaults_awsCliDependencies
       - run:
-          name: setup environment vars for release
+          name: setup environment vars for release/snapshot
           command: ./.circleci/_set_up_deploy_envs.sh
       - run:
           <<: *defaults_deploy_prequisites
@@ -471,17 +461,6 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
-      - test-integration:
-          context: org-global
-          requires:
-            - setup
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              ignore:
-                - /feature*/
-                - /bugfix*/
       - vulnerability-check:
           context: org-global
           requires:
@@ -504,6 +483,17 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
+      - test-integration:
+          context: org-global
+          requires:
+            - setup
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore:
+                - /feature*/
+                - /bugfix*/
       - build:
           context: org-global
           requires:
@@ -515,7 +505,7 @@ workflows:
             - audit-licenses
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?/
+              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?/
             branches:
               ignore:
                 - /.*/
@@ -525,7 +515,7 @@ workflows:
             - build
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?/
+              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?/
             branches:
               ignore:
                 - /.*/
@@ -535,7 +525,7 @@ workflows:
             - build
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?/
+              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?/
             branches:
               ignore:
                 - /.*/
@@ -546,7 +536,7 @@ workflows:
             - image-scan
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?/
+              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?/
             branches:
               ignore:
                 - /.*/
