@@ -1349,14 +1349,8 @@ const Facade = {
         .innerJoin('settlementSettlementWindow AS ssw', 'ssw.settlementId', 'settlement.settlementId')
         .innerJoin('settlementWindow AS sw', 'sw.settlementWindowId', 'ssw.settlementWindowId')
         .innerJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'sw.currentStateChangeId')
-        .innerJoin('settlementTransferParticipant AS stp', function () {
-          this.on('stp.settlementId', 'settlement.settlementId')
-            .andOn('stp.settlementWindowId', 'sw.settlementWindowId')
-        })
-        .innerJoin('settlementParticipantCurrency AS spc', function () {
-          this.on('spc.settlementId', 'stp.settlementId')
-            .andOn('spc.participantCurrencyId', 'stp.participantCurrencyId')
-        })
+        .innerJoin('settlementContentAggregation AS sca', 'sca.settlementId', 'settlement.settlementId')
+        .innerJoin('settlementParticipantCurrency AS spc', 'spc.settlementId', 'sca.settlementId')
         .innerJoin('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'spc.currentStateChangeId')
         .innerJoin('participantCurrency AS pc', 'pc.participantCurrencyId', 'spc.participantCurrencyId')
         .distinct('settlement.settlementId', 'ssc.settlementStateId', 'ssw.settlementWindowId',

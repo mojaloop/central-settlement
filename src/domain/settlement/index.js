@@ -152,23 +152,24 @@ module.exports = {
       if (settlementsData && settlementsData.length > 0) {
         for (const s of settlementsData) {
           if (!settlements[s.settlementId]) {
+            const settlementId = s.settlementId
+            const settlementWindowsList = await SettlementWindowModel.getBySettlementId({ settlementId })
+            for (var key of Object.keys(settlementWindowsList)) {
+              settlementWindowsList[key].content = await SettlementWindowContentModel.getBySettlementAndWindowId(s.settlementId, settlementWindowsList[key].id)
+            }
+            await deleteJSONElement(settlementWindowsList)
             settlements[s.settlementId] = {
               id: s.settlementId,
-              state: s.settlementStateId
+              state: s.settlementStateId,
+              reason: s.settlementWindowReason,
+              createdDate: s.createdDate,
+              changedDate: s.changedDate,
+              settlementWindows: settlementWindowsList
             }
           }
           settlement = settlements[s.settlementId]
           if (!settlement.settlementWindows) {
             settlement.settlementWindows = {}
-          }
-          if (!settlement.settlementWindows[s.settlementWindowId]) {
-            settlement.settlementWindows[s.settlementWindowId] = {
-              id: s.settlementWindowId,
-              state: s.settlementWindowStateId,
-              reason: s.settlementWindowReason,
-              createdDate: s.createdDate,
-              changedDate: s.changedDate
-            }
           }
           if (!settlement.participants) {
             settlement.participants = {}
