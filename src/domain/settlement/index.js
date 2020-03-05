@@ -93,8 +93,21 @@ module.exports = {
       const participants = prepareParticipantsResult(participantCurrenciesList)
 
       // Build settlement window content array and insert into settlement window list object
+      const windowContentRecords = []
+      let windowContentResponseData = {}
+
       for (var key of Object.keys(settlementWindowsList)) {
-        settlementWindowsList[key].content = await SettlementWindowContentModel.getBySettlementAndWindowId(settlementId, settlementWindowsList[key].id)
+        const windowContentRecord = await SettlementWindowContentModel.getBySettlementAndWindowId(settlementId, settlementWindowsList[key].id)
+        windowContentResponseData = {
+          id: windowContentRecord[key].id,
+          state: windowContentRecord[key].state,
+          ledgerAccountType: windowContentRecord[key].ledgerAccountType,
+          currencyId: windowContentRecord[key].currencyId,
+          createdDate: windowContentRecord[key].createdDate,
+          changedDate: windowContentRecord[key].changedDate
+        }
+        windowContentRecords.push(windowContentResponseData)
+        settlementWindowsList[key].content = windowContentRecords
       }
 
       return {
