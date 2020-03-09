@@ -91,6 +91,25 @@ module.exports = {
       const settlementWindowsList = await SettlementWindowModel.getBySettlementId({ settlementId }, enums)
       const participantCurrenciesList = await SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({ settlementId }, enums)
       const participants = prepareParticipantsResult(participantCurrenciesList)
+
+      // Build settlement window content array and insert into settlement window list object
+      const windowContentRecords = []
+      let windowContentResponseData = {}
+
+      for (var key of Object.keys(settlementWindowsList)) {
+        const windowContentRecord = await SettlementWindowContentModel.getBySettlementAndWindowId(settlementId, settlementWindowsList[key].id)
+        windowContentResponseData = {
+          id: windowContentRecord[key].id,
+          state: windowContentRecord[key].state,
+          ledgerAccountType: windowContentRecord[key].ledgerAccountType,
+          currencyId: windowContentRecord[key].currencyId,
+          createdDate: windowContentRecord[key].createdDate,
+          changedDate: windowContentRecord[key].changedDate
+        }
+        windowContentRecords.push(windowContentResponseData)
+        settlementWindowsList[key].content = windowContentRecords
+      }
+
       return {
         id: settlement.settlementId,
         state: settlement.state,
@@ -119,23 +138,23 @@ module.exports = {
       if (settlementsData && settlementsData.length > 0) {
         for (const s of settlementsData) {
           if (!settlements[s.settlementId]) {
+            const settlementId = s.settlementId
+            const settlementWindowsList = await SettlementWindowModel.getBySettlementId({ settlementId })
+            for (var key of Object.keys(settlementWindowsList)) {
+              settlementWindowsList[key].content = await SettlementWindowContentModel.getBySettlementAndWindowId(s.settlementId, settlementWindowsList[key].id)
+            }
             settlements[s.settlementId] = {
               id: s.settlementId,
-              state: s.settlementStateId
+              state: s.settlementStateId,
+              reason: s.settlementWindowReason,
+              createdDate: s.createdDate,
+              changedDate: s.changedDate,
+              settlementWindows: settlementWindowsList
             }
           }
           settlement = settlements[s.settlementId]
           if (!settlement.settlementWindows) {
             settlement.settlementWindows = {}
-          }
-          if (!settlement.settlementWindows[s.settlementWindowId]) {
-            settlement.settlementWindows[s.settlementWindowId] = {
-              id: s.settlementWindowId,
-              state: s.settlementWindowStateId,
-              reason: s.settlementWindowReason,
-              createdDate: s.createdDate,
-              changedDate: s.changedDate
-            }
           }
           if (!settlement.participants) {
             settlement.participants = {}

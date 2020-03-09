@@ -4038,17 +4038,13 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           context.on.returns({
             andOn: sandbox.stub()
           })
-          const innerJoin5 = sandbox.stub()
-          innerJoin5.callsArgOn(1, context)
-          const innerJoin6 = sandbox.stub()
-          innerJoin6.callsArgOn(1, context)
 
           builderStub.innerJoin.returns({
             innerJoin: sandbox.stub().returns({
               innerJoin: sandbox.stub().returns({
                 innerJoin: sandbox.stub().returns({
-                  innerJoin: innerJoin5.returns({
-                    innerJoin: innerJoin6.returns({
+                  innerJoin: sandbox.stub().returns({
+                    innerJoin: sandbox.stub().returns({
                       innerJoin: sandbox.stub().returns({
                         innerJoin: sandbox.stub().returns({
                           distinct: sandbox.stub().returns({
