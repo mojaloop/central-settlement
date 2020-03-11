@@ -26,4 +26,4 @@ RUN mkdir ./logs && touch ./logs/combined.log
 RUN ln -sf /dev/stdout ./logs/combined.log
 
 EXPOSE 3007
-CMD node src/server.js
+CMD node src/api/index.js
