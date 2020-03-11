@@ -4,11 +4,6 @@
       "decision": "ignore",
       "madeAt": 1582888595088,
       "expiresAt": 1585480556972
-    },
-    "1488|rewire>eslint>espree>acorn": {
-      "decision": "ignore",
-      "madeAt": 1583750630347,
-      "expiresAt": 1584355380671
     }
   },
   "rules": {},
