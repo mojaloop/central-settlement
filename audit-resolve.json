@@ -4,6 +4,10 @@
       "decision": "ignore",
       "madeAt": 1582888595088,
       "expiresAt": 1585480556972
+    },
+    "1179|faucet>minimist": {
+      "decision": "ignore",
+      "madeAt": 1586761432438
     }
   },
   "rules": {},
