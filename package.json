@@ -1,102 +1,108 @@
 {
-    "name": "central-settlement",
-    "description": "Central settlements hosted by a scheme to record and make settlements.",
-    "version": "9.5.0",
-    "license": "Apache-2.0",
-    "private": false,
-    "author": "ModusBox",
-    "contributors": [
-        "Georgi Georgiev <georgi.georgiev@modusbox.com>",
-        "Valentin Genev <valentin.genev@modusbox.com>",
-        "Deon Botha <deon.botha@modusbox.com>",
-        "Miguel de Barros <miguel.debarros@modusbox.com>",
-        "Rajiv Mothilal <rajiv.mothilal@modusbox.com>",
-        "Lazola Lucas <lazola.lucas@modusbox.com>"
-    ],
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/mojaloop/central-settlement"
-    },
-    "bugs": "http://github.com/mojaloop/central-settlement/issues",
-    "publishConfig": {
-        "registry": "https://registry.npmjs.org"
-    },
-    "dependencies": {
-        "@hapi/basic": "6.0.0",
-        "@hapi/boom": "9.0.0",
-        "@hapi/catbox-memory": "5.0.0",
-        "@hapi/good": "9.0.0",
-        "@hapi/hapi": "18.4.1",
-        "@hapi/inert": "5.2.2",
-        "@hapi/vision": "5.5.4",
-        "@mojaloop/central-ledger": "9.2.2",
-        "@mojaloop/central-services-database": "9.2.0",
-        "@mojaloop/central-services-error-handling": "9.1.0",
-        "@mojaloop/central-services-health": "9.2.0",
-        "@mojaloop/central-services-logger": "9.1.0",
-        "@mojaloop/central-services-shared": "9.3.0",
-        "@mojaloop/central-services-stream": "9.2.0",
-        "@mojaloop/ml-number": "8.2.0",
-        "@now-ims/hapi-now-auth": "2.0.1",
-        "async": "3.2.0",
-        "async-retry": "1.3.1",
-        "blipp": "4.0.1",
-        "hapi-auth-bearer-token": "6.2.1",
-        "hapi-openapi": "1.2.6",
-        "hapi-swagger": "11.1.0",
-        "mustache": "4.0.0",
-        "parse-strings-in-object": "2.0.0",
-        "rc": "1.2.8",
-        "uuid4": "1.1.4"
-    },
-    "devDependencies": {
-        "@hapi/joi": "16.1.8",
-        "bluebird": "3.7.2",
-        "eslint": "6.8.0",
-        "faucet": "0.0.1",
-        "get-port": "5.1.1",
-        "node-fetch": "2.6.0",
-        "nodemon": "2.0.2",
-        "npm-audit-resolver": "2.2.0",
-        "npm-check-updates": "4.0.4",
-        "nyc": "15.0.0",
-        "pre-commit": "1.2.2",
-        "proxyquire": "2.1.3",
-        "rewire": "5.0.0",
-        "sinon": "9.0.1",
-        "standard": "14.3.1",
-        "swagmock": "1.0.0",
-        "tap-xunit": "2.4.1",
-        "tape": "4.13.2",
-        "tapes": "4.1.0"
-    },
-    "pre-commit": [
-        "standard",
-        "dep:check",
-        "test"
-    ],
-    "scripts": {
-        "start": "run-p start:api",
-        "start:api": "node src/api/index.js",
-        "watch:api": "nodemon src/api/index.js",
-        "regenerate": "yo swaggerize:test --framework hapi --apiPath './src/interface/swagger.yaml'",
-        "standard": "standard",
-        "lint": "eslint .",
-        "test": "npm run test:unit | faucet",
-        "test:all": "run-s test",
-        "test:unit": "tape 'test/unit/**/*.js'",
-        "test:xunit": "tape 'test/unit/**/*.js' | tap-xunit",
-        "test:coverage": "nyc --reporter=lcov --reporter=text-summary tapes -- 'test/unit/**/**.test.js'",
-        "test:coverage-check": "npm run test:coverage && nyc check-coverage",
-        "test:int": "tape 'test/integration/**/*.test.js'",
-        "test:integration": "sh ./test/integration-runner.sh ./test/integration-runner.env",
-        "audit:resolve": "SHELL=sh resolve-audit",
-        "audit:check": "SHELL=sh check-audit",
-        "dep:check": "npx ncu -e 2",
-        "dep:update": "npx ncu -u"
-    },
-    "generator-swaggerize": {
-        "version": "4.1.0"
-    },
-    "main": "./server"
-}
+  correlationId: "3dcf3367-d4ff-4a14-87c4-57793523e1ca",
+event: ,
+trace: ,
+protocol.createdAt: 1587721593606}
+ correlationId = "3dcf3367-d4ff-4a14-87c4-57793523e1ca"
+ event = Object {type: "notification",
+action: "prepare",
+createdAt: "2020-04-24T09:46:33.119Z",
+state: ,
+id: "fb6e4271-4a08-48db-93ab-ef06cdd12bc5",
+...}
+  type = "notification"
+  action = "prepare"
+  createdAt = "2020-04-24T09:46:33.119Z"
+  state = Object {status: "success",
+code: 0,
+description: "action successful"}
+   status = "success"
+   code = 0
+   description = "action successful"
+   __proto__ = Object {constructor: ,
+__defineGetter__: ,
+__defineSetter__: ,
+hasOwnProperty: ,
+__lookupGetter__: ,
+...}
+    constructor = function Object() { [native code] }
+    __defineGetter__ = function __defineGetter__() { [native code] }
+    __defineSetter__ = function __defineSetter__() { [native code] }
+    hasOwnProperty = function hasOwnProperty() { [native code] }
+    __lookupGetter__ = function __lookupGetter__() { [native code] }
+    __lookupSetter__ = function __lookupSetter__() { [native code] }
+    isPrototypeOf = function isPrototypeOf() { [native code] }
+    propertyIsEnumerable = function propertyIsEnumerable() { [native code] }
+    toString = function toString() { [native code] }
+    valueOf = function valueOf() { [native code] }
+    __proto__ = …
+    get __proto__ = function get __proto__() { [native code] }
+    set __proto__ = function set __proto__() { [native code] }
+    toLocaleString = function toLocaleString() { [native code] }
+  id = "fb6e4271-4a08-48db-93ab-ef06cdd12bc5"
+  responseTo = "9b74dbb7-5b57-4da0-857c-d768f0bb6338"
+  __proto__ = Object {constructor: ,
+__defineGetter__: ,
+__defineSetter__: ,
+hasOwnProperty: ,
+__lookupGetter__: ,
+...}
+   constructor = function Object() { [native code] }
+   __defineGetter__ = function __defineGetter__() { [native code] }
+   __defineSetter__ = function __defineSetter__() { [native code] }
+   hasOwnProperty = function hasOwnProperty() { [native code] }
+   __lookupGetter__ = function __lookupGetter__() { [native code] }
+   __lookupSetter__ = function __lookupSetter__() { [native code] }
+   isPrototypeOf = function isPrototypeOf() { [native code] }
+   propertyIsEnumerable = function propertyIsEnumerable() { [native code] }
+   toString = function toString() { [native code] }
+   valueOf = function valueOf() { [native code] }
+   __proto__ = …
+   get __proto__ = function get __proto__() { [native code] }
+   set __proto__ = function set __proto__() { [native code] }
+   toLocaleString = function toLocaleString() { [native code] }
+ trace = Object {startTimestamp: "2020-04-24T09:46:33.535Z",
+service: "cl_transfer_position",
+traceId: "75fd117d38a4ca8b650d127d0fa21931",
+spanId: "9ac07f0319831493",
+parentSpanId: "17d295f0613b64d0",
+...}
+  startTimestamp = "2020-04-24T09:46:33.535Z"
+  service = "cl_transfer_position"
+  traceId = "75fd117d38a4ca8b650d127d0fa21931"
+  spanId = "9ac07f0319831493"
+  parentSpanId = "17d295f0613b64d0"
+  tags = Object {tracestate: "acmevendor=eyJzcGFuSWQiOiI5YWMwN2YwMzE5ODMxNDkzIiwidGltZUFwaVByZXBhcmUiOiIxNTg3NzIxNTkzMDkzIn0=",
+transactionType: "transfer",
+transactionAction: "prepare",
+transactionId: "3dcf3367-d4ff-4a14-87c4-57793523e1ca",
+source: "payerfsp",
+...}
+   tracestate = "acmevendor=eyJzcGFuSWQiOiI5YWMwN2YwMzE5ODMxNDkzIiwidGltZUFwaVByZXBhcmUiOiIxNTg3NzIxNTkzMDkzIn0="
+   transactionType = "transfer"
+   transactionAction = "prepare"
+   transactionId = "3dcf3367-d4ff-4a14-87c4-57793523e1ca"
+   source = "payerfsp"
+   destination = "payeefsp"
+   payerFsp = "payerfsp"
+   payeeFsp = "payeefsp"
+   __proto__ = Object {constructor: ,
+__defineGetter__: ,
+__defineSetter__: ,
+hasOwnProperty: ,
+__lookupGetter__: ,
+...}
+  tracestates = Object {acmevendor: }
+  __proto__ = Object {constructor: ,
+__defineGetter__: ,
+__defineSetter__: ,
+hasOwnProperty: ,
+__lookupGetter__: ,
+...}
+ protocol.createdAt = 1587721593606
+ __proto__ = Object {constructor: ,
+__defineGetter__: ,
+__defineSetter__: ,
+hasOwnProperty: ,
+__lookupGetter__: ,
+...}
