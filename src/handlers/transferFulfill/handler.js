@@ -56,7 +56,7 @@ const retryOpts = {
   maxTimeout: retryDelay
 }
 
-const processTransferFulfill = async (error, messages) => {
+const processTransferFulfil = async (error, messages) => {
   if (error) {
     Logger.error(error)
     throw ErrorHandling.Factory.reformatFSPIOPError(error)
@@ -70,14 +70,20 @@ const processTransferFulfill = async (error, messages) => {
     } else {
       message = messages
     }
-    const payload = message.value.content.payload
-    const metadata = message.value.metadata
-    const action = metadata.event.action
 
+    const payload = message.value.content.payload
     const kafkaTopic = message.topic
     const params = { message, kafkaTopic, decodedPayload: payload, consumer: Consumer, producer: Producer }
 
-    const actionLetter = action === Enum.Events.Event.Action.COMMIT ? Enum.Events.ActionLetter.commit
+    const transferEventId = message.value.id
+    const transferEventAction = message.value.metadata.event.action
+    const transferEventType = message.value.metadata.event.type
+    const transferEventcreatedAt = message.value.metadata.event.createdAt
+    const transferEventStateStatus = message.value.metadata.event.state.status
+    const transferEventStateDescription = message.value.metadata.event.state.description
+    const transferEventStateReturnCode = message.value.metadata.event.state.code
+
+    const actionLetter = transferEventAction === Enum.Events.Event.Action.COMMIT ? Enum.Events.ActionLetter.commit
       : Enum.Events.ActionLetter.unknown
 
     if (!payload) {
@@ -87,10 +93,11 @@ const processTransferFulfill = async (error, messages) => {
       await Kafka.proceed(Config.KAFKA_CONFIG, params, { consumerCommit, fspiopError: fspiopError.toApiErrorObject(Config.ERROR_HANDLING), eventDetail, fromSwitch })
       throw fspiopError
     }
-    const settlementWindowId = payload.settlementWindowId
-    const reason = payload.reason
     Logger.info(Utility.breadcrumb(location, 'validationPassed'))
-    await Kafka.commitMessageSync(Consumer, kafkaTopic, message)
+
+    // To do Process logic
+
+    // await Kafka.commitMessageSync(Consumer, kafkaTopic, message)
 
     /* await retry(async () => { // use bail(new Error('to break before max retries'))
       const settlementWindow = await SettlementWindowService.close(settlementWindowId, reason)
@@ -120,7 +127,7 @@ const processTransferFulfill = async (error, messages) => {
 const registerTransferFulfillHandler = async () => {
   try {
     const transferFulfillHandler = {
-      command: processTransferFulfill,
+      command: processTransferFulfil,
       topicName: Kafka.transformGeneralTopicName(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, Enum.Events.Event.Type.NOTIFICATION, Enum.Events.Event.Action.EVENT),
       config: Kafka.getKafkaConfig(Config.KAFKA_CONFIG, Enum.Kafka.Config.CONSUMER, Enum.Events.Event.Type.NOTIFICATION.toUpperCase(), Enum.Events.Event.Action.EVENT.toUpperCase())
     }
@@ -151,7 +158,7 @@ const registerAllHandlers = async () => {
 }
 
 module.exports = {
-  processTransferFulfill,
+  processTransferFulfil,
   registerAllHandlers,
   registerTransferFulfillHandler
 }
