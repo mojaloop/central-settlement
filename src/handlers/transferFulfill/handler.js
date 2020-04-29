@@ -40,7 +40,7 @@ const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Logger = require('@mojaloop/central-services-logger')
 const Producer = require('@mojaloop/central-services-stream').Util.Producer
 const retry = require('async-retry')
-const SettlementWindowService = require('../../domain/settlementWindow')
+// const SettlementWindowService = require('../../domain/settlementWindow')
 const Utility = require('@mojaloop/central-services-shared').Util
 
 const location = { module: 'SettlementWindowHandler', method: '', path: '' } // var object used as pointer
@@ -75,100 +75,43 @@ const processTransferFulfil = async (error, messages) => {
     const kafkaTopic = message.topic
     const params = { message, kafkaTopic, decodedPayload: payload, consumer: Consumer, producer: Producer }
 
-    const transferEventId = message.value.id
+    // const transferEventId = message.value.id
     const transferEventAction = message.value.metadata.event.action
-    const transferEventType = message.value.metadata.event.type
-    const transferEventcreatedAt = message.value.metadata.event.createdAt
+    // const transferEventType = message.value.metadata.event.type
+    // const transferEventcreatedAt = message.value.metadata.event.createdAt
     const transferEventStateStatus = message.value.metadata.event.state.status
-    const transferEventStateDescription = message.value.metadata.event.state.description
-    const transferEventStateReturnCode = message.value.metadata.event.state.code
+    // const transferEventStateDescription = message.value.metadata.event.state.description
+    // const transferEventStateReturnCode = message.value.metadata.event.state.code
 
     const actionLetter = transferEventAction === Enum.Events.Event.Action.COMMIT ? Enum.Events.ActionLetter.commit
       : Enum.Events.ActionLetter.unknown
 
     if (!payload) {
       Logger.info(Utility.breadcrumb(location, `missingPayload--${actionLetter}1`))
-      const fspiopError = ErrorHandling.Factory.createInternalServerFSPIOPError('Transfer fulfill handler missing payload')
+      const fspiopError = ErrorHandling.Factory.createInternalServerFSPIOPError('Transfer fulfil handler missing payload')
       const eventDetail = { functionality: Enum.Events.Event.Type.NOTIFICATION, action: Enum.Events.Event.Action.SETTLEMENT_WINDOW }
       await Kafka.proceed(Config.KAFKA_CONFIG, params, { consumerCommit, fspiopError: fspiopError.toApiErrorObject(Config.ERROR_HANDLING), eventDetail, fromSwitch })
       throw fspiopError
     }
     Logger.info(Utility.breadcrumb(location, 'validationPassed'))
 
-    // To do Processing logic
+    if (transferEventAction === Enum.Events.Event.Action.COMMIT && transferEventStateStatus === Enum.Events.EventStatus.SUCCESS.status) {
+      await retry(async () => { // use bail(new Error('to break before max retries'))
+        console.log('Working')
+        // Populate DB
+        // const settlementWindow = await SettlementWindowService.close(settlementWindowId, reason)
 
-    /* Instance 1
-    "event": {
-      "type": "notification",
-        "action": "prepare",
-        "createdAt": "2020-04-16T09:56:53.407Z",
-        "state": {
-        "status": "success",
-          "code": 0,
-          "description": "action successful" */
+        /* if (!settlementWindow || settlementWindow.state !== Enum.Settlements.SettlementWindowState.CLOSED) {
+         Logger.info(Utility.breadcrumb(location, { path: 'windowCloseRetry' }))
+         const errorDescription = `Settlement window close failed after max retry count ${retryCount} has been exhausted in ${retryCount * retryDelay / 1000}s`
+         throw ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, errorDescription)
+       } */
 
-    /* Instance 2
-        "event": {
-        "type": "notification",
-          "action": "commit",
-          "createdAt": "2020-04-17T13:50:01.806Z",
-          "state": {
-          "status": "success",
-            "code": 0,
-            "description": "action successful" */
-
-    /* Instance 3
-    "event": {
-      "type": "notification",
-        "action": "commit",
-        "createdAt": "2020-04-17T13:16:17.884Z",
-        "state": {
-        "status": "error",
-          "code": "2001",
-          "description": "Internal server error - Invalid event action:(ABORT) and/or type:(fulfil)" */
-
-    /* Instance 4
-    "event": {
-      "type": "notification",
-        "action": "abort",
-        "createdAt": "2020-04-17T13:28:53.578Z",
-        "state": {
-        "status": "error",
-          "code": "3300",
-          "description": "Generic expired error" */
-
-    /* Instance5
-    "event": {
-      "type": "notification",
-        "action": "commit",
-        "createdAt": "2020-04-17T13:26:30.027Z",
-        "state": {
-        "status": "error",
-          "code": "2001",
-          "description": "Internal server error - Invalid event action:(FULFIL_DUPLICATE) and/or type:(fulfil)" */
-
-    /* Instance 6
-    "event": {
-      "type": "notification",
-        "action": "commit",
-        "createdAt": "2020-04-17T13:34:55.543Z",
-        "state": {
-        "status": "error",
-          "code": "2001",
-          "description": "Internal server error - Invalid event action:(ABORT_DUPLICATE) and/or type:(fulfil)" */
-
-    // await Kafka.commitMessageSync(Consumer, kafkaTopic, message)
-    /* await retry(async () => { // use bail(new Error('to break before max retries'))
-      const settlementWindow = await SettlementWindowService.close(settlementWindowId, reason)
-      if (!settlementWindow || settlementWindow.state !== Enum.Settlements.SettlementWindowState.CLOSED) {
-        Logger.info(Utility.breadcrumb(location, { path: 'windowCloseRetry' }))
-        const errorDescription = `Settlement window close failed after max retry count ${retryCount} has been exhausted in ${retryCount * retryDelay / 1000}s`
-        throw ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, errorDescription)
-      }
-      Logger.info(Utility.breadcrumb(location, `done--${actionLetter}2`))
+        Logger.info(Utility.breadcrumb(location, `done--${actionLetter}2`))
+        return true
+      }, retryOpts)
       return true
-    }, retryOpts) */
-    return true
+    }
   } catch (err) {
     Logger.error(`${Utility.breadcrumb(location)}::${err.message}--0`)
     return true
