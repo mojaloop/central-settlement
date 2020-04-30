@@ -40,7 +40,7 @@ const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Logger = require('@mojaloop/central-services-logger')
 const Producer = require('@mojaloop/central-services-stream').Util.Producer
 const retry = require('async-retry')
-// const SettlementWindowService = require('../../domain/settlementWindow')
+const transferFulfilService = require('../../domain/transferFulfil')
 const Utility = require('@mojaloop/central-services-shared').Util
 
 const location = { module: 'SettlementWindowHandler', method: '', path: '' } // var object used as pointer
@@ -75,7 +75,7 @@ const processTransferFulfil = async (error, messages) => {
     const kafkaTopic = message.topic
     const params = { message, kafkaTopic, decodedPayload: payload, consumer: Consumer, producer: Producer }
 
-    // const transferEventId = message.value.id
+    const transferEventId = message.value.id
     const transferEventAction = message.value.metadata.event.action
     // const transferEventType = message.value.metadata.event.type
     // const transferEventcreatedAt = message.value.metadata.event.createdAt
@@ -99,8 +99,8 @@ const processTransferFulfil = async (error, messages) => {
       await retry(async () => { // use bail(new Error('to break before max retries'))
         console.log('Working')
         // Populate DB
-        // const settlementWindow = await SettlementWindowService.close(settlementWindowId, reason)
-
+        const processMsgFulfil = await transferFulfilService.processMsgFulfil(transferEventId)
+        console.log('Returned : ' + processMsgFulfil)
         /* if (!settlementWindow || settlementWindow.state !== Enum.Settlements.SettlementWindowState.CLOSED) {
          Logger.info(Utility.breadcrumb(location, { path: 'windowCloseRetry' }))
          const errorDescription = `Settlement window close failed after max retry count ${retryCount} has been exhausted in ${retryCount * retryDelay / 1000}s`
