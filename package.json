@@ -44,7 +44,7 @@
         "hapi-auth-bearer-token": "6.2.1",
         "hapi-openapi": "1.2.6",
         "hapi-swagger": "11.1.0",
-        "mustache": "4.0.0",
+        "mustache": "4.0.1",
         "parse-strings-in-object": "2.0.0",
         "rc": "1.2.8",
         "uuid4": "1.1.4"
