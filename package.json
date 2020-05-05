@@ -23,7 +23,7 @@
     },
     "dependencies": {
         "@hapi/basic": "6.0.0",
-        "@hapi/boom": "9.0.0",
+        "@hapi/boom": "9.1.0",
         "@hapi/catbox-memory": "5.0.0",
         "@hapi/good": "9.0.0",
         "@hapi/hapi": "18.4.1",
