@@ -10,7 +10,7 @@ const getWTFforNow = async function () {
   const knex = await Db.getKnex()
   return knex.transaction(async (trx) => {
     try {
-      await knex.from(knex.raw('transferParticipantStateChange (transferParticipantId, windowSettlementStateId, reason)'))
+      await knex.from(knex.raw('transferParticipantStateChange (transferParticipantId, settlementWindowStateId, reason)'))
         .transacting(trx)
         .insert(function () {
           this.from('transferParticipant AS TP')
@@ -19,7 +19,7 @@ const getWTFforNow = async function () {
             .innerJoin('settlementGranularity AS G', 'S.settlementGranularityId', 'G.settlementGranularityId')
             .leftOuterJoin('settlementWindowState AS SW1', function () { this.on('G.name', '=', knex.raw('?', ['NET'])).andOn('SW1.settlementWindowStateId', '=', knex.raw('?', ['OPEN'])) })
             .leftOuterJoin('settlementWindowState AS SW2', function () { this.on('G.name', '=', knex.raw('?', ['GROSS'])).onIn('SW2.settlementWindowStateId', ['OPEN', 'PENDING_SETTLEMENT', 'SETTLED']) })
-            .leftOuterJoin('settlementWindowState AS SW3', function () { this.on(knex.raw('?', [status]), '=', knex.raw('?', ['error'])).andOn('SW3.settlementWindowStateId', '=', 'ABORTED') })
+            .leftOuterJoin('settlementWindowState AS SW3', function () { this.on(knex.raw('?', [status]), '=', knex.raw('?', ['error'])).andOn('SW3.settlementWindowStateId', '=', knex.raw('?', ['ABORTED'])) })
             .distinct(knex.raw('TP.transferParticipantId, IFNULL(? , IFNULL(?, ?)), ?', ['SW3.settlementWindowStateId', 'SW2.settlementWindowStateId', 'SW1.settlementWindowStateId', 'Automatically generated from Transfer fulfil']))
             .where(function () {
               this.where({ 'TP.transferId': transferId })

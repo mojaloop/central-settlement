@@ -99,6 +99,7 @@ const processTransferFulfil = async (error, messages) => {
       await retry(async () => { // use bail(new Error('to break before max retries'))
         console.log('Working')
         // Populate DB
+        transferFulfilService.
         const processMsgFulfil = await transferFulfilService.processMsgFulfil(transferEventId)
         console.log('Returned : ' + processMsgFulfil)
         /* if (!settlementWindow || settlementWindow.state !== Enum.Settlements.SettlementWindowState.CLOSED) {

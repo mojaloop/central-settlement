@@ -42,6 +42,7 @@ const Uuid = require('uuid4')
 module.exports = {
   processMsgFulfil: async function (transferEventId) {
     console.log('Transfer event ID : ' + transferEventId)
+    const settlementWindowId = await SettlementWindowModel.process(transferEventId)
     return true
     /* const settlementWindowId = await SettlementWindowModel.process(params, enums)
 
