@@ -1,9 +1,19 @@
 {
-  "reject": [
-    "@hapi/hapi",
-    "@hapi/inert",
-    "@hapi/vision",
-    "@hapi/joi",
-    "hapi-swagger"
-  ]
+  "reject":
+    [
+      "@hapi/hapi",
+      "@hapi/inert",
+      "@hapi/vision",
+      "@hapi/joi",
+      "hapi-swagger",
+      "@hapi/boom",
+      "hapi-openapi",
+      "mustache",
+      "nodemon",
+      "npm-check-updates",
+      "nyc",
+      "sinon",
+      "standard",
+      "tape",
+    ],
 }
