@@ -6,12 +6,12 @@
     "private": false,
     "author": "ModusBox",
     "contributors": [
-        "Georgi Georgiev <georgi.georgiev@modusbox.com>",
-        "Valentin Genev <valentin.genev@modusbox.com>",
         "Deon Botha <deon.botha@modusbox.com>",
+        "Georgi Georgiev <georgi.georgiev@modusbox.com>",
+        "Lazola Lucas <lazola.lucas@modusbox.com>",
         "Miguel de Barros <miguel.debarros@modusbox.com>",
         "Rajiv Mothilal <rajiv.mothilal@modusbox.com>",
-        "Lazola Lucas <lazola.lucas@modusbox.com>"
+        "Valentin Genev <valentin.genev@modusbox.com>"
     ],
     "repository": {
         "type": "git",
