@@ -10,14 +10,14 @@ const getWTFforNow = async function () {
     const transferId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
     const status = 'error'
     const knex = await Db.getKnex()
-    knex.on('query', console.log)
+    // knex.on('query', console.log)
 
     return knex.transaction(async (trx) => {
       try {
         await knex.from(knex.raw('transferParticipantStateChange (transferParticipantId, settlementWindowStateId, reason)'))
           .transacting(trx)
-          .insert(async function () {
-            await this.from('transferParticipant AS TP')
+          .insert(function () {
+            this.from('transferParticipant AS TP')
               .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
               .innerJoin('settlementModel AS S', 'PC.ledgerAccountTypeId', 'S.ledgerAccountTypeId')
               .innerJoin('settlementGranularity AS G', 'S.settlementGranularityId', 'G.settlementGranularityId')
@@ -38,18 +38,19 @@ const getWTFforNow = async function () {
                   this.select('*').from('transferParticipantStateChange AS TSC')
                   this.innerJoin('transferParticipant AS TP1', 'TSC.transferParticipantId', 'TP1.transferParticipantId')
                   this.where({ 'TP1.transferId': transferId })
-                }).toSQL()
-              })
+                })
+              }).toSQL()
           })
-        await trx.commit()
+        await trx.commit
         return 'committed'
       } catch (err) {
-        console.log('Error 1 : ' + err)
+        console.log('Error ' + err)
         // console.log('Here is my query' + query.toSQL().sql);
-        await trx.rollback()
+        await trx.rollback
         return 'failed'
       } finally {
-        await knex.destroy()
+        // await knex.destroy()
+        return 'finaly'
       }
     })
   } catch (e) {
@@ -62,7 +63,11 @@ async function connect () {
 }
 
 async function main () {
-  console.log(await getWTFforNow())
+  try {
+    console.log(await getWTFforNow())
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 main()
