@@ -18,29 +18,18 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * ModusBox
+ * ModuxBox
  - Deon Botha <deon.botha@modusbox.com>
  - Georgi Georgiev <georgi.georgiev@modusbox.com>
  - Miguel de Barros <miguel.debarros@modusbox.com>
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
  - Valentin Genev <valentin.genev@modusbox.com>
- - Lazola Lucas <lazola.lucas@modusbox.com>
  --------------
  ******/
+'use strict'
 
-const Config = require('../../lib/config')
-const Enum = require('@mojaloop/central-services-shared').Enum
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const KafkaUtil = require('@mojaloop/central-services-shared').Util.Kafka
-const TransferFulfilModel = require('../../models/transferFulfil')
-const SettlementWindowContentModel = require('../../models/settlementWindowContent')
-const StreamingProtocol = require('@mojaloop/central-services-shared').Util.StreamingProtocol
-const Uuid = require('uuid4')
+const Facade = require('./facade')
 
 module.exports = {
-  processMsgFulfil: async function (transferEventId) {
-    console.log('Transfer event ID : ' + transferEventId)
-    const settlementWindowId = await TransferFulfilModel.updateStateChange(transferEventId)
-    return true
-  }
+  updateStateChange: Facade.updateTransferParticipantStateChange
 }

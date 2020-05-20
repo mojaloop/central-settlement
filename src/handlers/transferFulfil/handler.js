@@ -99,15 +99,8 @@ const processTransferFulfil = async (error, messages) => {
       await retry(async () => { // use bail(new Error('to break before max retries'))
         console.log('Working')
         // Populate DB
-        transferFulfilService.
         const processMsgFulfil = await transferFulfilService.processMsgFulfil(transferEventId)
         console.log('Returned : ' + processMsgFulfil)
-        /* if (!settlementWindow || settlementWindow.state !== Enum.Settlements.SettlementWindowState.CLOSED) {
-         Logger.info(Utility.breadcrumb(location, { path: 'windowCloseRetry' }))
-         const errorDescription = `Settlement window close failed after max retry count ${retryCount} has been exhausted in ${retryCount * retryDelay / 1000}s`
-         throw ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, errorDescription)
-       } */
-
         Logger.info(Utility.breadcrumb(location, `done--${actionLetter}2`))
         return true
       }, retryOpts)
