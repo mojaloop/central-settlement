@@ -36,9 +36,6 @@ const Enum = require('@mojaloop/central-services-shared').Enum
 const Facade = {
   updateTransferParticipantStateChange: async function (transferId) {
     try {
-      // await connect()
-      // const transferId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
-      // const status = 'error'
       const status = Enum.Events.EventStatus.FAILURE.status
       const knex = await Db.getKnex()
 
@@ -69,7 +66,7 @@ const Facade = {
                     this.innerJoin('transferParticipant AS TP1', 'TSC.transferParticipantId', 'TP1.transferParticipantId')
                     this.where({ 'TP1.transferId': transferId })
                   })
-                }) // .toSQL()
+                }).toSQL()
             })
           await trx.commit
           return true
