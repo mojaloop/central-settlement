@@ -28,19 +28,16 @@
  --------------
  ******/
 
-const Config = require('../../lib/config')
-const Enum = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const KafkaUtil = require('@mojaloop/central-services-shared').Util.Kafka
 const TransferFulfilModel = require('../../models/transferFulfil')
-const SettlementWindowContentModel = require('../../models/settlementWindowContent')
-const StreamingProtocol = require('@mojaloop/central-services-shared').Util.StreamingProtocol
-const Uuid = require('uuid4')
 
 module.exports = {
   processMsgFulfil: async function (transferEventId) {
-    console.log('Transfer event ID : ' + transferEventId)
-    const settlementWindowId = await TransferFulfilModel.updateStateChange(transferEventId)
+    try {
+      await TransferFulfilModel.updateStateChange(transferEventId)
+    } catch (err) {
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    }
     return true
   }
 }
