@@ -42,12 +42,9 @@ const Producer = require('@mojaloop/central-services-stream').Util.Producer
 const retry = require('async-retry')
 const transferFulfilService = require('../../domain/transferFulfil')
 const Utility = require('@mojaloop/central-services-shared').Util
-
-const location = { module: 'SettlementWindowHandler', method: '', path: '' } // var object used as pointer
-
+const location = { module: 'TransferFulfilHandler', method: '', path: '' } // var object used as pointer
 const consumerCommit = true
 const fromSwitch = true
-
 const retryDelay = Config.WINDOW_AGGREGATION_RETRY_INTERVAL
 const retryCount = Config.WINDOW_AGGREGATION_RETRY_COUNT
 const retryOpts = {
