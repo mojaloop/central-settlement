@@ -77,12 +77,7 @@ const processTransferFulfil = async (error, messages) => {
 
     const transferEventId = message.value.id
     const transferEventAction = message.value.metadata.event.action
-    // const transferEventType = message.value.metadata.event.type
-    // const transferEventcreatedAt = message.value.metadata.event.createdAt
     const transferEventStateStatus = message.value.metadata.event.state.status
-    // const transferEventStateDescription = message.value.metadata.event.state.description
-    // const transferEventStateReturnCode = message.value.metadata.event.state.code
-
     const actionLetter = transferEventAction === Enum.Events.Event.Action.COMMIT ? Enum.Events.ActionLetter.commit
       : Enum.Events.ActionLetter.unknown
 
