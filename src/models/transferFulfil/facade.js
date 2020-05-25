@@ -58,7 +58,7 @@ const Facade = {
                     this.andWhere({ 'S.currencyId': 'PC.currencyId' })
                     this.orWhere(function () {
                       this.whereNull('S.currencyId')
-                      this.whereNotIn('PC.currencyId', knex('settlementModel AS S1').select('S1.currencyId').where({ 'S1.ledgerAccountTypeId': 'S.ledgerAccountTypeId' }).whereNotNull('S1.currencyId'))
+                      this.whereNotIn('PC.currencyId', knex('settlementModel AS S1').select('S1.currencyId').whereRaw('S1.ledgerAccountTypeId = ??', ['S.ledgerAccountTypeId']).whereNotNull('S1.currencyId'))
                     })
                   })
                   this.whereNotExists(function () {

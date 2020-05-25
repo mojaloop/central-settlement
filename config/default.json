@@ -1,5 +1,5 @@
 {
-  "PORT": 3007,
+  "PORT": 3006,
   "HOSTNAME": "http://central-settlements.local",
   "DATABASE": {
     "DIALECT": "mysql",
