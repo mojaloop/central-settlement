@@ -67,7 +67,7 @@
         "standard": "14.3.1",
         "swagmock": "1.0.0",
         "tap-xunit": "2.4.1",
-        "tape": "4.13.2",
+        "tape": "5.0.1",
         "tapes": "4.1.0"
     },
     "pre-commit": [
