@@ -32,9 +32,9 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const TransferFulfilModel = require('../../models/transferFulfil')
 
 module.exports = {
-  processMsgFulfil: async function (transferEventId) {
+  processMsgFulfil: async function (transferEventId, transferEventStateStatus) {
     try {
-      await TransferFulfilModel.updateStateChange(transferEventId)
+      await TransferFulfilModel.updateStateChange(transferEventId, transferEventStateStatus)
     } catch (err) {
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }

@@ -34,9 +34,9 @@ const location = { module: 'TransferFulfilHandler', method: '', path: '' }
 const Enum = require('@mojaloop/central-services-shared').Enum
 
 const Facade = {
-  updateTransferParticipantStateChange: async function (transferId) {
+  updateTransferParticipantStateChange: async function (transferId, status) {
     try {
-      const status = Enum.Events.EventStatus.FAILURE.status
+      // const status = Enum.Events.EventStatus.FAILURE.status
       const knex = await Db.getKnex()
 
       return knex.transaction(async (trx) => {
