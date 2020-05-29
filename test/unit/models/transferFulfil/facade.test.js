@@ -59,32 +59,76 @@ Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
           Db.getKnex.returns(knexStub)
           const context = sandbox.stub()
-
+          const orWhereStub = sandbox.stub().returns({
+            whereNull: sandbox.stub().returns({
+              whereNotIn: sandbox.stub().returns({})
+            })
+          })
+          const andWhereStub = sandbox.stub().returns({
+            andWhere: sandbox.stub().returns({
+              orWhere: sandbox.stub().callsArgOn(0, orWhereStub).returns({})
+            })
+          })
+          const whereStub = sandbox.stub().returns({
+            where: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                andWhere: sandbox.stub().callsArgOn(0, andWhereStub).returns({})
+              })
+            })
+          })
           context.from = sandbox.stub().returns({
             innerJoin: sandbox.stub().returns({
               innerJoin: sandbox.stub().returns({
                 innerJoin: sandbox.stub().returns({
-                  leftOuterJoin: sandbox.stub().returns({
-                    leftOuterJoin: sandbox.stub().returns({
-                      leftOuterJoin: sandbox.stub().returns({
+                  leftOuterJoin: sandbox.stub().callsArgOn(1, context).returns({
+                    leftOuterJoin: sandbox.stub().callsArgOn(1, context).returns({
+                      leftOuterJoin: sandbox.stub().callsArgOn(1, context).returns({
                         distinct: sandbox.stub().returns({
-                          where: sandbox.stub().returns({
-                            select: sandbox.stub()
-                          })
+                          where: sandbox.stub().callsArgOn(0, knexStub)
                         })
                       })
                     })
-                  })
-                }),
-                where: sandbox.stub().returns({
-                  andWhere: sandbox.stub().returns({
-                    select: sandbox.stub()
                   })
                 })
               })
             })
           })
-
+          /*context.where = sandbox.stub().returns({
+            where: sandbox.stub().returns({
+              andWhere: sandbox.stub().callsArgOn(0, context).returns({
+                whereNotExists: sandbox.stub().callsArgOn(0, context)
+              })
+            })
+          })
+          context.whereNotExists = sandbox.stub().returns({
+            select: sandbox.stub().returns({
+              innerJoin: sandbox.stub().returns({
+                where: sandbox.stub()
+              })
+            })
+          })
+          context.andWhere = sandbox.stub().returns({
+            andWhere: sandbox.stub().returns({
+              orWhere: sandbox.stub().callsArgOn(0, orWhereStub).returns({})
+            })
+          })*/
+          context.on = sandbox.stub().returns({
+            andOn: sandbox.stub(),
+            onIn: sandbox.stub()
+          })
+          knexStub.where = sandbox.stub().returns({
+            andWhere: sandbox.stub().returns({
+              whereNotExists: sandbox.stub()
+            })
+          })
+          knexStub.andWhere = sandbox.stub().callsArgOn(0, andWhereStub)
+          knexStub.whereNotExists = sandbox.stub().returns({
+            select: sandbox.stub().returns({
+              innerJoin: sandbox.stub().returns({
+                where: sandbox.stub()
+              })
+            })
+          })
           knexStub.raw = sandbox.stub()
           knexStub.from = sandbox.stub().returns({
             transacting: sandbox.stub().returns({
