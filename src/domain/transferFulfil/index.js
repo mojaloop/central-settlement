@@ -20,11 +20,6 @@
 
  * ModusBox
  - Deon Botha <deon.botha@modusbox.com>
- - Georgi Georgiev <georgi.georgiev@modusbox.com>
- - Miguel de Barros <miguel.debarros@modusbox.com>
- - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- - Valentin Genev <valentin.genev@modusbox.com>
- - Lazola Lucas <lazola.lucas@modusbox.com>
  --------------
  ******/
 
