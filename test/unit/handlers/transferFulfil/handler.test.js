@@ -34,7 +34,6 @@ const Uuid = require('uuid4')
 const Enum = require('@mojaloop/central-services-shared').Enum
 const TransferFulfilService = require('../../../../src/domain/transferFulfil/index')
 const TransferFulfilHandler = require('../../../../src/handlers/transferFulfil/handler')
-// const Proxyquire = require('proxyquire')
 
 var payload = {
   settlementWindowId: '3',
@@ -64,8 +63,6 @@ const transfer = {
     ]
   }
 }
-
-// 'close'  , 'commit'  - 83
 const messageProtocol = {
   id: Uuid(),
   from: transfer.payerFsp,
@@ -268,7 +265,7 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
     })
     processTransferFulfilTest.end()
   })
-  /* transferFulfilHandlerTest.test('registerAllHandlers should', registerAllHandlersTest => {
+  transferFulfilHandlerTest.test('registerAllHandlers should', registerAllHandlersTest => {
     registerAllHandlersTest.test('register all consumers on Kafka', async (test) => {
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
@@ -279,6 +276,7 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
       test.equal(result, true)
       test.end()
     })
+
     transferFulfilHandlerTest.test('throw error registerAllHandlers', async (test) => {
       try {
         await Consumer.createHandler(topicName, config, command)
@@ -296,6 +294,6 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
       }
     })
     registerAllHandlersTest.end()
-  }) */
+  })
   transferFulfilHandlerTest.end()
 })
