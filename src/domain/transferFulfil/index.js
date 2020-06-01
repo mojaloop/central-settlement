@@ -30,9 +30,9 @@ module.exports = {
   processMsgFulfil: async function (transferEventId, transferEventStateStatus) {
     try {
       await TransferFulfilModel.updateStateChange(transferEventId, transferEventStateStatus)
+      return true
     } catch (err) {
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
-    return true
   }
 }
