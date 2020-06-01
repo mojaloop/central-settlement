@@ -36,7 +36,7 @@ const TransferFulfilService = require('../../../../src/domain/transferFulfil/ind
 const TransferFulfilHandler = require('../../../../src/handlers/transferFulfil/handler')
 // const Proxyquire = require('proxyquire')
 
-const payload = {
+var payload = {
   settlementWindowId: '3',
   reason: 'test'
 }
@@ -251,70 +251,21 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
       }
     })
 
-    /* // maw
-    closeSettlementWindowTest.test('retry when the settlement window state is not CLOSED', async (test) => {
-      const openSettlementWindow = {
-        state: Enum.Settlements.SettlementWindowState.OPEN
-      }
+    processTransferFulfilTest.test('create a FSPIOP error when the payload is null', async (test) => {
       const localMessages = Util.clone(messages)
+      localMessages[0].value.content.payload = null
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
-      SettlementWindowService.close.returns(Promise.resolve(openSettlementWindow))
-
-      const retryStub = sandbox.stub().callsArg(0)
-      const SettlementWindowHandlerProxy = Proxyquire('../../../../src/handlers/settlementWindow/handler', {
-        'async-retry': retryStub
-      })
-
-      const result = await SettlementWindowHandlerProxy.closeSettlementWindow(null, localMessages[0])
-      test.equal(result, true)
-      test.end()
-    })
-    closeSettlementWindowTest.test('retry when the settlement window state is not CLOSED and the action is not closed', async (test) => {
-      const openSettlementWindow = {
-        state: Enum.Settlements.SettlementWindowState.OPEN
-      }
-      const localMessages = Util.clone(messagesActionNotClosed)
-      await Consumer.createHandler(topicName, config, command)
-      Kafka.transformAccountToTopicName.returns(topicName)
-      Kafka.proceed.returns(true)
-      SettlementWindowService.close.returns(Promise.resolve(openSettlementWindow))
-
-      const retryStub = sandbox.stub().callsArg(0)
-      const SettlementWindowHandlerProxy = Proxyquire('../../../../src/handlers/settlementWindow/handler', {
-        'async-retry': retryStub
-      })
-
-      const result = await SettlementWindowHandlerProxy.closeSettlementWindow(null, localMessages[0])
-      test.equal(result, true)
-      test.end()
-    })
-    closeSettlementWindowTest.test('throw error when there is an error', async (test) => {
       try {
-        await Consumer.createHandler(topicName, config, command)
-        Kafka.proceed.returns(false)
-        SettlementWindowService.close.returns(Promise.resolve(settlementWindow))
-        await SettlementWindowHandler.closeSettlementWindow(new Error(), null)
-        test.fail('should throw')
+        await TransferFulfilHandler.processTransferFulfil(null, localMessages[0])
+        test.pass('Update terminated due to missing payload')
         test.end()
-      } catch (e) {
-        test.ok('Error is thrown')
+      } catch (err) {
+        test.ok('FSPIOP Error is thrown.')
         test.end()
       }
     })
-
-    closeSettlementWindowTest.test('throw -Settlement window handler missing payload- when the payload is missing', async (test) => {
-      const localMessages = Util.clone(messagesMissingPayload)
-      await Consumer.createHandler(topicName, config, command)
-      Kafka.transformAccountToTopicName.returns(topicName)
-      Kafka.proceed.returns(true)
-      SettlementWindowService.close.returns(Promise.resolve(settlementWindow))
-      const result = await SettlementWindowHandler.closeSettlementWindow(null, localMessages)
-      test.equal(result, true)
-      test.end()
-    }) */
-
     processTransferFulfilTest.end()
   })
   /* transferFulfilHandlerTest.test('registerAllHandlers should', registerAllHandlersTest => {
