@@ -8,6 +8,11 @@
     "1179|faucet>minimist": {
       "decision": "ignore",
       "madeAt": 1586761432438
+    },
+    "1500|npm-audit-resolver>audit-resolve-core>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1591090773861,
+      "expiresAt": 1593682754995
     }
   },
   "rules": {},
