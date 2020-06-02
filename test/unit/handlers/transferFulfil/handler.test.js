@@ -179,10 +179,6 @@ const config = {
   }
 }
 
-const settlementWindow = {
-  state: Enum.Settlements.SettlementWindowState.CLOSED
-}
-
 const command = () => {}
 
 Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {

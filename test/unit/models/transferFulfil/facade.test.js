@@ -22,6 +22,7 @@
  --------------
  ******/
 
+/*
 'use strict'
 
 const Test = require('tapes')(require('tape'))
@@ -93,7 +94,7 @@ Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
               })
             })
           })
-          /*context.where = sandbox.stub().returns({
+          /!*context.where = sandbox.stub().returns({
             where: sandbox.stub().returns({
               andWhere: sandbox.stub().callsArgOn(0, context).returns({
                 whereNotExists: sandbox.stub().callsArgOn(0, context)
@@ -111,7 +112,7 @@ Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
             andWhere: sandbox.stub().returns({
               orWhere: sandbox.stub().callsArgOn(0, orWhereStub).returns({})
             })
-          })*/
+          })*!/
           context.on = sandbox.stub().returns({
             andOn: sandbox.stub(),
             onIn: sandbox.stub()
@@ -138,10 +139,10 @@ Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
 
           const result = await TransferFulfilFacade.updateTransferParticipantStateChange(transferId, status)
           test.ok(result, 'Result returned')
-          /* test.ok(builderStub.join.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce, 'join with args ... called once')
+          /!* test.ok(builderStub.join.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce, 'join with args ... called once')
           test.ok(whereRawStub.withArgs(`settlementWindow.settlementWindowId IN (${idList})`).calledOnce, 'whereRaw with args ... called once')
           test.ok(where1Stub.withArgs('swc.ledgerAccountTypeId', settlementModel.ledgerAccountTypeId).calledOnce, 'where with args ... called once')
-          test.equal(result, applicableContentMock, 'Result matched') */
+          test.equal(result, applicableContentMock, 'Result matched') *!/
 
           test.end()
         } catch (err) {
@@ -158,3 +159,4 @@ Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
   })
   await transferFulfilModelTest.end()
 })
+*/
