@@ -1,17 +1,18 @@
 {
     "name": "central-settlement",
     "description": "Central settlements hosted by a scheme to record and make settlements.",
-    "version": "9.5.0",
+    "version": "10.3.0",
     "license": "Apache-2.0",
     "private": false,
     "author": "ModusBox",
     "contributors": [
-        "Georgi Georgiev <georgi.georgiev@modusbox.com>",
-        "Valentin Genev <valentin.genev@modusbox.com>",
         "Deon Botha <deon.botha@modusbox.com>",
+        "Georgi Georgiev <georgi.georgiev@modusbox.com>",
+        "Lazola Lucas <lazola.lucas@modusbox.com>",
         "Miguel de Barros <miguel.debarros@modusbox.com>",
         "Rajiv Mothilal <rajiv.mothilal@modusbox.com>",
-        "Lazola Lucas <lazola.lucas@modusbox.com>"
+        "Valentin Genev <valentin.genev@modusbox.com>",
+        "Adrian Enns <adrian.enns@modusbox.com>"
     ],
     "repository": {
         "type": "git",
