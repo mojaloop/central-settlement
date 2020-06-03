@@ -31,7 +31,6 @@ const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 const KafkaConsumer = require('@mojaloop/central-services-stream').Kafka.Consumer
 const Uuid = require('uuid4')
-const Enum = require('@mojaloop/central-services-shared').Enum
 const TransferFulfilService = require('../../../../src/domain/transferFulfil/index')
 const TransferFulfilHandler = require('../../../../src/handlers/transferFulfil/handler')
 
@@ -259,6 +258,23 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
         test.end()
       }
     })
+    // ===
+    processTransferFulfilTest.test('create a FSPIOP error when the event action is unknown', async (test) => {
+      const localMessages = Util.clone(messages)
+      localMessages[0].value.metadata.event.action = 'unknown'
+      await Consumer.createHandler(topicName, config, command)
+      Kafka.transformAccountToTopicName.returns(topicName)
+      Kafka.proceed.returns(true)
+      try {
+        await TransferFulfilHandler.processTransferFulfil(null, localMessages[0])
+        test.pass('Update terminated due to unknown event action')
+        test.end()
+      } catch (err) {
+        test.ok('FSPIOP Error is thrown.')
+        test.end()
+      }
+    })
+    // ==
     processTransferFulfilTest.end()
   })
   transferFulfilHandlerTest.test('registerAllHandlers should', registerAllHandlersTest => {
