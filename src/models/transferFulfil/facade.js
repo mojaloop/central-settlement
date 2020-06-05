@@ -31,7 +31,7 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const Utility = require('@mojaloop/central-services-shared').Util
 const location = { module: 'TransferFulfilHandler', method: '', path: '' }
-const Enum = require('@mojaloop/central-services-shared').Enum
+// const Enum = require('@mojaloop/central-services-shared').Enum
 
 const Facade = {
   updateTransferParticipantStateChange: async function (transferId, status) {
@@ -54,7 +54,7 @@ const Facade = {
                 .where(function () {
                   this.where({ 'TP.transferId': transferId })
                   this.andWhere(function () {
-                    this.andWhere({ 'S.currencyId': 'PC.currencyId' })
+                    this.whereRaw('S.currencyId = ??', ['PC.currencyId'])
                     this.orWhere(function () {
                       this.whereNull('S.currencyId')
                       this.whereNotIn('PC.currencyId', knex('settlementModel AS S1').select('S1.currencyId').whereRaw('S1.ledgerAccountTypeId = ??', ['S.ledgerAccountTypeId']).whereNotNull('S1.currencyId'))
