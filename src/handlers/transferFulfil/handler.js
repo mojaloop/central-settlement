@@ -87,7 +87,7 @@ const processTransferFulfil = async (error, messages) => {
     }
     Logger.info(Utility.breadcrumb(location, 'validationPassed'))
 
-    if (transferEventAction === Enum.Events.Event.Action.COMMIT && transferEventStateStatus === Enum.Events.EventStatus.SUCCESS.status) {
+    if (transferEventAction === Enum.Events.Event.Action.COMMIT || transferEventAction === Enum.Events.Event.Action.ABORT) {
       await retry(async () => { // use bail(new Error('to break before max retries'))
         await transferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus)
         Logger.info(Utility.breadcrumb(location, `done--${actionLetter}2`))

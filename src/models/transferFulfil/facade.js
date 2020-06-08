@@ -31,13 +31,11 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const Utility = require('@mojaloop/central-services-shared').Util
 const location = { module: 'TransferFulfilHandler', method: '', path: '' }
-// const Enum = require('@mojaloop/central-services-shared').Enum
 
 const Facade = {
   updateTransferParticipantStateChange: async function (transferId, status) {
     try {
       const knex = await Db.getKnex()
-
       return knex.transaction(async (trx) => {
         try {
           await knex.from(knex.raw('transferParticipantStateChange (transferParticipantId, settlementWindowStateId, reason)'))
