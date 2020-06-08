@@ -213,7 +213,7 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
-      const result = await TransferFulfilHandler.processTransferFulfil(null, localMessages)
+      const result = await TransferFulfilHandler.processTransferParticipantStateChange(null, localMessages)
       test.equal(result, true)
       test.end()
     })
@@ -223,7 +223,7 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
-      const result = await TransferFulfilHandler.processTransferFulfil(null, localMessages[0])
+      const result = await TransferFulfilHandler.processTransferParticipantStateChange(null, localMessages[0])
       test.equal(result, true)
       test.end()
     })
@@ -234,7 +234,7 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
       try {
-        await TransferFulfilHandler.processTransferFulfil(true, localMessages[0])
+        await TransferFulfilHandler.processTransferParticipantStateChange(true, localMessages[0])
         test.fail('should throw error')
         test.end()
       } catch (err) {
@@ -250,7 +250,7 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
       try {
-        await TransferFulfilHandler.processTransferFulfil(null, localMessages[0])
+        await TransferFulfilHandler.processTransferParticipantStateChange(null, localMessages[0])
         test.pass('Update terminated due to missing payload')
         test.end()
       } catch (err) {
@@ -266,7 +266,7 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
       try {
-        await TransferFulfilHandler.processTransferFulfil(null, localMessages[0])
+        await TransferFulfilHandler.processTransferParticipantStateChange(null, localMessages[0])
         test.pass('Update terminated due to unknown event action')
         test.end()
       } catch (err) {
