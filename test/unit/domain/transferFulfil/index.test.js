@@ -27,8 +27,8 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Logger = require('@mojaloop/central-services-logger')
-const TransferFulfilService = require('../../../../src/domain/transferFulfil')
-const TransferFulfilModel = require('../../../../src/models/transferFulfil')
+const TransferFulfilService = require('../../../../src/domain/transferParticipantStateChange')
+const TransferFulfilModel = require('../../../../src/models/transferParticipantStateChange')
 
 Test('TransferFulfilService', async (transferFulfilServiceTest) => {
   let sandbox

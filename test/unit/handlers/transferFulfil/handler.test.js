@@ -31,8 +31,8 @@ const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 const KafkaConsumer = require('@mojaloop/central-services-stream').Kafka.Consumer
 const Uuid = require('uuid4')
-const TransferFulfilService = require('../../../../src/domain/transferFulfil/index')
-const TransferFulfilHandler = require('../../../../src/handlers/transferFulfil/handler')
+const TransferFulfilService = require('../../../../src/domain/transferParticipantStateChange/index')
+const TransferFulfilHandler = require('../../../../src/handlers/transferParticipantStateChange/handler')
 
 var payload = {
   settlementWindowId: '3',
