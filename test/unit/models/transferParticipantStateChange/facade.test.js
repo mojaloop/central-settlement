@@ -57,6 +57,7 @@ Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
           const trxStub = sandbox.stub()
           trxStub.commit = sandbox.stub()
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+
           Db.getKnex.returns(knexStub)
           const context = sandbox.stub()
           const orWhereStub = sandbox.stub().returns({
@@ -64,18 +65,10 @@ Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
               whereNotIn: sandbox.stub().returns({})
             })
           })
-          const whereRawStub = sandbox.stub()
           const andWhereStub = sandbox.stub().returns({
             andWhere: sandbox.stub().returns({
               whereRaw: sandbox.stub().returns({}),
               orWhere: sandbox.stub().callsArgOn(0, orWhereStub).returns({})
-            })
-          })
-          const whereStub = sandbox.stub().returns({
-            where: sandbox.stub().returns({
-              where: sandbox.stub().returns({
-                andWhere: sandbox.stub().callsArgOn(1, andWhereStub).returns({})
-              })
             })
           })
           context.from = sandbox.stub().returns({
@@ -95,25 +88,6 @@ Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
               })
             })
           })
-          /*context.where = sandbox.stub().returns({
-            where: sandbox.stub().returns({
-              andWhere: sandbox.stub().callsArgOn(0, context).returns({
-                whereNotExists: sandbox.stub().callsArgOn(0, context)
-              })
-            })
-          })
-          context.whereNotExists = sandbox.stub().returns({
-            select: sandbox.stub().returns({
-              innerJoin: sandbox.stub().returns({
-                where: sandbox.stub()
-              })
-            })
-          })
-          context.andWhere = sandbox.stub().returns({
-            andWhere: sandbox.stub().returns({
-              orWhere: sandbox.stub().callsArgOn(0, orWhereStub).returns({})
-            })
-          })*/
           context.on = sandbox.stub().returns({
             andOn: sandbox.stub(),
             onIn: sandbox.stub()
@@ -141,11 +115,6 @@ Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
 
           const result = await TransferFulfilFacade.updateTransferParticipantStateChange(transferId, status)
           test.ok(result, 'Result returned')
-          /* test.ok(builderStub.join.withArgs('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId').calledOnce, 'join with args ... called once')
-          test.ok(whereRawStub.withArgs(`settlementWindow.settlementWindowId IN (${idList})`).calledOnce, 'whereRaw with args ... called once')
-          test.ok(where1Stub.withArgs('swc.ledgerAccountTypeId', settlementModel.ledgerAccountTypeId).calledOnce, 'where with args ... called once')
-          test.equal(result, applicableContentMock, 'Result matched') */
-
           test.end()
         } catch (err) {
           Logger.error(`updateTransferParticipantStateChange failed with error - ${err}`)
