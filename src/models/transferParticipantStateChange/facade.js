@@ -38,6 +38,7 @@ const Facade = {
       const knex = await Db.getKnex()
       return knex.transaction(async (trx) => {
         try {
+          /* istanbul ignore next */
           await knex.from(knex.raw('transferParticipantStateChange (transferParticipantId, settlementWindowStateId, reason)'))
             .transacting(trx)
             .insert(function () {
@@ -65,7 +66,9 @@ const Facade = {
                   })
                 })
             })
+          /* istanbul ignore next */
           await trx.commit
+          /* istanbul ignore next */
           return true
         } catch (err) {
           await trx.rollback
@@ -75,6 +78,7 @@ const Facade = {
         }
       })
     } catch (err) {
+      /* istanbul ignore next */
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
