@@ -32,6 +32,7 @@ const Handlers = require('../../../src/handlers/register')
 const Proxyquire = require('proxyquire')
 
 const SettlementWindowHandlers = require('../../../src/handlers/settlementWindow/handler')
+const TransferFulfilHandlers = require('../../../src/handlers/transferParticipantStateChange/handler')
 
 Test('handlers', handlersTest => {
   let sandbox
@@ -39,6 +40,7 @@ Test('handlers', handlersTest => {
   handlersTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(SettlementWindowHandlers, 'registerAllHandlers').returns(Promise.resolve(true))
+    sandbox.stub(TransferFulfilHandlers, 'registerAllHandlers').returns(Promise.resolve(true))
     test.end()
   })
 
