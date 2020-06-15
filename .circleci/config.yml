@@ -255,7 +255,7 @@ jobs:
             apk add --update py-pip docker python3-dev libffi-dev openssl-dev gcc libc-dev make jq npm
       - run:
           name: Install general dependencies
-          command:
+          command: |
             apk --no-cache add git
             apk --no-cache add ca-certificates
             apk --no-cache add curl
