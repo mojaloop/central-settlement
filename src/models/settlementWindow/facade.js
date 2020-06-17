@@ -47,6 +47,17 @@ const Facade = {
     })
   },
 
+  getUnprocessedTransferParticipantEntryCount: async function (settlementWindowId) {
+    return Db.transferFulfilment.query(builder => {
+      return builder
+        .innerJoin('transferParticipant as P', 'transferFulfilment.transferId', 'P.transferId')
+        .leftOuterJoin('transferParticipantStateChange as C', 'P.transferParticipantId', 'C.transferParticipantId')
+        .where('transferFulfilment.settlementWindowId', settlementWindowId)
+        .whereNull('C.transferParticipantId')
+        .count('P.transferParticipantId as count')
+    })
+  },
+
   getTransfersCount: async function ({ settlementWindowId }) {
     return Db.transferFulfilment.query(builder => {
       return builder
@@ -179,10 +190,12 @@ const Facade = {
     } if (settlementWindowCurrentState && settlementWindowCurrentState.state !== Enum.Settlements.SettlementWindowState.PROCESSING) {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Window ${settlementWindowId} is not in processing state`)
     } else {
+      // maw
+      const unprocessedTransferParticipantEntryCount = await Facade.getUnprocessedTransferParticipantEntryCount({ settlementWindowId })
+      // kick off retries here if count is > 0
       return knex.transaction(async (trx) => {
         try {
           const transactionTimestamp = new Date()
-
           // Insert settlementWindowContent
           let builder = knex
             .from(knex.raw('settlementWindowContent (settlementWindowId, ledgerAccountTypeId, currencyId, createdDate)'))
