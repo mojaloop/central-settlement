@@ -47,7 +47,7 @@ const Facade = {
     })
   },
 
-  getUnprocessedTransferParticipantEntryCount: async function (settlementWindowId) {
+  getUnprocessedTransferParticipantEntryCount: async function ({ settlementWindowId }) {
     return Db.transferFulfilment.query(builder => {
       return builder
         .innerJoin('transferParticipant as P', 'transferFulfilment.transferId', 'P.transferId')
@@ -187,12 +187,17 @@ const Facade = {
     const settlementWindowCurrentState = await Facade.getById({ settlementWindowId })
     if (!settlementWindowCurrentState) {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Window ${settlementWindowId} does not exist`)
-    } if (settlementWindowCurrentState && settlementWindowCurrentState.state !== Enum.Settlements.SettlementWindowState.PROCESSING) {
+    }
+    if (settlementWindowCurrentState && settlementWindowCurrentState.state !== Enum.Settlements.SettlementWindowState.PROCESSING) {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Window ${settlementWindowId} is not in processing state`)
+    }
+    const unprocessedTransferParticipantEntryCount = await Facade.getUnprocessedTransferParticipantEntryCount({ settlementWindowId })
+    if (!unprocessedTransferParticipantEntryCount) {
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Failure to determine number of unprocessed transferParticipant entries in the DB for window ${settlementWindowId}`)
+    }
+    if (unprocessedTransferParticipantEntryCount[0].count > 0) {
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `${unprocessedTransferParticipantEntryCount} transferParticipant entrie(s) for window ${settlementWindowId} awaiting to be processed before window can be closed`)
     } else {
-      // maw
-      const unprocessedTransferParticipantEntryCount = await Facade.getUnprocessedTransferParticipantEntryCount({ settlementWindowId })
-      // kick off retries here if count is > 0
       return knex.transaction(async (trx) => {
         try {
           const transactionTimestamp = new Date()
