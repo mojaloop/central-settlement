@@ -38,6 +38,6 @@ module.exports = {
   close: Facade.close,
   getByListOfIds: Facade.getByListOfIds,
   getBySettlementId: Facade.getBySettlementId,
-  getUnprocessedTransferParticipantEntryCount : Facade.getUnprocessedTransferParticipantEntryCount,
+  getUnprocessedTransferParticipantEntryCount: Facade.getUnprocessedTransferParticipantEntryCount,
   createSettlementWindowState: settlementWindowStateChange.create
 }

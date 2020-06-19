@@ -196,7 +196,7 @@ const Facade = {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Failure to determine number of unprocessed transferParticipant entries in the DB for window ${settlementWindowId}`)
     }
     if (unprocessedTransferParticipantEntryCount[0].count > 0) {
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `${unprocessedTransferParticipantEntryCount} transferParticipant entrie(s) for window ${settlementWindowId} awaiting to be processed before window can be closed`)
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Failure : ${unprocessedTransferParticipantEntryCount[0].count} unprocessed transferParticipant state change record(s) for setlement window id ${settlementWindowId} awaiting to be processed before the window can be closed`)
     } else {
       return knex.transaction(async (trx) => {
         try {
