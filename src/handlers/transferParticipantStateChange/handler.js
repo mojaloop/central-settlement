@@ -52,6 +52,9 @@ const retryOpts = {
   minTimeout: retryDelay,
   maxTimeout: retryDelay
 }
+const fs = require('fs')
+const scriptEngine = require('../../lib/scriptEngine')
+const vm = require('vm')
 
 const processTransferParticipantStateChange = async (error, messages) => {
   if (error) {
@@ -87,8 +90,20 @@ const processTransferParticipantStateChange = async (error, messages) => {
     }
     Logger.info(Utility.breadcrumb(location, 'validationPassed'))
 
-    if (transferEventAction === Enum.Events.Event.Action.COMMIT || transferEventAction === Enum.Events.Event.Action.ABORT) {
+  //  if (transferEventAction === Enum.Events.Event.Action.COMMIT || transferEventAction === Enum.Events.Event.Action.ABORT) {
+    if (1 == 1) {
       await retry(async () => { // use bail(new Error('to break before max retries'))
+        let data
+        try {
+          data = fs.readFileSync('scripts/interchangeFeeCalculation.js', 'utf8')
+          console.log(data)
+        } catch (e) {
+          console.log('Error:', e.stack)
+        }
+
+        const script = new vm.Script(data)
+        const result = scriptEngine.execute(script, message.value)
+        console.log(result)
         await transferParticipantStateChangeService.processMsgFulfil(transferEventId, transferEventStateStatus)
         Logger.info(Utility.breadcrumb(location, `done--${actionLetter}2`))
         return true

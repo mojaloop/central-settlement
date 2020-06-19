@@ -25,12 +25,15 @@
  --------------
  ******/
 'use strict'
-
 const Db = require('../../lib/db')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const Utility = require('@mojaloop/central-services-shared').Util
 const location = { module: 'TransferFulfilHandler', method: '', path: '' }
+const Enums = require('@mojaloop/central-services-shared').Enum
+const request = require('@mojaloop/central-services-shared').Util.Request
+const Config = require('../../lib/config')
+
 
 const Facade = {
   updateTransferParticipantStateChange: async function (transferId, status) {
@@ -81,7 +84,54 @@ const Facade = {
       /* istanbul ignore next */
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
+  },
+  getTransactionRequest: async function (transactionId) {
+    try {
+      const requestedEndpoint = `${Config.SWITCH_ENDPOINT}/transactions/${transactionId}`
+      Logger.debug(`transfers endpoint url: ${requestedEndpoint}`)
+      return await Utility.Request.sendRequest(requestedEndpoint, { 'fspiop-source': 'HUB' }, 'HUB', 'HUB')
+    } catch (err) {
+      Logger.error(err)
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    }
   }
 }
+
+/*exports.getTransactionRequest = async (transactionId) => {
+  try {
+    const requestedEndpoint = `${Config.SWITCH_ENDPOINT}/transactions/${transactionId}`
+    Logger.debug(`transfers endpoint url: ${requestedEndpoint}`)
+    return await Utility.Request.sendRequest(requestedEndpoint, {}, 'HUB', 'HUB')
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+}*/
+
+/* exports.transactionRequest = async (headers, method, params = {}, query = {}, payload = undefined) => {
+  try {
+    let url
+    return await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method.toUpperCase(), payload || undefined)
+  } catch (err) {
+    Logger.error(err)
+    // If the error was a 400 from the Oracle, we'll modify the error to generate a response to the
+    // initiator of the request.
+    if (
+      err.name === 'FSPIOPError' &&
+      err.apiErrorCode.code === ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR.code
+    ) {
+      if (err.extensions.some(ext => (ext.key === 'status' && ext.value === Enums.Http.ReturnCodes.BADREQUEST.CODE))) {
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND)
+        // Added error 404 to cover a special case of the Mowali implementation
+        // which uses mojaloop/als-oracle-pathfinder and currently returns 404
+        // and in which case the Mowali implementation expects back `DESTINATION_FSP_ERROR`.
+      } else if (err.extensions.some(ext => (ext.key === 'status' && ext.value === Enums.Http.ReturnCodes.NOTFOUND.CODE))) {
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR)
+      }
+    }
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+}
+ */
 
 module.exports = Facade
