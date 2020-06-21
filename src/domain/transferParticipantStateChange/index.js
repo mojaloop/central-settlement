@@ -20,17 +20,39 @@
 
  * ModusBox
  - Deon Botha <deon.botha@modusbox.com>
+ - Lazola Lucas <lazola.lucas@modusbox.com>
  --------------
  ******/
-
+const fs = require('fs')
+const scriptEngine = require('../../lib/scriptEngine')
+const vm = require('vm')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const TransferParticipantStateChangeModel = require('../../models/transferParticipantStateChange')
 
 module.exports = {
-  processMsgFulfil: async function (transferEventId, transferEventStateStatus) {
+  processMsgFulfil: async function (transferEventId, transferEventStateStatus, ledgerEntries) {
     try {
-      await TransferParticipantStateChangeModel.updateStateChange(transferEventId, transferEventStateStatus)
+      await TransferParticipantStateChangeModel.updateStateChange(transferEventId, transferEventStateStatus, ledgerEntries.payerFspId, ledgerEntries.payeeFspId, ledgerEntries.currency, ledgerEntries.amount, ledgerEntries.ledgerEntryTypeId)
       return true
+    } catch (err) {
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    }
+  },
+  processScriptEngine: async function (transferEventId) {
+    try {
+      let data
+      try {
+        data = fs.readFileSync('scripts/interchangeFeeCalculation.js', 'utf8')
+      } catch (err) {
+        throw ErrorHandler.Factory.reformatFSPIOPError(err)
+      }
+      const script = new vm.Script(data)
+      const result = scriptEngine.execute(script, transferEventId)
+      if (result.ledgerEntries && result.ledgerEntries.length > 0) {
+        return result.ledgerEntries
+      } else {
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, 'No ledger entries calculated for this transfer')
+      }
     } catch (err) {
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }

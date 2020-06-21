@@ -11,7 +11,6 @@
 // ## Globals:
 // payload: The contents of the message from the Kafka topic.
 
-
 // # Functions:
 // ## Data retrieval functions:
 // getTransfer(transferId): Retrieves a mojaloop transfer from the central-ledger API.
@@ -27,21 +26,27 @@
 // addLedgerEntry: Adds a debit and credit ledger entry to the specified account to the specified DFSPs
 
 let transfer
-transfer = await getTransfer(payload.id)
+// eslint-disable-next-line prefer-const,no-undef
+transfer = getTransfer(payload.id)
+// eslint-disable-next-line no-undef
 log(JSON.stringify(transfer))
 const payerFspId = transfer.payer.partyIdInfo.fspId
 const payeeFspId = transfer.payee.partyIdInfo.fspId
 
-if((payeeFspId !== payerFspId)
-  && (getExtensionValue(transfer.payee.partyIdInfo.extensionList.extension, 'accountType') === 'Wallet'
-    && getExtensionValue(transfer.payer.partyIdInfo.extensionList.extension, 'accountType') === 'Wallet')
-  && (transfer.transactionType.scenario === 'TRANSFER'
-    && transfer.transactionType.initiator === 'PAYER'
-    && transfer.transactionType.initiatorType === 'CONSUMER')) {
-
-  log(`Adding an interchange fee for Wallet to Wallet from $payerFspId to $payeeFspId`)
+if ((payeeFspId !== payerFspId) &&
+  // eslint-disable-next-line no-undef
+  (getExtensionValue(transfer.payee.partyIdInfo.extensionList.extension, 'accountType') === 'Wallet' &&
+    // eslint-disable-next-line no-undef
+    getExtensionValue(transfer.payer.partyIdInfo.extensionList.extension, 'accountType') === 'Wallet') &&
+  (transfer.transactionType.scenario === 'TRANSFER' &&
+    transfer.transactionType.initiator === 'PAYER' &&
+    transfer.transactionType.initiatorType === 'CONSUMER')) {
+  // eslint-disable-next-line no-undef
+  log('Adding an interchange fee for Wallet to Wallet from $payerFspId to $payeeFspId')
+  // eslint-disable-next-line no-undef
   addLedgerEntry(payload.id, 'INTERCHANGE_FEE', // Ledger account type Id
     'INTERCHANGE_FEE', // Ledger entry type Id
+    // eslint-disable-next-line no-undef
     multiply(transfer.amount.amount, 0.006),
     transfer.amount.currency,
     payerFspId,

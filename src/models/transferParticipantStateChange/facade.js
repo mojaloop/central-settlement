@@ -30,20 +30,16 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const Utility = require('@mojaloop/central-services-shared').Util
 const location = { module: 'TransferFulfilHandler', method: '', path: '' }
-const Enums = require('@mojaloop/central-services-shared').Enum
-const request = require('@mojaloop/central-services-shared').Util.Request
 const Config = require('../../lib/config')
 
-
 const Facade = {
-  updateTransferParticipantStateChange: async function (transferId, status) {
+  updateTransferParticipantStateChange: async function (transferId, status, payerdfsp, payeedfsp, currency, amount, ledgerEntryType) {
     try {
       const knex = await Db.getKnex()
       return knex.transaction(async (trx) => {
         try {
           /* istanbul ignore next */
           await knex.from(knex.raw('transferParticipantStateChange (transferParticipantId, settlementWindowStateId, reason)'))
-            .transacting(trx)
             .insert(function () {
               this.from('transferParticipant AS TP')
                 .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
@@ -69,6 +65,23 @@ const Facade = {
                   })
                 })
             })
+            .transacting(trx)
+          await knex.from(knex.raw('?? (??, ??, ??, ??, ??)', ['transferParticipant', 'transferId', 'participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId', 'amount']))
+            .insert(function () {
+              this.select(knex.raw('?', transferId), 'PC.participantCurrencyId')
+                .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'RoleType']))
+                .select('E.ledgerEntryTypeId')
+                .select(knex.raw('CASE ?? WHEN ? THEN ? WHEN ? THEN ? ELSE ? END AS ??', ['P.name', payerdfsp, amount, payeedfsp, amount * -1, 0, 'amount']))
+                .from('participantCurrency as PC')
+                .innerJoin('participant as P', 'P.participantId', 'PC.participantId')
+                .innerJoin('ledgerEntryType as E', 'E.LedgerAccountTypeId', 'PC.LedgerAccountTypeId')
+                .leftOuterJoin('transferParticipantRoleType as T1', function () { this.on('P.name', '=', knex.raw('?', [payerdfsp])).andOn('T1.name', knex.raw('?', ['PAYER_DFSP'])) })
+                .leftOuterJoin('transferParticipantRoleType as T2', function () { this.on('P.name', '=', knex.raw('?', [payeedfsp])).andOn('T2.name', knex.raw('?', ['PAYEE_DFSP'])) })
+                .where('E.name', ledgerEntryType)
+                .whereIn('P.name', [payerdfsp, payeedfsp])
+                .where('PC.currencyId', currency)
+            })
+            .transacting(trx)
           /* istanbul ignore next */
           await trx.commit
           /* istanbul ignore next */
@@ -96,42 +109,5 @@ const Facade = {
     }
   }
 }
-
-/*exports.getTransactionRequest = async (transactionId) => {
-  try {
-    const requestedEndpoint = `${Config.SWITCH_ENDPOINT}/transactions/${transactionId}`
-    Logger.debug(`transfers endpoint url: ${requestedEndpoint}`)
-    return await Utility.Request.sendRequest(requestedEndpoint, {}, 'HUB', 'HUB')
-  } catch (err) {
-    Logger.error(err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
-  }
-}*/
-
-/* exports.transactionRequest = async (headers, method, params = {}, query = {}, payload = undefined) => {
-  try {
-    let url
-    return await request.sendRequest(url, headers, headers[Enums.Http.Headers.FSPIOP.SOURCE], headers[Enums.Http.Headers.FSPIOP.DESTINATION] || Enums.Http.Headers.FSPIOP.SWITCH.value, method.toUpperCase(), payload || undefined)
-  } catch (err) {
-    Logger.error(err)
-    // If the error was a 400 from the Oracle, we'll modify the error to generate a response to the
-    // initiator of the request.
-    if (
-      err.name === 'FSPIOPError' &&
-      err.apiErrorCode.code === ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR.code
-    ) {
-      if (err.extensions.some(ext => (ext.key === 'status' && ext.value === Enums.Http.ReturnCodes.BADREQUEST.CODE))) {
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.PARTY_NOT_FOUND)
-        // Added error 404 to cover a special case of the Mowali implementation
-        // which uses mojaloop/als-oracle-pathfinder and currently returns 404
-        // and in which case the Mowali implementation expects back `DESTINATION_FSP_ERROR`.
-      } else if (err.extensions.some(ext => (ext.key === 'status' && ext.value === Enums.Http.ReturnCodes.NOTFOUND.CODE))) {
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR)
-      }
-    }
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
-  }
-}
- */
 
 module.exports = Facade
