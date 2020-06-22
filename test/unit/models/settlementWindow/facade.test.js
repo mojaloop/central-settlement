@@ -183,6 +183,43 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
     }
   })
 
+  await settlementWindowFacadeTest.test('getUnprocessedTransferParticipantEntryCount should', async getUnprocessedTransferParticipantEntryCountTest => {
+    try {
+      await getUnprocessedTransferParticipantEntryCountTest.test('should return the number of transfers in a window.', async test => {
+        try {
+          Db.transferFulfilment = { query: sandbox.stub() }
+          const builderStub = sandbox.stub()
+          Db.transferFulfilment.query.callsArgWith(0, builderStub)
+          // builderStub.innerJoin = sandbox.stub()
+          // builderStub.leftOuterJoin = sandbox.stub()
+          count: sandbox.stub().returns({
+            innerJoin: sandbox.stub().returns({
+              leftOuterJoin: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  whereNull: sandbox.stub().returns(6)
+                })
+              })
+            })
+          })
+          Db.transferFulfilment.query.callsArgWith(0, builderStub)
+          const result = await SettlementWindowFacade.getUnprocessedTransferParticipantEntryCount({ settlementWindowId: 1 })
+          test.ok(result, 'Result returned')
+          test.end()
+        } catch (err) {
+          Logger.error('getTransferCount failed with error : ' + err)
+          test.pass('Error thrown as expected')
+          test.end()
+        }
+      })
+
+      await getUnprocessedTransferParticipantEntryCountTest.end()
+    } catch (err) {
+      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      getUnprocessedTransferParticipantEntryCountTest.fail()
+      getUnprocessedTransferParticipantEntryCountTest.end()
+    }
+  })
+
   await settlementWindowFacadeTest.test('getByListOfIds should', async getByListOfIdsTest => {
     try {
       const listOfIds = [1, 2]
