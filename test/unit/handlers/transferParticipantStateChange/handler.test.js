@@ -87,74 +87,12 @@ const messageProtocol = {
   pp: ''
 }
 
-const messageProtocolActionNotClosed = {
-  id: Uuid(),
-  from: transfer.payerFsp,
-  to: transfer.payeeFsp,
-  type: 'application/json',
-  content: {
-    headers: { 'fspiop-destination': transfer.payerFsp },
-    uriParams: { id: transfer.transferId },
-    payload
-  },
-  metadata: {
-    event: {
-      id: Uuid(),
-      type: 'settlement',
-      action: 'notClose',
-      createdAt: new Date(),
-      state: {
-        status: 'success',
-        code: 0
-      }
-    }
-  },
-  pp: ''
-}
-
-const messageProtocolMissingPayload = {
-  id: Uuid(),
-  from: transfer.payerFsp,
-  to: transfer.payeeFsp,
-  type: 'application/json',
-  content: {
-    headers: { 'fspiop-destination': transfer.payerFsp },
-    uriParams: { id: transfer.transferId }
-  },
-  metadata: {
-    event: {
-      id: Uuid(),
-      type: 'settlement',
-      action: 'close',
-      createdAt: new Date(),
-      state: {
-        status: 'success',
-        code: 0
-      }
-    }
-  },
-  pp: ''
-}
-
 const topicName = 'topic-test'
 
 const messages = [
   {
     topic: topicName,
     value: messageProtocol
-  }
-]
-
-const messagesActionNotClosed = [
-  {
-    topic: topicName,
-    value: messageProtocolActionNotClosed
-  }
-]
-const messagesMissingPayload = [
-  {
-    topic: topicName,
-    value: messageProtocolMissingPayload
   }
 ]
 

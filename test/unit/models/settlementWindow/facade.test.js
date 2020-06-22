@@ -189,10 +189,9 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
         try {
           Db.transferFulfilment = { query: sandbox.stub() }
           const builderStub = sandbox.stub()
+          builderStub.count = sandbox.stub()
           Db.transferFulfilment.query.callsArgWith(0, builderStub)
-          // builderStub.innerJoin = sandbox.stub()
-          // builderStub.leftOuterJoin = sandbox.stub()
-          count: sandbox.stub().returns({
+          builderStub.count.returns({
             innerJoin: sandbox.stub().returns({
               leftOuterJoin: sandbox.stub().returns({
                 where: sandbox.stub().returns({
