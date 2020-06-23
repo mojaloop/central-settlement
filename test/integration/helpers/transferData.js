@@ -372,6 +372,7 @@ module.exports = {
               try {
                 const simulatorResponse = await simulatorRes.json()
                 if (simulatorResponse && simulatorResponse.transferState === localEnum.transferStates.COMMITTED) {
+                  await transferParticipantStateChangeService.processMsgFulfil(transfer.transferId, 'success')
                   transferCommitted = true
                   break
                 }
@@ -386,7 +387,6 @@ module.exports = {
               await sleep(sleepMilliseconds)
             }
             test.ok(transferCommitted, 'transfer successfully COMMITTED by payee fsp')
-            transferParticipantStateChangeService.processMsgFulfil(transfer.transferId, 'success')
             test.end()
           } catch (err) {
             Logger.error(`prepareTransferDataTest failed with error - ${err}`)
