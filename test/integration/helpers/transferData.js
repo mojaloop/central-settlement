@@ -31,6 +31,7 @@ const TestConfig = require('../../integration-config')
 const Logger = require('@mojaloop/central-services-logger')
 const fetch = require('node-fetch')
 const Uuid = require('uuid4')
+const transferParticipantStateChangeService = require('../../../src/domain/transferParticipantStateChange')
 
 const rand8 = () => {
   return Math.floor(Math.random() * 1000000000)
@@ -385,6 +386,7 @@ module.exports = {
               await sleep(sleepMilliseconds)
             }
             test.ok(transferCommitted, 'transfer successfully COMMITTED by payee fsp')
+            transferParticipantStateChangeService.processMsgFulfil(transfer.transferId, 'success')
             test.end()
           } catch (err) {
             Logger.error(`prepareTransferDataTest failed with error - ${err}`)
