@@ -19,40 +19,18 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * ModusBox
- - Deon Botha <deon.botha@modusbox.com>
  - Lazola Lucas <lazola.lucas@modusbox.com>
  --------------
  ******/
-const fs = require('fs')
-const scriptEngine = require('../../lib/scriptEngine')
-const vm = require('vm')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const TransferParticipantStateChangeModel = require('../../models/transferParticipantStateChange')
+'use strict'
 
-module.exports = {
-  processMsgFulfil: async function (transferEventId, transferEventStateStatus, ledgerEntries) {
-    try {
-      await TransferParticipantStateChangeModel.updateStateChange(transferEventId, transferEventStateStatus, ledgerEntries)
-      return true
-    } catch (err) {
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
-  },
-  /* istanbul ignore next */
-  processScriptEngine: async function (payload) {
-    /* istanbul ignore next */
-    try {
-      let data
-      try {
-        data = fs.readFileSync('scripts/interchangeFeeCalculation.js', 'utf8')
-      } catch (err) {
-        throw ErrorHandler.Factory.reformatFSPIOPError(err)
-      }
-      const script = new vm.Script(data)
-      const result = await scriptEngine.execute(script, payload)
-      return result
-    } catch (err) {
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+const Db = require('../../lib/db')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+
+exports.getById = async (id) => {
+  try {
+    return await Db.ilpPacket.find({ transferId: id })
+  } catch (err) {
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }

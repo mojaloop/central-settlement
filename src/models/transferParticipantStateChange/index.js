@@ -31,5 +31,6 @@
 const Facade = require('./facade')
 
 module.exports = {
-  updateStateChange: Facade.updateTransferParticipantStateChange
+  updateStateChange: Facade.updateTransferParticipantStateChange,
+  getTransactionObject: Facade.getTransactionRequest
 }

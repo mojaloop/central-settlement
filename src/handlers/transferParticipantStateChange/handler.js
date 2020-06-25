@@ -89,7 +89,10 @@ const processTransferParticipantStateChange = async (error, messages) => {
 
     if (transferEventAction === Enum.Events.Event.Action.COMMIT || transferEventAction === Enum.Events.Event.Action.ABORT) {
       await retry(async () => { // use bail(new Error('to break before max retries'))
-        await transferParticipantStateChangeService.processMsgFulfil(transferEventId, transferEventStateStatus)
+        const scriptResult = await transferParticipantStateChangeService.processScriptEngine(message.value)
+        /* istanbul ignore next */
+        const ledgerEntries = scriptResult ? (scriptResult.ledgerEntries ? scriptResult.ledgerEntries : []) : []
+        await transferParticipantStateChangeService.processMsgFulfil(transferEventId, transferEventStateStatus, ledgerEntries)
         Logger.info(Utility.breadcrumb(location, `done--${actionLetter}2`))
         return true
       }, retryOpts)
