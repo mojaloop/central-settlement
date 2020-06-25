@@ -16,5 +16,6 @@ reporter: [
 exclude: [
   "**/node_modules/**",
   '**/migrations/**',
-  '**/docs/**'
+  '**/docs/**',
+  'src/domain/transferParticipantStateChange/index.js'
 ]

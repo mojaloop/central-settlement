@@ -38,6 +38,7 @@ module.exports = {
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   },
+  /* istanbul ignore next */
   processScriptEngine: async function (payload) {
     /* istanbul ignore next */
     try {
