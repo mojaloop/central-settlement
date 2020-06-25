@@ -1,8 +1,17 @@
 const MLNumber = require('@mojaloop/ml-number')
 const Config = require('./config')
-const Facade = require('../../src/models/transferParticipantStateChange/index')
+const Transaction = require('../../src/domain/transactions/index')
 
-const execute = function (script, payload) {
+const getTransferFromCentralLedger = async (transferId) => {
+  const entity = await Transaction.getById(transferId)
+  if (entity) {
+    const transferObject = await Transaction.getTransactionObject(entity[0].value)
+    return transferObject
+  }
+}
+
+const execute = async function (script, payload) {
+  const transfer = await getTransferFromCentralLedger(payload.id)
   const ledgerEntries = []
 
   const sandbox = {
@@ -10,61 +19,7 @@ const execute = function (script, payload) {
     log: function (message) {
       console.log(message)
     },
-    getTransfer (transferId) {
-    /*  const transferObject = await Facade.getTransactionObject(transferId)
-      return transferObject.data */
-      return {
-        transactionId: 'cb4c0f77-286d-40a5-8dfe-b162e64482ee',
-        quoteId: 'ad1b4bea-32f4-4f48-a70d-7e13b28b453b',
-        payee: {
-          partyIdInfo: {
-            partyIdType: 'MSISDN',
-            partyIdentifier: '27713813914',
-            fspId: 'testfsp1',
-            extensionList: {
-              extension: [
-                {
-                  key: 'accountType',
-                  value: 'Wallet'
-                }
-              ]
-            }
-          },
-          personalInfo: {
-            complexName: {
-              firstName: 'testfsp1BankFname',
-              lastName: 'testfsp1BankLname'
-            },
-            dateOfBirth: '1985-05-13'
-          }
-        },
-        payer: {
-          partyIdInfo: {
-            partyIdType: 'MSISDN',
-            partyIdentifier: '27713803912',
-            fspId: 'payerfsp',
-            extensionList: {
-              extension: [
-                {
-                  key: 'accountType',
-                  value: 'Wallet'
-                }
-              ]
-            }
-          },
-          name: 'payerfspFname payerfspLname'
-        },
-        amount: {
-          amount: '10',
-          currency: 'TZS'
-        },
-        transactionType: {
-          scenario: 'TRANSFER',
-          initiator: 'PAYER',
-          initiatorType: 'CONSUMER'
-        }
-      }
-    },
+    transfer,
     multiply (number1, number2) {
       const result = new MLNumber(number1).multiply(number2).toFixed(Config.AMOUNT.SCALE)
       return result

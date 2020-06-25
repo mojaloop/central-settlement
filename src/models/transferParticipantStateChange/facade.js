@@ -39,6 +39,24 @@ const Facade = {
       return knex.transaction(async (trx) => {
         try {
           /* istanbul ignore next */
+
+          await knex.from(knex.raw('?? (??, ??, ??, ??, ??)', ['transferParticipant', 'transferId', 'participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId', 'amount']))
+            .insert(function () {
+              this.select(knex.raw('?', transferId), 'PC.participantCurrencyId')
+                .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'RoleType']))
+                .select('E.ledgerEntryTypeId')
+                .select(knex.raw('CASE ?? WHEN ? THEN ? WHEN ? THEN ? ELSE ? END AS ??', ['P.name', payerdfsp, amount, payeedfsp, amount * -1, 0, 'amount']))
+                .from('participantCurrency as PC')
+                .innerJoin('participant as P', 'P.participantId', 'PC.participantId')
+                .innerJoin('ledgerEntryType as E', 'E.LedgerAccountTypeId', 'PC.LedgerAccountTypeId')
+                .leftOuterJoin('transferParticipantRoleType as T1', function () { this.on('P.name', '=', knex.raw('?', [payerdfsp])).andOn('T1.name', knex.raw('?', ['PAYER_DFSP'])) })
+                .leftOuterJoin('transferParticipantRoleType as T2', function () { this.on('P.name', '=', knex.raw('?', [payeedfsp])).andOn('T2.name', knex.raw('?', ['PAYEE_DFSP'])) })
+                .where('E.name', ledgerEntryType)
+                .whereIn('P.name', [payerdfsp, payeedfsp])
+                .where('PC.currencyId', currency)
+            })
+            .transacting(trx)
+          /* istanbul ignore next */
           await knex.from(knex.raw('transferParticipantStateChange (transferParticipantId, settlementWindowStateId, reason)'))
             .insert(function () {
               this.from('transferParticipant AS TP')
@@ -66,23 +84,6 @@ const Facade = {
                 })
             })
             .transacting(trx)
-          await knex.from(knex.raw('?? (??, ??, ??, ??, ??)', ['transferParticipant', 'transferId', 'participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId', 'amount']))
-            .insert(function () {
-              this.select(knex.raw('?', transferId), 'PC.participantCurrencyId')
-                .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'RoleType']))
-                .select('E.ledgerEntryTypeId')
-                .select(knex.raw('CASE ?? WHEN ? THEN ? WHEN ? THEN ? ELSE ? END AS ??', ['P.name', payerdfsp, amount, payeedfsp, amount * -1, 0, 'amount']))
-                .from('participantCurrency as PC')
-                .innerJoin('participant as P', 'P.participantId', 'PC.participantId')
-                .innerJoin('ledgerEntryType as E', 'E.LedgerAccountTypeId', 'PC.LedgerAccountTypeId')
-                .leftOuterJoin('transferParticipantRoleType as T1', function () { this.on('P.name', '=', knex.raw('?', [payerdfsp])).andOn('T1.name', knex.raw('?', ['PAYER_DFSP'])) })
-                .leftOuterJoin('transferParticipantRoleType as T2', function () { this.on('P.name', '=', knex.raw('?', [payeedfsp])).andOn('T2.name', knex.raw('?', ['PAYEE_DFSP'])) })
-                .where('E.name', ledgerEntryType)
-                .whereIn('P.name', [payerdfsp, payeedfsp])
-                .where('PC.currencyId', currency)
-            })
-            .transacting(trx)
-          /* istanbul ignore next */
           await trx.commit
           /* istanbul ignore next */
           return true

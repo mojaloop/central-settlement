@@ -48,7 +48,8 @@
         "mustache": "4.0.1",
         "parse-strings-in-object": "2.0.0",
         "rc": "1.2.8",
-        "uuid4": "2.0.2"
+        "uuid4": "2.0.2",
+        "vm": "0.1.0"
     },
     "devDependencies": {
         "@hapi/joi": "17.1.1",

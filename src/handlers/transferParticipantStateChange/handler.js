@@ -91,12 +91,10 @@ const processTransferParticipantStateChange = async (error, messages) => {
     // eslint-disable-next-line no-constant-condition,no-self-compare
     if (1 === 1) {
       await retry(async () => { // use bail(new Error('to break before max retries'))
-        const ledgerEntries = await transferParticipantStateChangeService.processScriptEngine(transferEventId)
-        if (ledgerEntries) {
-          await transferParticipantStateChangeService.processMsgFulfil(transferEventId, transferEventStateStatus, ledgerEntries[0])
-          Logger.info(Utility.breadcrumb(location, `done--${actionLetter}2`))
-          return true
-        }
+        const ledgerEntries = await transferParticipantStateChangeService.processScriptEngine(message.value)
+        await transferParticipantStateChangeService.processMsgFulfil(transferEventId, transferEventStateStatus, ledgerEntries[0])
+        Logger.info(Utility.breadcrumb(location, `done--${actionLetter}2`))
+        return true
       }, retryOpts)
       return true
     }
