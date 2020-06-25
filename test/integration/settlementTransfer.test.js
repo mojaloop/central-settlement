@@ -37,7 +37,6 @@ const SettlementService = require('../../src/domain/settlement')
 const Enums = require('../../src/models/lib/enums')
 const SettlementWindowStateChangeModel = require('../../src/models/settlementWindow/settlementWindowStateChange')
 const SettlementModel = require('../../src/models/settlement/settlement')
-const SettlementModelModel = require('../../src/models/settlement/settlementModel')
 const SettlementStateChangeModel = require('../../src/models/settlement/settlementStateChange')
 const SettlementParticipantCurrencyModel = require('../../src/models/settlement/settlementParticipantCurrency')
 const TransferModel = require('@mojaloop/central-ledger/src/models/transfer/transfer')
@@ -108,32 +107,6 @@ Test('SettlementTransfer should', async settlementTransferTest => {
   settlementTransferTest.afterEach(test => {
     sandbox.restore()
     test.end()
-  })
-
-  await settlementTransferTest.test('init settlement models for integration testing:', async test => {
-    try {
-      for (const model of settlementModels) {
-        const record = await SettlementModelModel.getByName(model.name)
-        if (record && record.name === model.name) {
-          model.settlementModelId = record.settlementModelId
-          test.pass(`Settlement model ${model.name} already exists`)
-        } else {
-          const id = await Models.settlementModel.create(model)
-          const record1 = await SettlementModelModel.getByName(model.name)
-          if (record1 && record1.name === model.name && record1.settlementModelId === id) {
-            model.settlementModelId = id
-            test.pass(`Settlement model ${model.name} has been successfully inserted with id = ${id}`)
-          } else {
-            throw new Error(`Settlement model ${model.name} could not be instantiated`)
-          }
-        }
-      }
-      test.end()
-    } catch (err) {
-      Logger.error(`settlementTransferTest failed with error - ${err}`)
-      test.fail()
-      test.end()
-    }
   })
 
   await settlementTransferTest.test('close the current window:', async test => {
