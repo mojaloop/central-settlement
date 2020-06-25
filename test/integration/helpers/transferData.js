@@ -31,6 +31,9 @@ const TestConfig = require('../../integration-config')
 const Logger = require('@mojaloop/central-services-logger')
 const fetch = require('node-fetch')
 const Uuid = require('uuid4')
+const transferParticipantStateChangeService = require('../../../src/domain/transferParticipantStateChange')
+const SettlementModelModel = require('../../../src/models/settlement/settlementModel')
+const Models = require('./models')
 
 const rand8 = () => {
   return Math.floor(Math.random() * 1000000000)
@@ -41,6 +44,27 @@ const sleep = (ms) => {
   })
 }
 const currencies = ['USD', 'TZS']
+
+const settlementModels = [
+  {
+    name: 'DEFERRED_NET',
+    settlementGranularityId: 2, // NET
+    settlementInterchangeId: 2, // MULTILATERAL
+    settlementDelayId: 2, // DEFERRED
+    ledgerAccountTypeId: 1, // POSITION
+    autoPositionReset: true,
+    currencyId: null
+  },
+  {
+    name: 'DEFERRED_NET_USD',
+    settlementGranularityId: 2, // NET
+    settlementInterchangeId: 2, // MULTILATERAL
+    settlementDelayId: 2, // DEFERRED
+    ledgerAccountTypeId: 1, // POSITION
+    autoPositionReset: true,
+    currencyId: 'USD'
+  }
+]
 
 /**
  * The following services must be running:
@@ -102,6 +126,32 @@ module.exports = {
       prepareTransferDataTest.afterEach(test => {
         sandbox.restore()
         test.end()
+      })
+
+      prepareTransferDataTest.test('init settlement models for integration testing:', async test => {
+        try {
+          for (const model of settlementModels) {
+            const record = await SettlementModelModel.getByName(model.name)
+            if (record && record.name === model.name) {
+              model.settlementModelId = record.settlementModelId
+              test.pass(`Settlement model ${model.name} already exists`)
+            } else {
+              const id = await Models.settlementModel.create(model)
+              const record1 = await SettlementModelModel.getByName(model.name)
+              if (record1 && record1.name === model.name && record1.settlementModelId === id) {
+                model.settlementModelId = id
+                test.pass(`Settlement model ${model.name} has been successfully inserted with id = ${id}`)
+              } else {
+                throw new Error(`Settlement model ${model.name} could not be instantiated`)
+              }
+            }
+          }
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementTransferTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
       })
 
       prepareTransferDataTest.test('check if Hub accounts exists', async test => {
@@ -371,6 +421,7 @@ module.exports = {
               try {
                 const simulatorResponse = await simulatorRes.json()
                 if (simulatorResponse && simulatorResponse.transferState === localEnum.transferStates.COMMITTED) {
+                  await transferParticipantStateChangeService.processMsgFulfil(transfer.transferId, 'success')
                   transferCommitted = true
                   break
                 }
