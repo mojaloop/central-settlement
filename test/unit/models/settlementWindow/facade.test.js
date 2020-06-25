@@ -183,6 +183,42 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
     }
   })
 
+  await settlementWindowFacadeTest.test('getUnprocessedTransferParticipantEntryCount should', async getUnprocessedTransferParticipantEntryCountTest => {
+    try {
+      await getUnprocessedTransferParticipantEntryCountTest.test('should return the number of transfers in a window.', async test => {
+        try {
+          Db.transferFulfilment = { query: sandbox.stub() }
+          const builderStub = sandbox.stub()
+          builderStub.count = sandbox.stub()
+          Db.transferFulfilment.query.callsArgWith(0, builderStub)
+          builderStub.count.returns({
+            innerJoin: sandbox.stub().returns({
+              leftOuterJoin: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  whereNull: sandbox.stub().returns(6)
+                })
+              })
+            })
+          })
+          Db.transferFulfilment.query.callsArgWith(0, builderStub)
+          const result = await SettlementWindowFacade.getUnprocessedTransferParticipantEntryCount({ settlementWindowId: 1 })
+          test.ok(result, 'Result returned')
+          test.end()
+        } catch (err) {
+          Logger.error('getTransferCount failed with error : ' + err)
+          test.pass('Error thrown as expected')
+          test.end()
+        }
+      })
+
+      await getUnprocessedTransferParticipantEntryCountTest.end()
+    } catch (err) {
+      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      getUnprocessedTransferParticipantEntryCountTest.fail()
+      getUnprocessedTransferParticipantEntryCountTest.end()
+    }
+  })
+
   await settlementWindowFacadeTest.test('getByListOfIds should', async getByListOfIdsTest => {
     try {
       const listOfIds = [1, 2]
@@ -653,6 +689,71 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
         }
       })
 
+      await closeTest.test('close the specified open window will throw an error if there are undefined Transfer Participant State change records.', async test => {
+        try {
+          const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub()
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          SettlementWindowFacade.getById = sandbox.stub().returns('PROCESSING')
+          const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
+          SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
+          SettlementWindowFacade.getUnprocessedTransferParticipantEntryCount = sandbox.stub().returns(undefined)
+          const result = await SettlementWindowFacade.close(params, enums)
+          test.ok(result, 'Result returned')
+          test.ok(SettlementWindowFacade.getById.withArgs({ settlementWindowId }).calledOnce)
+          test.end()
+        } catch (err) {
+          Logger.error('Close settlementwindow failed with error : ' + err)
+          test.pass('Error thrown as expected')
+          test.end()
+        }
+      })
+
+      await closeTest.test('close the specified open window will throw an error if there are unprocessed Transfer Participant State change records.', async test => {
+        try {
+          const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub()
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          SettlementWindowFacade.getById = sandbox.stub().returns('PROCESSING')
+          const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
+          SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
+          const mockUnprocessedTransferParticipantEntryCount = [{ count: 1 }]
+          SettlementWindowFacade.getUnprocessedTransferParticipantEntryCount = sandbox.stub().returns(mockUnprocessedTransferParticipantEntryCount)
+          const result = await SettlementWindowFacade.close(params, enums)
+          test.ok(result, 'Result returned')
+          test.ok(SettlementWindowFacade.getById.withArgs({ settlementWindowId }).calledOnce)
+          test.end()
+        } catch (err) {
+          Logger.error('Close settlementwindow failed with error : ' + err)
+          test.pass('Error thrown as expected')
+          test.end()
+        }
+      })
+
+      await closeTest.test('close the specified open window if there are no unprocessed Transfer Participant State change records.', async test => {
+        try {
+          const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub()
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          SettlementWindowFacade.getById = sandbox.stub().returns('PROCESSING')
+          const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
+          SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
+          const mockUnprocessedTransferParticipantEntryCount = [{ count: 0 }]
+          SettlementWindowFacade.getUnprocessedTransferParticipantEntryCount = sandbox.stub().returns(mockUnprocessedTransferParticipantEntryCount)
+          const result = await SettlementWindowFacade.close(params, enums)
+          test.ok(result, 'Result returned')
+          test.ok(SettlementWindowFacade.getById.withArgs({ settlementWindowId }).calledOnce)
+          test.end()
+        } catch (err) {
+          Logger.error('Close settlementwindow failed with error : ' + err)
+          test.pass('Error thrown as expected')
+          test.end()
+        }
+      })
+
       await closeTest.test('close the specified open window will throw an error if the current state is not "PROCESSING".', async test => {
         try {
           const knexStub = sandbox.stub()
@@ -787,6 +888,8 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           })
 
           SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
+          const mockUnprocessedTransferParticipantEntryCount = [{ count: 0 }]
+          SettlementWindowFacade.getUnprocessedTransferParticipantEntryCount = sandbox.stub().returns(mockUnprocessedTransferParticipantEntryCount)
           const result = await SettlementWindowFacade.close(params, enums)
           test.ok(result, true)
           test.end()
