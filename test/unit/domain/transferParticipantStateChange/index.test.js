@@ -52,13 +52,13 @@ Test('TransferFulfilService', async (transferFulfilServiceTest) => {
       await updateStateChange.test('create participant state change records', async test => {
         try {
           TransferFulfilModel.updateStateChange = sandbox.stub().returns(participantSateChangeUpdateMock)
-          const result = await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus)
+          const result = await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus, [])
           test.ok(result, 'Result returned')
           test.ok(TransferFulfilModel.updateStateChange.withArgs(transferEventId, transferEventStateStatus).calledOnce, 'TransferFulfilModel.updateStateChange with args ... called once')
           TransferFulfilModel.updateStateChange = sandbox.stub().returns()
 
           try {
-            await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus)
+            await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus, [])
             test.pass('transferParticipantTable updated')
           } catch (err) {
             test.notOk(err instanceof Error, `Error ${err.message} thrown`)
@@ -74,13 +74,13 @@ Test('TransferFulfilService', async (transferFulfilServiceTest) => {
       await updateStateChange.test('throw an exception', async test => {
         try {
           TransferFulfilModel.updateStateChange = sandbox.stub().throws(new Error('Error occurred'))
-          const result = await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus)
+          const result = await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus, [])
           test.ok(result, 'Result returned')
           test.ok(TransferFulfilModel.updateStateChange.withArgs(transferEventId, transferEventStateStatus).calledOnce, 'TransferFulfilModel.updateStateChange with args ... called once')
           TransferFulfilModel.updateStateChange = sandbox.stub().returns()
 
           try {
-            await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus)
+            await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus, [])
             test.fail('transferParticipantTable updated')
           } catch (err) {
             test.notOk(err instanceof Error, `Error ${err.message} thrown`)

@@ -32,13 +32,14 @@ const TransferParticipantStateChangeModel = require('../../models/transferPartic
 module.exports = {
   processMsgFulfil: async function (transferEventId, transferEventStateStatus, ledgerEntries) {
     try {
-      await TransferParticipantStateChangeModel.updateStateChange(transferEventId, transferEventStateStatus, ledgerEntries.payerFspId, ledgerEntries.payeeFspId, ledgerEntries.currency, ledgerEntries.amount, ledgerEntries.ledgerEntryTypeId)
+      await TransferParticipantStateChangeModel.updateStateChange(transferEventId, transferEventStateStatus, ledgerEntries)
       return true
     } catch (err) {
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   },
   processScriptEngine: async function (payload) {
+    /* istanbul ignore next */
     try {
       let data
       try {
@@ -48,11 +49,7 @@ module.exports = {
       }
       const script = new vm.Script(data)
       const result = await scriptEngine.execute(script, payload)
-      if (result.ledgerEntries && result.ledgerEntries.length > 0) {
-        return result.ledgerEntries
-      } else {
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, 'No ledger entries calculated for this transfer')
-      }
+      return result
     } catch (err) {
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }

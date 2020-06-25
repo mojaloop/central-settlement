@@ -1,6 +1,8 @@
+/* istanbul ignore file */
 const MLNumber = require('@mojaloop/ml-number')
 const Config = require('./config')
 const Transaction = require('../../src/domain/transactions/index')
+const Logger = require('@mojaloop/central-services-logger')
 
 const getTransferFromCentralLedger = async (transferId) => {
   const entity = await Transaction.getById(transferId)
@@ -17,7 +19,7 @@ const execute = async function (script, payload) {
   const sandbox = {
     payload,
     log: function (message) {
-      console.log(message)
+      Logger.log(message)
     },
     transfer,
     multiply (number1, number2) {
@@ -43,8 +45,7 @@ const execute = async function (script, payload) {
   }
 
   try {
-    //   script.runInNewContext(sandbox, {timeout: 100})
-    script.runInNewContext(sandbox)
+    script.runInNewContext(sandbox, { timeout: 100 })
 
     return { ledgerEntries }
   } catch (err) {

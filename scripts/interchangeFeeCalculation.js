@@ -10,6 +10,7 @@
 
 // ## Globals:
 // payload: The contents of the message from the Kafka topic.
+// transfer: The transfer object.
 
 // # Functions:
 // ## Data retrieval functions:
@@ -30,16 +31,21 @@
 // transfer = getTransfer(payload.id)
 // eslint-disable-next-line no-undef
 log(JSON.stringify(transfer))
+// eslint-disable-next-line no-undef
 const payerFspId = transfer.payer.partyIdInfo.fspId
+// eslint-disable-next-line no-undef
 const payeeFspId = transfer.payee.partyIdInfo.fspId
 
 if ((payeeFspId !== payerFspId) &&
   // eslint-disable-next-line no-undef
-  (getExtensionValue(transfer.payee.partyIdInfo.extensionList.extension, 'accountType') === 'Bank' &&
+  (getExtensionValue(transfer.payee.partyIdInfo.extensionList.extension, 'accountType') === 'Wallet' &&
     // eslint-disable-next-line no-undef
     getExtensionValue(transfer.payer.partyIdInfo.extensionList.extension, 'accountType') === 'Wallet') &&
+  // eslint-disable-next-line no-undef
   (transfer.transactionType.scenario === 'TRANSFER' &&
+    // eslint-disable-next-line no-undef
     transfer.transactionType.initiator === 'PAYER' &&
+    // eslint-disable-next-line no-undef
     transfer.transactionType.initiatorType === 'CONSUMER')) {
   // eslint-disable-next-line no-undef
   log(`Adding an interchange fee for Wallet to Wallet from ${payerFspId} to ${payeeFspId}`)
@@ -48,6 +54,7 @@ if ((payeeFspId !== payerFspId) &&
     'INTERCHANGE_FEE', // Ledger entry type Id
     // eslint-disable-next-line no-undef
     multiply(transfer.amount.amount, 0.006),
+    // eslint-disable-next-line no-undef
     transfer.amount.currency,
     payerFspId,
     payeeFspId)

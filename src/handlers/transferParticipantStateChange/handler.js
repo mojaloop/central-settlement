@@ -87,12 +87,11 @@ const processTransferParticipantStateChange = async (error, messages) => {
     }
     Logger.info(Utility.breadcrumb(location, 'validationPassed'))
 
-    //  if (transferEventAction === Enum.Events.Event.Action.COMMIT || transferEventAction === Enum.Events.Event.Action.ABORT) {
-    // eslint-disable-next-line no-constant-condition,no-self-compare
-    if (1 === 1) {
+    if (transferEventAction === Enum.Events.Event.Action.COMMIT || transferEventAction === Enum.Events.Event.Action.ABORT) {
       await retry(async () => { // use bail(new Error('to break before max retries'))
-        const ledgerEntries = await transferParticipantStateChangeService.processScriptEngine(message.value)
-        await transferParticipantStateChangeService.processMsgFulfil(transferEventId, transferEventStateStatus, ledgerEntries[0])
+        const scriptResult = await transferParticipantStateChangeService.processScriptEngine(message.value)
+        const ledgerEntries = scriptResult ? (scriptResult.ledgerEntries ? scriptResult.ledgerEntries : []) : []
+        await transferParticipantStateChangeService.processMsgFulfil(transferEventId, transferEventStateStatus, ledgerEntries)
         Logger.info(Utility.breadcrumb(location, `done--${actionLetter}2`))
         return true
       }, retryOpts)

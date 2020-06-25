@@ -30,32 +30,33 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const Utility = require('@mojaloop/central-services-shared').Util
 const location = { module: 'TransferFulfilHandler', method: '', path: '' }
-const Config = require('../../lib/config')
+// const Config = require('../../lib/config')
 
 const Facade = {
-  updateTransferParticipantStateChange: async function (transferId, status, payerdfsp, payeedfsp, currency, amount, ledgerEntryType) {
+  updateTransferParticipantStateChange: async function (transferId, status, ledgerEntries) {
     try {
       const knex = await Db.getKnex()
       return knex.transaction(async (trx) => {
         try {
           /* istanbul ignore next */
-
-          await knex.from(knex.raw('?? (??, ??, ??, ??, ??)', ['transferParticipant', 'transferId', 'participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId', 'amount']))
-            .insert(function () {
-              this.select(knex.raw('?', transferId), 'PC.participantCurrencyId')
-                .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'RoleType']))
-                .select('E.ledgerEntryTypeId')
-                .select(knex.raw('CASE ?? WHEN ? THEN ? WHEN ? THEN ? ELSE ? END AS ??', ['P.name', payerdfsp, amount, payeedfsp, amount * -1, 0, 'amount']))
-                .from('participantCurrency as PC')
-                .innerJoin('participant as P', 'P.participantId', 'PC.participantId')
-                .innerJoin('ledgerEntryType as E', 'E.LedgerAccountTypeId', 'PC.LedgerAccountTypeId')
-                .leftOuterJoin('transferParticipantRoleType as T1', function () { this.on('P.name', '=', knex.raw('?', [payerdfsp])).andOn('T1.name', knex.raw('?', ['PAYER_DFSP'])) })
-                .leftOuterJoin('transferParticipantRoleType as T2', function () { this.on('P.name', '=', knex.raw('?', [payeedfsp])).andOn('T2.name', knex.raw('?', ['PAYEE_DFSP'])) })
-                .where('E.name', ledgerEntryType)
-                .whereIn('P.name', [payerdfsp, payeedfsp])
-                .where('PC.currencyId', currency)
-            })
-            .transacting(trx)
+          for (const ledgerEntry in ledgerEntries) {
+            await knex.from(knex.raw('?? (??, ??, ??, ??, ??)', ['transferParticipant', 'transferId', 'participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId', 'amount']))
+              .insert(function () {
+                this.select(knex.raw('?', transferId), 'PC.participantCurrencyId')
+                  .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'RoleType']))
+                  .select('E.ledgerEntryTypeId')
+                  .select(knex.raw('CASE ?? WHEN ? THEN ? WHEN ? THEN ? ELSE ? END AS ??', ['P.name', ledgerEntry.payerdfsp, ledgerEntry.amount, ledgerEntry.payeedfsp, ledgerEntry.amount * -1, 0, 'amount']))
+                  .from('participantCurrency as PC')
+                  .innerJoin('participant as P', 'P.participantId', 'PC.participantId')
+                  .innerJoin('ledgerEntryType as E', 'E.LedgerAccountTypeId', 'PC.LedgerAccountTypeId')
+                  .leftOuterJoin('transferParticipantRoleType as T1', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payerdfsp])).andOn('T1.name', knex.raw('?', ['PAYER_DFSP'])) })
+                  .leftOuterJoin('transferParticipantRoleType as T2', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payeedfsp])).andOn('T2.name', knex.raw('?', ['PAYEE_DFSP'])) })
+                  .where('E.name', ledgerEntry.ledgerEntryType)
+                  .whereIn('P.name', [ledgerEntry.payerdfsp, ledgerEntry.payeedfsp])
+                  .where('PC.currencyId', ledgerEntry.currency)
+              })
+              .transacting(trx)
+          }
           /* istanbul ignore next */
           await knex.from(knex.raw('transferParticipantStateChange (transferParticipantId, settlementWindowStateId, reason)'))
             .insert(function () {
@@ -98,7 +99,7 @@ const Facade = {
       /* istanbul ignore next */
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
-  },
+  }/*,
   getTransactionRequest: async function (transactionId) {
     try {
       const requestedEndpoint = `${Config.SWITCH_ENDPOINT}/transactions/${transactionId}`
@@ -108,7 +109,7 @@ const Facade = {
       Logger.error(err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
-  }
+  } */
 }
 
 module.exports = Facade
