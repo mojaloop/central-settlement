@@ -33,6 +33,11 @@
       "DISABLED": false
     }
   },
+  "SWITCH_ENDPOINT": "http://localhost:3001",
+  "AMOUNT": {
+    "PRECISION": 18,
+    "SCALE": 4
+  },
   "KAFKA": {
     "TOPIC_TEMPLATES": {
       "GENERAL_TOPIC_TEMPLATE": {

@@ -19,40 +19,43 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * ModusBox
- - Deon Botha <deon.botha@modusbox.com>
  - Lazola Lucas <lazola.lucas@modusbox.com>
  --------------
  ******/
-const fs = require('fs')
-const scriptEngine = require('../../lib/scriptEngine')
-const vm = require('vm')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const TransferParticipantStateChangeModel = require('../../models/transferParticipantStateChange')
+'use strict'
 
-module.exports = {
-  processMsgFulfil: async function (transferEventId, transferEventStateStatus, ledgerEntries) {
-    try {
-      await TransferParticipantStateChangeModel.updateStateChange(transferEventId, transferEventStateStatus, ledgerEntries)
-      return true
-    } catch (err) {
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
-  },
-  /* istanbul ignore next */
-  processScriptEngine: async function (payload) {
-    /* istanbul ignore next */
-    try {
-      let data
-      try {
-        data = fs.readFileSync('scripts/interchangeFeeCalculation.js', 'utf8')
-      } catch (err) {
-        throw ErrorHandler.Factory.reformatFSPIOPError(err)
-      }
-      const script = new vm.Script(data)
-      const result = await scriptEngine.execute(script, payload)
-      return result
-    } catch (err) {
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
+const IlpPacket = require('../../models/ilpPackets/ilpPacket')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+
+const ilpPacket = require('ilp-packet')
+const base64url = require('base64url')
+
+const getById = async (id) => {
+  try {
+    return await IlpPacket.getById(id)
+  } catch (err) {
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
+}
+const decodeIlpPacket = async (inputIlpPacket) => {
+  const binaryPacket = Buffer.from(inputIlpPacket, 'base64')
+  return ilpPacket.deserializeIlpPayment(binaryPacket)
+}
+/**
+ * Get the transaction object in the data field of an Ilp packet
+ *
+ * @returns {object} - Transaction Object
+ */
+const getTransactionObject = async function (inputIlpPacket) {
+  try {
+    const jsonPacket = await decodeIlpPacket(inputIlpPacket)
+    const decodedData = base64url.decode(jsonPacket.data.toString())
+    return JSON.parse(decodedData)
+  } catch (err) {
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+}
+module.exports = {
+  getById,
+  getTransactionObject
 }
