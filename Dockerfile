@@ -11,6 +11,7 @@ COPY package.json package-lock.json* /opt/central-settlement/
 RUN npm install
 
 COPY config /opt/central-settlement/config
+COPY scripts /opt/central-settlement/scripts
 COPY src /opt/central-settlement/src
 COPY README.md /opt/central-settlement
 
@@ -22,7 +23,7 @@ RUN mkdir ./logs && touch ./logs/combined.log
 RUN ln -sf /dev/stdout ./logs/combined.log
 
 # Create a non-root user: ml-user
-RUN adduser -D ml-user 
+RUN adduser -D ml-user
 USER ml-user
 
 COPY --chown=ml-user --from=builder /opt/central-settlement .
