@@ -21,7 +21,7 @@
 // log(message): allows the script to log to standard out for debugging purposes
 
 // Math functions:
-// multiply(number1, number2): Uses ml-number to handle multiplication of money values
+// multiply(number1, number2, decimalPlaces): Uses ml-number to handle multiplication of money values
 
 // Ledger functions:
 // addLedgerEntry: Adds a debit and credit ledger entry to the specified account to the specified DFSPs
@@ -53,7 +53,7 @@ if ((payeeFspId !== payerFspId) &&
   addLedgerEntry(payload.id, 'INTERCHANGE_FEE', // Ledger account type Id
     'INTERCHANGE_FEE', // Ledger entry type Id
     // eslint-disable-next-line no-undef
-    multiply(transfer.amount.amount, 0.006),
+    multiply(transfer.amount.amount, 0.006, 2),
     // eslint-disable-next-line no-undef
     transfer.amount.currency,
     payerFspId,
