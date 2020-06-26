@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 const MLNumber = require('@mojaloop/ml-number')
-const Config = require('./config')
 const Transaction = require('../../src/domain/transactions/index')
+const BigNumber = require('bignumber.js')
 
 const getTransferFromCentralLedger = async (transferId) => {
   const entity = await Transaction.getById(transferId)
@@ -21,8 +21,8 @@ const execute = async function (script, payload) {
       console.log(message)
     },
     transfer,
-    multiply (number1, number2) {
-      const result = new MLNumber(number1).multiply(number2).toFixed(Config.AMOUNT.SCALE)
+    multiply (number1, number2, decimalPlaces) {
+      const result = new MLNumber(number1).multiply(number2).toFixed(decimalPlaces, BigNumber.ROUND_HALF_UP)
       return result
     },
     getExtensionValue (list, key) {
