@@ -34,25 +34,27 @@ const location = { module: 'TransferFulfilHandler', method: '', path: '' }
 
 const Facade = {
   updateTransferParticipantStateChange: async function (transferId, status, ledgerEntries) {
+    Logger.info(`Ledger entries: ${JSON.stringify(ledgerEntries)}`)
     try {
       const knex = await Db.getKnex()
       return knex.transaction(async (trx) => {
         try {
           /* istanbul ignore next */
-          for (const ledgerEntry in ledgerEntries) {
+          for (const ledgerEntry of ledgerEntries) {
+            Logger.info(`Inserting ledger entry: ${JSON.stringify(ledgerEntry)}`)
             await knex.from(knex.raw('?? (??, ??, ??, ??, ??)', ['transferParticipant', 'transferId', 'participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId', 'amount']))
               .insert(function () {
                 this.select(knex.raw('?', transferId), 'PC.participantCurrencyId')
                   .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'RoleType']))
                   .select('E.ledgerEntryTypeId')
-                  .select(knex.raw('CASE ?? WHEN ? THEN ? WHEN ? THEN ? ELSE ? END AS ??', ['P.name', ledgerEntry.payerdfsp, ledgerEntry.amount, ledgerEntry.payeedfsp, ledgerEntry.amount * -1, 0, 'amount']))
+                  .select(knex.raw('CASE ?? WHEN ? THEN ? WHEN ? THEN ? ELSE ? END AS ??', ['P.name', ledgerEntry.payerFspId, ledgerEntry.amount, ledgerEntry.payeeFspId, ledgerEntry.amount * -1, 0, 'amount']))
                   .from('participantCurrency as PC')
                   .innerJoin('participant as P', 'P.participantId', 'PC.participantId')
                   .innerJoin('ledgerEntryType as E', 'E.LedgerAccountTypeId', 'PC.LedgerAccountTypeId')
-                  .leftOuterJoin('transferParticipantRoleType as T1', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payerdfsp])).andOn('T1.name', knex.raw('?', ['PAYER_DFSP'])) })
-                  .leftOuterJoin('transferParticipantRoleType as T2', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payeedfsp])).andOn('T2.name', knex.raw('?', ['PAYEE_DFSP'])) })
-                  .where('E.name', ledgerEntry.ledgerEntryType)
-                  .whereIn('P.name', [ledgerEntry.payerdfsp, ledgerEntry.payeedfsp])
+                  .leftOuterJoin('transferParticipantRoleType as T1', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payerFspId])).andOn('T1.name', knex.raw('?', ['PAYER_DFSP'])) })
+                  .leftOuterJoin('transferParticipantRoleType as T2', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payeeFspId])).andOn('T2.name', knex.raw('?', ['PAYEE_DFSP'])) })
+                  .where('E.name', ledgerEntry.ledgerEntryTypeId)
+                  .whereIn('P.name', [ledgerEntry.payerFspId, ledgerEntry.payeeFspId])
                   .where('PC.currencyId', ledgerEntry.currency)
               })
               .transacting(trx)

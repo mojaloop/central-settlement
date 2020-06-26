@@ -2,7 +2,6 @@
 const MLNumber = require('@mojaloop/ml-number')
 const Config = require('./config')
 const Transaction = require('../../src/domain/transactions/index')
-const Logger = require('@mojaloop/central-services-logger')
 
 const getTransferFromCentralLedger = async (transferId) => {
   const entity = await Transaction.getById(transferId)
@@ -19,7 +18,7 @@ const execute = async function (script, payload) {
   const sandbox = {
     payload,
     log: function (message) {
-      Logger.log(message)
+      console.log(message)
     },
     transfer,
     multiply (number1, number2) {
