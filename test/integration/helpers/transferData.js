@@ -421,7 +421,7 @@ module.exports = {
               try {
                 const simulatorResponse = await simulatorRes.json()
                 if (simulatorResponse && simulatorResponse.transferState === localEnum.transferStates.COMMITTED) {
-                  await transferParticipantStateChangeService.processMsgFulfil(transfer.transferId, 'success')
+                  await transferParticipantStateChangeService.processMsgFulfil(transfer.transferId, 'success', [])
                   transferCommitted = true
                   break
                 }
