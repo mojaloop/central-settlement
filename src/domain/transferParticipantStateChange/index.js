@@ -23,9 +23,7 @@
  - Lazola Lucas <lazola.lucas@modusbox.com>
  --------------
  ******/
-const fs = require('fs')
 const scriptEngine = require('../../lib/scriptEngine')
-const vm = require('vm')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const TransferParticipantStateChangeModel = require('../../models/transferParticipantStateChange')
 
@@ -39,16 +37,9 @@ module.exports = {
     }
   },
   /* istanbul ignore next */
-  processScriptEngine: async function (payload) {
+  processScriptEngine: async function (script, payload) {
     /* istanbul ignore next */
     try {
-      let data
-      try {
-        data = fs.readFileSync('scripts/interchangeFeeCalculation.js', 'utf8')
-      } catch (err) {
-        throw ErrorHandler.Factory.reformatFSPIOPError(err)
-      }
-      const script = new vm.Script(data)
       const result = await scriptEngine.execute(script, payload)
       return result
     } catch (err) {
