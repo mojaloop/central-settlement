@@ -29,20 +29,16 @@ const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const TestConfig = require('../../integration-config')
 const Logger = require('@mojaloop/central-services-logger')
-const fetch = require('node-fetch')
 const Uuid = require('uuid4')
 const transferParticipantStateChangeService = require('../../../src/domain/transferParticipantStateChange')
 const SettlementModelModel = require('../../../src/models/settlement/settlementModel')
 const Models = require('./models')
+// const Config = require('../../../src/lib/config')
 
-const rand8 = () => {
-  return Math.floor(Math.random() * 1000000000)
-}
-const sleep = (ms) => {
-  return new Promise(resolve => {
-    setTimeout(resolve, ms)
-  })
-}
+const Db = require('../../../src/lib/db')
+const axios = require('axios');
+const utils = require('./utils');
+
 const currencies = ['USD', 'TZS']
 
 const settlementModels = [
@@ -65,387 +61,475 @@ const settlementModels = [
     currencyId: 'USD'
   }
 ]
+const URI_PREFIX = 'http'
+const SIMULATOR_CORR_ENDPOINT = '/payeefsp/correlationid'
+const CENTRAL_LEDGER_HOST = TestConfig.CENTRAL_LEDGER_HOST
+const CENTRAL_LEDGER_PORT = TestConfig.CENTRAL_LEDGER_PORT
+const CENTRAL_LEDGER_BASE = ''
+const ML_API_ADAPTER_HOST = TestConfig.ML_API_ADAPTER_HOST
+const ML_API_ADAPTER_PORT = TestConfig.ML_API_ADAPTER_PORT
+const ML_API_ADAPTER_BASE = ''
+const SIMULATOR_REMOTE_HOST = TestConfig.SIMULATOR_REMOTE_HOST
+const SIMULATOR_REMOTE_PORT = TestConfig.SIMULATOR_REMOTE_PORT
+const SIMULATOR_HOST = TestConfig.SIMULATOR_HOST
+const SIMULATOR_PORT = TestConfig.SIMULATOR_PORT
+const CENTRAL_LEDGER_URL = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}`
+const SIMULATOR_URL = `${URI_PREFIX}://${SIMULATOR_REMOTE_HOST}:${SIMULATOR_REMOTE_PORT}`
+const ML_API_ADAPTER_URL = `${URI_PREFIX}://${ML_API_ADAPTER_HOST}:${ML_API_ADAPTER_PORT}${ML_API_ADAPTER_BASE}`
+const SIMULATOR_HOST_URL = `${URI_PREFIX}://${SIMULATOR_HOST}:${SIMULATOR_PORT}${SIMULATOR_CORR_ENDPOINT}`
 
+const localEnum = {
+  transferStates: {
+    COMMITTED: 'COMMITTED'
+  }
+}
+const SLEEP_MS = 1000
+const payerFsp = `fsp${utils.rand8()}`
+const payeeFsp = `fsp${utils.rand8()}`
+const fspList = [
+  {
+    fspName: payerFsp,
+    endpointBase: `${SIMULATOR_URL}/payerfsp`
+  },
+  {
+    fspName: payeeFsp,
+    endpointBase: `${SIMULATOR_URL}/payeefsp`
+  }
+]
+const transfers = []
+for (const currency of currencies) {
+  console.log('pushing transfers');
+  transfers.push({
+    transferId: Uuid(),
+    amount: {
+      amount: (10 + Math.floor(Math.random() * 9000) / 100).toString().substr(0, 5), // transfer amount between 10.00 and 100
+      currency
+    },
+    ilpPacket: 'AQAAAAAAAABkEGcuZXdwMjEuaWQuODAwMjCCAhd7InRyYW5zYWN0aW9uSWQiOiJmODU0NzdkYi0xMzVkLTRlMDgtYThiNy0xMmIyMmQ4MmMwZDYiLCJxdW90ZUlkIjoiOWU2NGYzMjEtYzMyNC00ZDI0LTg5MmYtYzQ3ZWY0ZThkZTkxIiwicGF5ZWUiOnsicGFydHlJZEluZm8iOnsicGFydHlJZFR5cGUiOiJNU0lTRE4iLCJwYXJ0eUlkZW50aWZpZXIiOiIyNTYxMjM0NTYiLCJmc3BJZCI6IjIxIn19LCJwYXllciI6eyJwYXJ0eUlkSW5mbyI6eyJwYXJ0eUlkVHlwZSI6Ik1TSVNETiIsInBhcnR5SWRlbnRpZmllciI6IjI1NjIwMTAwMDAxIiwiZnNwSWQiOiIyMCJ9LCJwZXJzb25hbEluZm8iOnsiY29tcGxleE5hbWUiOnsiZmlyc3ROYW1lIjoiTWF0cyIsImxhc3ROYW1lIjoiSGFnbWFuIn0sImRhdGVPZkJpcnRoIjoiMTk4My0xMC0yNSJ9fSwiYW1vdW50Ijp7ImFtb3VudCI6IjEwMCIsImN1cnJlbmN5IjoiVVNEIn0sInRyYW5zYWN0aW9uVHlwZSI6eyJzY2VuYXJpbyI6IlRSQU5TRkVSIiwiaW5pdGlhdG9yIjoiUEFZRVIiLCJpbml0aWF0b3JUeXBlIjoiQ09OU1VNRVIifSwibm90ZSI6ImhlaiJ9',
+    ilpCondition: 'HOr22-H3AfTDHrSkPjJtVPRdKouuMkDXTR4ejlQa8Ks'
+  })
+}
+
+
+
+
+
+
+async function createSettlementModel (settlementModel) {
+  return Models.settlementModel.create(settlementModel)
+}
+async function getParticipantAccount (currency) {
+  const url = `${CENTRAL_LEDGER_URL}/participants/Hub/accounts?currency=${currency}`;
+  const res = await axios.get(url);
+  return res.data;
+}
+
+async function createParticipantAccount(currency, type) {
+  return axios.post(url, body);
+}
+
+async function addParticipant(currency, fspName) {
+  const url = `${CENTRAL_LEDGER_URL}/participants`
+  return axios.post(url,{
+    name: fspName,
+    currency
+  })
+}
+async function createNetDebitCapInitialPositionAndLimit(participant, initialPosition, currency, limitValue) {
+  const url = `${CENTRAL_LEDGER_URL}/participants/${participant}/initialPositionAndLimits`
+
+  return axios.post(url, {
+    currency,
+    limit: {
+      type: 'NET_DEBIT_CAP',
+      value: limitValue //1000
+    },
+    initialPosition: initialPosition //0
+  })
+}
+
+async function addParticipantEndpoint(participant, endpointType, endpoint) {
+  const url = `${CENTRAL_LEDGER_URL}/participants/${participant}/endpoints`
+  const body = {
+    type: endpointType,
+    value: endpoint
+  }
+  const res = await axios.post(url, body)
+}
+
+async function sendTransfer(payerFsp, payeeFsp, transfer) {
+  console.log('sending transfer');
+  const url = `${ML_API_ADAPTER_URL}/transfers`
+  const currentDateGMT = new Date().toGMTString()
+  const expirationDate = new Date((new Date()).getTime() + (24 * 60 * 60 * 1000))
+
+  const headers = {
+    Accept: 'application/vnd.interoperability.transfers+json;version=1.0',
+    'Content-Type': 'application/vnd.interoperability.transfers+json;version=1.0',
+    Date: currentDateGMT,
+    'FSPIOP-Source': payerFsp,
+    'FSPIOP-Destination': payeeFsp
+  }
+  const body = {
+    transferId: transfer.transferId,
+    payerFsp,
+    payeeFsp,
+    amount: transfer.amount,
+    ilpPacket: transfer.ilpPacket,
+    condition: transfer.ilpCondition,
+    expiration: expirationDate.toISOString(),
+    extensionList: {
+      extension: [{
+        key: 'prepare',
+        value: 'description'
+      }]
+    }
+  }
+  const res = await axios.post(url, body, {
+    headers: headers
+  })
+  console.log('RESPONSE', res);
+}
+
+async function waitForTransferToBeCommited(transferId, sleepMs) {
+  console.log('transferId', transferId);
+  return new Promise(async (resolve , reject ) => {
+    const url = `${SIMULATOR_HOST_URL}/${transferId}`
+    console.log('waiting for transfer to be commited');
+    for (let i = 0; i < 10; i++) {
+      try {
+        const simulatorResponse = await axios.get(url);
+        if (simulatorResponse.data && simulatorResponse.data.transferState === localEnum.transferStates.COMMITTED) {
+          console.log('COMMITTED');
+          await transferParticipantStateChangeService.processMsgFulfil(transferId, 'success', [])
+          resolve();
+        }
+        // console.log('waiting');
+
+      } catch (err) {
+        if (err.type === 'invalid-json') {
+          Logger.info(`Transfer not processed yet. Awaiting ${sleepMs} ms...`)
+        } else {
+          Logger.info(err.message)
+          reject(err);
+        }
+      }
+      await utils.sleep(sleepMs)
+    }
+    reject('Transfer did not commit in time');
+  });
+
+}
+async function init () {
+  Logger.info('SETTING UP');
+  try {
+   Logger.info('Initializing settlement models');
+   await initSettlementModels();
+
+   Logger.info('Checking hub accounts exist');
+   await checkHubAccountsExist();
+
+   Logger.info('init participants');
+   await initParticipants();
+
+   Logger.info('init debit cap');
+   await initNetDebitCapPositionAndLimits();
+   Logger.info('init transfers');
+   await initTransfers();
+  }
+  catch (err) {
+    Logger.error('Error setting up initial settlement data');
+  }
+}
+
+async function initSettlementModels() {
+  // await Db.connect(Config.DATABASE)
+  const knex = await Db.getKnex()
+  const raw = await knex.raw('SET FOREIGN_KEY_CHECKS = 0;');
+  await Db.settlementModel.truncate();
+  await knex.raw('SET FOREIGN_KEY_CHECKS = 1;');
+  await knex.batchInsert('settlementModel', settlementModels);
+  // await Db.disconnect();
+}
+async function checkHubAccountsExist() {
+  for (const currency of currencies) {
+      const response = await getParticipantAccount(currency);
+      let hubReconciliationAccountExists = false
+      let hubMLNSAccountExists = false
+      if (response && response.length) {
+        hubReconciliationAccountExists = response.findIndex(account => {
+          return account.ledgerAccountType === 'HUB_RECONCILIATION'
+        }) >= 0
+        hubMLNSAccountExists = response.findIndex(account => {
+          return account.ledgerAccountType === 'HUB_MULTILATERAL_SETTLEMENT'
+        }) >= 0
+      }
+
+      if (hubReconciliationAccountExists === false) {
+        await createParticipantAccount(currency, 'HUB_RECONCILIATION')
+      }
+      if (hubMLNSAccountExists  === false) {
+       await createParticipantAccount(currency, 'HUB_MULTILATERAL_SETTLEMENT')
+      }
+    }
+}
+
+async function initParticipants() {
+  for (const currency of currencies) {
+    for (const fsp of fspList) {
+      await addParticipant(currency, fsp.fspName);
+    }
+  }
+}
+async function initNetDebitCapPositionAndLimits() {
+  for (const currency of currencies) {
+    for (const fsp of fspList) {
+      await createNetDebitCapInitialPositionAndLimit(fsp.fspName, 0 , currency, 1000)
+    }
+  }
+}
+async function initParticipantEndpoints() {
+    for (const fsp of fspList) {
+      await addParticipantEndpoint(fsp.fspName, 'FSPIOP_CALLBACK_URL_TRANSFER_POST', `${fsp.endpointBase}/transfers`)
+      await addParticipantEndpoint(fsp.fspName, 'FSPIOP_CALLBACK_URL_TRANSFER_PUT', `${fsp.endpointBase}/transfers/{{transferId}}`)
+      await addParticipantEndpoint(fsp.fspName, 'FSPIOP_CALLBACK_URL_TRANSFER_ERROR', `${fsp.endpointBase}/transfers/{{transferId}}/error`)
+    }
+}
+
+async function initTransfers() {
+  for (const transfer of transfers) {
+    // prepareTransferDataTest.test(`create a transfer for the amount of ${transfer.amount.amount} ${transfer.amount.currency}`, async test => {
+      try {
+        const res = await sendTransfer(payerFsp, payeeFsp, transfer)
+        // console.log(transfer);
+        await waitForTransferToBeCommited(transfer.transferId, SLEEP_MS);
+      } catch (err) {
+        Logger.error(`prepareTransferDataTest failed with error - ${err}`)
+      }
+    }
+}
 /**
  * The following services must be running:
  * central-ledger, ml-api-adapter, simulator, mysql, kafka
  */
 module.exports = {
   currencies,
-  setup: () => {
-    Test('PrepareTransferData should', prepareTransferDataTest => {
-      const URI_PREFIX = 'http'
-      const CENTRAL_LEDGER_HOST = TestConfig.CENTRAL_LEDGER_HOST
-      const CENTRAL_LEDGER_PORT = TestConfig.CENTRAL_LEDGER_PORT
-      const CENTRAL_LEDGER_BASE = ''
-      const ML_API_ADAPTER_HOST = TestConfig.ML_API_ADAPTER_HOST
-      const ML_API_ADAPTER_PORT = TestConfig.ML_API_ADAPTER_PORT
-      const ML_API_ADAPTER_BASE = ''
-      const SIMULATOR_REMOTE_HOST = TestConfig.SIMULATOR_REMOTE_HOST
-      const SIMULATOR_REMOTE_PORT = TestConfig.SIMULATOR_REMOTE_PORT
-      const SIMULATOR_HOST = TestConfig.SIMULATOR_HOST
-      const SIMULATOR_PORT = TestConfig.SIMULATOR_PORT
-      const SIMULATOR_CORR_ENDPOINT = '/payeefsp/correlationid'
-      const payerFsp = `fsp${rand8()}`
-      const payeeFsp = `fsp${rand8()}`
-      const fspList = [
-        {
-          fspName: payerFsp,
-          endpointBase: `${URI_PREFIX}://${SIMULATOR_REMOTE_HOST}:${SIMULATOR_REMOTE_PORT}/payerfsp`
-        },
-        {
-          fspName: payeeFsp,
-          endpointBase: `${URI_PREFIX}://${SIMULATOR_REMOTE_HOST}:${SIMULATOR_REMOTE_PORT}/payeefsp`
-        }
-      ]
-      const currencies = ['USD', 'TZS']
-      const transfers = []
-      for (const currency of currencies) {
-        transfers.push({
-          transferId: Uuid(),
-          amount: {
-            amount: (10 + Math.floor(Math.random() * 9000) / 100).toString().substr(0, 5), // transfer amount between 10.00 and 100
-            currency
-          },
-          ilpPacket: 'AQAAAAAAAABkEGcuZXdwMjEuaWQuODAwMjCCAhd7InRyYW5zYWN0aW9uSWQiOiJmODU0NzdkYi0xMzVkLTRlMDgtYThiNy0xMmIyMmQ4MmMwZDYiLCJxdW90ZUlkIjoiOWU2NGYzMjEtYzMyNC00ZDI0LTg5MmYtYzQ3ZWY0ZThkZTkxIiwicGF5ZWUiOnsicGFydHlJZEluZm8iOnsicGFydHlJZFR5cGUiOiJNU0lTRE4iLCJwYXJ0eUlkZW50aWZpZXIiOiIyNTYxMjM0NTYiLCJmc3BJZCI6IjIxIn19LCJwYXllciI6eyJwYXJ0eUlkSW5mbyI6eyJwYXJ0eUlkVHlwZSI6Ik1TSVNETiIsInBhcnR5SWRlbnRpZmllciI6IjI1NjIwMTAwMDAxIiwiZnNwSWQiOiIyMCJ9LCJwZXJzb25hbEluZm8iOnsiY29tcGxleE5hbWUiOnsiZmlyc3ROYW1lIjoiTWF0cyIsImxhc3ROYW1lIjoiSGFnbWFuIn0sImRhdGVPZkJpcnRoIjoiMTk4My0xMC0yNSJ9fSwiYW1vdW50Ijp7ImFtb3VudCI6IjEwMCIsImN1cnJlbmN5IjoiVVNEIn0sInRyYW5zYWN0aW9uVHlwZSI6eyJzY2VuYXJpbyI6IlRSQU5TRkVSIiwiaW5pdGlhdG9yIjoiUEFZRVIiLCJpbml0aWF0b3JUeXBlIjoiQ09OU1VNRVIifSwibm90ZSI6ImhlaiJ9',
-          ilpCondition: 'HOr22-H3AfTDHrSkPjJtVPRdKouuMkDXTR4ejlQa8Ks'
-        })
-      }
-      const localEnum = {
-        transferStates: {
-          COMMITTED: 'COMMITTED'
-        }
-      }
-      const sleepMilliseconds = 1000
-
-      let sandbox
-      prepareTransferDataTest.beforeEach(test => {
-        sandbox = Sinon.createSandbox()
-        test.end()
-      })
-      prepareTransferDataTest.afterEach(test => {
-        sandbox.restore()
-        test.end()
-      })
-
-      prepareTransferDataTest.test('init settlement models for integration testing:', async test => {
-        try {
-          for (const model of settlementModels) {
-            const record = await SettlementModelModel.getByName(model.name)
-            if (record && record.name === model.name) {
-              model.settlementModelId = record.settlementModelId
-              test.pass(`Settlement model ${model.name} already exists`)
-            } else {
-              const id = await Models.settlementModel.create(model)
-              const record1 = await SettlementModelModel.getByName(model.name)
-              if (record1 && record1.name === model.name && record1.settlementModelId === id) {
-                model.settlementModelId = id
-                test.pass(`Settlement model ${model.name} has been successfully inserted with id = ${id}`)
-              } else {
-                throw new Error(`Settlement model ${model.name} could not be instantiated`)
-              }
-            }
-          }
-          test.end()
-        } catch (err) {
-          Logger.error(`settlementTransferTest failed with error - ${err}`)
-          test.fail()
-          test.end()
-        }
-      })
-
-      prepareTransferDataTest.test('check if Hub accounts exists', async test => {
-        try {
-          for (const currency of currencies) {
-            const url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/Hub/accounts?currency=${currency}`
-            const opts = { method: 'GET' }
-            const res = await fetch(url, opts)
-            test.equal(res.status, 200, 'returned 200 OK')
-
-            const response = await res.json()
-            let hubReconciliationAccountExists = false
-            let hubMLNSAccountExists = false
-            if (response && response.length) {
-              hubReconciliationAccountExists = response.findIndex(account => {
-                return account.ledgerAccountType === 'HUB_RECONCILIATION'
-              }) >= 0
-              hubMLNSAccountExists = response.findIndex(account => {
-                return account.ledgerAccountType === 'HUB_MULTILATERAL_SETTLEMENT'
-              }) >= 0
-            }
-
-            if (hubReconciliationAccountExists) {
-              test.pass(`${currency} HUB_RECONCILIATION found`)
-            } else {
-              try {
-                const url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/Hub/accounts`
-                const headers = {
-                  'Content-Type': 'application/json'
-                }
-                const body = {
-                  currency,
-                  type: 'HUB_RECONCILIATION'
-                }
-                const opts = {
-                  method: 'POST',
-                  headers,
-                  body: JSON.stringify(body)
-                }
-                const res = await fetch(url, opts)
-                test.equal(res.status, 201, 'returned 201 Created')
-              } catch (err) {
-                Logger.error(`creating HUB_RECONCILIATION failed with error - ${err}`)
-                test.fail()
-              }
-            }
-
-            if (hubMLNSAccountExists) {
-              test.pass(`${currency} HUB_MULTILATERAL_SETTLEMENT found`)
-            } else {
-              try {
-                const url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/Hub/accounts`
-                const headers = {
-                  'Content-Type': 'application/json'
-                }
-                const body = {
-                  currency,
-                  type: 'HUB_MULTILATERAL_SETTLEMENT'
-                }
-                const opts = {
-                  method: 'POST',
-                  headers,
-                  body: JSON.stringify(body)
-                }
-                const res = await fetch(url, opts)
-                test.equal(res.status, 201, 'returned 201 Created')
-              } catch (err) {
-                Logger.error(`creating HUB_MULTILATERAL_SETTLEMENT failed with error - ${err}`)
-                test.fail()
-              }
-            }
-          }
-          test.end()
-        } catch (err) {
-          Logger.error(`prepareTransferDataTest failed with error - ${err}`)
-          test.fail()
-          test.end()
-        }
-      })
-
-      prepareTransferDataTest.test('add participant and participant account', async test => {
-        try {
-          for (const currency of currencies) {
-            for (const fsp of fspList) {
-              const url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants`
-              const headers = {
-                'Content-Type': 'application/json'
-              }
-              const body = {
-                name: fsp.fspName,
-                currency
-              }
-              const opts = {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(body)
-              }
-              const res = await fetch(url, opts)
-              test.equal(res.status, 201, `returned 201 Created for ${fsp.fspName}`)
-            }
-          }
-          test.end()
-        } catch (err) {
-          Logger.error(`prepareTransferDataTest failed with error - ${err}`)
-          test.fail()
-          test.end()
-        }
-      })
-
-      prepareTransferDataTest.test('add participant account limits', async test => {
-        try {
-          for (const currency of currencies) {
-            for (const fsp of fspList) {
-              const url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/initialPositionAndLimits`
-              const headers = {
-                'Content-Type': 'application/json'
-              }
-              const body = {
-                currency,
-                limit: {
-                  type: 'NET_DEBIT_CAP',
-                  value: 1000
-                },
-                initialPosition: 0
-              }
-              const opts = {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(body)
-              }
-              const res = await fetch(url, opts)
-              test.equal(res.status, 201, `returned 201 created limits for ${fsp.fspName}`)
-            }
-          }
-          test.end()
-        } catch (err) {
-          Logger.error(`prepareTransferDataTest failed with error - ${err}`)
-          test.fail()
-          test.end()
-        }
-      })
-
-      prepareTransferDataTest.test('add participant FSPIOP_CALLBACK_URL_TRANSFER_POST endpoint', async test => {
-        try {
-          const headers = {
-            'Content-Type': 'application/json'
-          }
-          for (const fsp of fspList) {
-            const url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/endpoints`
-            const body = {
-              type: 'FSPIOP_CALLBACK_URL_TRANSFER_POST',
-              value: `${fsp.endpointBase}/transfers`
-            }
-            const opts = {
-              method: 'POST',
-              headers,
-              body: JSON.stringify(body)
-            }
-            const res = await fetch(url, opts)
-            test.equal(res.status, 201, `returned 201 created endpoint for ${fsp.fspName}`)
-          }
-          test.end()
-        } catch (err) {
-          Logger.error(`prepareTransferDataTest failed with error - ${err}`)
-          test.fail()
-          test.end()
-        }
-      })
-
-      prepareTransferDataTest.test('add participant FSPIOP_CALLBACK_URL_TRANSFER_PUT endpoint', async test => {
-        const headers = {
-          'Content-Type': 'application/json'
-        }
-        for (const fsp of fspList) {
-          try {
-            const url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/endpoints`
-            const body = {
-              type: 'FSPIOP_CALLBACK_URL_TRANSFER_PUT',
-              value: `${fsp.endpointBase}/transfers/{{transferId}}`
-            }
-            const opts = {
-              method: 'POST',
-              headers,
-              body: JSON.stringify(body)
-            }
-            const res = await fetch(url, opts)
-            test.equal(res.status, 201, `returned 201 created endpoint for ${fsp.fspName}`)
-          } catch (err) {
-            Logger.error(`prepareTransferDataTest failed with error - ${err}`)
-            test.fail()
-            test.end()
-          }
-        }
-        test.end()
-      })
-
-      prepareTransferDataTest.test('create FSPIOP_CALLBACK_URL_TRANSFER_ERROR endpoint', async test => {
-        const headers = {
-          'Content-Type': 'application/json'
-        }
-        for (const fsp of fspList) {
-          try {
-            const url = `${URI_PREFIX}://${CENTRAL_LEDGER_HOST}:${CENTRAL_LEDGER_PORT}${CENTRAL_LEDGER_BASE}/participants/${fsp.fspName}/endpoints`
-            const body = {
-              type: 'FSPIOP_CALLBACK_URL_TRANSFER_ERROR',
-              value: `${fsp.endpointBase}/transfers/{{transferId}}/error`
-            }
-            const opts = {
-              method: 'POST',
-              headers,
-              body: JSON.stringify(body)
-            }
-            const res = await fetch(url, opts)
-            test.equal(res.status, 201, `returned 201 created endpoint for ${fsp.fspName}`)
-          } catch (err) {
-            Logger.error(`prepareTransferDataTest failed with error - ${err}`)
-            test.fail()
-            test.end()
-          }
-        }
-        test.end()
-      })
-
-      for (const transfer of transfers) {
-        prepareTransferDataTest.test(`create a transfer for the amount of ${transfer.amount.amount} ${transfer.amount.currency}`, async test => {
-          const currentDateGMT = new Date().toGMTString()
-          const expirationDate = new Date((new Date()).getTime() + (24 * 60 * 60 * 1000))
-
-          const headers = {
-            Accept: 'application/vnd.interoperability.transfers+json;version=1.0',
-            'Content-Type': 'application/vnd.interoperability.transfers+json;version=1.0',
-            Date: currentDateGMT,
-            'FSPIOP-Source': payerFsp,
-            'FSPIOP-Destination': payeeFsp
-          }
-          const url = `${URI_PREFIX}://${ML_API_ADAPTER_HOST}:${ML_API_ADAPTER_PORT}${ML_API_ADAPTER_BASE}/transfers`
-          const body = {
-            transferId: transfer.transferId,
-            payerFsp,
-            payeeFsp,
-            amount: transfer.amount,
-            ilpPacket: transfer.ilpPacket,
-            condition: transfer.ilpCondition,
-            expiration: expirationDate.toISOString(),
-            extensionList: {
-              extension: [{
-                key: 'prepare',
-                value: 'description'
-              }]
-            }
-          }
-          const opts = {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(body)
-          }
-
-          const simulatorUrl = `${URI_PREFIX}://${SIMULATOR_HOST}:${SIMULATOR_PORT}${SIMULATOR_CORR_ENDPOINT}/${transfer.transferId}`
-
-          try {
-            const res = await fetch(url, opts)
-            test.equal(res.status, 202, 'transfer PREPARE request returned 202 Accepted')
-
-            let transferCommitted = false
-            for (let i = 0; i < 10; i++) {
-              const simulatorRes = await fetch(simulatorUrl)
-              try {
-                const simulatorResponse = await simulatorRes.json()
-                if (simulatorResponse && simulatorResponse.transferState === localEnum.transferStates.COMMITTED) {
-                  await transferParticipantStateChangeService.processMsgFulfil(transfer.transferId, 'success', [])
-                  transferCommitted = true
-                  break
-                }
-              } catch (err) {
-                if (err.type === 'invalid-json') {
-                  Logger.info(`Transfer not processed yet. Awaiting ${sleepMilliseconds} ms...`)
-                } else {
-                  Logger.info(err.message)
-                  throw err
-                }
-              }
-              await sleep(sleepMilliseconds)
-            }
-            test.ok(transferCommitted, 'transfer successfully COMMITTED by payee fsp')
-            test.end()
-          } catch (err) {
-            Logger.error(`prepareTransferDataTest failed with error - ${err}`)
-            test.fail()
-            test.end()
-          }
-        })
-      }
-
-      prepareTransferDataTest.end()
-    })
-  }
+  createSettlementModel,
+  init,
+ //  setup: () => {
+ //   Test('PrepareTransferData here here', prepareTransferDataTest => {
+ //     prepareTransferDataTest.test('init settlement models for integration testing:', async test => {
+ //       try {
+ //         console.log('HEREaaaa');
+ //         await init();
+ //         test.end()
+ //       } catch (err) {
+ //         Logger.error(`settlementTransferTest failed with error - ${err}`)
+ //         test.fail()
+ //         test.end()
+ //       }
+ //     })
+ //   })
+ // },
+  // setup: () => {
+  // Test('PrepareTransferData should', prepareTransferDataTest => {
+  //
+  //   const payerFsp = `fsp${utils.rand8()}`
+  //   const payeeFsp = `fsp${utils.rand8()}`
+  //   const fspList = [
+  //     {
+  //       fspName: payerFsp,
+  //       endpointBase: `${SIMULATOR_URL}/payerfsp`
+  //     },
+  //     {
+  //       fspName: payeeFsp,
+  //       endpointBase: `${SIMULATOR_URL}/payeefsp`
+  //     }
+  //   ]
+  //   const currencies = ['USD', 'TZS']
+  //   const transfers = []
+  //   for (const currency of currencies) {
+  //     transfers.push({
+  //       transferId: Uuid(),
+  //       amount: {
+  //         amount: (10 + Math.floor(Math.random() * 9000) / 100).toString().substr(0, 5), // transfer amount between 10.00 and 100
+  //         currency
+  //       },
+  //       ilpPacket: 'AQAAAAAAAABkEGcuZXdwMjEuaWQuODAwMjCCAhd7InRyYW5zYWN0aW9uSWQiOiJmODU0NzdkYi0xMzVkLTRlMDgtYThiNy0xMmIyMmQ4MmMwZDYiLCJxdW90ZUlkIjoiOWU2NGYzMjEtYzMyNC00ZDI0LTg5MmYtYzQ3ZWY0ZThkZTkxIiwicGF5ZWUiOnsicGFydHlJZEluZm8iOnsicGFydHlJZFR5cGUiOiJNU0lTRE4iLCJwYXJ0eUlkZW50aWZpZXIiOiIyNTYxMjM0NTYiLCJmc3BJZCI6IjIxIn19LCJwYXllciI6eyJwYXJ0eUlkSW5mbyI6eyJwYXJ0eUlkVHlwZSI6Ik1TSVNETiIsInBhcnR5SWRlbnRpZmllciI6IjI1NjIwMTAwMDAxIiwiZnNwSWQiOiIyMCJ9LCJwZXJzb25hbEluZm8iOnsiY29tcGxleE5hbWUiOnsiZmlyc3ROYW1lIjoiTWF0cyIsImxhc3ROYW1lIjoiSGFnbWFuIn0sImRhdGVPZkJpcnRoIjoiMTk4My0xMC0yNSJ9fSwiYW1vdW50Ijp7ImFtb3VudCI6IjEwMCIsImN1cnJlbmN5IjoiVVNEIn0sInRyYW5zYWN0aW9uVHlwZSI6eyJzY2VuYXJpbyI6IlRSQU5TRkVSIiwiaW5pdGlhdG9yIjoiUEFZRVIiLCJpbml0aWF0b3JUeXBlIjoiQ09OU1VNRVIifSwibm90ZSI6ImhlaiJ9',
+  //       ilpCondition: 'HOr22-H3AfTDHrSkPjJtVPRdKouuMkDXTR4ejlQa8Ks'
+  //     })
+  //   }
+  //
+  //     let sandbox
+  //     prepareTransferDataTest.beforeEach(test => {
+  //       sandbox = Sinon.createSandbox()
+  //       test.end()
+  //     })
+  //     prepareTransferDataTest.afterEach(test => {
+  //       sandbox.restore()
+  //       test.end()
+  //     })
+  //
+  //     // prepareTransferDataTest.test('init settlement models for integration testing:', async test => {
+  //     //   try {
+  //     //     await init();
+  //     //     test.end()
+  //     //   } catch (err) {
+  //     //     Logger.error(`settlementTransferTest failed with error - ${err}`)
+  //     //     test.fail()
+  //     //     test.end()
+  //     //   }
+  //     // })
+  //   // prepareTransferDataTest.end();
+  //
+  //     prepareTransferDataTest.test('init settlement models for integration testing:', async test => {
+  //       try {
+  //         const knex = await Db.getKnex()
+  //         const raw = await knex.raw('SET FOREIGN_KEY_CHECKS = 0;');
+  //         await Db.settlementModel.truncate();
+  //         await knex.raw('SET FOREIGN_KEY_CHECKS = 1;');
+  //         await knex.batchInsert('settlementModel', settlementModels);
+  //         test.end()
+  //       } catch (err) {
+  //         Logger.error(`settlementTransferTest failed with error - ${err}`)
+  //         test.fail()
+  //         test.end()
+  //       }
+  //     })
+  //
+  //     prepareTransferDataTest.test('check if Hub accounts exists', async test => {
+  //       try {
+  //         for (const currency of currencies) {
+  //           const response = await getParticipantAccount(currency);
+  //           let hubReconciliationAccountExists = false
+  //           let hubMLNSAccountExists = false
+  //           if (response && response.length) {
+  //             hubReconciliationAccountExists = response.findIndex(account => {
+  //               return account.ledgerAccountType === 'HUB_RECONCILIATION'
+  //             }) >= 0
+  //             hubMLNSAccountExists = response.findIndex(account => {
+  //               return account.ledgerAccountType === 'HUB_MULTILATERAL_SETTLEMENT'
+  //             }) >= 0
+  //           }
+  //
+  //           if (hubReconciliationAccountExists) {
+  //             test.pass(`${currency} HUB_RECONCILIATION found`)
+  //           } else {
+  //             try {
+  //               await createParticipantAccount(currency, 'HUB_RECONCILIATION')
+  //             } catch (err) {
+  //               Logger.error(`creating HUB_RECONCILIATION failed with error - ${err}`)
+  //               test.fail()
+  //             }
+  //           }
+  //
+  //           if (hubMLNSAccountExists) {
+  //             test.pass(`${currency} HUB_MULTILATERAL_SETTLEMENT found`)
+  //           } else {
+  //            await createParticipantAccount(currency, 'HUB_MULTILATERAL_SETTLEMENT')
+  //
+  //           }
+  //         }
+  //         test.end()
+  //       } catch (err) {
+  //         Logger.error(`prepareTransferDataTest failed with error - ${err}`)
+  //         test.fail()
+  //         test.end()
+  //       }
+  //     })
+  //
+  //     prepareTransferDataTest.test('add participant and participant account', async test => {
+  //       try {
+  //         for (const currency of currencies) {
+  //           for (const fsp of fspList) {
+  //             await addParticipant(currency, fsp.fspName);
+  //           }
+  //         }
+  //         test.end()
+  //       } catch (err) {
+  //         Logger.error(`prepareTransferDataTest failed with error - ${err}`)
+  //         test.fail()
+  //         test.end()
+  //       }
+  //     })
+  //
+  //     prepareTransferDataTest.test('add participant account limits', async test => {
+  //       try {
+  //         for (const currency of currencies) {
+  //           for (const fsp of fspList) {
+  //             await createNetDebitCapInitialPositionAndLimit(fsp.fspName, 0 , currency, 1000)
+  //           }
+  //         }
+  //         test.end()
+  //       } catch (err) {
+  //         Logger.error(`prepareTransferDataTest failed with error - ${err}`)
+  //         test.fail()
+  //         test.end()
+  //       }
+  //     })
+  //
+  //     prepareTransferDataTest.test('add participant FSPIOP_CALLBACK_URL_TRANSFER_POST endpoint', async test => {
+  //       try {
+  //         for (const fsp of fspList) {
+  //           await addParticipantEndpoint(fsp.fspName, 'FSPIOP_CALLBACK_URL_TRANSFER_POST', `${fsp.endpointBase}/transfers`)
+  //         }
+  //         test.end()
+  //       } catch (err) {
+  //         Logger.error(`prepareTransferDataTest failed with error - ${err}`)
+  //         test.fail()
+  //         test.end()
+  //       }
+  //     })
+  //
+  //     prepareTransferDataTest.test('add participant FSPIOP_CALLBACK_URL_TRANSFER_PUT endpoint', async test => {
+  //       const headers = {
+  //         'Content-Type': 'application/json'
+  //       }
+  //       for (const fsp of fspList) {
+  //         try {
+  //           await addParticipantEndpoint(fsp.fspName, 'FSPIOP_CALLBACK_URL_TRANSFER_PUT', `${fsp.endpointBase}/transfers/{{transferId}}`)
+  //           // test.equal(res.status, 201, `returned 201 created endpoint for ${fsp.fspName}`)
+  //         } catch (err) {
+  //           Logger.error(`prepareTransferDataTest failed with error - ${err}`)
+  //           test.fail()
+  //           test.end()
+  //         }
+  //       }
+  //       test.end()
+  //     })
+  //
+  //     prepareTransferDataTest.test('create FSPIOP_CALLBACK_URL_TRANSFER_ERROR endpoint', async test => {
+  //       const headers = {
+  //         'Content-Type': 'application/json'
+  //       }
+  //       for (const fsp of fspList) {
+  //         try {
+  //           await addParticipantEndpoint(fsp.fspName, 'FSPIOP_CALLBACK_URL_TRANSFER_ERROR', `${fsp.endpointBase}/transfers/{{transferId}}/error`)
+  //         } catch (err) {
+  //           Logger.error(`prepareTransferDataTest failed with error - ${err}`)
+  //           test.fail()
+  //           test.end()
+  //         }
+  //       }
+  //       test.end()
+  //     })
+  //
+  //     for (const transfer of transfers) {
+  //       prepareTransferDataTest.test(`create a transfer for the amount of ${transfer.amount.amount} ${transfer.amount.currency}`, async test => {
+  //         try {
+  //           await sendTransfer(payerFsp, payeeFsp, transfer)
+  //           await waitForTransferToBeCommited(transfer.transferId, SLEEP_MS);
+  //           console.log('TRANSFER COMMITTED');
+  //           test.end();
+  //         } catch (err) {
+  //           Logger.error(`prepareTransferDataTest failed with error - ${err}`)
+  //           test.fail()
+  //           test.end()
+  //         }
+  //       })
+  //     }
+  //
+  //     prepareTransferDataTest.end()
+  //   })
+  // }
 }
