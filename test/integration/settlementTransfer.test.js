@@ -90,7 +90,6 @@ const getEnums = async () => {
     transferStates: await Enums.transferStates()
   }
 }
-// TransferData.setup()
 
 Test('SettlementTransfer should', async settlementTransferTest => {
   await Db.connect(Config.DATABASE)
@@ -108,11 +107,6 @@ Test('SettlementTransfer should', async settlementTransferTest => {
     sandbox.restore()
     test.end()
   })
-
-  // await settlementTransferTest.test('setup', async test => {
-  //   await TransferData.setup()
-  //   test.end();
-  // })
 
   await settlementTransferTest.test('close the current window:', async test => {
     try {
