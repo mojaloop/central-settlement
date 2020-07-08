@@ -74,7 +74,7 @@ jobs:
           command: cd $(npm root -g)/npm
       - run:
           name: Install interledgerjs/five-bells-ledger-api-tests
-          command: npm install github:interledgerjs/five-bells-ledger-api-tests
+          command: npm install --no-save github:interledgerjs/five-bells-ledger-api-tests
       - run:
           name: Update NPM install
           command: npm install
@@ -96,7 +96,6 @@ jobs:
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
-            - dependency-cache-
       - run:
           name: Create dir for test results
           command: mkdir -p ./test/results
@@ -128,7 +127,6 @@ jobs:
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
-            - dependency-cache-
       - run:
           name: Execute code coverage check
           command: npm -s run test:coverage
@@ -153,7 +151,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "CACHE_VERSION.txt" }}-{{ checksum "package.json" }}
+          key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: Create dir for test results
           command: mkdir -p ./test/results
@@ -176,7 +174,6 @@ jobs:
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
-            - dependency-cache-
       - run:
           name: Create dir for test results
           command: mkdir -p ./audit/results
@@ -199,7 +196,6 @@ jobs:
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
-            - dependency-cache-
       - run:
           name: Prune non-production packages before running license-scanner
           command: npm prune --production
@@ -252,7 +248,7 @@ jobs:
       - run:
           name: Install docker dependencies for anchore
           command: |
-            apk add --update py-pip docker python3-dev libffi-dev openssl-dev gcc libc-dev make jq npm
+            apk add --update python3 py3-pip docker python3-dev libffi-dev openssl-dev gcc libc-dev make jq npm
       - run:
           name: Install general dependencies
           command: |
