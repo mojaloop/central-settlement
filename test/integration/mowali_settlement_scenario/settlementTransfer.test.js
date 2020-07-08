@@ -28,21 +28,21 @@ const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Logger = require('@mojaloop/central-services-logger')
 const MLNumber = require('@mojaloop/ml-number')
-const TransferData = require('./helpers/transferData')
-const Models = require('./helpers/models')
-const Config = require('../../src/lib/config')
-const Db = require('../../src/lib/db')
-const SettlementWindowService = require('../../src/domain/settlementWindow')
-const SettlementService = require('../../src/domain/settlement')
-const Enums = require('../../src/models/lib/enums')
-const SettlementWindowStateChangeModel = require('../../src/models/settlementWindow/settlementWindowStateChange')
-const SettlementModel = require('../../src/models/settlement/settlement')
-const SettlementStateChangeModel = require('../../src/models/settlement/settlementStateChange')
-const SettlementParticipantCurrencyModel = require('../../src/models/settlement/settlementParticipantCurrency')
+const SettlementTransferData = require('./settlementTransferData')
+const Models = require('../helpers/models')
+const Config = require('../../../src/lib/config')
+const Db = require('../../../src/lib/db')
+const SettlementWindowService = require('../../../src/domain/settlementWindow')
+const SettlementService = require('../../../src/domain/settlement')
+const Enums = require('../../../src/models/lib/enums')
+const SettlementWindowStateChangeModel = require('../../../src/models/settlementWindow/settlementWindowStateChange')
+const SettlementModel = require('../../../src/models/settlement/settlement')
+const SettlementStateChangeModel = require('../../../src/models/settlement/settlementStateChange')
+const SettlementParticipantCurrencyModel = require('../../../src/models/settlement/settlementParticipantCurrency')
 const TransferModel = require('@mojaloop/central-ledger/src/models/transfer/transfer')
 const TransferStateChangeModel = require('@mojaloop/central-ledger/src/models/transfer/transferStateChange')
 const ParticipantPositionModel = require('@mojaloop/central-ledger/src/models/position/participantPosition')
-const Producer = require('../../src/lib/kafka/producer')
+const Producer = require('../../../src/lib/kafka/producer')
 const StreamProducer = require('@mojaloop/central-services-stream').Util.Producer
 // require('leaked-handles').set({ fullStack: true, timeout: 5000, debugSockets: true })
 
@@ -93,7 +93,7 @@ const getEnums = async () => {
 
 Test('SettlementTransfer should', async settlementTransferTest => {
   await Db.connect(Config.DATABASE)
-  await TransferData.init();
+  await SettlementTransferData.init()
   const enums = await getEnums()
   let settlementWindowId
   let settlementData
@@ -125,7 +125,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       test.equal(closedWindow.settlementWindowStateId, enums.settlementWindowStates.CLOSED, `window id ${settlementWindowId} is CLOSED`)
       test.equal(openWindow.settlementWindowStateId, enums.settlementWindowStates.OPEN, `window id ${res2.settlementWindowId} is OPEN`)
 
-      for (const currency of TransferData.currencies) {
+      for (const currency of SettlementTransferData.currencies) {
         const settlementWindowContentData = await Models.settlementWindowContent.getByParams({ settlementWindowId, currencyId: currency })
         const id = settlementWindowContentData[0].settlementWindowContentId
         test.equal(settlementWindowContentData.length, 1, `window content id ${id} has been created`)

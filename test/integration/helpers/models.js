@@ -35,7 +35,7 @@ module.exports = {
       return Db.settlementModel.insert(record)
     },
     truncate: async (record) => {
-      return Db.settlementModel.truncate();
+      return Db.settlementModel.truncate()
     }
   },
   settlementWindowContent: {
