@@ -25,12 +25,14 @@
  * ModusBox
  - Georgi Georgiev <georgi.georgiev@modusbox.com>
  - Miguel de Barros <miguel.debarros@modusbox.com>
+ - Deon Botha <deon.botha@modusbox.com>
  --------------
  ******/
 'use strict'
 
 /**
  * @module Handlers CLI Startup
+ * Cli run command eg : node src/handlers/index.js handler --transferparticipantstatechange
  */
 
 const Logger = require('@mojaloop/central-services-logger')
@@ -50,13 +52,23 @@ Program.command('handler') // sub-command name, coffeeType = type, required
   .alias('h') // alternative sub-command is `h`
   .description('Start a specified Handler') // command description
   .option('--settlementwindow', 'Start the Settlement Window Handler')
-  // function to execute when command is uses
+  .option('--transferparticipantstatechange', 'Start the Transfer Settlement Handler')
+  // function to execute when command is used
   .action(async (args) => {
     const handlerList = []
     if (args.settlementwindow && typeof args.settlementwindow === 'boolean') {
       Logger.debug('CLI: Executing --settlementwindow')
       const handler = {
         type: 'settlementwindow',
+        enabled: true
+      }
+      handlerList.push(handler)
+    }
+
+    if (args.transferparticipantstatechange && typeof args.transferparticipantstatechange === 'boolean') {
+      Logger.isDebugEnabled && Logger.debug('CLI: Executing --transfersettlement')
+      const handler = {
+        type: 'transferparticipantstatechange',
         enabled: true
       }
       handlerList.push(handler)

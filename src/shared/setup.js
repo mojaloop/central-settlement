@@ -143,9 +143,13 @@ const createHandlers = async (handlers) => {
     var handler = handlers[handlerIndex]
     if (handler.enabled) {
       Logger.info(`Handler Setup - Registering ${JSON.stringify(handler)}!`)
+      console.log(`Handler Setup - Registering ${JSON.stringify(handler)}!`)
       switch (handler.type) {
         case 'settlementwindow':
           await RegisterHandlers.settlementWindow.registerSettlementWindowHandler()
+          break
+        case 'transferparticipantstatechange':
+          await RegisterHandlers.transferparticipantstatechange.registerTransferParticipantStateChangeHandler()
           break
         default:
           var error = `Handler Setup - ${JSON.stringify(handler)} is not a valid handler to register!`

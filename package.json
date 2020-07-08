@@ -82,6 +82,7 @@
         "start": "run-p start:api",
         "start:api": "node src/api/index.js",
         "watch:api": "nodemon src/api/index.js",
+        "start:handlers": "node src/handlers/index.js",
         "regenerate": "yo swaggerize:test --framework hapi --apiPath './src/interface/swagger.yaml'",
         "standard": "standard",
         "lint": "eslint .",
