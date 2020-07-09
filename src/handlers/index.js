@@ -66,7 +66,7 @@ Program.command('handler') // sub-command name, coffeeType = type, required
     }
 
     if (args.transfersettlement && typeof args.transfersettlement === 'boolean') {
-      Logger.isDebugEnabled && Logger.debug('CLI: Executing --transfersettlement')
+      Logger.debug('CLI: Executing --transfersettlement')
       const handler = {
         type: 'transfersettlement',
         enabled: true
