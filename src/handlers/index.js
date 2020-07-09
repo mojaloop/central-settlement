@@ -32,7 +32,7 @@
 
 /**
  * @module Handlers CLI Startup
- * Cli run command eg : node src/handlers/index.js handler --transferparticipantstatechange
+ * Cli run command eg : node src/handlers/index.js handler --transferSettlement
  */
 
 const Logger = require('@mojaloop/central-services-logger')
@@ -52,7 +52,7 @@ Program.command('handler') // sub-command name, coffeeType = type, required
   .alias('h') // alternative sub-command is `h`
   .description('Start a specified Handler') // command description
   .option('--settlementwindow', 'Start the Settlement Window Handler')
-  .option('--transferparticipantstatechange', 'Start the Transfer Settlement Handler')
+  .option('--transfersettlement', 'Start the Transfer Settlement Handler')
   // function to execute when command is used
   .action(async (args) => {
     const handlerList = []
@@ -65,10 +65,10 @@ Program.command('handler') // sub-command name, coffeeType = type, required
       handlerList.push(handler)
     }
 
-    if (args.transferparticipantstatechange && typeof args.transferparticipantstatechange === 'boolean') {
+    if (args.transfersettlement && typeof args.transfersettlement === 'boolean') {
       Logger.isDebugEnabled && Logger.debug('CLI: Executing --transfersettlement')
       const handler = {
-        type: 'transferparticipantstatechange',
+        type: 'transfersettlement',
         enabled: true
       }
       handlerList.push(handler)

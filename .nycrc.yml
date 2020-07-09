@@ -17,5 +17,5 @@ exclude: [
   "**/node_modules/**",
   '**/migrations/**',
   '**/docs/**',
-  'src/domain/transferParticipantStateChange/index.js'
+  'src/domain/transferSettlement/index.js'
 ]

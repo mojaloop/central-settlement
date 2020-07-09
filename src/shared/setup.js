@@ -148,8 +148,8 @@ const createHandlers = async (handlers) => {
         case 'settlementwindow':
           await RegisterHandlers.settlementWindow.registerSettlementWindowHandler()
           break
-        case 'transferparticipantstatechange':
-          await RegisterHandlers.transferparticipantstatechange.registerTransferParticipantStateChangeHandler()
+        case 'transfersettlement':
+          await RegisterHandlers.transfersettlement.registerTransferSettlementHandler()
           break
         default:
           var error = `Handler Setup - ${JSON.stringify(handler)} is not a valid handler to register!`

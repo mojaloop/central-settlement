@@ -31,7 +31,7 @@ const TestConfig = require('../../integration-config')
 const Logger = require('@mojaloop/central-services-logger')
 const fetch = require('node-fetch')
 const Uuid = require('uuid4')
-const transferParticipantStateChangeService = require('../../../src/domain/transferParticipantStateChange')
+const transferSettlementService = require('../../../src/domain/transferSettlement')
 const SettlementModelModel = require('../../../src/models/settlement/settlementModel')
 const Models = require('./models')
 
@@ -421,7 +421,7 @@ module.exports = {
               try {
                 const simulatorResponse = await simulatorRes.json()
                 if (simulatorResponse && simulatorResponse.transferState === localEnum.transferStates.COMMITTED) {
-                  await transferParticipantStateChangeService.processMsgFulfil(transfer.transferId, 'success', [])
+                  await transferSettlementService.processMsgFulfil(transfer.transferId, 'success', [])
                   transferCommitted = true
                   break
                 }

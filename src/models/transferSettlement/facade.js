@@ -33,7 +33,7 @@ const location = { module: 'TransferFulfilHandler', method: '', path: '' }
 // const Config = require('../../lib/config')
 
 const Facade = {
-  updateTransferParticipantStateChange: async function (transferId, status, ledgerEntries) {
+  updateTransferSettlement: async function (transferId, status, ledgerEntries) {
     Logger.info(`Ledger entries: ${JSON.stringify(ledgerEntries)}`)
     try {
       const knex = await Db.getKnex()
@@ -60,7 +60,7 @@ const Facade = {
               .transacting(trx)
           }
           /* istanbul ignore next */
-          await knex.from(knex.raw('transferParticipantStateChange (transferParticipantId, settlementWindowStateId, reason)'))
+          await knex.from(knex.raw('transferSettlement (transferParticipantId, settlementWindowStateId, reason)'))
             .insert(function () {
               this.from('transferParticipant AS TP')
                 .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
@@ -94,7 +94,7 @@ const Facade = {
           await trx.rollback
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         } finally {
-          Logger.info(Utility.breadcrumb(location, { method: 'updateTransferParticipantStateChange' }))
+          Logger.info(Utility.breadcrumb(location, { method: 'updateTransferSettlement' }))
         }
       })
     } catch (err) {
