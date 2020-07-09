@@ -32,7 +32,7 @@ const Handlers = require('../../../src/handlers/register')
 const Proxyquire = require('proxyquire')
 
 const SettlementWindowHandlers = require('../../../src/handlers/settlementWindow/handler')
-const TransferFulfilHandlers = require('../../../src/handlers/transferParticipantStateChange/handler')
+const TransferFulfilHandlers = require('../../../src/handlers/transferSettlement/handler')
 
 Test('handlers', handlersTest => {
   let sandbox

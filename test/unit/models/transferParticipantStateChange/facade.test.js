@@ -27,7 +27,7 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Logger = require('@mojaloop/central-services-logger')
-const TransferFulfilFacade = require('../../../../src/models/transferParticipantStateChange/facade')
+const TransferFulfilFacade = require('../../../../src/models/transferSettlement/facade')
 const Db = require('../../../../src/lib/db')
 
 Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
@@ -43,9 +43,9 @@ Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
     test.end()
   })
 
-  await transferFulfilModelTest.test('transferFulfilModel should', async updateTransferParticipantStateChangeTest => {
+  await transferFulfilModelTest.test('transferFulfilModel should', async updateTransferSettlementTest => {
     try {
-      await updateTransferParticipantStateChangeTest.test('Create two records in the transferParticipantStateChange table', async test => {
+      await updateTransferSettlementTest.test('Create two records in the transferParticipantStateChange table', async test => {
         try {
           const transferId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
           const status = 'success'
@@ -113,19 +113,19 @@ Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
             })
           })
 
-          const result = await TransferFulfilFacade.updateTransferParticipantStateChange(transferId, status)
+          const result = await TransferFulfilFacade.updateTransferSettlement(transferId, status)
           test.ok(result, 'Result returned')
           test.end()
         } catch (err) {
-          Logger.error(`updateTransferParticipantStateChange failed with error - ${err}`)
+          Logger.error(`updateTransferSettlement failed with error - ${err}`)
           test.pass()
           test.end()
         }
       })
-      await updateTransferParticipantStateChangeTest.end()
+      await updateTransferSettlementTest.end()
     } catch (err) {
       Logger.error(`updateTransferParticipantStateChange failed with error - ${err}`)
-      await updateTransferParticipantStateChangeTest.end()
+      await updateTransferSettlementTest.end()
     }
   })
   await transferFulfilModelTest.end()
