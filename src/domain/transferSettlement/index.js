@@ -18,19 +18,41 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * ModuxBox
+ * ModusBox
  - Deon Botha <deon.botha@modusbox.com>
- - Georgi Georgiev <georgi.georgiev@modusbox.com>
- - Miguel de Barros <miguel.debarros@modusbox.com>
- - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- - Valentin Genev <valentin.genev@modusbox.com>
+ - Lazola Lucas <lazola.lucas@modusbox.com>
  --------------
  ******/
-'use strict'
-
-const Facade = require('./facade')
+const fs = require('fs')
+const scriptEngine = require('../../lib/scriptEngine')
+const vm = require('vm')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const TransferSettlementModel = require('../../models/transferSettlement')
 
 module.exports = {
-  updateStateChange: Facade.updateTransferParticipantStateChange,
-  getTransactionObject: Facade.getTransactionRequest
+  processMsgFulfil: async function (transferEventId, transferEventStateStatus, ledgerEntries) {
+    try {
+      await TransferSettlementModel.updateStateChange(transferEventId, transferEventStateStatus, ledgerEntries)
+      return true
+    } catch (err) {
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    }
+  },
+  /* istanbul ignore next */
+  processScriptEngine: async function (payload) {
+    /* istanbul ignore next */
+    try {
+      let data
+      try {
+        data = fs.readFileSync('scripts/interchangeFeeCalculation.js', 'utf8')
+      } catch (err) {
+        throw ErrorHandler.Factory.reformatFSPIOPError(err)
+      }
+      const script = new vm.Script(data)
+      const result = await scriptEngine.execute(script, payload)
+      return result
+    } catch (err) {
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
+    }
+  }
 }

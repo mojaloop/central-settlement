@@ -31,8 +31,8 @@ const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 const KafkaConsumer = require('@mojaloop/central-services-stream').Kafka.Consumer
 const Uuid = require('uuid4')
-const TransferFulfilService = require('../../../../src/domain/transferParticipantStateChange/index')
-const TransferFulfilHandler = require('../../../../src/handlers/transferParticipantStateChange/handler')
+const TransferFulfilService = require('../../../../src/domain/transferSettlement/index')
+const TransferFulfilHandler = require('../../../../src/handlers/transferSettlement/handler')
 
 var payload = {
   settlementWindowId: '3',
@@ -151,7 +151,7 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
-      const result = await TransferFulfilHandler.processTransferParticipantStateChange(null, localMessages)
+      const result = await TransferFulfilHandler.processTransferSettlement(null, localMessages)
       test.equal(result, true)
       test.end()
     })
@@ -161,7 +161,7 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
-      const result = await TransferFulfilHandler.processTransferParticipantStateChange(null, localMessages[0])
+      const result = await TransferFulfilHandler.processTransferSettlement(null, localMessages[0])
       test.equal(result, true)
       test.end()
     })
@@ -172,7 +172,7 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
       try {
-        await TransferFulfilHandler.processTransferParticipantStateChange(true, localMessages[0])
+        await TransferFulfilHandler.processTransferSettlement(true, localMessages[0])
         test.fail('should throw error')
         test.end()
       } catch (err) {
@@ -188,7 +188,7 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
       try {
-        await TransferFulfilHandler.processTransferParticipantStateChange(null, localMessages[0])
+        await TransferFulfilHandler.processTransferSettlement(null, localMessages[0])
         test.pass('Update terminated due to missing payload')
         test.end()
       } catch (err) {
@@ -204,7 +204,7 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
       try {
-        await TransferFulfilHandler.processTransferParticipantStateChange(null, localMessages[0])
+        await TransferFulfilHandler.processTransferSettlement(null, localMessages[0])
         test.pass('Update terminated due to unknown event action')
         test.end()
       } catch (err) {
