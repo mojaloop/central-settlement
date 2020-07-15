@@ -29,6 +29,12 @@ const axios = require('axios')
 const Utils = require('./utils')
 const Logger = require('@mojaloop/central-services-logger')
 
+async function createSettlementModel (settlementModel) {
+  const url = `${Config.CENTRAL_LEDGER_URL}/settlementModels`
+  return axios.post(url, settlementModel)
+}
+
+
 async function getParticipantAccount (currency) {
   const url = `${Config.CENTRAL_LEDGER_URL}/participants/Hub/accounts?currency=${currency}`
   const res = await axios.get(url)
@@ -137,6 +143,7 @@ module.exports = {
   addParticipantEndpoint,
   createNetDebitCapInitialPositionAndLimit,
   createParticipantAccount,
+  createSettlementModel,
   getParticipantAccount,
   sendTransfer,
   waitForTransferToBeCommited
