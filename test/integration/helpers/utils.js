@@ -18,19 +18,23 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * ModuxBox
- - Deon Botha <deon.botha@modusbox.com>
- - Georgi Georgiev <georgi.georgiev@modusbox.com>
- - Miguel de Barros <miguel.debarros@modusbox.com>
- - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- - Valentin Genev <valentin.genev@modusbox.com>
+ * ModusBox
+ - Claudio Viola <claudio.viola@modusbox.com>
  --------------
  ******/
 'use strict'
 
-const Facade = require('./facade')
+function rand8 () {
+  return Math.floor(Math.random() * 1000000000)
+}
+
+async function sleep (ms) {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms)
+  })
+}
 
 module.exports = {
-  updateStateChange: Facade.updateTransferParticipantStateChange,
-  getTransactionObject: Facade.getTransactionRequest
+  rand8,
+  sleep
 }
