@@ -21,11 +21,9 @@
  * ModusBox
  - Deon Botha <deon.botha@modusbox.com>
  - Lazola Lucas <lazola.lucas@modusbox.com>
+ - Claudio Viola <claudio.viola@modusbox.com>
  --------------
  ******/
-const fs = require('fs')
-const scriptEngine = require('../../lib/scriptEngine')
-const vm = require('vm')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const TransferSettlementModel = require('../../models/transferSettlement')
 
@@ -38,21 +36,5 @@ module.exports = {
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   },
-  /* istanbul ignore next */
-  processScriptEngine: async function (payload) {
-    /* istanbul ignore next */
-    try {
-      let data
-      try {
-        data = fs.readFileSync('scripts/interchangeFeeCalculation.js', 'utf8')
-      } catch (err) {
-        throw ErrorHandler.Factory.reformatFSPIOPError(err)
-      }
-      const script = new vm.Script(data)
-      const result = await scriptEngine.execute(script, payload)
-      return result
-    } catch (err) {
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
-  }
+
 }

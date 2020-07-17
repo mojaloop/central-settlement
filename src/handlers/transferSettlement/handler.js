@@ -31,7 +31,6 @@
 /**
  * @module src/handlers/transfers
  */
-
 const Config = require('../../lib/config')
 const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 const Enum = require('@mojaloop/central-services-shared').Enum
@@ -41,27 +40,30 @@ const Logger = require('@mojaloop/central-services-logger')
 const Producer = require('@mojaloop/central-services-stream').Util.Producer
 const retry = require('async-retry')
 const transferSettlementService = require('../../domain/transferSettlement')
+const scriptsLoader = require('../../lib/scriptsLoader');
 const Utility = require('@mojaloop/central-services-shared').Util
-const location = { module: 'TransferFulfilHandler', method: '', path: '' } // var object used as pointer
-const consumerCommit = true
-const fromSwitch = true
-const retryDelay = Config.WINDOW_AGGREGATION_RETRY_INTERVAL
-const retryCount = Config.WINDOW_AGGREGATION_RETRY_COUNT
-const retryOpts = {
-  retries: retryCount,
-  minTimeout: retryDelay,
-  maxTimeout: retryDelay
-}
 
-const processTransferSettlement = async (error, messages) => {
+const LOG_LOCATION = { module: 'TransferFulfilHandler', method: '', path: '' } // var object used as pointer
+const CONSUMER_COMMIT = true
+const FROM_SWITCH = true
+
+const RETRY_OPTIONS = {
+  retries: Config.WINDOW_AGGREGATION_RETRY_COUNT,
+  minTimeout: Config.WINDOW_AGGREGATION_RETRY_INTERVAL,
+  maxTimeout: Config.WINDOW_AGGREGATION_RETRY_INTERVAL
+}
+const SCRIPTS_FOLDER = '/scripts'
+let INJECTED_SCRIPTS
+
+async function processTransferSettlement (error, messages) {
   if (error) {
     Logger.error(error)
     throw ErrorHandling.Factory.reformatFSPIOPError(error)
   }
-  Logger.info(Utility.breadcrumb(location, messages))
+  Logger.info(Utility.breadcrumb(LOG_LOCATION, messages))
   let message = {}
   try {
-    Logger.info(Utility.breadcrumb(location, { method: 'processTransferSettlement' }))
+    Logger.info(Utility.breadcrumb(LOG_LOCATION, { method: 'processTransferSettlement' }))
     if (Array.isArray(messages)) {
       message = messages[0]
     } else {
@@ -79,27 +81,36 @@ const processTransferSettlement = async (error, messages) => {
       : Enum.Events.ActionLetter.unknown
 
     if (!payload) {
-      Logger.info(Utility.breadcrumb(location, `missingPayload--${actionLetter}1`))
+      Logger.info(Utility.breadcrumb(LOG_LOCATION, `missingPayload--${actionLetter}1`))
       const fspiopError = ErrorHandling.Factory.createInternalServerFSPIOPError('TransferSettlement handler missing payload')
       const eventDetail = { functionality: Enum.Events.Event.Type.NOTIFICATION, action: Enum.Events.Event.Action.SETTLEMENT_WINDOW }
-      await Kafka.proceed(Config.KAFKA_CONFIG, params, { consumerCommit, fspiopError: fspiopError.toApiErrorObject(Config.ERROR_HANDLING), eventDetail, fromSwitch })
+      await Kafka.proceed(Config.KAFKA_CONFIG, params, { CONSUMER_COMMIT, fspiopError: fspiopError.toApiErrorObject(Config.ERROR_HANDLING), eventDetail, FROM_SWITCH })
       throw fspiopError
     }
-    Logger.info(Utility.breadcrumb(location, 'validationPassed'))
+    Logger.info(Utility.breadcrumb(LOG_LOCATION, 'validationPassed'))
 
     if (transferEventAction === Enum.Events.Event.Action.COMMIT || transferEventAction === Enum.Events.Event.Action.ABORT) {
+      const scriptResult = await scriptsLoader.executeScript(message.value)
+      const ledgerEntries = scriptResult ? (scriptResult.ledgerEntries ? scriptResult.ledgerEntries : []) : []
       await retry(async () => { // use bail(new Error('to break before max retries'))
-        const scriptResult = await transferSettlementService.processScriptEngine(message.value)
-        /* istanbul ignore next */
-        const ledgerEntries = scriptResult ? (scriptResult.ledgerEntries ? scriptResult.ledgerEntries : []) : []
-        await transferSettlementService.processMsgFulfil(transferEventId, transferEventStateStatus, ledgerEntries)
-        Logger.info(Utility.breadcrumb(location, `done--${actionLetter}2`))
+          const knex = Db.getKnex()
+          await knex.transaction(async trx => {
+            try {
+             await transferSettlementService.insertLedgerEntries(ledgerEntries, trx)
+             await transferSettlementService.processMsgFulfil(transferEventId, transferEventStateStatus, trx)
+             await trx.commit
+           } catch (err) {
+            await trx.rollback
+            throw ErrorHandler.Factory.reformatFSPIOPError(err)
+          }
+        })
+        Logger.info(Utility.breadcrumb(LOG_LOCATION, `done--${actionLetter}2`))
         return true
-      }, retryOpts)
+      }, RETRY_OPTIONS)
       return true
     }
   } catch (err) {
-    Logger.error(`${Utility.breadcrumb(location)}::${err.message}--0`)
+    Logger.error(`${Utility.breadcrumb(LOG_LOCATION)}::${err.message}--0`)
     return true
   }
 }
@@ -112,8 +123,9 @@ const processTransferSettlement = async (error, messages) => {
  * Calls createHandler to register the handler against the Stream Processing API
  * @returns {boolean} - Returns a boolean: true if successful, or throws and error if failed
  */
-const registerTransferSettlement = async () => {
+async function registerTransferSettlement() {
   try {
+    INJECTED_SCRIPTS = scriptsLoader.loadScripts(SCRIPTS_FOLDER)
     const transferFulfillHandler = {
       command: processTransferSettlement,
       topicName: Kafka.transformGeneralTopicName(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, Enum.Events.Event.Type.NOTIFICATION, Enum.Events.Event.Action.EVENT),
@@ -136,7 +148,7 @@ const registerTransferSettlement = async () => {
  *
  * @returns {boolean} - Returns a boolean: true if successful, or throws and error if failed
  */
-const registerAllHandlers = async () => {
+async function registerAllHandlers () {
   try {
     await registerTransferSettlement()
     return true
