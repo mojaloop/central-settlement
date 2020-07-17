@@ -31,7 +31,10 @@
 /**
  * @module src/handlers/transfers
  */
-
+const path = require('path')
+const fs = require('fs')
+const vm = require('vm')
+const _ = require('lodash')
 const Config = require('../../lib/config')
 const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 const Enum = require('@mojaloop/central-services-shared').Enum
@@ -52,6 +55,7 @@ const retryOpts = {
   minTimeout: retryDelay,
   maxTimeout: retryDelay
 }
+let scripts
 
 const processTransferSettlement = async (error, messages) => {
   if (error) {
@@ -104,6 +108,63 @@ const processTransferSettlement = async (error, messages) => {
   }
 }
 
+const executeScripts = async (scriptsMap, scriptType, scriptAction, scriptStatus, payload) => {
+  const scriptResults = {}
+  if (scriptsMap[scriptType][scriptAction][scriptStatus]) {
+    const now = new Date()
+    for (const script of scriptsMap[scriptType][scriptAction][scriptStatus]) {
+      if (now.getTime() >= script.startTime.getTime() && now.getTime() <= script.endTime.getTime()) {
+        Logger.debug(`Running script: ${JSON.stringify(script)}`)
+        const scriptResult = await transferParticipantStateChangeService.processScriptEngine(script.script, payload)
+        Logger.debug(`Merging script result: ${scriptResult}`)
+        _.mergeWith(scriptResults, scriptResult, (objValue, srcValue) => {
+          if (_.isArray(objValue)) {
+            return objValue.concat(srcValue)
+          }
+        })
+      }
+    }
+  }
+  return scriptResults
+}
+
+const loadScripts = (scriptDirectory) => {
+  const scriptsMap = {}
+  const scriptDirectoryPath = path.join(process.cwd(), scriptDirectory)
+  const scriptFiles = fs.readdirSync(scriptDirectoryPath)
+  for (const scriptFile of scriptFiles) {
+    const scriptSource = fs.readFileSync(path.join(scriptDirectoryPath, scriptFile), 'utf8')
+    const scriptLines = scriptSource.split(/\r?\n/)
+    for (let i = 0; i < scriptLines.length; i++) {
+      if (scriptLines[i].startsWith('// Type:')) {
+        const scriptType = scriptLines[i].split(':').pop().trim()
+        const scriptAction = scriptLines[i + 1].split(':').pop().trim()
+        const scriptStatus = scriptLines[i + 2].split(':').pop().trim()
+        const scriptStart = scriptLines[i + 3].substring(scriptLines[i + 3].indexOf(':') + 1).trim()
+        const scriptEnd = scriptLines[i + 4].substring(scriptLines[i + 4].indexOf(':') + 1).trim()
+        const script = {
+          filename: scriptFile,
+          startTime: new Date(scriptStart),
+          endTime: new Date(scriptEnd),
+          script: new vm.Script(scriptSource)
+        }
+        const scriptMap = {}
+        scriptMap[scriptType] = {}
+        scriptMap[scriptType][scriptAction] = {}
+        scriptMap[scriptType][scriptAction][scriptStatus] = [script]
+        Logger.info(`Loading script: ${scriptFile}: ${JSON.stringify(script)}`)
+        _.mergeWith(scriptsMap, scriptMap, (objValue, srcValue) => {
+          if (_.isArray(objValue)) {
+            return objValue.concat(srcValue)
+          }
+        })
+        break
+      }
+    }
+  }
+  return scriptsMap
+}
+
 /**
  * @function registerTransferFulfillHandler
  *
@@ -114,6 +175,7 @@ const processTransferSettlement = async (error, messages) => {
  */
 const registerTransferSettlement = async () => {
   try {
+    scripts = loadScripts('/scripts/transferSettlement')
     const transferFulfillHandler = {
       command: processTransferSettlement,
       topicName: Kafka.transformGeneralTopicName(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, Enum.Events.Event.Type.NOTIFICATION, Enum.Events.Event.Action.EVENT),
