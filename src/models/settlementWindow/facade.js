@@ -47,7 +47,7 @@ const Facade = {
     })
   },
 
-  getUnprocessedTransferParticipantEntryCount: async function ({ settlementWindowId }) {
+  getUnprocessedTransferSettlementEntryCount: async function ({ settlementWindowId }) {
     return Db.transferFulfilment.query(builder => {
       return builder
         .innerJoin('transferParticipant as P', 'transferFulfilment.transferId', 'P.transferId')

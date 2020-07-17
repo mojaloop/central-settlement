@@ -43,7 +43,7 @@ const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Logger = require('@mojaloop/central-services-logger')
 const Producer = require('@mojaloop/central-services-stream').Util.Producer
 const retry = require('async-retry')
-const transferParticipantStateChangeService = require('../../domain/transferParticipantStateChange')
+const transferSettlementService = require('../../domain/transferSettlement')
 const Utility = require('@mojaloop/central-services-shared').Util
 const location = { module: 'TransferFulfilHandler', method: '', path: '' } // var object used as pointer
 const consumerCommit = true
@@ -55,10 +55,9 @@ const retryOpts = {
   minTimeout: retryDelay,
   maxTimeout: retryDelay
 }
-
 let scripts
 
-const processTransferParticipantStateChange = async (error, messages) => {
+const processTransferSettlement = async (error, messages) => {
   if (error) {
     Logger.error(error)
     throw ErrorHandling.Factory.reformatFSPIOPError(error)
@@ -66,7 +65,7 @@ const processTransferParticipantStateChange = async (error, messages) => {
   Logger.info(Utility.breadcrumb(location, messages))
   let message = {}
   try {
-    Logger.info(Utility.breadcrumb(location, { method: 'processTransferParticipantStateChange' }))
+    Logger.info(Utility.breadcrumb(location, { method: 'processTransferSettlement' }))
     if (Array.isArray(messages)) {
       message = messages[0]
     } else {
@@ -85,7 +84,7 @@ const processTransferParticipantStateChange = async (error, messages) => {
 
     if (!payload) {
       Logger.info(Utility.breadcrumb(location, `missingPayload--${actionLetter}1`))
-      const fspiopError = ErrorHandling.Factory.createInternalServerFSPIOPError('TransferParticipantStateChange handler missing payload')
+      const fspiopError = ErrorHandling.Factory.createInternalServerFSPIOPError('TransferSettlement handler missing payload')
       const eventDetail = { functionality: Enum.Events.Event.Type.NOTIFICATION, action: Enum.Events.Event.Action.SETTLEMENT_WINDOW }
       await Kafka.proceed(Config.KAFKA_CONFIG, params, { consumerCommit, fspiopError: fspiopError.toApiErrorObject(Config.ERROR_HANDLING), eventDetail, fromSwitch })
       throw fspiopError
@@ -94,13 +93,10 @@ const processTransferParticipantStateChange = async (error, messages) => {
 
     if (transferEventAction === Enum.Events.Event.Action.COMMIT || transferEventAction === Enum.Events.Event.Action.ABORT) {
       await retry(async () => { // use bail(new Error('to break before max retries'))
-        // TODO: Starting db tran
-        const scriptResults = await executeScripts(scripts, 'notification', transferEventAction, transferEventStateStatus, message.value)
-        // TODO: insert ledger entries in tran
-        const ledgerEntries = scriptResults ? (scriptResults.ledgerEntries ? scriptResults.ledgerEntries : []) : []
-        // TODO: insert state change in tran
-        await transferParticipantStateChangeService.processMsgFulfil(transferEventId, transferEventStateStatus, ledgerEntries)
-        // TODO: commit
+        const scriptResult = await transferSettlementService.processScriptEngine(message.value)
+        /* istanbul ignore next */
+        const ledgerEntries = scriptResult ? (scriptResult.ledgerEntries ? scriptResult.ledgerEntries : []) : []
+        await transferSettlementService.processMsgFulfil(transferEventId, transferEventStateStatus, ledgerEntries)
         Logger.info(Utility.breadcrumb(location, `done--${actionLetter}2`))
         return true
       }, retryOpts)
@@ -177,11 +173,11 @@ const loadScripts = (scriptDirectory) => {
  * Calls createHandler to register the handler against the Stream Processing API
  * @returns {boolean} - Returns a boolean: true if successful, or throws and error if failed
  */
-const registerTransferParticipantStateChange = async () => {
+const registerTransferSettlement = async () => {
   try {
     scripts = loadScripts('/scripts/transferSettlement')
     const transferFulfillHandler = {
-      command: processTransferParticipantStateChange,
+      command: processTransferSettlement,
       topicName: Kafka.transformGeneralTopicName(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, Enum.Events.Event.Type.NOTIFICATION, Enum.Events.Event.Action.EVENT),
       config: Kafka.getKafkaConfig(Config.KAFKA_CONFIG, Enum.Kafka.Config.CONSUMER, Enum.Events.Event.Type.NOTIFICATION.toUpperCase(), Enum.Events.Event.Action.EVENT.toUpperCase())
     }
@@ -204,7 +200,7 @@ const registerTransferParticipantStateChange = async () => {
  */
 const registerAllHandlers = async () => {
   try {
-    await registerTransferParticipantStateChange()
+    await registerTransferSettlement()
     return true
   } catch (err) {
     throw ErrorHandling.Factory.reformatFSPIOPError(err)
@@ -212,7 +208,7 @@ const registerAllHandlers = async () => {
 }
 
 module.exports = {
-  processTransferParticipantStateChange,
+  processTransferSettlement,
   registerAllHandlers,
-  registerTransferParticipantStateChange
+  registerTransferSettlement
 }

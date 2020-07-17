@@ -19,47 +19,31 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * ModusBox
- - Georgi Georgiev <georgi.georgiev@modusbox.com>
+ - Deon Botha <deon.botha@modusbox.com>
+ - Lazola Lucas <lazola.lucas@modusbox.com>
  --------------
  ******/
-
-'use strict'
-const Db = require('../../../src/lib/db')
+const scriptEngine = require('../../lib/scriptEngine')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const TransferSettlementModel = require('../../models/transferSettlement')
 
 module.exports = {
-  getTransferParticipantsByTransferId: async function (transferId) {
-    return Db.transferParticipant.find({ transferId })
-  },
-  settlementModel: {
-    create: async (record) => {
-      return Db.settlementModel.insert(record)
-    },
-    truncate: async (record) => {
-      return Db.settlementModel.truncate()
+  processMsgFulfil: async function (transferEventId, transferEventStateStatus, ledgerEntries) {
+    try {
+      await TransferSettlementModel.updateStateChange(transferEventId, transferEventStateStatus, ledgerEntries)
+      return true
+    } catch (err) {
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   },
-  settlementWindowContent: {
-    getById: async (id) => {
-      return Db.settlementWindowContent.findOne({ settlementWindowContentId: id })
-    },
-    getByParams: async (params) => {
-      return Db.settlementWindowContent.find(params)
-    }
-  },
-  settlementWindowContentStateChange: {
-    getBySettlementWindowContentId: async (id) => {
-      return Db.settlementWindowContentStateChange.query(async builder => {
-        return builder
-          .where({ settlementWindowContentId: id })
-          .select('*')
-          .orderBy('settlementWindowContentStateChangeId', 'desc')
-          .first()
-      })
-    }
-  },
-  settlementWindowContentAggregation: {
-    getBySettlementWindowContentId: async (id) => {
-      return Db.settlementContentAggregation.find({ settlementWindowContentId: id })
+  /* istanbul ignore next */
+  processScriptEngine: async function (script, payload) {
+    /* istanbul ignore next */
+    try {
+      const result = await scriptEngine.execute(script, payload)
+      return result
+    } catch (err) {
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
 }
