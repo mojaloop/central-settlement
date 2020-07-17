@@ -191,7 +191,7 @@ const Facade = {
     if (settlementWindowCurrentState && settlementWindowCurrentState.state !== Enum.Settlements.SettlementWindowState.PROCESSING) {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Window ${settlementWindowId} is not in processing state`)
     }
-    const unprocessedTransferParticipantEntryCount = await Facade.getUnprocessedTransferParticipantEntryCount({ settlementWindowId })
+    const unprocessedTransferParticipantEntryCount = await Facade.getUnprocessedTransferSettlementEntryCount({ settlementWindowId })
     if (!unprocessedTransferParticipantEntryCount) {
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Failure to determine number of unprocessed transferParticipant entries in the DB for window ${settlementWindowId}`)
     }
