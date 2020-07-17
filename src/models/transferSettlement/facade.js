@@ -60,7 +60,7 @@ const Facade = {
               .transacting(trx)
           }
           /* istanbul ignore next */
-          await knex.from(knex.raw('transferSettlement (transferParticipantId, settlementWindowStateId, reason)'))
+          await knex.from(knex.raw('transferParticipantStateChange (transferParticipantId, settlementWindowStateId, reason)'))
             .insert(function () {
               this.from('transferParticipant AS TP')
                 .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
