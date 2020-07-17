@@ -91,6 +91,7 @@
         "test:unit": "tape 'test/unit/**/*.js'",
         "test:xunit": "tape 'test/unit/**/*.js' | tap-xunit",
         "test:coverage": "nyc --reporter=lcov --reporter=text-summary tapes -- 'test/unit/**/**.test.js'",
+        "test:coverage:2": "nyc --reporter=lcov --reporter=text-summary tapes -- 'test/unit/handlers/transferParticipantStateChange/handler.test.js'",
         "test:coverage-check": "npm run test:coverage && nyc check-coverage",
         "test:int": "tape 'test/integration/**/*.test.js'",
         "test:integration": "sh ./test/integration-runner.sh ./test/integration-runner.env",
