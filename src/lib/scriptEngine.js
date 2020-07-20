@@ -24,58 +24,66 @@
  - Claudio Viola <claudio.viola@modusbox.com>
  --------------
  ******/
-/* istanbul ignore file */
 const MLNumber = require('@mojaloop/ml-number')
 const Transaction = require('../domain/transactions/index')
 const BigNumber = require('bignumber.js')
+const Logger = require('@mojaloop/central-services-logger')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+
+const SCRIPT_TIMEOUT = 100
 
 async function getTransferFromCentralLedger (transferId) {
   const entity = await Transaction.getById(transferId)
   if (entity) {
     const transferObject = await Transaction.getTransactionObject(entity[0].value)
     return transferObject
+  } else {
+    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No records for transferId ${transferId} was found`)
   }
 }
 
-async function execute(script, payload) {
-  const transfer = await getTransferFromCentralLedger(payload.id)
-  const ledgerEntries = []
+function multiply (number1, number2, decimalPlaces) {
+  const result = new MLNumber(number1).multiply(number2).toFixed(decimalPlaces, BigNumber.ROUND_HALF_UP)
+  return result
+}
 
-  const sandbox = {
-    payload,
-    log: function (message) {
-      console.log(message)
-    },
-    transfer,
-    multiply (number1, number2, decimalPlaces) {
-      const result = new MLNumber(number1).multiply(number2).toFixed(decimalPlaces, BigNumber.ROUND_HALF_UP)
-      return result
-    },
-    getExtensionValue (list, key) {
-      return list.find((extension) => {
-        return extension.key === key
-      }).value
-    },
-    addLedgerEntry: function (transferId, ledgerAccountTypeId, ledgerEntryTypeId, amount, currency, payerFspId, payeeFspId) {
-      ledgerEntries.push({
-        transferId,
-        ledgerAccountTypeId,
-        ledgerEntryTypeId,
-        amount,
-        currency,
-        payerFspId,
-        payeeFspId
-      })
-    }
-  }
+function getExtensionValue (list, key) {
+  return list.find((extension) => {
+    return extension.key === key
+  }).value
+}
 
+function log (message) {
+  Logger.info(message)
+}
+
+async function execute (script, payload) {
   try {
-    script.runInNewContext(sandbox, { timeout: 100 })
-
+    const transfer = await getTransferFromCentralLedger(payload.id)
+    const ledgerEntries = []
+    const sandbox = {
+      payload,
+      log,
+      transfer,
+      multiply,
+      getExtensionValue,
+      addLedgerEntry: function (transferId, ledgerAccountTypeId, ledgerEntryTypeId, amount, currency, payerFspId, payeeFspId) {
+        ledgerEntries.push({
+          transferId,
+          ledgerAccountTypeId,
+          ledgerEntryTypeId,
+          amount,
+          currency,
+          payerFspId,
+          payeeFspId
+        })
+      }
+    }
+    script.runInNewContext(sandbox, { timeout: SCRIPT_TIMEOUT })
     return { ledgerEntries }
   } catch (err) {
-    console.error('Error in user script')
-    console.error(err)
+    Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 

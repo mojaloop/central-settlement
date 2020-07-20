@@ -35,6 +35,6 @@ module.exports = {
     } catch (err) {
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
-  },
+  }
 
 }

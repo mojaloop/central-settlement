@@ -40,9 +40,9 @@ const Logger = require('@mojaloop/central-services-logger')
 const Producer = require('@mojaloop/central-services-stream').Util.Producer
 const retry = require('async-retry')
 const transferSettlementService = require('../../domain/transferSettlement')
-const scriptsLoader = require('../../lib/scriptsLoader');
+const scriptsLoader = require('../../lib/scriptsLoader')
 const Utility = require('@mojaloop/central-services-shared').Util
-
+const Db = require('../../lib/db')
 const LOG_LOCATION = { module: 'TransferFulfilHandler', method: '', path: '' } // var object used as pointer
 const CONSUMER_COMMIT = true
 const FROM_SWITCH = true
@@ -93,13 +93,13 @@ async function processTransferSettlement (error, messages) {
       const scriptResult = await scriptsLoader.executeScript(message.value)
       const ledgerEntries = scriptResult ? (scriptResult.ledgerEntries ? scriptResult.ledgerEntries : []) : []
       await retry(async () => { // use bail(new Error('to break before max retries'))
-          const knex = Db.getKnex()
-          await knex.transaction(async trx => {
-            try {
-             await transferSettlementService.insertLedgerEntries(ledgerEntries, trx)
-             await transferSettlementService.processMsgFulfil(transferEventId, transferEventStateStatus, trx)
-             await trx.commit
-           } catch (err) {
+        const knex = Db.getKnex()
+        await knex.transaction(async trx => {
+          try {
+            await transferSettlementService.insertLedgerEntries(ledgerEntries, trx)
+            await transferSettlementService.processMsgFulfil(transferEventId, transferEventStateStatus, trx)
+            await trx.commit
+          } catch (err) {
             await trx.rollback
             throw ErrorHandler.Factory.reformatFSPIOPError(err)
           }
@@ -123,7 +123,7 @@ async function processTransferSettlement (error, messages) {
  * Calls createHandler to register the handler against the Stream Processing API
  * @returns {boolean} - Returns a boolean: true if successful, or throws and error if failed
  */
-async function registerTransferSettlement() {
+async function registerTransferSettlement () {
   try {
     INJECTED_SCRIPTS = scriptsLoader.loadScripts(SCRIPTS_FOLDER)
     const transferFulfillHandler = {

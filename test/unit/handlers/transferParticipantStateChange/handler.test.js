@@ -29,13 +29,12 @@ const Sinon = require('sinon')
 const Util = require('@mojaloop/central-services-shared').Util
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
-const Db = require('../../../../src/lib/db');
+const Db = require('../../../../src/lib/db')
 const KafkaConsumer = require('@mojaloop/central-services-stream').Kafka.Consumer
 const Uuid = require('uuid4')
 const TransferFulfilService = require('../../../../src/domain/transferSettlement/index')
 const TransferFulfilHandler = require('../../../../src/handlers/transferSettlement/handler')
 const Logger = require('@mojaloop/central-services-logger')
-const fs = require('fs')
 
 var payload = {
   settlementWindowId: '3',
@@ -118,33 +117,11 @@ const config = {
     'enable.auto.commit': false
   }
 }
-//
-// sandbox.stub(Db, 'getKnex')
-// const knexStub = sandbox.stub()
-// const trxStub = sandbox.stub()
-// trxStub.commit = sandbox.stub()
-// Consumer.isConsumerAutoCommitEnabled.withArgs(topicName).returns(true)
-// knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
-// Db.getKnex.returns(knexStub)
-// const payload = messages[0].value.content.payload
-// Comparators.duplicateCheckComparator.withArgs(transfer.transferId, payload).returns(Promise.resolve({
-//   hasDuplicateId: false,
-//   hasDuplicateHash: false
-// }))
-//
-// const result = await AdminHandler.transfer(null, Object.assign({}, messages[0]))
-// Logger.info(result)
-// test.ok(TransferService.reconciliationTransferPrepare.callsArgWith(0, trxStub))
-// test.ok(TransferService.reconciliationTransferReserve.callsArgWith(0, trxStub))
-// test.ok(TransferService.reconciliationTransferCommit.callsArgWith(0, trxStub))
-
-
 
 const command = () => {}
 
 Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
   let sandbox
-  let TransferFulfilServiceMock = TransferFulfilService;
   transferFulfilHandlerTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(KafkaConsumer.prototype, 'constructor').returns(Promise.resolve())
@@ -161,7 +138,7 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
     sandbox.stub(Db)
     sandbox.stub(Logger)
     sandbox.stub(Util.StreamingProtocol)
-    sandbox.stub(TransferFulfilService, 'processMsgFulfil');
+    sandbox.stub(TransferFulfilService, 'processMsgFulfil')
     Kafka.produceGeneralMessage.returns(Promise.resolve())
     test.end()
   })
@@ -178,12 +155,6 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
       const result = await TransferFulfilHandler.processTransferSettlement(null, localMessages)
-      // console.log(TransferFulfilHandler);
-      // const executeSriptsStub = sandbox.stub(TransferFulfilHandler, 'executeScripts');
-      // const result = await TransferFulfilHandler.processTransferParticipantStateChange(null, localMessages)
-      // console.log('HEREEEE');
-      // console.log(TransferFulfilService.processMsgFulfil.getCall(0))
-      // test.equal(TransferFulfilService.processMsgFulfil.callsArgWith(0, 'test'));
       test.equal(result, true)
       test.end()
     })
