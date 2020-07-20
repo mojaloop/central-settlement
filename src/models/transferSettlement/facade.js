@@ -37,22 +37,22 @@ const Facade = {
     try {
       const knex = await Db.getKnex()
       const trxFunction = async (trx, doCommit = true) => {
-      try {
-        knex.from(knex.raw('?? (??, ??, ??, ??, ??)', ['transferParticipant', 'transferId', 'participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId', 'amount']))
-          .insert(function () {
-            this.select(knex.raw('?', transferId), 'PC.participantCurrencyId')
-              .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'RoleType']))
-              .select('E.ledgerEntryTypeId')
-              .select(knex.raw('CASE ?? WHEN ? THEN ? WHEN ? THEN ? ELSE ? END AS ??', ['P.name', ledgerEntry.payerFspId, ledgerEntry.amount, ledgerEntry.payeeFspId, ledgerEntry.amount * -1, 0, 'amount']))
-              .from('participantCurrency as PC')
-              .innerJoin('participant as P', 'P.participantId', 'PC.participantId')
-              .innerJoin('ledgerEntryType as E', 'E.LedgerAccountTypeId', 'PC.LedgerAccountTypeId')
-              .leftOuterJoin('transferParticipantRoleType as T1', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payerFspId])).andOn('T1.name', knex.raw('?', ['PAYER_DFSP'])) })
-              .leftOuterJoin('transferParticipantRoleType as T2', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payeeFspId])).andOn('T2.name', knex.raw('?', ['PAYEE_DFSP'])) })
-              .where('E.name', ledgerEntry.ledgerEntryTypeId)
-              .whereIn('P.name', [ledgerEntry.payerFspId, ledgerEntry.payeeFspId])
-              .where('PC.currencyId', ledgerEntry.currency)
-          }).transacting(trx)
+        try {
+          knex.from(knex.raw('?? (??, ??, ??, ??, ??)', ['transferParticipant', 'transferId', 'participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId', 'amount']))
+            .insert(function () {
+              this.select(knex.raw('?', transferId), 'PC.participantCurrencyId')
+                .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'RoleType']))
+                .select('E.ledgerEntryTypeId')
+                .select(knex.raw('CASE ?? WHEN ? THEN ? WHEN ? THEN ? ELSE ? END AS ??', ['P.name', ledgerEntry.payerFspId, ledgerEntry.amount, ledgerEntry.payeeFspId, ledgerEntry.amount * -1, 0, 'amount']))
+                .from('participantCurrency as PC')
+                .innerJoin('participant as P', 'P.participantId', 'PC.participantId')
+                .innerJoin('ledgerEntryType as E', 'E.LedgerAccountTypeId', 'PC.LedgerAccountTypeId')
+                .leftOuterJoin('transferParticipantRoleType as T1', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payerFspId])).andOn('T1.name', knex.raw('?', ['PAYER_DFSP'])) })
+                .leftOuterJoin('transferParticipantRoleType as T2', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payeeFspId])).andOn('T2.name', knex.raw('?', ['PAYEE_DFSP'])) })
+                .where('E.name', ledgerEntry.ledgerEntryTypeId)
+                .whereIn('P.name', [ledgerEntry.payerFspId, ledgerEntry.payeeFspId])
+                .where('PC.currencyId', ledgerEntry.currency)
+            }).transacting(trx)
           if (doCommit) {
             await trx.commit
           }
@@ -75,46 +75,46 @@ const Facade = {
   insertLedgerEntries: async function (ledgerEntries, trx = null) {
     Logger.info(`Ledger entries: ${JSON.stringify(ledgerEntries)}`)
     try {
-     const knex = await Db.getKnex()
-     const trxFunction = async (trx, doCommit = true) => {
-      try {
-     for (const ledgerEntry of ledgerEntries) {
-      Logger.info(`Inserting ledger entry: ${JSON.stringify(ledgerEntry)}`)
-      await knex.from(knex.raw('?? (??, ??, ??, ??, ??)', ['transferParticipant', 'transferId', 'participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId', 'amount']))
-        .insert(function () {
-          this.select(knex.raw('?', transferId), 'PC.participantCurrencyId')
-            .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'RoleType']))
-            .select('E.ledgerEntryTypeId')
-            .select(knex.raw('CASE ?? WHEN ? THEN ? WHEN ? THEN ? ELSE ? END AS ??', ['P.name', ledgerEntry.payerFspId, ledgerEntry.amount, ledgerEntry.payeeFspId, ledgerEntry.amount * -1, 0, 'amount']))
-            .from('participantCurrency as PC')
-            .innerJoin('participant as P', 'P.participantId', 'PC.participantId')
-            .innerJoin('ledgerEntryType as E', 'E.LedgerAccountTypeId', 'PC.LedgerAccountTypeId')
-            .leftOuterJoin('transferParticipantRoleType as T1', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payerFspId])).andOn('T1.name', knex.raw('?', ['PAYER_DFSP'])) })
-            .leftOuterJoin('transferParticipantRoleType as T2', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payeeFspId])).andOn('T2.name', knex.raw('?', ['PAYEE_DFSP'])) })
-            .where('E.name', ledgerEntry.ledgerEntryTypeId)
-            .whereIn('P.name', [ledgerEntry.payerFspId, ledgerEntry.payeeFspId])
-            .where('PC.currencyId', ledgerEntry.currency)
-        })
-        .transacting(trx)
+      const knex = await Db.getKnex()
+      const trxFunction = async (trx, doCommit = true) => {
+        try {
+          for (const ledgerEntry of ledgerEntries) {
+            Logger.info(`Inserting ledger entry: ${JSON.stringify(ledgerEntry)}`)
+            await knex.from(knex.raw('?? (??, ??, ??, ??, ??)', ['transferParticipant', 'transferId', 'participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId', 'amount']))
+              .insert(function () {
+                this.select(knex.raw('?', transferId), 'PC.participantCurrencyId')
+                  .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'RoleType']))
+                  .select('E.ledgerEntryTypeId')
+                  .select(knex.raw('CASE ?? WHEN ? THEN ? WHEN ? THEN ? ELSE ? END AS ??', ['P.name', ledgerEntry.payerFspId, ledgerEntry.amount, ledgerEntry.payeeFspId, ledgerEntry.amount * -1, 0, 'amount']))
+                  .from('participantCurrency as PC')
+                  .innerJoin('participant as P', 'P.participantId', 'PC.participantId')
+                  .innerJoin('ledgerEntryType as E', 'E.LedgerAccountTypeId', 'PC.LedgerAccountTypeId')
+                  .leftOuterJoin('transferParticipantRoleType as T1', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payerFspId])).andOn('T1.name', knex.raw('?', ['PAYER_DFSP'])) })
+                  .leftOuterJoin('transferParticipantRoleType as T2', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payeeFspId])).andOn('T2.name', knex.raw('?', ['PAYEE_DFSP'])) })
+                  .where('E.name', ledgerEntry.ledgerEntryTypeId)
+                  .whereIn('P.name', [ledgerEntry.payerFspId, ledgerEntry.payeeFspId])
+                  .where('PC.currencyId', ledgerEntry.currency)
+              })
+              .transacting(trx)
+          }
+          if (doCommit) {
+            await trx.commit
+          }
+        } catch (err) {
+          if (doCommit) {
+            await trx.rollback
+          }
+          throw err
+        }
+      }
+      if (trx) {
+        return await trxFunction(trx, false)
+      } else {
+        return await knex.transaction(trxFunction)
+      }
+    } catch (err) {
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
-    if (doCommit) {
-      await trx.commit
-    }
-   } catch (err) {
-     if (doCommit) {
-       await trx.rollback
-     }
-     throw err
-  }
-    }
-    if (trx) {
-      return await trxFunction(trx, false)
-    } else {
-      return await knex.transaction(trxFunction)
-    }
-  } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
-  }
   },
   updateTransferSettlement: async function (transferId, status, trx = null) {
     Logger.info(Utility.breadcrumb(location, { method: 'updateTransferSettlement' }))
@@ -149,26 +149,26 @@ const Facade = {
                 })
             })
             .transacting(trx)
-            if (doCommit) {
-              await trx.commit
-            }
-           } catch (err) {
-             if (doCommit) {
-               await trx.rollback
-             }
-             throw err
+          if (doCommit) {
+            await trx.commit
           }
+        } catch (err) {
+          if (doCommit) {
+            await trx.rollback
+          }
+          throw err
         }
-        if (trx) {
-            return await trxFunction(trx, false)
-        } else {
-            return await knex.transaction(trxFunction)
-        }
+      }
+      if (trx) {
+        return await trxFunction(trx, false)
+      } else {
+        return await knex.transaction(trxFunction)
+      }
     } catch (err) {
-          throw ErrorHandler.Factory.reformatFSPIOPError(err)
+      throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
-    }
-    /*,
+  }
+  /*,
       getTransactionRequest: async function (transactionId) {
         try {
           const requestedEndpoint = `${Config.SWITCH_ENDPOINT}/transactions/${transactionId}`
@@ -180,6 +180,5 @@ const Facade = {
         }
       } */
 }
-
 
 module.exports = Facade
