@@ -24,6 +24,7 @@
  - Claudio Viola <claudio.viola@modusbox.com>
  --------------
  ******/
+
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const TransferSettlementModel = require('../../models/transferSettlement')
 
