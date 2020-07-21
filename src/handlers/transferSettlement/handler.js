@@ -52,7 +52,7 @@ const RETRY_OPTIONS = {
   minTimeout: Config.WINDOW_AGGREGATION_RETRY_INTERVAL,
   maxTimeout: Config.WINDOW_AGGREGATION_RETRY_INTERVAL
 }
-const SCRIPTS_FOLDER = '/scripts'
+const SCRIPTS_FOLDER = '/scripts/transferSettlement'
 let INJECTED_SCRIPTS
 
 async function processTransferSettlement (error, messages) {
@@ -90,8 +90,8 @@ async function processTransferSettlement (error, messages) {
     Logger.info(Utility.breadcrumb(LOG_LOCATION, 'validationPassed'))
 
     if (transferEventAction === Enum.Events.Event.Action.COMMIT || transferEventAction === Enum.Events.Event.Action.ABORT) {
-      const scriptResult = await scriptsLoader.executeScript(message.value)
-      const ledgerEntries = scriptResult ? (scriptResult.ledgerEntries ? scriptResult.ledgerEntries : []) : []
+      const scriptResults = await executeScripts(INJECTED_SCRIPTS, 'notification', transferEventAction, transferEventStateStatus, message.value)
+      const ledgerEntries = scriptResults ? (scriptResults.ledgerEntries ? scriptResult.ledgerEntries : []) : []
       await retry(async () => { // use bail(new Error('to break before max retries'))
         const knex = Db.getKnex()
         await knex.transaction(async trx => {

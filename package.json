@@ -46,6 +46,7 @@
         "hapi-auth-bearer-token": "6.2.1",
         "hapi-openapi": "2.0.2",
         "hapi-swagger": "13.0.2",
+        "lodash": "4.17.15",
         "mustache": "4.0.1",
         "parse-strings-in-object": "2.0.0",
         "rc": "1.2.8",
@@ -54,6 +55,7 @@
     },
     "devDependencies": {
         "@hapi/joi": "17.1.1",
+        "@types/lodash": "4.14.157",
         "axios": "0.19.2",
         "bluebird": "3.7.2",
         "eslint": "7.4.0",
