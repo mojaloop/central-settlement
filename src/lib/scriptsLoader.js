@@ -23,6 +23,7 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * Claudio Viola <claudio.viola@modusbox.com>
+ * Lazola Lucas <lazola.lucas@modusbox.com>
 
  --------------
  ******/
@@ -83,36 +84,39 @@ function loadScripts (scriptDirectory) {
  * @return {Promise}              [description]
  */
 async function executeScripts (scriptsMap, scriptType, scriptAction, scriptStatus, payload) {
-  const scriptResults = {}
-  if (scriptsMap[scriptType][scriptAction][scriptStatus]) {
-    const now = new Date()
-    for (const script of scriptsMap[scriptType][scriptAction][scriptStatus]) {
-      if (now.getTime() >= script.startTime.getTime() && now.getTime() <= script.endTime.getTime()) {
-        Logger.debug(`Running script: ${JSON.stringify(script)}`)
-        const scriptResult = await executeScript(script.script, payload)
-        Logger.debug(`Merging script result: ${scriptResult}`)
-        _.mergeWith(scriptResults, scriptResult, (objValue, srcValue) => {
-          if (_.isArray(objValue)) {
-            return objValue.concat(srcValue)
-          }
-        })
+  try {
+    const scriptResults = {}
+    if (scriptsMap[scriptType][scriptAction][scriptStatus]) {
+      const now = new Date()
+      for (const script of scriptsMap[scriptType][scriptAction][scriptStatus]) {
+        if (now.getTime() >= script.startTime.getTime() && now.getTime() <= script.endTime.getTime()) {
+          Logger.debug(`Running script: ${JSON.stringify(script)}`)
+          const scriptResult = await executeScript(script.script, payload)
+          Logger.debug(`Merging script result: ${scriptResult}`)
+          _.mergeWith(scriptResults, scriptResult, (objValue, srcValue) => {
+            if (_.isArray(objValue)) {
+              return objValue.concat(srcValue)
+            }
+          })
+        }
       }
     }
+    return scriptResults
+  } catch (err) {
+    Logger.error(err)
+    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Script execution was unsuccessful')
   }
-  return scriptResults
 }
 
 async function executeScript (script, payload) {
   try {
-    const result = await scriptEngine.execute(script, payload)
-    return result
+    return await scriptEngine.execute(script, payload)
   } catch (err) {
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
 module.exports = {
-  executeScript,
   executeScripts,
   loadScripts
 }
