@@ -38,22 +38,33 @@ const currencies = ['USD', 'TZS']
 
 const settlementModels = [
   {
-    name: 'DEFERRED_NET',
-    settlementGranularityId: 2, // NET
-    settlementInterchangeId: 2, // MULTILATERAL
-    settlementDelayId: 2, // DEFERRED
-    ledgerAccountTypeId: 1, // POSITION
+    name: 'DEFERREDNET',
+    settlementGranularity: 'NET',
+    settlementInterchange: 'MULTILATERAL',
+    settlementDelay: 'DEFERRED',
+    ledgerAccountType: 'POSITION',
     autoPositionReset: true,
-    currencyId: null
+    requireLiquidityCheck: true,
   },
   {
-    name: 'DEFERRED_NET_USD',
-    settlementGranularityId: 2, // NET
-    settlementInterchangeId: 2, // MULTILATERAL
-    settlementDelayId: 2, // DEFERRED
-    ledgerAccountTypeId: 1, // POSITION
+    name: 'DEFERREDNETUSD',
+    settlementGranularity: 'NET',
+    settlementInterchange: 'MULTILATERAL',
+    settlementDelay: 'DEFERRED',
+    ledgerAccountType: 'POSITION',
     autoPositionReset: true,
-    currencyId: 'USD'
+    currency: 'USD',
+    requireLiquidityCheck: true,
+  },
+  {
+    name: 'CONTINUALGROSSUSD',
+    settlementGranularity: 'GROSS',
+    settlementInterchange: 'BILATERAL',
+    settlementDelay: 'IMMEDIATE',
+    ledgerAccountType: 'POSITION',
+    autoPositionReset: true,
+    currency: 'USD',
+    requireLiquidityCheck: true
   }
 ]
 
@@ -106,6 +117,7 @@ async function init () {
     await initTransfers()
   } catch (err) {
     Logger.error(`Error setting up initial settlement data ${err}`)
+    process.exit(1)
   }
 }
 
@@ -118,7 +130,10 @@ async function initSettlementModels () {
   await knex.raw('SET FOREIGN_KEY_CHECKS = 0;')
   await Db.settlementModel.truncate()
   await knex.raw('SET FOREIGN_KEY_CHECKS = 1;')
-  await knex.batchInsert('settlementModel', settlementModels)
+  await Api.createSettlementModel(settlementModels[0])
+  await Api.createSettlementModel(settlementModels[1])
+  await Api.createSettlementModel(settlementModels[2])
+
 }
 
 /**
