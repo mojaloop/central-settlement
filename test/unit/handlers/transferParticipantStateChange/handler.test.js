@@ -29,10 +29,12 @@ const Sinon = require('sinon')
 const Util = require('@mojaloop/central-services-shared').Util
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
+const Db = require('../../../../src/lib/db')
 const KafkaConsumer = require('@mojaloop/central-services-stream').Kafka.Consumer
 const Uuid = require('uuid4')
 const TransferFulfilService = require('../../../../src/domain/transferSettlement/index')
 const TransferFulfilHandler = require('../../../../src/handlers/transferSettlement/handler')
+const Logger = require('@mojaloop/central-services-logger')
 
 var payload = {
   settlementWindowId: '3',
@@ -120,7 +122,6 @@ const command = () => {}
 
 Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
   let sandbox
-
   transferFulfilHandlerTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(KafkaConsumer.prototype, 'constructor').returns(Promise.resolve())
@@ -134,8 +135,10 @@ Test('TransferFulfilHandler', async (transferFulfilHandlerTest) => {
     })
     sandbox.stub(Consumer, 'isConsumerAutoCommitEnabled').returns(false)
     sandbox.stub(Kafka)
+    sandbox.stub(Db)
+    sandbox.stub(Logger)
     sandbox.stub(Util.StreamingProtocol)
-    sandbox.stub(TransferFulfilService)
+    sandbox.stub(TransferFulfilService, 'processMsgFulfil')
     Kafka.produceGeneralMessage.returns(Promise.resolve())
     test.end()
   })

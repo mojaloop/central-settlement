@@ -21,9 +21,10 @@
  * ModusBox
  - Deon Botha <deon.botha@modusbox.com>
  - Lazola Lucas <lazola.lucas@modusbox.com>
+ - Claudio Viola <claudio.viola@modusbox.com>
  --------------
  ******/
-const scriptEngine = require('../../lib/scriptEngine')
+
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const TransferSettlementModel = require('../../models/transferSettlement')
 
@@ -35,15 +36,6 @@ module.exports = {
     } catch (err) {
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
-  },
-  /* istanbul ignore next */
-  processScriptEngine: async function (script, payload) {
-    /* istanbul ignore next */
-    try {
-      const result = await scriptEngine.execute(script, payload)
-      return result
-    } catch (err) {
-      throw ErrorHandler.Factory.reformatFSPIOPError(err)
-    }
   }
+
 }

@@ -9,13 +9,14 @@ all: true
 include: [
   "src/**/*.js"
 ]
+instrument: true
 reporter: [
   "lcov",
-  "text-summary"
+  "text-summary",
+  "html"
 ]
 exclude: [
   "**/node_modules/**",
   '**/migrations/**',
   '**/docs/**',
-  'src/domain/transferSettlement/index.js'
 ]
