@@ -35,6 +35,7 @@ const Config = require('../../lib/config')
 const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 const Enum = require('@mojaloop/central-services-shared').Enum
 const ErrorHandling = require('@mojaloop/central-services-error-handling')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Logger = require('@mojaloop/central-services-logger')
 const Producer = require('@mojaloop/central-services-stream').Util.Producer
@@ -90,13 +91,13 @@ async function processTransferSettlement (error, messages) {
     Logger.info(Utility.breadcrumb(LOG_LOCATION, 'validationPassed'))
 
     if (transferEventAction === Enum.Events.Event.Action.COMMIT || transferEventAction === Enum.Events.Event.Action.ABORT) {
-      const scriptResults = await executeScripts(INJECTED_SCRIPTS, 'notification', transferEventAction, transferEventStateStatus, message.value)
-      const ledgerEntries = scriptResults ? (scriptResults.ledgerEntries ? scriptResult.ledgerEntries : []) : []
+      const scriptResults = await scriptsLoader.executeScripts(INJECTED_SCRIPTS, 'notification', transferEventAction, transferEventStateStatus, message.value)
+      const ledgerEntries = scriptResults ? (scriptResults.ledgerEntries ? scriptResults.ledgerEntries : []) : []
       await retry(async () => { // use bail(new Error('to break before max retries'))
         const knex = Db.getKnex()
         await knex.transaction(async trx => {
           try {
-            await transferSettlementService.insertLedgerEntries(ledgerEntries, trx)
+            await transferSettlementService.insertLedgerEntries(ledgerEntries, transferEventId, trx)
             await transferSettlementService.processMsgFulfil(transferEventId, transferEventStateStatus, trx)
             await trx.commit
           } catch (err) {
