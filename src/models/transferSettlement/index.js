@@ -32,5 +32,6 @@ const Facade = require('./facade')
 
 module.exports = {
   updateStateChange: Facade.updateTransferSettlement,
-  getTransactionObject: Facade.getTransactionRequest
+  getTransactionObject: Facade.getTransactionRequest,
+  insertLedgerEntries: Facade.insertLedgerEntries,
 }
