@@ -44,32 +44,7 @@ function loadScripts (scriptDirectory) {
   for (const scriptFile of scriptFiles) {
     const scriptSource = fs.readFileSync(path.join(scriptDirectoryPath, scriptFile), 'utf8')
     const scriptLines = scriptSource.split(/\r?\n/)
-    for (let i = 0; i < scriptLines.length; i++) {
-      if (scriptLines[i].startsWith('// Type:')) {
-        const scriptType = scriptLines[i].split(':').pop().trim()
-        const scriptAction = scriptLines[i + 1].split(':').pop().trim()
-        const scriptStatus = scriptLines[i + 2].split(':').pop().trim()
-        const scriptStart = scriptLines[i + 3].substring(scriptLines[i + 3].indexOf(':') + 1).trim()
-        const scriptEnd = scriptLines[i + 4].substring(scriptLines[i + 4].indexOf(':') + 1).trim()
-        const script = {
-          filename: scriptFile,
-          startTime: new Date(scriptStart),
-          endTime: new Date(scriptEnd),
-          script: new vm.Script(scriptSource)
-        }
-        const scriptMap = {}
-        scriptMap[scriptType] = {}
-        scriptMap[scriptType][scriptAction] = {}
-        scriptMap[scriptType][scriptAction][scriptStatus] = [script]
-        Logger.info(`Loading script: ${scriptFile}: ${JSON.stringify(script)}`)
-        _.mergeWith(scriptsMap, scriptMap, (objValue, srcValue) => {
-          if (_.isArray(objValue)) {
-            return objValue.concat(srcValue)
-          }
-        })
-        break
-      }
-    }
+    retrieveScriptConfiguration(scriptLines, scriptsMap, scriptFile, scriptSource)
   }
   return scriptsMap
 }
@@ -113,6 +88,35 @@ async function executeScript (script, payload) {
     return await scriptEngine.execute(script, payload)
   } catch (err) {
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+}
+
+function retrieveScriptConfiguration (scriptLines, scriptsMap, scriptFile, scriptSource) {
+  for (let i = 0; i < scriptLines.length; i++) {
+    if (scriptLines[i].startsWith('// Type:')) {
+      const scriptType = scriptLines[i].split(':').pop().trim()
+      const scriptAction = scriptLines[i + 1].split(':').pop().trim()
+      const scriptStatus = scriptLines[i + 2].split(':').pop().trim()
+      const scriptStart = scriptLines[i + 3].substring(scriptLines[i + 3].indexOf(':') + 1).trim()
+      const scriptEnd = scriptLines[i + 4].substring(scriptLines[i + 4].indexOf(':') + 1).trim()
+      const script = {
+        filename: scriptFile,
+        startTime: new Date(scriptStart),
+        endTime: new Date(scriptEnd),
+        script: new vm.Script(scriptSource)
+      }
+      const scriptMap = {}
+      scriptMap[scriptType] = {}
+      scriptMap[scriptType][scriptAction] = {}
+      scriptMap[scriptType][scriptAction][scriptStatus] = [script]
+      Logger.info(`Loading script: ${scriptFile}: ${JSON.stringify(script)}`)
+      _.mergeWith(scriptsMap, scriptMap, (objValue, srcValue) => {
+        if (_.isArray(objValue)) {
+          return objValue.concat(srcValue)
+        }
+      })
+      break
+    }
   }
 }
 
