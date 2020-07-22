@@ -39,7 +39,7 @@ const registerPlugins = async (server) => {
     plugin: require('hapi-swagger'),
     options: {
       info: {
-        title: 'ml api adapter API Documentation',
+        title: 'central-settlement API Documentation',
         version: Package.version
       }
     }
