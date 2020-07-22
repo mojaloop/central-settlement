@@ -55,7 +55,7 @@
     },
     "devDependencies": {
         "@hapi/joi": "17.1.1",
-        "@types/lodash": "4.14.157",
+        "@types/lodash": "4.14.158",
         "axios": "0.19.2",
         "bluebird": "3.7.2",
         "eslint": "7.5.0",
