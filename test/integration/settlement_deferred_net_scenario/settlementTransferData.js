@@ -55,16 +55,6 @@ const settlementModels = [
     autoPositionReset: true,
     currency: 'USD',
     requireLiquidityCheck: true,
-  },
-  {
-    name: 'CONTINUALGROSSUSD',
-    settlementGranularity: 'GROSS',
-    settlementInterchange: 'BILATERAL',
-    settlementDelay: 'IMMEDIATE',
-    ledgerAccountType: 'POSITION',
-    autoPositionReset: true,
-    currency: 'USD',
-    requireLiquidityCheck: true
   }
 ]
 
