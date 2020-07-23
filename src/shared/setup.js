@@ -37,6 +37,7 @@ const Hapi = require('@hapi/hapi')
 const Logger = require('@mojaloop/central-services-logger')
 const Plugins = require('./plugins')
 const RegisterHandlers = require('../handlers/register')
+const request = require('axios')
 
 const getEnums = (id) => {
   return Enums[id]()
@@ -44,6 +45,43 @@ const getEnums = (id) => {
 
 async function connectDatabase () {
   return Db.connect(Config.DATABASE)
+}
+
+/**
+ * @function createSettlementModels
+ *
+ * @description Creates settlement models defined by config is not exists in database
+ *
+ * @param {object[]} settlementModels List of settlement models
+ */
+
+const createSettlementModels = async function (settlementModels = []) {
+  try {
+    // Get the existing settlement models
+    const url = `${Config.CENTRAL_LEDGER_ENDPOINT}/settlementModels`
+    const opts = { url, method: 'GET' }
+    const response = await request(opts)
+    const existingSettlementModels = response.data
+
+    if ((settlementModels == null || settlementModels.length < 1) && existingSettlementModels.length < 1) {
+      const error = 'Need to configure at least one settlement model'
+      Logger.error(error)
+      throw ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, error)
+    }
+
+    // Find any new settlement models to be added
+    const newSettlementModels = settlementModels.filter(a => !existingSettlementModels.some(b => b.name === a.name))
+
+    // Add new settlement models if any
+    for (const settlementModel of newSettlementModels) {
+      Logger.info(`Creating settlement model: ${JSON.stringify(settlementModel)}`)
+      const opts = { url, method: 'POST', data: settlementModel }
+      await request(opts)
+    }
+  } catch (error) {
+    Logger.error(error)
+    throw ErrorHandling.Factory.reformatFSPIOPError(error)
+  }
 }
 
 const createServer = async function (port, modules) {
@@ -192,6 +230,9 @@ const initialize = async function ({ service, port, modules = [], runHandlers = 
       Logger.error(`No valid service type ${service} found!`)
       throw ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `No valid service type ${service} found!`)
   }
+
+  createSettlementModels(Config.SETTLEMENT_MODELS)
+
   if (runHandlers) {
     if (Array.isArray(handlers) && handlers.length > 0) {
       await createHandlers(handlers)
