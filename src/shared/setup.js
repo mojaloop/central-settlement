@@ -231,7 +231,7 @@ const initialize = async function ({ service, port, modules = [], runHandlers = 
       throw ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `No valid service type ${service} found!`)
   }
 
-  createSettlementModels(Config.SETTLEMENT_MODELS)
+  await createSettlementModels(Config.SETTLEMENT_MODELS)
 
   if (runHandlers) {
     if (Array.isArray(handlers) && handlers.length > 0) {
