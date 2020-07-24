@@ -95,7 +95,7 @@ Test('Server Setup', async setupTest => {
         '../lib/db': DbStub,
         '../models/lib/enums': EnumsStub,
         '../lib/config': ConfigStub,
-        'axios': FakeAxios,
+        axios: FakeAxios
       })
     } catch (err) {
       Logger.error(`setupTest failed with error - ${err}`)
@@ -130,7 +130,7 @@ Test('Server Setup', async setupTest => {
             '../lib/db': DbStub,
             '../models/lib/enums': EnumsStub,
             '../lib/config': ConfigStub,
-            'axios': FakeAxios,
+            axios: FakeAxios
           })
 
           const port = await getPort()
@@ -170,7 +170,7 @@ Test('Server Setup', async setupTest => {
             '../lib/db': DbStub,
             '../models/lib/enums': EnumsStub,
             '../lib/config': ConfigStub,
-            'axios': FakeAxios,
+            axios: FakeAxios
           })
 
           const port = await getPort()
@@ -211,7 +211,7 @@ Test('Server Setup', async setupTest => {
             '../lib/db': DbStub,
             '../models/lib/enums': EnumsStub,
             '../lib/config': Config2Stub,
-            'axios': FakeAxios,
+            axios: FakeAxios
           })
 
           const port = await getPort()
@@ -245,7 +245,7 @@ Test('Server Setup', async setupTest => {
             '../lib/db': DbStub,
             '../models/lib/enums': EnumsStub,
             '../lib/config': ConfigStub,
-            'axios': FakeAxios,
+            axios: FakeAxios
           })
 
           const settlementwindowHandler = {
@@ -294,7 +294,7 @@ Test('Server Setup', async setupTest => {
             '../lib/db': DbStub,
             '../models/lib/enums': EnumsStub,
             '../lib/config': ConfigStub,
-            'axios': FakeAxios,
+            axios: FakeAxios
           })
 
           const settlementwindowHandler = {
@@ -338,7 +338,7 @@ Test('Server Setup', async setupTest => {
             '../lib/db': DbStub,
             '../models/lib/enums': EnumsStub,
             '../lib/config': ConfigStub,
-            'axios': FakeAxios,
+            axios: FakeAxios
           })
 
           const port = await getPort()
@@ -372,7 +372,7 @@ Test('Server Setup', async setupTest => {
             '../lib/db': DbStub,
             '../models/lib/enums': EnumsStub,
             '../lib/config': ConfigStub,
-            'axios': FakeAxios,
+            axios: FakeAxios
           })
 
           const port = await getPort()
@@ -431,9 +431,8 @@ Test('Server Setup', async setupTest => {
       })
 
       await initTest.test('creates no settlement models if none are configured and one exists', async test => {
-        const fakeAxios = Sinon.fake.resolves({ data: [{ name: 'whatever' }] })
         const port = await getPort()
-        const server = await SetupProxy.initialize({ service: 'handler', port })
+        await SetupProxy.initialize({ service: 'handler', port })
         test.equal(FakeAxios.callCount, 1, 'createSettlementModels made one request')
         test.deepEqual(FakeAxios.getCall(0).args[0], {
           method: 'GET',
@@ -445,7 +444,7 @@ Test('Server Setup', async setupTest => {
       await initTest.test('creates a settlement model if one is configured and does not exist', async test => {
         const existingModel = { name: 'whatever' }
         const fakeAxios = Sinon.fake(() => ({ data: [existingModel] }))
-        const newSettlementModels = [ { name: 'blah' }, { name: 'another' }, { name: 'whatever' } ]
+        const newSettlementModels = [{ name: 'blah' }, { name: 'another' }, { name: 'whatever' }]
         const url = `${Config.CENTRAL_LEDGER_ENDPOINT}/settlementModels`
         const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
           '@hapi/catbox-memory': EngineStub,
@@ -454,29 +453,29 @@ Test('Server Setup', async setupTest => {
           path: PathStub,
           '../lib/db': DbStub,
           '../models/lib/enums': EnumsStub,
-          '../lib/config': {...ConfigStub, SETTLEMENT_MODELS: newSettlementModels },
-          'axios': fakeAxios,
+          '../lib/config': { ...ConfigStub, SETTLEMENT_MODELS: newSettlementModels },
+          axios: fakeAxios
         })
 
         const port = await getPort()
-        const server = await SetupProxy1.initialize({ service: 'handler', port })
-        // One GET request for the settlement models, two POST requests for 
+        await SetupProxy1.initialize({ service: 'handler', port })
+        // One GET request for the settlement models, two POST requests for
         const axiosCallArgs = Array(fakeAxios.callCount)
           .fill()
-          .map((_,i) => fakeAxios.getCall(i).args[0])
-        const axiosPostCalls = axiosCallArgs.filter(req => req.method === 'POST');
+          .map((_, i) => fakeAxios.getCall(i).args[0])
+        const axiosPostCalls = axiosCallArgs.filter(req => req.method === 'POST')
         test.equal(axiosCallArgs.length, 3, 'createSettlementModels made three requests')
         test.equal(axiosCallArgs.filter(req => req.method === 'GET').length, 1, 'one GET request')
         test.equal(axiosPostCalls.length, 2, 'two POST requests')
         test.deepEqual(fakeAxios.getCall(0).args[0], {
           method: 'GET',
-          url,
+          url
         })
 
         const expectedAxiosCallArgs = newSettlementModels
           .filter(model => model.name !== existingModel.name)
           .map(model => ({ url, method: 'POST', data: model }))
-        test.deepEqual(expectedAxiosCallArgs, axiosPostCalls);
+        test.deepEqual(expectedAxiosCallArgs, axiosPostCalls)
         test.end()
       })
 
