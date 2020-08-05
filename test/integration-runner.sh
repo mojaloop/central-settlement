@@ -364,6 +364,6 @@ else
   docker logs $APP_HOST
 fi
 
-clean_docker
+# clean_docker
 >&1 echo "Integration tests exited with code: $test_exit_code"
 exit "$test_exit_code"
