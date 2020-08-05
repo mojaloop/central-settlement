@@ -117,24 +117,11 @@ async function updateTransferSettlement (transferId, status, trx = null) {
             isActive: 1
           }
         ]
-
-        return knex.transaction(async (trx) => {
-          try {
-            await knex.raw(knex('transferState').insert(transferState).toString().replace('insert', 'INSERT IGNORE'))
-            await trx.commit
-            return 'committed'
-          } catch (err) {
-            console.log('Error ' + err)
-            await trx.rollback
-            return 'failed'
-          } finally {
-            return 'finaly'
-          }
-        })
+        await knex.raw(knex('transferState').insert(transferState).toString().replace('insert', 'INSERT IGNORE'))
+          .transacting(trx)
 
         // Insert TransferParticipant ledger entry type.
         await knex.from(knex.raw('transferParticipant (transferID, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, amount)'))
-          .transacting(trx)
           .insert(function () {
             this.from('transferParticipant AS TP')
               .select('TP.transferId', 'TP.participantCurrencyId', 'TP.transferParticipantRoleTypeId', 'TP.ledgerEntryTypeId', knex.raw('?? * -1', ['TP.amount']))
@@ -166,6 +153,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
                   })
               })
           })
+          .transacting(trx)
 
         // Insert a new status for the transfer.
         const transferStateChange = [
@@ -176,19 +164,8 @@ async function updateTransferSettlement (transferId, status, trx = null) {
           }
         ]
 
-        return knex.transaction(async (trx) => {
-          try {
-            await knex('transferStateChange').insert(transferStateChange)
-            await trx.commit
-            return 'committed'
-          } catch (err) {
-            console.log('Error ' + err)
-            await trx.rollback
-            return 'failed'
-          } finally {
-            return 'finaly'
-          }
-        })
+        await knex('transferStateChange').insert(transferStateChange)
+          .transacting(trx)
 
         // Update the positions
         await knex('participantPosition AS PP')
@@ -224,7 +201,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
                   })
               })
           }).joinRaw('AS TR ON PP.participantCurrencyId = TR.ParticipantCurrencyId')
-        await trx.commit
+          .transacting(trx)
 
         // Insert new participant position change records
         await knex.from(knex.raw('participantPositionChange (participantPositionId, transferStateChangeId, value, reservedValue)'))
@@ -268,36 +245,8 @@ async function updateTransferSettlement (transferId, status, trx = null) {
                   .andOn('TSC.transferStateId', '=', knex.raw('?', ['SETTLED']))
               })
           })
-        await trx.commit
+          .transacting(trx)
 
-        /* Deprecated code using transfer TPSC table
-        await knex.from(knex.raw('transferParticipantStateChange (transferParticipantId, settlementWindowStateId, reason)'))
-          .insert(function () {
-            this.from('transferParticipant AS TP')
-              .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
-              .innerJoin('settlementModel AS S', 'PC.ledgerAccountTypeId', 'S.ledgerAccountTypeId')
-              .innerJoin('settlementGranularity AS G', 'S.settlementGranularityId', 'G.settlementGranularityId')
-              .leftOuterJoin('settlementWindowState AS SW1', function () { this.on('G.name', '=', knex.raw('?', ['NET'])).andOn('SW1.settlementWindowStateId', '=', knex.raw('?', ['OPEN'])) })
-              .leftOuterJoin('settlementWindowState AS SW2', function () { this.on('G.name', '=', knex.raw('?', ['GROSS'])).onIn('SW2.settlementWindowStateId', ['OPEN', 'PENDING_SETTLEMENT', 'SETTLED']) })
-              .leftOuterJoin('settlementWindowState AS SW3', function () { this.on(knex.raw('?', [status]), '=', knex.raw('?', ['error'])).andOn('SW3.settlementWindowStateId', '=', knex.raw('?', ['ABORTED'])) })
-              .distinct(knex.raw('TP.transferParticipantId, IFNULL(?? , IFNULL(??, ??)), ?', ['SW3.settlementWindowStateId', 'SW2.settlementWindowStateId', 'SW1.settlementWindowStateId', 'Automatically generated from Transfer fulfil']))
-              .where(function () {
-                this.where({ 'TP.transferId': transferId })
-                this.andWhere(function () {
-                  this.whereRaw('S.currencyId = ??', ['PC.currencyId'])
-                  this.orWhere(function () {
-                    this.whereNull('S.currencyId')
-                    this.whereNotIn('PC.currencyId', knex('settlementModel AS S1').select('S1.currencyId').whereRaw('S1.ledgerAccountTypeId = ??', ['S.ledgerAccountTypeId']).whereNotNull('S1.currencyId'))
-                  })
-                })
-                this.whereNotExists(function () {
-                  this.select('*').from('transferParticipantStateChange AS TSC')
-                  this.innerJoin('transferParticipant AS TP1', 'TSC.transferParticipantId', 'TP1.transferParticipantId')
-                  this.where({ 'TP1.transferId': transferId })
-                })
-              })
-          })
-          .transacting(trx) */
         if (doCommit) {
           await trx.commit
         }
