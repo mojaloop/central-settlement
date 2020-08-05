@@ -186,7 +186,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
                 this.select('PC1.participantCurrencyId', 'TP.amount')
                   .from('transferParticipant AS TP')
                   .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
-                  .innerJoin('settlementModel AS M', 'PC.ledgerAccountTypeId', 'PC.ledgerAccountTypeId')
+                  .innerJoin('settlementModel AS M', 'M.ledgerAccountTypeId', 'PC.ledgerAccountTypeId')
                   .innerJoin('settlementGranularity AS G', 'M.settlementGranularityId', 'G.settlementGranularityId')
                   .innerJoin('participantCurrency AS PC1', function () {
                     this.on('PC1.currencyId', 'PC.currencyId')
