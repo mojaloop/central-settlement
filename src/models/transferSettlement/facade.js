@@ -169,7 +169,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
 
         // Update the positions
         await knex('participantPosition AS PP')
-          .update({ value: knex.raw('?? + ??', ['PP.value', 'TR.amount']) })
+          .update({ value: knex.raw('?? - ??', ['PP.value', 'TR.amount']) })
           .innerJoin(function () {
             this.from('transferParticipant AS TP')
               .select('PC.participantCurrencyId', 'TP.Amount')
