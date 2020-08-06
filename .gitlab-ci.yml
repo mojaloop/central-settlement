@@ -88,9 +88,6 @@ Configure Service Account:
     # Patch the service account to use the secret above for image pull
     - |
       kubectl -n mojaloop patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"${CI_PROJECT_NAME}-imagepullsecret\"}]}"
-  only:
-    refs:
-      - feature/OTC
 
 
 # Deployment requires the mojaloop cluster to be configured in gitlab
@@ -119,6 +116,3 @@ Deploy to Dev:
       --reuse-values \
       --set centralsettlement.image.repository=$CI_REGISTRY_IMAGE \
       --set centralsettlement.image.tag=$IMAGE_TAG
-  only:
-    refs:
-      - feature/OTC
