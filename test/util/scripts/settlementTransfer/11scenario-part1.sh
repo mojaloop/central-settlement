@@ -126,7 +126,7 @@ echo "Sending requests to central-settlement"
 echo "---------------------------------------------------------------------"
 echo "Close settlement window ID=1"
 sh -c "curl -X POST \
-  http://localhost:3007/v1/settlementWindows/1 \
+  http://localhost:3007/v2/settlementWindows/1 \
   -H 'Cache-Control: no-cache' \
   -H 'Content-Type: application/json' \
   -H 'Postman-Token: a2a0d43c-f11e-4b5b-bd80-cbd050dad451' \
@@ -137,7 +137,7 @@ sh -c "curl -X POST \
 echo
 echo "Create settlement for settlement window ID=1"
 sh -c "curl -X POST \
-  http://localhost:3007/v1/settlements \
+  http://localhost:3007/v2/settlements \
   -H 'Cache-Control: no-cache' \
   -H 'Content-Type: application/json' \
   -H 'Postman-Token: a57f4181-19e7-4c17-858e-91c12c17b5e2' \
@@ -157,7 +157,7 @@ echo "---------------------------------------------------------------------"
 echo "PS_TRANSFERS_RECORDED for PAYER"
 echo "---------------------------------------------------------------------"
 sh -c "curl -X PUT \
-  http://localhost:3007/v1/settlements/1 \
+  http://localhost:3007/v2/settlements/1 \
   -H 'Cache-Control: no-cache' \
   -H 'Content-Type: application/json' \
   -H 'Postman-Token: 7d78bd18-2614-494a-9860-4236564df1c6' \
