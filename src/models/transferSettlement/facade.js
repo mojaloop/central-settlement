@@ -108,33 +108,145 @@ async function updateTransferSettlement (transferId, status, trx = null) {
     const knex = await Db.getKnex()
     const trxFunction = async (trx, doCommit = true) => {
       try {
-        await knex.from(knex.raw('transferParticipantStateChange (transferParticipantId, settlementWindowStateId, reason)'))
+        // Insert Transfer State.
+        const transferState = [
+          {
+            transferStateId: 'SETTLED',
+            enumeration: 'SETTLED',
+            description: 'The transfer has been settled',
+            isActive: 1
+          }
+        ]
+        await knex.raw(knex('transferState').insert(transferState).toString().replace('insert', 'INSERT IGNORE'))
+          .transacting(trx)
+
+        // Insert TransferParticipant ledger entry type.
+        await knex.from(knex.raw('transferParticipant (transferID, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, amount)'))
           .insert(function () {
             this.from('transferParticipant AS TP')
+              .select('TP.transferId', 'TP.participantCurrencyId', 'TP.transferParticipantRoleTypeId', 'TP.ledgerEntryTypeId', knex.raw('?? * -1', ['TP.amount']))
               .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
-              .innerJoin('settlementModel AS S', 'PC.ledgerAccountTypeId', 'S.ledgerAccountTypeId')
-              .innerJoin('settlementGranularity AS G', 'S.settlementGranularityId', 'G.settlementGranularityId')
-              .leftOuterJoin('settlementWindowState AS SW1', function () { this.on('G.name', '=', knex.raw('?', ['NET'])).andOn('SW1.settlementWindowStateId', '=', knex.raw('?', ['OPEN'])) })
-              .leftOuterJoin('settlementWindowState AS SW2', function () { this.on('G.name', '=', knex.raw('?', ['GROSS'])).onIn('SW2.settlementWindowStateId', ['OPEN', 'PENDING_SETTLEMENT', 'SETTLED']) })
-              .leftOuterJoin('settlementWindowState AS SW3', function () { this.on(knex.raw('?', [status]), '=', knex.raw('?', ['error'])).andOn('SW3.settlementWindowStateId', '=', knex.raw('?', ['ABORTED'])) })
-              .distinct(knex.raw('TP.transferParticipantId, IFNULL(?? , IFNULL(??, ??)), ?', ['SW3.settlementWindowStateId', 'SW2.settlementWindowStateId', 'SW1.settlementWindowStateId', 'Automatically generated from Transfer fulfil']))
+              .innerJoin('settlementModel AS M', 'PC.ledgerAccountTypeId', 'M.ledgerAccountTypeId')
+              .innerJoin('settlementGranularity AS G', 'M.settlementGranularityId', 'G.settlementGranularityId')
               .where(function () {
                 this.where({ 'TP.transferId': transferId })
                 this.andWhere(function () {
-                  this.whereRaw('S.currencyId = ??', ['PC.currencyId'])
-                  this.orWhere(function () {
-                    this.whereNull('S.currencyId')
-                    this.whereNotIn('PC.currencyId', knex('settlementModel AS S1').select('S1.currencyId').whereRaw('S1.ledgerAccountTypeId = ??', ['S.ledgerAccountTypeId']).whereNotNull('S1.currencyId'))
+                  this.andWhere({ 'G.name': 'GROSS' })
+                })
+              })
+              .union(function () {
+                this.select('TP.transferId', 'PC1.participantCurrencyId', 'TP.transferParticipantRoleTypeId', 'TP.ledgerEntryTypeId', 'TP.amount')
+                  .from('transferParticipant AS TP')
+                  .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
+                  .innerJoin('settlementModel AS M', 'PC.ledgerAccountTypeId', 'PC.ledgerAccountTypeId')
+                  .innerJoin('settlementGranularity AS G', 'M.settlementGranularityId', 'G.settlementGranularityId')
+                  .innerJoin('participantCurrency AS PC1', function () {
+                    this.on('PC1.currencyId', 'PC.currencyId')
+                      .andOn('PC1.participantId', 'PC.participantId')
+                      .andOn('PC1.ledgerAccountTypeId', 'M.settlementAccountTypeId')
                   })
-                })
-                this.whereNotExists(function () {
-                  this.select('*').from('transferParticipantStateChange AS TSC')
-                  this.innerJoin('transferParticipant AS TP1', 'TSC.transferParticipantId', 'TP1.transferParticipantId')
-                  this.where({ 'TP1.transferId': transferId })
-                })
+                  .where(function () {
+                    this.where({ 'TP.transferId': transferId })
+                    this.andWhere(function () {
+                      this.andWhere({ 'G.name': 'GROSS' })
+                    })
+                  })
               })
           })
           .transacting(trx)
+
+        // Insert a new status for the transfer.
+        const transferStateChange = [
+          {
+            transferId: transferId,
+            transferStateId: 'SETTLED',
+            reason: 'Gross settlement process'
+          }
+        ]
+
+        await knex('transferStateChange').insert(transferStateChange)
+          .transacting(trx)
+
+        // Update the positions
+        await knex('participantPosition AS PP')
+          .update({ value: knex.raw('?? - ??', ['PP.value', 'TR.amount']) })
+          .innerJoin(function () {
+            this.from('transferParticipant AS TP')
+              .select('PC.participantCurrencyId', 'TP.Amount')
+              .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
+              .innerJoin('settlementModel AS M', 'PC.ledgerAccountTypeId', 'M.ledgerAccountTypeId')
+              .innerJoin('settlementGranularity AS G', 'M.settlementGranularityId', 'G.settlementGranularityId')
+              .where(function () {
+                this.where({ 'TP.transferId': transferId })
+                this.andWhere(function () {
+                  this.andWhere({ 'G.name': 'GROSS' })
+                })
+              })
+              .union(function () {
+                this.select('PC1.participantCurrencyId', 'TP.amount')
+                  .from('transferParticipant AS TP')
+                  .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
+                  .innerJoin('settlementModel AS M', 'M.ledgerAccountTypeId', 'PC.ledgerAccountTypeId')
+                  .innerJoin('settlementGranularity AS G', 'M.settlementGranularityId', 'G.settlementGranularityId')
+                  .innerJoin('participantCurrency AS PC1', function () {
+                    this.on('PC1.currencyId', 'PC.currencyId')
+                      .andOn('PC1.participantId', 'PC.participantId')
+                      .andOn('PC1.ledgerAccountTypeId', 'M.settlementAccountTypeId')
+                  })
+                  .where(function () {
+                    this.where({ 'TP.transferId': transferId })
+                    this.andWhere(function () {
+                      this.andWhere({ 'G.name': 'GROSS' })
+                    })
+                  })
+              })
+          }).joinRaw('AS TR ON PP.participantCurrencyId = TR.ParticipantCurrencyId')
+          .transacting(trx)
+
+        // Insert new participant position change records
+        await knex.from(knex.raw('participantPositionChange (participantPositionId, transferStateChangeId, value, reservedValue)'))
+          .insert(function () {
+            this.from('participantPosition AS PP')
+              .select('PP.participantPositionId', 'TSC.transferStateChangeId', 'PP.value', 'PP.reservedValue')
+              .innerJoin(function () {
+                this.from('transferParticipant AS TP')
+                  .select('PC.participantCurrencyId')
+                  .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
+                  .innerJoin('settlementModel AS M', 'PC.ledgerAccountTypeId', 'M.ledgerAccountTypeId')
+                  .innerJoin('settlementGranularity AS G', 'M.settlementGranularityId', 'G.settlementGranularityId')
+                  .where(function () {
+                    this.where({ 'TP.transferId': transferId })
+                    this.andWhere(function () {
+                      this.andWhere({ 'G.name': 'GROSS' })
+                    })
+                  })
+                  .union(function () {
+                    this.select('PC1.participantCurrencyId')
+                      .from('transferParticipant AS TP')
+                      .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
+                      .innerJoin('settlementModel AS M', 'PC.ledgerAccountTypeId', 'PC.ledgerAccountTypeId')
+                      .innerJoin('settlementGranularity AS G', 'M.settlementGranularityId', 'G.settlementGranularityId')
+                      .innerJoin('participantCurrency AS PC1', function () {
+                        this.on('PC1.currencyId', 'PC.currencyId')
+                          .andOn('PC1.participantId', 'PC.participantId')
+                          .andOn('PC1.ledgerAccountTypeId', 'M.settlementAccountTypeId')
+                      })
+                      .where(function () {
+                        this.where({ 'TP.transferId': transferId })
+                        this.andWhere(function () {
+                          this.andWhere({ 'G.name': 'GROSS' })
+                        })
+                      })
+                  })
+              })
+            this.joinRaw('AS TR ON PP.participantCurrencyId = TR.ParticipantCurrencyId')
+              .innerJoin('transferStateChange AS TSC', function () {
+                this.on('TSC.transferID', knex.raw('?', [transferId]))
+                  .andOn('TSC.transferStateId', '=', knex.raw('?', ['SETTLED']))
+              })
+          })
+          .transacting(trx)
+
         if (doCommit) {
           await trx.commit
         }
