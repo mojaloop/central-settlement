@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="1" failures="1" time="3.844">
+  <testsuite name="it should run the app" errors="0" failures="1" skipped="0" timestamp="2020-08-10T15:46:07" time="1.195" tests="1">
+    <testcase classname="it should run the app should use default port &amp; host" name="it should run the app should use default port &amp; host" time="0.069">
+      <failure>Error: err
+    at Object.&lt;anonymous&gt; (/Users/claudio/Work/Modusbox/central-settlement/test/int/index.test.js:16:11)
+    at processTicksAndRejections (internal/process/task_queues.js:97:5)</failure>
+    </testcase>
+  </testsuite>
+</testsuites>
