@@ -96,7 +96,7 @@ describe('it should test a message on the kafkatopic', () => {
   it('should use default port & host', async () => {
     request = request(`http://localhost:${config.PORT}`);
     // await Kafka.proceed(Config.KAFKA_CONFIG, params, { CONSUMER_COMMIT, fspiopError: fspiopError.toApiErrorObject(Config.ERROR_HANDLING), eventDetail, FROM_SWITCH })
-    const fromSwitch = true;
+    // const fromSwitch = true;
     const message = {
       value: {
         from: 'fsp136265363',
@@ -147,22 +147,29 @@ describe('it should test a message on the kafkatopic', () => {
       timestamp: 1597162921898
     }
    }
-    const kafkaTopic = 'topic-transfer-fulfil'
-    const payload =  {
-      completedTimestamp: '2020-08-11T16:26:43.197Z',
-      transferState: 'COMMITTED',
-      fulfilment: 'TY3PJFddioTVc-IwrtcO_jsyf6jwWEbprLo30BpyGp0'
-    }
-    const span = ''
-    const params = { message, kafkaTopic, decodedPayload: payload, span, consumer: Consumer, producer: Producer }
-    const consumerCommit = true
-    const eventDetail =  { functionality: 'position', action: 'commit' }
-    const toDestination = true
+    // const kafkaTopic = 'topic-transfer-fulfil'
+    // const payload =  {
+    //   completedTimestamp: '2020-08-11T16:26:43.197Z',
+    //   transferState: 'COMMITTED',
+    //   fulfilment: 'TY3PJFddioTVc-IwrtcO_jsyf6jwWEbprLo30BpyGp0'
+    // }
+    // const span = ''
+    // const params = { message, kafkaTopic, decodedPayload: payload, span, consumer: Consumer, producer: Producer }
+    // const consumerCommit = true
+    // const eventDetail =  { functionality: 'position', action: 'commit' }
+    // const toDestination = true
 
     // await Kafka.produceGeneralMessage(Config.KAFKA_CONFIG, KafkaProducer, Enum.Events.Event.Type.NOTIFICATION,
     //   Enum.Transfers.AdminNotificationActions.LIMIT_ADJUSTMENT, params, Enum.Events.EventStatus.SUCCESS)
+    // const topicName: Kafka.transformGeneralTopicName(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, TransferEventType.TRANSFER, TransferEventType.FULFIL),
+    // (defaultKafkaConfig, kafkaProducer, functionality, action, message, state, key = null, span = null)
+    console.log(message);
+    await Kafka.produceGeneralMessage(Config.KAFKA_CONFIG, KafkaProducer, Enum.Events.Event.Type.NOTIFICATION,
+      Enum.Events.Event.Action.COMMIT, message.value, Enum.Events.EventStatus.SUCCESS, 'fsp511290656')
 
-    await Kafka.proceed(Config.KAFKA_CONFIG, params, { consumerCommit, eventDetail, toDestination })
+    // await Consumer.createHandler(fulfillHandler.topicName, fulfillHandler.config, fulfillHandler.command)
+
+    // await Kafka.proceed(Config.KAFKA_CONFIG, params, { consumerCommit, eventDetail, toDestination })
     await timeout(5000);
     // const res = await request.get('/participants')
     // throw new Error('err')
