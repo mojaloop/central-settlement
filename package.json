@@ -99,7 +99,7 @@
         "test:coverage-check": "npm run test:coverage && nyc check-coverage",
         "test:int": "tape 'test/integration/**/*.test.js'",
         "test:integration": "sh ./test/integration-runner.sh ./test/integration-runner.env",
-        "test:int:new": "jest --config './jest.integration.config.js'  --coverage --runInBand --testMatch '**/test/int/**/*.(test|spec).js'",
+        "test:int:new": "jest --config './jest.integration.config.js' --coverage --runInBand --testMatch '**/test/int/**/*.(test|spec).js'",
         "audit:resolve": "SHELL=sh resolve-audit --production",
         "audit:check": "SHELL=sh check-audit --production",
         "dep:check": "npx ncu -e 2",
