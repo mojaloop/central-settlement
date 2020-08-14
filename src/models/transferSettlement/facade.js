@@ -38,54 +38,51 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
     const knex = await Db.getKnex()
     const trxFunction = async (trx, doCommit = true) => {
       try {
-
         const recordsToInsert = await knex.select(knex.raw('? AS transferId', transferId), 'PC.participantCurrencyId')
-            .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'transferParticipantRoleTypeId']))
-            .select('E.ledgerEntryTypeId')
-            .select(knex.raw('CASE ?? WHEN ? THEN ? WHEN ? THEN ? ELSE ? END AS ??', ['P.name', ledgerEntry.payerFspId, ledgerEntry.amount, ledgerEntry.payeeFspId, ledgerEntry.amount * -1, 0, 'amount']))
-            .from('participantCurrency as PC')
-            .innerJoin('participant as P', 'P.participantId', 'PC.participantId')
-            .innerJoin('ledgerEntryType as E', 'E.LedgerAccountTypeId', 'PC.LedgerAccountTypeId')
-            .leftOuterJoin('transferParticipantRoleType as T1', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payerFspId])).andOn('T1.name', knex.raw('?', ['PAYER_DFSP'])) })
-            .leftOuterJoin('transferParticipantRoleType as T2', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payeeFspId])).andOn('T2.name', knex.raw('?', ['PAYEE_DFSP'])) })
-            .where('E.name', ledgerEntry.ledgerEntryTypeId)
-            .whereIn('P.name', [ledgerEntry.payerFspId, ledgerEntry.payeeFspId])
-            .where('PC.currencyId', ledgerEntry.currency)
-            .transacting(trx)
+          .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'transferParticipantRoleTypeId']))
+          .select('E.ledgerEntryTypeId')
+          .select(knex.raw('CASE ?? WHEN ? THEN ? WHEN ? THEN ? ELSE ? END AS ??', ['P.name', ledgerEntry.payerFspId, ledgerEntry.amount, ledgerEntry.payeeFspId, ledgerEntry.amount * -1, 0, 'amount']))
+          .from('participantCurrency as PC')
+          .innerJoin('participant as P', 'P.participantId', 'PC.participantId')
+          .innerJoin('ledgerEntryType as E', 'E.LedgerAccountTypeId', 'PC.LedgerAccountTypeId')
+          .leftOuterJoin('transferParticipantRoleType as T1', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payerFspId])).andOn('T1.name', knex.raw('?', ['PAYER_DFSP'])) })
+          .leftOuterJoin('transferParticipantRoleType as T2', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payeeFspId])).andOn('T2.name', knex.raw('?', ['PAYEE_DFSP'])) })
+          .where('E.name', ledgerEntry.ledgerEntryTypeId)
+          .whereIn('P.name', [ledgerEntry.payerFspId, ledgerEntry.payeeFspId])
+          .where('PC.currencyId', ledgerEntry.currency)
+          .transacting(trx)
 
         const promises = []
         promises.push(knex('transferParticipant').insert(recordsToInsert).transacting(trx))
         recordsToInsert.forEach(record => {
           const query = knex('participantPosition')
-           .where('participantCurrencyId', '=', record.participantCurrencyId)
-           .increment('value', record.amount)
-           .transacting(trx)
+            .where('participantCurrencyId', '=', record.participantCurrencyId)
+            .increment('value', record.amount)
+            .transacting(trx)
           promises.push(query)
         })
 
-      await Promise.all(promises)
-      const transferStateChangeId = await knex('transferStateChange')
-        .select('transferStateChangeId')
-        .where('transferId', transferId)
-        .andWhere('transferStateId', 'COMMITTED')
-        .transacting(trx)
+        await Promise.all(promises)
+        const transferStateChangeId = await knex('transferStateChange')
+          .select('transferStateChangeId')
+          .where('transferId', transferId)
+          .andWhere('transferStateId', 'COMMITTED')
+          .transacting(trx)
 
-      const participantPositionRecords = await  knex('participantPosition')
-       .select('participantPositionId', 'value', 'reservedValue')
-       .where('participantCurrencyId', recordsToInsert[0].participantCurrencyId)
-       .orWhere('participantCurrencyId',  recordsToInsert[1].participantCurrencyId)
-       .transacting(trx)
+        const participantPositionRecords = await knex('participantPosition')
+          .select('participantPositionId', 'value', 'reservedValue')
+          .where('participantCurrencyId', recordsToInsert[0].participantCurrencyId)
+          .orWhere('participantCurrencyId', recordsToInsert[1].participantCurrencyId)
+          .transacting(trx)
 
-      const participantPositionChangeRecords = participantPositionRecords.map(participantPositionRecord => {
-         participantPositionRecord.transferStateChangeId = transferStateChangeId[0].transferStateChangeId
-         return participantPositionRecord;
-       })
+        const participantPositionChangeRecords = participantPositionRecords.map(participantPositionRecord => {
+          participantPositionRecord.transferStateChangeId = transferStateChangeId[0].transferStateChangeId
+          return participantPositionRecord
+        })
 
-       await knex('participantPositionChange')
-       .insert(participantPositionChangeRecords)
-       .transacting(trx)
-
-
+        await knex('participantPositionChange')
+          .insert(participantPositionChangeRecords)
+          .transacting(trx)
 
         if (doCommit) {
           await trx.commit
