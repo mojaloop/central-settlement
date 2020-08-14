@@ -37,7 +37,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
     const knex = await Db.getKnex()
     const trxFunction = async (trx, doCommit = true) => {
       try {
-        knex.from(knex.raw('?? (??, ??, ??, ??, ??)', ['transferParticipant', 'transferId', 'participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId', 'amount']))
+        await knex.from(knex.raw('?? (??, ??, ??, ??, ??)', ['transferParticipant', 'transferId', 'participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId', 'amount']))
           .insert(function () {
             this.select(knex.raw('?', transferId), 'PC.participantCurrencyId')
               .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'RoleType']))
@@ -138,7 +138,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
                 this.select('TP.transferId', 'PC1.participantCurrencyId', 'TP.transferParticipantRoleTypeId', 'TP.ledgerEntryTypeId', 'TP.amount')
                   .from('transferParticipant AS TP')
                   .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
-                  .innerJoin('settlementModel AS M', 'PC.ledgerAccountTypeId', 'PC.ledgerAccountTypeId')
+                  .innerJoin('settlementModel AS M', 'PC.ledgerAccountTypeId', 'M.ledgerAccountTypeId')
                   .innerJoin('settlementGranularity AS G', 'M.settlementGranularityId', 'G.settlementGranularityId')
                   .innerJoin('participantCurrency AS PC1', function () {
                     this.on('PC1.currencyId', 'PC.currencyId')
