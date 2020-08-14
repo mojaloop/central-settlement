@@ -58,7 +58,6 @@ const settlementModels = [
   }
 ]
 
-
 const payerFsp = `fsp${Utils.rand8()}`
 const payeeFsp = `fsp${Utils.rand8()}`
 const fspList = [
@@ -107,7 +106,6 @@ async function init () {
     Logger.info('Initializing transfers')
     await initTransfers()
   } catch (err) {
-    console.log(err.response.data)
     Logger.error(`Error setting up initial settlement data ${err}`)
     process.exit(1)
   }
