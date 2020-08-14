@@ -44,7 +44,7 @@ const settlementModels = [
     settlementDelay: 'DEFERRED',
     ledgerAccountType: 'POSITION',
     autoPositionReset: true,
-    requireLiquidityCheck: true,
+    requireLiquidityCheck: true
   },
   {
     name: 'DEFERREDNETUSD',
@@ -54,7 +54,7 @@ const settlementModels = [
     ledgerAccountType: 'POSITION',
     autoPositionReset: true,
     currency: 'USD',
-    requireLiquidityCheck: true,
+    requireLiquidityCheck: true
   }
 ]
 
@@ -122,7 +122,6 @@ async function initSettlementModels () {
   await knex.raw('SET FOREIGN_KEY_CHECKS = 1;')
   await Api.createSettlementModel(settlementModels[0])
   await Api.createSettlementModel(settlementModels[1])
-
 }
 
 /**
