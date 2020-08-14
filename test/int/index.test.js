@@ -4,21 +4,37 @@ let config = require("../../config/default.json");
 
 const Kafka = require("@mojaloop/central-services-shared").Util.Kafka;
 const Config = require("../../src/lib/config");
-const KafkaProducer = require("@mojaloop/central-services-stream").Util
+const KafkaProducer = require("@mojaloop/central-services-stream").Util.Producer
 const Enum = require("@mojaloop/central-services-shared").Enum;
 const Producer = require("@mojaloop/central-services-stream").Util.Producer;
 const Consumer = require("@mojaloop/central-services-stream").Util.Consumer;
 const Uuid = require('uuid4')
 const Db = require('../../src/lib/db')
 
+
+const  chai = require('chai')
+const chaiExclude = require('chai-exclude')
+const chaiSubset = require('chai-subset')
+
+chai.use(chaiExclude);
+chai.use(chaiSubset);
+const expect = chai.expect;
+
+
+
 function timeout(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-describe("it should test a message on the kafkatopic", () => {
-  it("should use default port & host", async () => {
+describe("when a transfer notification with COMMITTED status is received  ", () => {
+  // TODO refactor send kafka message in  before()
+  // refactor separate checks
+  it(`it should
+    update the ledger entries,
+    update the participantPosition records for payeer and payee
+    update participantPositionChange records for payeer and payee
+    with a 0.006 % fee amount`, async () => {
     const server = await require('../../src/api/index.js')
-    console.log('app');
     request = request(`http://localhost:${config.PORT}`);
 
     const transactionId = Uuid()
@@ -79,7 +95,6 @@ describe("it should test a message on the kafkatopic", () => {
     const binaryPacket = Buffer.from(value, "base64");
     const jsonPacket = ilpPacket.deserializeIlpPayment(binaryPacket);
     const decodedData = base64url.decode(jsonPacket.data.toString());
-    console.log("DECODED DATA", decodedData);
 
     const TRANSACTION = {
       "transactionId": transactionId,
@@ -154,11 +169,9 @@ describe("it should test a message on the kafkatopic", () => {
 
     let base64encodedIlpPacket = base64url.fromBase64(packet.toString('base64')).replace('"', '');
 
-    console.log('ENCODED ILP Packet', base64encodedIlpPacket);
 
     const jsonPacket2 = await ilpPacket.deserializeIlpPayment(Buffer.from(base64encodedIlpPacket, 'base64'))
     const decodedData2 = base64url.decode(jsonPacket2.data.toString())
-    console.log('DECODED DATA from ILP PACKET 2', decodedData2 )
 
     await Db.transferDuplicateCheck.insert({
       transferId: transactionId,
@@ -175,8 +188,20 @@ describe("it should test a message on the kafkatopic", () => {
       transferId: transactionId,
       value: base64encodedIlpPacket
     })
+    await Db.transferStateChange.insert({
+      transferId: transactionId,
+      transferStateId: 'COMMITTED'
+    })
+    const knex = await Db.getKnex()
+    const transferStateChangeId = await knex('transferStateChange')
+      .select('transferStateChangeId')
+      .where('transferId', transactionId)
+      .andWhere('transferStateId', 'COMMITTED')
+    const previousParticipantPositionRecords = await  knex('participantPosition')
+     .select('participantPositionId', 'value', 'reservedValue')
+     .where('participantCurrencyId', 14)
+     .orWhere('participantCurrencyId',  13)
 
-    console.log(message);
     await Kafka.produceGeneralMessage(
       Config.KAFKA_CONFIG,
       KafkaProducer,
@@ -187,7 +212,41 @@ describe("it should test a message on the kafkatopic", () => {
       "fsp511290656"
     );
 
-    await timeout(5000);
-    // ADD DB EXPECTATIONS
+    // wait timeout for processing the records
+    await timeout(7000);
+
+    const transferParticipantRecords = await knex('transferParticipant')
+    .where('transferId', transactionId)
+
+    expect(transferParticipantRecords)
+     .excluding([ 'transferParticipantId', 'createdDate' ])
+     .to.deep.members([
+       {
+        transferId: transactionId,
+        participantCurrencyId: 13,
+        transferParticipantRoleTypeId: 1,
+        ledgerEntryTypeId: 2,
+        amount: 1.27,
+      },
+       {
+        transferId: transactionId,
+        participantCurrencyId: 14,
+        transferParticipantRoleTypeId: 2,
+        ledgerEntryTypeId: 2,
+        amount: -1.27,
+      }])
+     const newParticipantPositionRecords = await knex('participantPosition')
+     .select('participantPositionId', 'value', 'reservedValue')
+     .where('participantCurrencyId', 14)
+     .orWhere('participantCurrencyId', 13)
+     expect(newParticipantPositionRecords[0].value).to.equal(previousParticipantPositionRecords[0].value + 1.27)
+     expect(newParticipantPositionRecords[1].value).to.equal(previousParticipantPositionRecords[1].value - 1.27)
+
+     const participantPositionChangeRecords = await knex('participantPositionChange')
+     .where('transferStateChangeId', transferStateChangeId[0].transferStateChangeId)
+     expect(participantPositionChangeRecords[0].value.toFixed(decimalPlaces)).to.equal(newParticipantPositionRecords[0].value.toFixed(decimalPlaces))
+     expect(participantPositionChangeRecords[1].value.toFixed(decimalPlaces)).to.equal(newParticipantPositionRecords[1].value.toFixed(decimalPlaces))
+
+
   }, 30000);
 });

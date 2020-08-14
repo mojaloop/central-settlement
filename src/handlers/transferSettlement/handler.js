@@ -70,7 +70,6 @@ async function processTransferSettlement (error, messages) {
     } else {
       message = messages
     }
-
     const payload = message.value.content.payload
     const kafkaTopic = message.topic
     const params = { message, kafkaTopic, decodedPayload: payload, consumer: Consumer, producer: Producer }
@@ -98,10 +97,12 @@ async function processTransferSettlement (error, messages) {
         await knex.transaction(async trx => {
           try {
             await transferSettlementService.insertLedgerEntries(ledgerEntries, transferEventId, trx)
-            await transferSettlementService.processMsgFulfil(transferEventId, transferEventStateStatus, trx)
-            await trx.commit
+            // await transferSettlementService.processMsgFulfil(transferEventId, transferEventStateStatus, trx)
+            console.log('COMMITTING')
+            await trx.commit()
           } catch (err) {
-            await trx.rollback
+            console.log('ERROR', err);
+            await trx.rollback()
             throw ErrorHandler.Factory.reformatFSPIOPError(err)
           }
         })
