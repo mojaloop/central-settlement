@@ -89,7 +89,7 @@ async function processTransferSettlement (error, messages) {
     }
     Logger.info(Utility.breadcrumb(LOG_LOCATION, 'validationPassed'))
 
-    if (transferEventAction === Enum.Events.Event.Action.COMMIT || transferEventAction === Enum.Events.Event.Action.ABORT) {
+    if (transferEventAction === Enum.Events.Event.Action.COMMIT) {
       const scriptResults = await scriptsLoader.executeScripts(INJECTED_SCRIPTS, 'notification', transferEventAction, transferEventStateStatus, message.value)
       const ledgerEntries = scriptResults ? (scriptResults.ledgerEntries ? scriptResults.ledgerEntries : []) : []
       await retry(async () => { // use bail(new Error('to break before max retries'))
