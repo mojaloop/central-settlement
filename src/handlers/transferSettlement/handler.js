@@ -98,9 +98,9 @@ async function processTransferSettlement (error, messages) {
           try {
             await transferSettlementService.insertLedgerEntries(ledgerEntries, transferEventId, trx)
             await transferSettlementService.processMsgFulfil(transferEventId, transferEventStateStatus, trx)
-            await trx.commit()
+            await trx.commit
           } catch (err) {
-            await trx.rollback()
+            await trx.rollback
             throw ErrorHandler.Factory.reformatFSPIOPError(err)
           }
         })
