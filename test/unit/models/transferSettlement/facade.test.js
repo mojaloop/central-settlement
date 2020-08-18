@@ -45,71 +45,41 @@ Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
 
   await transferFulfilModelTest.test('transferFulfilModel should', async updateTransferSettlementTest => {
     try {
-      await updateTransferSettlementTest.test('Create two records in the transferParticipantStateChange table', async test => {
+      await updateTransferSettlementTest.test('?????????the transferParticipantStateChange table', async test => {
         try {
           const transferId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
           const status = 'success'
 
           Db.getKnex = sandbox.stub()
-
           const knexStub = sandbox.stub()
           knexStub.raw = sandbox.stub()
+
+          knexStub.raw.returns({
+            transacting: sandbox.stub()
+          })
           const trxStub = sandbox.stub()
           trxStub.commit = sandbox.stub()
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
 
           Db.getKnex.returns(knexStub)
-          const context = sandbox.stub()
-          const orWhereStub = sandbox.stub().returns({
-            whereNull: sandbox.stub().returns({
-              whereNotIn: sandbox.stub().returns({})
-            })
-          })
-          const andWhereStub = sandbox.stub().returns({
-            andWhere: sandbox.stub().returns({
-              whereRaw: sandbox.stub().returns({}),
-              orWhere: sandbox.stub().callsArgOn(0, orWhereStub).returns({})
-            })
-          })
-          context.from = sandbox.stub().returns({
-            innerJoin: sandbox.stub().returns({
+          knexStub.returns({
+            insert: sandbox.stub().returns({
+              toString: sandbox.stub().returns({
+                replace: sandbox.stub()
+              }),
+              transacting: sandbox.stub()
+            }),
+            update: sandbox.stub().returns({
               innerJoin: sandbox.stub().returns({
-                innerJoin: sandbox.stub().returns({
-                  leftOuterJoin: sandbox.stub().callsArgOn(1, context).returns({
-                    leftOuterJoin: sandbox.stub().callsArgOn(1, context).returns({
-                      leftOuterJoin: sandbox.stub().callsArgOn(1, context).returns({
-                        distinct: sandbox.stub().returns({
-                          where: sandbox.stub().callsArgOn(0, knexStub)
-                        })
-                      })
-                    })
-                  })
+                joinRaw: sandbox.stub().returns({
+                  transacting: sandbox.stub()
                 })
               })
             })
           })
-          context.on = sandbox.stub().returns({
-            andOn: sandbox.stub(),
-            onIn: sandbox.stub()
-          })
-          knexStub.where = sandbox.stub().returns({
-            andWhere: sandbox.stub().returns({
-              whereNotExists: sandbox.stub()
-            })
-          })
-          knexStub.andWhere = sandbox.stub().callsArgOn(0, andWhereStub)
-          knexStub.whereNotExists = sandbox.stub().returns({
-            select: sandbox.stub().returns({
-              innerJoin: sandbox.stub().returns({
-                where: sandbox.stub()
-              })
-            })
-          })
-          knexStub.whereRaw = sandbox.stub()
-          knexStub.raw = sandbox.stub()
           knexStub.from = sandbox.stub().returns({
-            transacting: sandbox.stub().returns({
-              insert: sandbox.stub().callsArgOn(0, context)
+            insert: sandbox.stub().returns({
+              transacting: sandbox.stub()
             })
           })
 
