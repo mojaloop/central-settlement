@@ -208,7 +208,9 @@ const Facade = {
                     .on('swc.ledgerAccountTypeId', 'pc.ledgerAccountTypeId')
                     .on('swc.currencyId', 'pc.currencyId')
                 })
+                .join('settlementModel AS m', 'm.ledgerAccountTypeId', 'pc.ledgerAccountTypeId')
                 .where('tf.settlementWindowId', settlementWindowId)
+                .andWhere('m.settlementGranularityId', Enum.Settlements.SettlementGranularity.NET)
                 .groupBy('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId')
                 .select('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId',
                   knex.raw('? AS ??', [Enum.Settlements.SettlementWindowState.CLOSED, 'settlementWindowStateId']),
