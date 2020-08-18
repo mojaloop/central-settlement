@@ -18,10 +18,7 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Georgi Georgiev <georgi.georgiev@modusbox.com>
- * Valentin Genev <valentin.genev@modusbox.com>
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- * Miguel de Barros <miguel.debarros@modusbox.com>
+ * Claudio Viola <claudio.viola@modusbox.com>
  --------------
  ******/
 
@@ -30,18 +27,80 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Db = require('../../../../src/lib/db')
-const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const Logger = require('@mojaloop/central-services-logger')
-const Utility = require('@mojaloop/central-services-shared').Util
-
 
 const Model = require('../../../../src/models/transferSettlement/facade')
-
+const recordsToInsert = [{
+  transferId: '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93',
+  participantCurrencyId: 13,
+  transferParticipantRoleTypeId: 1,
+  ledgerEntryTypeId: 2,
+  amount: '1.27'
+},
+{
+  transferId: '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93',
+  participantCurrencyId: 14,
+  transferParticipantRoleTypeId: 2,
+  ledgerEntryTypeId: 2,
+  amount: '-1.27'
+}]
+const ledgerEntry = {
+  transferId: '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93',
+  ledgerAccountTypeId: 'INTERCHANGE_FEE',
+  ledgerEntryTypeId: 'INTERCHANGE_FEE',
+  amount: '1.27',
+  currency: 'TZS',
+  payerFspId: 'testfsp1',
+  payeeFspId: 'testfsp2'
+}
+const expectedParticipantPositionChangeRecords = [
+  {
+    participantPositionId: 130,
+    value: 39.37,
+    reservedValue: 0,
+    transferStateChangeId: 4581
+  },
+  {
+    participantPositionId: 129,
+    value: -39.37,
+    reservedValue: 0,
+    transferStateChangeId: 4581
+  }
+]
 Test('TransferSettlement facade', async (transferSettlementTest) => {
   let sandbox
+  let knexStub
+  let trxStub
+  let trxSpyCommit
+  let trxSpyRollBack
 
   transferSettlementTest.beforeEach(t => {
     sandbox = Sinon.createSandbox()
+    trxStub = {
+      get commit () {
+
+      },
+      get rollback () {
+
+      }
+    }
+    trxSpyCommit = sandbox.spy(trxStub, 'commit', ['get'])
+
+    trxSpyRollBack = sandbox.spy(trxStub, 'rollback', ['get'])
+    knexStub = {
+      insert: sandbox.stub().returnsThis(),
+      increment: sandbox.stub().returnsThis(),
+      raw: sandbox.stub().returnsThis(),
+      transaction: sandbox.stub().callsArgWith(0, trxStub),
+      select: sandbox.stub().returnsThis(),
+      from: sandbox.stub().returnsThis(),
+      innerJoin: sandbox.stub().returnsThis(),
+      leftOuterJoin: sandbox.stub().returnsThis(),
+      where: sandbox.stub().returnsThis(),
+      whereIn: sandbox.stub().returnsThis(),
+      andWhere: sandbox.stub().returnsThis(),
+      orWhere: sandbox.stub().returnsThis(),
+      transacting: sandbox.stub()
+    }
     t.end()
   })
 
@@ -50,48 +109,47 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
     t.end()
   })
 
-
-  await transferSettlementTest.test('insertLedgerEntry should', async (test) => {
-    const ledgerAccountType = {
-      name: 'POSITION',
-      description: 'A single account for each currency with which the hub operates. The account is "held" by the Participant representing the hub in the switch',
-      isActive: 1,
-      isSettleable: true
-    }
+  await transferSettlementTest.test('insertLedgerEntry, when everything is fine, should', async (test) => {
     try {
       sandbox.stub(Db, 'getKnex')
-      const knexStub = sandbox.stub()
-      const trxStub = sandbox.stub()
-      trxStub.commit = sandbox.stub()
-      knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
-      Db.getKnex.returns(knexStub)
-      const transactingStub = sandbox.stub()
-      const insertStub = sandbox.stub()
-      transactingStub.resolves()
-      insertStub.returns({ transacting: transactingStub })
-      knexStub.returns({ insert: insertStub })
-      const selectStub = sandbox.stub()
-      const fromStub = sandbox.stub()
-      const whereStub = sandbox.stub()
-      const expectedRecords = [
-        {
-          ledgerAccountTypeId: 100
-        }
-      ]
-      transactingStub.resolves(expectedRecords)
-      whereStub.returns({ transacting: transactingStub })
-      fromStub.returns({ where: whereStub })
-      selectStub.returns({ from: fromStub })
-      knexStub.select = selectStub
 
-      const result = await Model.create(ledgerAccountType.name, ledgerAccountType.description, ledgerAccountType.isActive, ledgerAccountType.isSettleable, trxStub)
-      test.deepEqual(result, expectedRecords[0].ledgerAccountTypeId, 'return the created record id')
-      test.equal(insertStub.callCount, 1, 'call insert')
-      test.deepEqual(insertStub.lastCall.args[0], ledgerAccountType, 'pass the payload arguments to insert call')
-      test.equal(selectStub.callCount, 1, 'retrieve the created record')
-      test.equal(transactingStub.callCount, 2, 'make the database calls as transaction')
-      test.equal(transactingStub.lastCall.args[0], trxStub, 'run as transaction')
-      test.equal(trxStub.commit.callCount, 0, 'not commit the transaction if transaction is passed')
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).resolves(1)
+      knexStub.transacting.onCall(2).resolves(1)
+      knexStub.transacting.onCall(3).resolves(1)
+
+      knexStub.transacting.onCall(4).resolves([{
+        transferStateChangeId: 4581
+      }])
+      knexStub.transacting.onCall(5).resolves([
+        {
+          participantPositionId: 130,
+          value: 39.37,
+          reservedValue: 0
+        },
+        {
+          participantPositionId: 129,
+          value: -39.37,
+          reservedValue: 0
+        }
+      ])
+      knexStub.transacting.onCall(6).resolves(1)
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntry(ledgerEntry, transferId, trxStub)
+      test.deepEqual(knexStub.insert.getCalls()[0].args[0], recordsToInsert, 'insert the records to transferParticipant table')
+      test.deepEqual(knexStub.where.getCalls()[2].args[2], 13, 'increment the value of ParticipantPosition for ParticipantCurrency')
+      test.deepEqual(knexStub.where.getCalls()[3].args[2], 14, 'increment the value of ParticipantPosition for ParticipantCurrency')
+      test.deepEqual(knexStub.increment.getCalls()[0].args[0], 'value', 'increment the value of ParticipantPosition')
+      test.deepEqual(knexStub.increment.getCalls()[0].args[1], '1.27', 'increment the value of ParticipantPosition')
+      test.deepEqual(knexStub.increment.getCalls()[1].args[0], 'value', 'increment the value of ParticipantPosition')
+      test.deepEqual(knexStub.increment.getCalls()[1].args[1], '-1.27', 'increment the value of ParticipantPosition')
+
+      test.deepEqual(knexStub.insert.getCalls()[1].args[0], expectedParticipantPositionChangeRecords, 'insert the records to ParticipantPositionChange table')
+
       test.end()
     } catch (err) {
       console.log(err)
@@ -99,185 +157,252 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       test.end()
     }
   })
-  //
-  // await ledgerAccountTypeTest.test('create should', async (test) => {
-  //   const ledgerAccountType = {
-  //     name: 'POSITION',
-  //     description: 'A single account for each currency with which the hub operates. The account is "held" by the Participant representing the hub in the switch',
-  //     isActive: 1,
-  //     isSettleable: true
-  //   }
-  //   try {
-  //     sandbox.stub(Db, 'getKnex')
-  //     const knexStub = sandbox.stub()
-  //     const trxStub = sandbox.stub()
-  //     trxStub.commit = sandbox.stub()
-  //     knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
-  //     Db.getKnex.returns(knexStub)
-  //     const transactingStub = sandbox.stub()
-  //     const insertStub = sandbox.stub()
-  //     transactingStub.resolves()
-  //     insertStub.returns({ transacting: transactingStub })
-  //     knexStub.returns({ insert: insertStub })
-  //
-  //     const selectStub = sandbox.stub()
-  //     const fromStub = sandbox.stub()
-  //     const whereStub = sandbox.stub()
-  //     const expectedRecords = [
-  //       {
-  //         ledgerAccountTypeId: 100
-  //       }
-  //     ]
-  //     transactingStub.resolves(expectedRecords)
-  //     whereStub.returns({ transacting: transactingStub })
-  //     fromStub.returns({ where: whereStub })
-  //     selectStub.returns({ from: fromStub })
-  //     knexStub.select = selectStub
-  //
-  //     await Model.create(ledgerAccountType.name, ledgerAccountType.description, ledgerAccountType.isActive, ledgerAccountType.isSettleable)
-  //     test.equal(trxStub.commit.callCount, 1, 'commit the transaction if no transaction is passed')
-  //     test.end()
-  //   } catch (err) {
-  //     test.fail(`should not have thrown an error ${err}`)
-  //     test.end()
-  //   }
-  // })
-  // await ledgerAccountTypeTest.test('create should', async (test) => {
-  //   let trxStub
-  //   const ledgerAccountType = {
-  //     name: 'POSITION',
-  //     description: 'A single account for each currency with which the hub operates. The account is "held" by the Participant representing the hub in the switch',
-  //     isActive: 1,
-  //     isSettleable: true
-  //   }
-  //   try {
-  //     sandbox.stub(Db, 'getKnex')
-  //     const knexStub = sandbox.stub()
-  //     trxStub = sandbox.stub()
-  //     trxStub.commit = sandbox.stub()
-  //     trxStub.rollback = sandbox.stub()
-  //     knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
-  //     Db.getKnex.returns(knexStub)
-  //     const transactingStub = sandbox.stub()
-  //     const insertStub = sandbox.stub()
-  //     transactingStub.resolves()
-  //     knexStub.insert = insertStub.returns({ transacting: transactingStub })
-  //     const selectStub = sandbox.stub()
-  //     const fromStub = sandbox.stub()
-  //     const whereStub = sandbox.stub()
-  //     transactingStub.rejects(new Error())
-  //     whereStub.returns({ transacting: transactingStub })
-  //     fromStub.returns({ whereStub: whereStub })
-  //     knexStub.select = selectStub.returns({ from: fromStub })
-  //
-  //     await Model.create(ledgerAccountType.name, ledgerAccountType.description, ledgerAccountType.isActive, ledgerAccountType.isSettleable)
-  //     test.fail('have thrown an error')
-  //     test.end()
-  //   } catch (err) {
-  //     test.pass('throw an error')
-  //     test.equal(trxStub.rollback.callCount, 1, 'rollback the transaction if no transaction is passed')
-  //     test.end()
-  //   }
-  // })
-  //
-  // await ledgerAccountTypeTest.test('create should', async (test) => {
-  //   let trxStub
-  //
-  //   const ledgerAccountType = {
-  //     name: 'POSITION',
-  //     description: 'A single account for each currency with which the hub operates. The account is "held" by the Participant representing the hub in the switch',
-  //     isActive: 1,
-  //     isSettleable: true
-  //   }
-  //   try {
-  //     sandbox.stub(Db, 'getKnex')
-  //     const knexStub = sandbox.stub()
-  //     trxStub = sandbox.stub()
-  //     trxStub.commit = sandbox.stub()
-  //     trxStub.rollback = sandbox.stub()
-  //     knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
-  //     Db.getKnex.returns(knexStub)
-  //     const transactingStub = sandbox.stub()
-  //     const insertStub = sandbox.stub()
-  //     transactingStub.resolves()
-  //     knexStub.insert = insertStub.returns({ transacting: transactingStub })
-  //     const selectStub = sandbox.stub()
-  //     const fromStub = sandbox.stub()
-  //     const whereStub = sandbox.stub()
-  //     transactingStub.rejects(new Error())
-  //     whereStub.returns({ transacting: transactingStub })
-  //     fromStub.returns({ whereStub: whereStub })
-  //     knexStub.select = selectStub.returns({ from: fromStub })
-  //
-  //     await Model.create(ledgerAccountType.name, ledgerAccountType.description, ledgerAccountType.isActive, ledgerAccountType.isSettleable, trxStub)
-  //     test.fail('have thrown an error')
-  //     test.end()
-  //   } catch (err) {
-  //     test.pass('throw an error')
-  //     test.equal(trxStub.rollback.callCount, 0, 'not rollback the transaction if transaction is passed')
-  //     test.end()
-  //   }
-  // })
-  //
-  // await ledgerAccountTypeTest.test('create should', async (test) => {
-  //   try {
-  //     const ledgerAccountType = {
-  //       name: 'POSITION',
-  //       description: 'A single account for each currency with which the hub operates. The account is "held" by the Participant representing the hub in the switch',
-  //       isActive: 1,
-  //       isSettleable: true
-  //     }
-  //     sandbox.stub(Db, 'getKnex')
-  //     Db.getKnex.throws(new Error())
-  //     await Model.create(ledgerAccountType.name, ledgerAccountType.description, ledgerAccountType.isActive, ledgerAccountType.isSettleable)
-  //     test.fail('have thrown an error')
-  //     test.end()
-  //   } catch (err) {
-  //     test.pass('throw an error')
-  //     test.end()
-  //   }
-  // })
-  //
-  // await ledgerAccountTypeTest.test('getAll', async (assert) => {
-  //   const ledgerAccountTypes = [
-  //     {
-  //       name: 'POSITION',
-  //       description: 'A single account for each currency with which the hub operates. The account is "held" by the Participant representing the hub in the switch',
-  //       isActive: 1,
-  //       isSettleable: true
-  //     },
-  //     {
-  //       name: 'INTERCHANGE_FEE_SETTLEMENT',
-  //       description: 'settlement account for interchange fees',
-  //       isActive: 1,
-  //       isSettleable: true
-  //     }
-  //   ]
-  //
-  //   try {
-  //     Db.ledgerAccountType.find.resolves(ledgerAccountTypes)
-  //     const result = await Model.getAll()
-  //     assert.equal(Db.ledgerAccountType.find.callCount, 1, 'should call the model create function')
-  //     assert.deepEqual(Db.ledgerAccountType.find.lastCall.args[0], {}, 'should call the model with the right arguments: empty object')
-  //     assert.deepEqual(result, ledgerAccountTypes)
-  //     assert.end()
-  //   } catch (err) {
-  //     assert.fail('should not have thrown an error: ' + err)
-  //     assert.end()
-  //   }
-  // })
-  //
-  // await ledgerAccountTypeTest.test('getAll when the db fails', async (assert) => {
-  //   try {
-  //     Db.ledgerAccountType.find.throws(new Error())
-  //     await Model.getAll()
-  //     assert.fail('should have thrown an error')
-  //     assert.end()
-  //   } catch (err) {
-  //     assert.ok(err instanceof Error, 'should throw an error')
-  //     assert.end()
-  //   }
-  // })
+
+  await transferSettlementTest.test('insertLedgerEntry when participantPosition records are not updated correctly', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).resolves(1)
+      knexStub.transacting.onCall(2).resolves(0)
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntry(ledgerEntry, transferId, trxStub)
+      test.fail('Error not thrown')
+      test.end()
+    } catch (err) {
+      test.ok(err instanceof Error, 'should throw an error')
+      test.equal(err.message, 'Unable to update participantPosition record for participantCurrencyId: 13', 'should throw Unable to update participantPosition error message')
+
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('insertLedgerEntry when transferStateChange record is not found', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).resolves(1)
+      knexStub.transacting.onCall(2).resolves(1)
+      knexStub.transacting.onCall(3).resolves(1)
+      knexStub.transacting.onCall(4).resolves([])
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntry(ledgerEntry, transferId, trxStub)
+      test.fail('Error not thrown')
+      test.end()
+    } catch (err) {
+      test.ok(err instanceof Error, 'should throw an error')
+      test.equal(err.message, 'Unable to find transfer with COMMITTED state for transferId : 42a874d4-82a4-4471-a3fc-3dfeb6f7cb93', 'should throw Unable to find transfer error message')
+
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('insertLedgerEntry when participantPositions records are not found', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).resolves(1)
+      knexStub.transacting.onCall(2).resolves(1)
+      knexStub.transacting.onCall(3).resolves(1)
+      knexStub.transacting.onCall(4).resolves([{
+        transferStateChangeId: 4581
+      }])
+      knexStub.transacting.onCall(5).resolves([
+        {
+          participantPositionId: 130,
+          value: 39.37,
+          reservedValue: 0
+        }
+      ])
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntries([ledgerEntry], transferId, trxStub)
+      test.fail('Error not thrown')
+      test.end()
+    } catch (err) {
+      test.ok(err instanceof Error, 'should throw an error')
+      test.equal(err.message, 'Unable to find all participantPosition records for ParticipantCurrency: {13,14}', 'should throw unable to find all participantPosition records error message')
+
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('insertLedgerEntry when transaction is not passed', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).resolves(1)
+      knexStub.transacting.onCall(2).resolves(1)
+      knexStub.transacting.onCall(3).resolves(1)
+
+      knexStub.transacting.onCall(4).resolves([{
+        transferStateChangeId: 4581
+      }])
+      knexStub.transacting.onCall(5).resolves([
+        {
+          participantPositionId: 130,
+          value: 39.37,
+          reservedValue: 0
+        },
+        {
+          participantPositionId: 129,
+          value: -39.37,
+          reservedValue: 0
+        }
+      ])
+      knexStub.transacting.onCall(6).resolves(1)
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntry(ledgerEntry, transferId)
+      test.equal(trxSpyCommit.get.calledOnce, true, 'should commit the transaction')
+      test.end()
+    } catch (err) {
+      test.fail('An error was thrown')
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('insertLedgerEntry when transaction is not passed and an error is thrown', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).rejects(new Error('An Error occured while inserting'))
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntry(ledgerEntry, transferId)
+      test.fail('Error not thrown')
+    } catch (err) {
+      test.ok(err instanceof Error, 'should throw an error')
+      test.equal(err.message, 'An Error occured while inserting')
+      test.equal(trxSpyRollBack.get.calledOnce, true, 'should rollback the transaction')
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('insertLedgerEntries, when everything is fine, should', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).resolves(1)
+      knexStub.transacting.onCall(2).resolves(1)
+      knexStub.transacting.onCall(3).resolves(1)
+
+      knexStub.transacting.onCall(4).resolves([{
+        transferStateChangeId: 4581
+      }])
+      knexStub.transacting.onCall(5).resolves([
+        {
+          participantPositionId: 130,
+          value: 39.37,
+          reservedValue: 0
+        },
+        {
+          participantPositionId: 129,
+          value: -39.37,
+          reservedValue: 0
+        }
+      ])
+      knexStub.transacting.onCall(6).resolves(1)
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntries([ledgerEntry], transferId, trxStub)
+      test.deepEqual(knexStub.insert.getCalls()[0].args[0], recordsToInsert, 'insert the records to transferParticipant table')
+      test.deepEqual(knexStub.where.getCalls()[2].args[2], 13, 'increment the value of ParticipantPosition for ParticipantCurrency')
+      test.deepEqual(knexStub.where.getCalls()[3].args[2], 14, 'increment the value of ParticipantPosition for ParticipantCurrency')
+      test.deepEqual(knexStub.increment.getCalls()[0].args[0], 'value', 'increment the value of ParticipantPosition')
+      test.deepEqual(knexStub.increment.getCalls()[0].args[1], '1.27', 'increment the value of ParticipantPosition')
+      test.deepEqual(knexStub.increment.getCalls()[1].args[0], 'value', 'increment the value of ParticipantPosition')
+      test.deepEqual(knexStub.increment.getCalls()[1].args[1], '-1.27', 'increment the value of ParticipantPosition')
+
+      test.deepEqual(knexStub.insert.getCalls()[1].args[0], expectedParticipantPositionChangeRecords, 'insert the records to ParticipantPositionChange table')
+
+      test.end()
+    } catch (err) {
+      console.log(err)
+      test.fail(`should have not throw an error ${err}`)
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('insertLedgerEntries, when transaction is not passed, should', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).resolves(1)
+      knexStub.transacting.onCall(2).resolves(1)
+      knexStub.transacting.onCall(3).resolves(1)
+
+      knexStub.transacting.onCall(4).resolves([{
+        transferStateChangeId: 4581
+      }])
+      knexStub.transacting.onCall(5).resolves([
+        {
+          participantPositionId: 130,
+          value: 39.37,
+          reservedValue: 0
+        },
+        {
+          participantPositionId: 129,
+          value: -39.37,
+          reservedValue: 0
+        }
+      ])
+      knexStub.transacting.onCall(6).resolves(1)
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntries([ledgerEntry], transferId)
+      test.equal(trxSpyCommit.get.calledOnce, true, 'should commit the transaction')
+      test.end()
+    } catch (err) {
+      console.log(err)
+      test.fail(`should have not throw an error ${err}`)
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('insertLedgerEntry when transaction is not passed and an error is thrown', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).rejects(new Error('An Error occured while inserting'))
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntries([ledgerEntry], transferId)
+      test.fail('Error not thrown')
+    } catch (err) {
+      test.ok(err instanceof Error, 'should throw an error')
+      test.equal(err.message, 'An Error occured while inserting')
+      test.equal(trxSpyRollBack.get.calledOnce, true, 'should rollback the transaction')
+      test.end()
+    }
+  })
 
   await transferSettlementTest.end()
 })
