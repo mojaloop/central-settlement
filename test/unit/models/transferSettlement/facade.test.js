@@ -50,7 +50,30 @@ Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
           const transferId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
           const status = 'success'
 
-          Db.getKnex = sandbox.stub()
+          sandbox.stub(Db, 'getKnex')
+          // const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub()
+          trxStub.commit = sandbox.stub()
+          const knexStub = {
+            insert: sandbox.stub().returnsThis(),
+            increment: sandbox.stub().returnsThis(),
+            raw: sandbox.stub().returnsThis(),
+            transaction: sandbox.stub().callsArgWith(0, trxStub),
+            select: sandbox.stub().returnsThis(),
+            from: sandbox.stub().returnsThis(),
+            innerJoin: sandbox.stub().returnsThis(),
+            leftOuterJoin: sandbox.stub().returnsThis(),
+            where: sandbox.stub().returnsThis(),
+            whereIn: sandbox.stub().returnsThis(),
+            andWhere: sandbox.stub().returnsThis(),
+            orWhere: sandbox.stub().returnsThis(),
+            transacting: sandbox.stub()
+          }
+          const knexFunc = sandbox.stub().returns(knexStub)
+          Object.assign(knexFunc, knexStub)
+          Db.getKnex.returns(knexFunc)
+
+          /*Db.getKnex = sandbox.stub()
           const knexStub = sandbox.stub()
           knexStub.raw = sandbox.stub()
 
@@ -62,6 +85,7 @@ Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
 
           Db.getKnex.returns(knexStub)
+
           knexStub.returns({
             insert: sandbox.stub().returns({
               toString: sandbox.stub().returns({
@@ -77,12 +101,62 @@ Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
               })
             })
           })
-          knexStub.from = sandbox.stub().returns({
-            insert: sandbox.stub().returns({
-              transacting: sandbox.stub()
+
+          const andWhereContext = sandbox.stub()
+          andWhereContext.andWhere = sandbox.stub().returns({
+            andWhere: sandbox.stub()
+          })
+
+          const whereContext = sandbox.stub()
+          whereContext.where = sandbox.stub().returns({
+            andWhere: sandbox.stub().callsArgOn(4, andWhereContext).returns({
+              andWhere: sandbox.stub()
             })
           })
 
+          const innerJoinContext = sandbox.stub()
+          innerJoinContext.on = sandbox.stub().returns({
+            andOn: sandbox.stub().returns({
+              andOn: sandbox.stub()
+            })
+          })
+
+          const unionContext = sandbox.stub()
+          unionContext.select = sandbox.stub().returns({
+            from: sandbox.stub().returns({
+              innerJoin: sandbox.stub().returns({
+                innerJoin: sandbox.stub().returns({
+                  innerJoin: sandbox.stub().returns({
+                    innerJoin: sandbox.stub().callsArgOn(3, innerJoinContext).returns({
+                      where: sandbox.stub().callsArgOn(3, whereContext)
+                    })
+                  })
+                })
+              })
+            })
+          })
+
+          const context = sandbox.stub()
+          context.from = sandbox.stub().returns({
+            select: sandbox.stub().returns({
+              innerJoin: sandbox.stub().returns({
+                innerJoin: sandbox.stub().returns({
+                  innerJoin: sandbox.stub().returns({
+                    where: sandbox.stub().callsArgOn(1, whereContext).returns({
+                      union: sandbox.stub().callsArgOn(2, unionContext)
+                    })
+                  })
+                })
+              })
+            })
+          })
+
+          knexStub.from = sandbox.stub().returns({
+            insert: sandbox.stub().callsArgOn(0, context).returns({
+              transacting: sandbox.stub()
+            })
+          })
+*/
           const result = await TransferFulfilFacade.updateTransferSettlement(transferId, status)
           test.ok(result, 'Result returned')
           test.end()
