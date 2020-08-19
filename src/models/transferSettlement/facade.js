@@ -1,5 +1,5 @@
 /*****
- License
+License
  --------------
  Copyright © 2017 Bill & Melinda Gates Foundation
  The Mojaloop files are made available by the Bill & Melinda Gates Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
@@ -22,6 +22,7 @@
  - Deon Botha <deon.botha@modusbox.com>
  - Georgi Georgiev <georgi.georgiev@modusbox.com>
  - Valentin Genev <valentin.genev@modusbox.com>
+ - Claudio Viola <claudio.viola@modusbox.com>
  --------------
  ******/
 'use strict'
@@ -37,21 +38,61 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
     const knex = await Db.getKnex()
     const trxFunction = async (trx, doCommit = true) => {
       try {
-        await knex.from(knex.raw('?? (??, ??, ??, ??, ??)', ['transferParticipant', 'transferId', 'participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId', 'amount']))
-          .insert(function () {
-            this.select(knex.raw('?', transferId), 'PC.participantCurrencyId')
-              .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'RoleType']))
-              .select('E.ledgerEntryTypeId')
-              .select(knex.raw('CASE ?? WHEN ? THEN ? WHEN ? THEN ? ELSE ? END AS ??', ['P.name', ledgerEntry.payerFspId, ledgerEntry.amount, ledgerEntry.payeeFspId, ledgerEntry.amount * -1, 0, 'amount']))
-              .from('participantCurrency as PC')
-              .innerJoin('participant as P', 'P.participantId', 'PC.participantId')
-              .innerJoin('ledgerEntryType as E', 'E.LedgerAccountTypeId', 'PC.LedgerAccountTypeId')
-              .leftOuterJoin('transferParticipantRoleType as T1', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payerFspId])).andOn('T1.name', knex.raw('?', ['PAYER_DFSP'])) })
-              .leftOuterJoin('transferParticipantRoleType as T2', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payeeFspId])).andOn('T2.name', knex.raw('?', ['PAYEE_DFSP'])) })
-              .where('E.name', ledgerEntry.ledgerEntryTypeId)
-              .whereIn('P.name', [ledgerEntry.payerFspId, ledgerEntry.payeeFspId])
-              .where('PC.currencyId', ledgerEntry.currency)
-          }).transacting(trx)
+        const recordsToInsert = await knex.select(knex.raw('? AS transferId', transferId), 'PC.participantCurrencyId')
+          .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'transferParticipantRoleTypeId']))
+          .select('E.ledgerEntryTypeId')
+          .select(knex.raw('CASE ?? WHEN ? THEN ? WHEN ? THEN ? ELSE ? END AS ??', ['P.name', ledgerEntry.payerFspId, ledgerEntry.amount, ledgerEntry.payeeFspId, ledgerEntry.amount * -1, 0, 'amount']))
+          .from('participantCurrency as PC')
+          .innerJoin('participant as P', 'P.participantId', 'PC.participantId')
+          .innerJoin('ledgerEntryType as E', 'E.LedgerAccountTypeId', 'PC.LedgerAccountTypeId')
+          .leftOuterJoin('transferParticipantRoleType as T1', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payerFspId])).andOn('T1.name', knex.raw('?', ['PAYER_DFSP'])) })
+          .leftOuterJoin('transferParticipantRoleType as T2', function () { this.on('P.name', '=', knex.raw('?', [ledgerEntry.payeeFspId])).andOn('T2.name', knex.raw('?', ['PAYEE_DFSP'])) })
+          .where('E.name', ledgerEntry.ledgerEntryTypeId)
+          .whereIn('P.name', [ledgerEntry.payerFspId, ledgerEntry.payeeFspId])
+          .where('PC.currencyId', ledgerEntry.currency)
+          .transacting(trx)
+
+        await knex('transferParticipant')
+          .insert(recordsToInsert)
+          .transacting(trx)
+
+        await Promise.all(recordsToInsert.map(async record => {
+          const queryResult = await knex('participantPosition')
+            .where('participantCurrencyId', '=', record.participantCurrencyId)
+            .increment('value', record.amount)
+            .transacting(trx)
+          if (queryResult === 0) {
+            throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to update participantPosition record for participantCurrencyId: ${record.participantCurrencyId}`)
+          }
+        }))
+
+        const transferStateChangeId = await knex('transferStateChange')
+          .select('transferStateChangeId')
+          .where('transferId', transferId)
+          .andWhere('transferStateId', 'COMMITTED')
+          .transacting(trx)
+        if (transferStateChangeId.length === 0 || !transferStateChangeId[0].transferStateChangeId || transferStateChangeId.length > 1) {
+          throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to find transfer with COMMITTED state for transferId : ${transferId}`)
+        }
+
+        const participantPositionRecords = await knex('participantPosition')
+          .select('participantPositionId', 'value', 'reservedValue')
+          .where('participantCurrencyId', recordsToInsert[0].participantCurrencyId)
+          .orWhere('participantCurrencyId', recordsToInsert[1].participantCurrencyId)
+          .transacting(trx)
+
+        if (participantPositionRecords.length !== 2) {
+          throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to find all participantPosition records for ParticipantCurrency: {${recordsToInsert[0].participantCurrencyId},${recordsToInsert[1].participantCurrencyId}}`)
+        }
+        const participantPositionChangeRecords = participantPositionRecords.map(participantPositionRecord => {
+          participantPositionRecord.transferStateChangeId = transferStateChangeId[0].transferStateChangeId
+          return participantPositionRecord
+        })
+
+        await knex('participantPositionChange')
+          .insert(participantPositionChangeRecords)
+          .transacting(trx)
+
         if (doCommit) {
           await trx.commit
         }
