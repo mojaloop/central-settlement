@@ -27,211 +27,459 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Logger = require('@mojaloop/central-services-logger')
-const TransferFulfilFacade = require('../../../../src/models/transferSettlement/facade')
+const Model = require('../../../../src/models/transferSettlement/facade')
 const Db = require('../../../../src/lib/db')
 
-Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
+const recordsToInsert = [{
+  transferId: '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93',
+  participantCurrencyId: 13,
+  transferParticipantRoleTypeId: 1,
+  ledgerEntryTypeId: 2,
+  amount: '1.27'
+},
+{
+  transferId: '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93',
+  participantCurrencyId: 14,
+  transferParticipantRoleTypeId: 2,
+  ledgerEntryTypeId: 2,
+  amount: '-1.27'
+}]
+const ledgerEntry = {
+  transferId: '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93',
+  ledgerAccountTypeId: 'INTERCHANGE_FEE',
+  ledgerEntryTypeId: 'INTERCHANGE_FEE',
+  amount: '1.27',
+  currency: 'TZS',
+  payerFspId: 'testfsp1',
+  payeeFspId: 'testfsp2'
+}
+const expectedParticipantPositionChangeRecords = [
+  {
+    participantPositionId: 130,
+    value: 39.37,
+    reservedValue: 0,
+    transferStateChangeId: 4581
+  },
+  {
+    participantPositionId: 129,
+    value: -39.37,
+    reservedValue: 0,
+    transferStateChangeId: 4581
+  }
+]
+Test('TransferSettlement facade', async (transferSettlementTest) => {
   let sandbox
+  let knexStub
+  let trxStub
+  let trxSpyCommit
+  let trxSpyRollBack
 
-  transferFulfilModelTest.beforeEach(test => {
+  transferSettlementTest.beforeEach(t => {
     sandbox = Sinon.createSandbox()
-    test.end()
+    trxStub = {
+      get commit () {
+
+      },
+      get rollback () {
+
+      }
+    }
+    trxSpyCommit = sandbox.spy(trxStub, 'commit', ['get'])
+
+    trxSpyRollBack = sandbox.spy(trxStub, 'rollback', ['get'])
+    knexStub = {
+      insert: sandbox.stub().returnsThis(),
+      increment: sandbox.stub().returnsThis(),
+      raw: sandbox.stub().returnsThis(),
+      transaction: sandbox.stub().callsArgWith(0, trxStub),
+      select: sandbox.stub().returnsThis(),
+      from: sandbox.stub().returnsThis(),
+      innerJoin: sandbox.stub().returnsThis(),
+      leftOuterJoin: sandbox.stub().returnsThis(),
+      where: sandbox.stub().returnsThis(),
+      whereIn: sandbox.stub().returnsThis(),
+      andWhere: sandbox.stub().returnsThis(),
+      orWhere: sandbox.stub().returnsThis(),
+      transacting: sandbox.stub(),
+      union: sandbox.stub().returnsThis(),
+      on: sandbox.stub().returnsThis(),
+      andOn: sandbox.stub().returnsThis(),
+      update: sandbox.stub().returnsThis(),
+      joinRaw: sandbox.stub().returnsThis()
+    }
+    t.end()
   })
 
-  transferFulfilModelTest.afterEach(test => {
+  transferSettlementTest.afterEach(t => {
     sandbox.restore()
-    test.end()
+    t.end()
   })
 
-  await transferFulfilModelTest.test('transferFulfilModel should', async updateTransferSettlementTest => {
+  await transferSettlementTest.test('insertLedgerEntry, when everything is fine, should', async (test) => {
     try {
-      await updateTransferSettlementTest.test('?????????the transferParticipantStateChange table', async test => {
-        try {
-          const transferId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
-          const status = 'success'
+      sandbox.stub(Db, 'getKnex')
 
-          sandbox.stub(Db, 'getKnex')
-          // const knexStub = sandbox.stub()
-          const trxStub = sandbox.stub()
-          trxStub.commit = sandbox.stub()
-          const knexStub = {
-            insert: sandbox.stub().returnsThis(),
-            increment: sandbox.stub().returnsThis(),
-            raw: sandbox.stub().returnsThis(),
-            transaction: sandbox.stub().callsArgWith(0, trxStub),
-            select: sandbox.stub().returnsThis(),
-            from: sandbox.stub().returnsThis(),
-            innerJoin: sandbox.stub().returnsThis(),
-            leftOuterJoin: sandbox.stub().returnsThis(),
-            where: sandbox.stub().returnsThis(),
-            whereIn: sandbox.stub().returnsThis(),
-            andWhere: sandbox.stub().returnsThis(),
-            orWhere: sandbox.stub().returnsThis(),
-            transacting: sandbox.stub(),
-            union: sandbox.stub().returnsThis(),
-            on: sandbox.stub().returnsThis(),
-            andOn: sandbox.stub().returnsThis(),
-            update: sandbox.stub().returnsThis(),
-            joinRaw: sandbox.stub().returnsThis(),
-          }
-          const knexFunc = sandbox.stub().returns(knexStub)
-          Object.assign(knexFunc, knexStub)
-          Db.getKnex.returns(knexFunc)
-          knexStub.where.onCall(0).callsArgOn(0, knexStub)
-          knexStub.where.onCall(0).returns(knexStub)
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).resolves(1)
+      knexStub.transacting.onCall(2).resolves(1)
+      knexStub.transacting.onCall(3).resolves(1)
 
-          knexStub.andWhere.onCall(0).callsArgOn(0, knexStub)
-          knexStub.andWhere.onCall(0).returns(knexStub)
-          knexStub.andWhere.onCall(1).returns(knexStub)
-
-          knexStub.insert.onCall(1).callsArgOn(0, knexStub)
-          knexStub.insert.onCall(1).returns(knexStub)
-
-          knexStub.union.onCall(0).callsArgOn(0, knexStub)
-          // knexStub.select.onCall(0).callsArgOn(0, knexStub)
-          knexStub.innerJoin.onCall(6).callsArgOn(1, knexStub)
-          knexStub.innerJoin.onCall(6).returns(knexStub)
-          knexStub.where.onCall(2).callsArgOn(0, knexStub)
-          knexStub.andWhere.onCall(2).callsArgOn(0, knexStub)
-          knexStub.innerJoin.onCall(7).callsArgOn(0, knexStub)
-          knexStub.innerJoin.onCall(7).returns(knexStub)
-          knexStub.where.onCall(4).callsArgOn(0, knexStub)
-          knexStub.where.onCall(4).returns(knexStub)
-          knexStub.union.onCall(1).callsArgOn(0, knexStub)
-          knexStub.union.onCall(1).returns(knexStub)
-
-          knexStub.andWhere.onCall(4).callsArgOn(0, knexStub)
-          knexStub.innerJoin.onCall(14).callsArgOn(1, knexStub)
-          knexStub.innerJoin.onCall(14).returns(knexStub)
-          knexStub.where.onCall(4).callsArgOn(0, knexStub)
-          knexStub.where.onCall(4).returns(knexStub)
-          knexStub.andWhere.onCall(4).callsArgOn(0, knexStub)
-          knexStub.where.onCall(6).callsArgOn(0, knexStub)
-          knexStub.where.onCall(6).returns(knexStub)
-          knexStub.andWhere.onCall(6).callsArgOn(0, knexStub)
-
-
-          knexStub.insert.onCall(3).callsArgOn(0, knexStub)
-          knexStub.insert.onCall(3).returns(knexStub)
-          knexStub.innerJoin.onCall(15).callsArgOn(0, knexStub)
-          knexStub.innerJoin.onCall(15).returns(knexStub)
-
-
-          knexStub.where.onCall(8).callsArgOn(0, knexStub)
-          knexStub.where.onCall(8).returns(knexStub)
-          knexStub.andWhere.onCall(8).callsArgOn(0, knexStub)
-          knexStub.union.onCall(2).callsArgOn(0, knexStub)
-          knexStub.union.onCall(2).returns(knexStub)
-          knexStub.innerJoin.onCall(22).callsArgOn(1, knexStub)
-          knexStub.innerJoin.onCall(22).returns(knexStub)
-          knexStub.where.onCall(10).callsArgOn(0, knexStub)
-          knexStub.where.onCall(10).returns(knexStub)
-
-          knexStub.andWhere.onCall(10).callsArgOn(0, knexStub)
-          knexStub.innerJoin.onCall(23).callsArgOn(1, knexStub)
-          knexStub.innerJoin.onCall(23).returns(knexStub)
-
-          // knexStub.where.onCall(2).returns(knexStub)
-
-
-          /*Db.getKnex = sandbox.stub()
-          const knexStub = sandbox.stub()
-          knexStub.raw = sandbox.stub()
-
-          knexStub.raw.returns({
-            transacting: sandbox.stub()
-          })
-          const trxStub = sandbox.stub()
-          trxStub.commit = sandbox.stub()
-          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
-
-          Db.getKnex.returns(knexStub)
-
-          knexStub.returns({
-            insert: sandbox.stub().returns({
-              toString: sandbox.stub().returns({
-                replace: sandbox.stub()
-              }),
-              transacting: sandbox.stub()
-            }),
-            update: sandbox.stub().returns({
-              innerJoin: sandbox.stub().returns({
-                joinRaw: sandbox.stub().returns({
-                  transacting: sandbox.stub()
-                })
-              })
-            })
-          })
-
-          const andWhereContext = sandbox.stub()
-          andWhereContext.andWhere = sandbox.stub().returns({
-            andWhere: sandbox.stub()
-          })
-
-          const whereContext = sandbox.stub()
-          whereContext.where = sandbox.stub().returns({
-            andWhere: sandbox.stub().callsArgOn(4, andWhereContext).returns({
-              andWhere: sandbox.stub()
-            })
-          })
-
-          const innerJoinContext = sandbox.stub()
-          innerJoinContext.on = sandbox.stub().returns({
-            andOn: sandbox.stub().returns({
-              andOn: sandbox.stub()
-            })
-          })
-
-          const unionContext = sandbox.stub()
-          unionContext.select = sandbox.stub().returns({
-            from: sandbox.stub().returns({
-              innerJoin: sandbox.stub().returns({
-                innerJoin: sandbox.stub().returns({
-                  innerJoin: sandbox.stub().returns({
-                    innerJoin: sandbox.stub().callsArgOn(3, innerJoinContext).returns({
-                      where: sandbox.stub().callsArgOn(3, whereContext)
-                    })
-                  })
-                })
-              })
-            })
-          })
-
-          const context = sandbox.stub()
-          context.from = sandbox.stub().returns({
-            select: sandbox.stub().returns({
-              innerJoin: sandbox.stub().returns({
-                innerJoin: sandbox.stub().returns({
-                  innerJoin: sandbox.stub().returns({
-                    where: sandbox.stub().callsArgOn(1, whereContext).returns({
-                      union: sandbox.stub().callsArgOn(2, unionContext)
-                    })
-                  })
-                })
-              })
-            })
-          })
-
-          knexStub.from = sandbox.stub().returns({
-            insert: sandbox.stub().callsArgOn(0, context).returns({
-              transacting: sandbox.stub()
-            })
-          })
-*/
-          const result = await TransferFulfilFacade.updateTransferSettlement(transferId, status)
-          test.ok(result, 'Result returned')
-          test.end()
-        } catch (err) {
-          Logger.error(`updateTransferSettlement failed with error - ${err}`)
-          test.pass()
-          test.end()
+      knexStub.transacting.onCall(4).resolves([{
+        transferStateChangeId: 4581
+      }])
+      knexStub.transacting.onCall(5).resolves([
+        {
+          participantPositionId: 130,
+          value: 39.37,
+          reservedValue: 0
+        },
+        {
+          participantPositionId: 129,
+          value: -39.37,
+          reservedValue: 0
         }
-      })
-      await updateTransferSettlementTest.end()
+      ])
+      knexStub.transacting.onCall(6).resolves(1)
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntry(ledgerEntry, transferId, trxStub)
+      test.deepEqual(knexStub.insert.getCalls()[0].args[0], recordsToInsert, 'insert the records to transferParticipant table')
+      test.deepEqual(knexStub.where.getCalls()[2].args[2], 13, 'increment the value of ParticipantPosition for ParticipantCurrency')
+      test.deepEqual(knexStub.where.getCalls()[3].args[2], 14, 'increment the value of ParticipantPosition for ParticipantCurrency')
+      test.deepEqual(knexStub.increment.getCalls()[0].args[0], 'value', 'increment the value of ParticipantPosition')
+      test.deepEqual(knexStub.increment.getCalls()[0].args[1], '1.27', 'increment the value of ParticipantPosition')
+      test.deepEqual(knexStub.increment.getCalls()[1].args[0], 'value', 'increment the value of ParticipantPosition')
+      test.deepEqual(knexStub.increment.getCalls()[1].args[1], '-1.27', 'increment the value of ParticipantPosition')
+
+      test.deepEqual(knexStub.insert.getCalls()[1].args[0], expectedParticipantPositionChangeRecords, 'insert the records to ParticipantPositionChange table')
+
+      test.end()
     } catch (err) {
-      Logger.error(`updateTransferParticipantStateChange failed with error - ${err}`)
-      await updateTransferSettlementTest.end()
+      console.log(err)
+      test.fail(`should have not throw an error ${err}`)
+      test.end()
     }
   })
-  await transferFulfilModelTest.end()
+
+  await transferSettlementTest.test('insertLedgerEntry when participantPosition records are not updated correctly', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).resolves(1)
+      knexStub.transacting.onCall(2).resolves(0)
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntry(ledgerEntry, transferId, trxStub)
+      test.fail('Error not thrown')
+      test.end()
+    } catch (err) {
+      test.ok(err instanceof Error, 'should throw an error')
+      test.equal(err.message, 'Unable to update participantPosition record for participantCurrencyId: 13', 'should throw Unable to update participantPosition error message')
+
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('insertLedgerEntry when transferStateChange record is not found', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).resolves(1)
+      knexStub.transacting.onCall(2).resolves(1)
+      knexStub.transacting.onCall(3).resolves(1)
+      knexStub.transacting.onCall(4).resolves([])
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntry(ledgerEntry, transferId, trxStub)
+      test.fail('Error not thrown')
+      test.end()
+    } catch (err) {
+      test.ok(err instanceof Error, 'should throw an error')
+      test.equal(err.message, 'Unable to find transfer with COMMITTED state for transferId : 42a874d4-82a4-4471-a3fc-3dfeb6f7cb93', 'should throw Unable to find transfer error message')
+
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('insertLedgerEntry when participantPositions records are not found', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).resolves(1)
+      knexStub.transacting.onCall(2).resolves(1)
+      knexStub.transacting.onCall(3).resolves(1)
+      knexStub.transacting.onCall(4).resolves([{
+        transferStateChangeId: 4581
+      }])
+      knexStub.transacting.onCall(5).resolves([
+        {
+          participantPositionId: 130,
+          value: 39.37,
+          reservedValue: 0
+        }
+      ])
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntries([ledgerEntry], transferId, trxStub)
+      test.fail('Error not thrown')
+      test.end()
+    } catch (err) {
+      test.ok(err instanceof Error, 'should throw an error')
+      test.equal(err.message, 'Unable to find all participantPosition records for ParticipantCurrency: {13,14}', 'should throw unable to find all participantPosition records error message')
+
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('insertLedgerEntry when transaction is not passed', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).resolves(1)
+      knexStub.transacting.onCall(2).resolves(1)
+      knexStub.transacting.onCall(3).resolves(1)
+
+      knexStub.transacting.onCall(4).resolves([{
+        transferStateChangeId: 4581
+      }])
+      knexStub.transacting.onCall(5).resolves([
+        {
+          participantPositionId: 130,
+          value: 39.37,
+          reservedValue: 0
+        },
+        {
+          participantPositionId: 129,
+          value: -39.37,
+          reservedValue: 0
+        }
+      ])
+      knexStub.transacting.onCall(6).resolves(1)
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntry(ledgerEntry, transferId)
+      test.equal(trxSpyCommit.get.calledOnce, true, 'should commit the transaction')
+      test.end()
+    } catch (err) {
+      test.fail('An error was thrown')
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('insertLedgerEntry when transaction is not passed and an error is thrown', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).rejects(new Error('An Error occured while inserting'))
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntry(ledgerEntry, transferId)
+      test.fail('Error not thrown')
+    } catch (err) {
+      test.ok(err instanceof Error, 'should throw an error')
+      test.equal(err.message, 'An Error occured while inserting')
+      test.equal(trxSpyRollBack.get.calledOnce, true, 'should rollback the transaction')
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('insertLedgerEntries, when everything is fine, should', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).resolves(1)
+      knexStub.transacting.onCall(2).resolves(1)
+      knexStub.transacting.onCall(3).resolves(1)
+
+      knexStub.transacting.onCall(4).resolves([{
+        transferStateChangeId: 4581
+      }])
+      knexStub.transacting.onCall(5).resolves([
+        {
+          participantPositionId: 130,
+          value: 39.37,
+          reservedValue: 0
+        },
+        {
+          participantPositionId: 129,
+          value: -39.37,
+          reservedValue: 0
+        }
+      ])
+      knexStub.transacting.onCall(6).resolves(1)
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntries([ledgerEntry], transferId, trxStub)
+      test.deepEqual(knexStub.insert.getCalls()[0].args[0], recordsToInsert, 'insert the records to transferParticipant table')
+      test.deepEqual(knexStub.where.getCalls()[2].args[2], 13, 'increment the value of ParticipantPosition for ParticipantCurrency')
+      test.deepEqual(knexStub.where.getCalls()[3].args[2], 14, 'increment the value of ParticipantPosition for ParticipantCurrency')
+      test.deepEqual(knexStub.increment.getCalls()[0].args[0], 'value', 'increment the value of ParticipantPosition')
+      test.deepEqual(knexStub.increment.getCalls()[0].args[1], '1.27', 'increment the value of ParticipantPosition')
+      test.deepEqual(knexStub.increment.getCalls()[1].args[0], 'value', 'increment the value of ParticipantPosition')
+      test.deepEqual(knexStub.increment.getCalls()[1].args[1], '-1.27', 'increment the value of ParticipantPosition')
+
+      test.deepEqual(knexStub.insert.getCalls()[1].args[0], expectedParticipantPositionChangeRecords, 'insert the records to ParticipantPositionChange table')
+
+      test.end()
+    } catch (err) {
+      console.log(err)
+      test.fail(`should have not throw an error ${err}`)
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('insertLedgerEntries, when transaction is not passed, should', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).resolves(1)
+      knexStub.transacting.onCall(2).resolves(1)
+      knexStub.transacting.onCall(3).resolves(1)
+
+      knexStub.transacting.onCall(4).resolves([{
+        transferStateChangeId: 4581
+      }])
+      knexStub.transacting.onCall(5).resolves([
+        {
+          participantPositionId: 130,
+          value: 39.37,
+          reservedValue: 0
+        },
+        {
+          participantPositionId: 129,
+          value: -39.37,
+          reservedValue: 0
+        }
+      ])
+      knexStub.transacting.onCall(6).resolves(1)
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntries([ledgerEntry], transferId)
+      test.equal(trxSpyCommit.get.calledOnce, true, 'should commit the transaction')
+      test.end()
+    } catch (err) {
+      console.log(err)
+      test.fail(`should have not throw an error ${err}`)
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('insertLedgerEntry when transaction is not passed and an error is thrown', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+
+      knexStub.transacting.onCall(0).resolves(recordsToInsert)
+      knexStub.transacting.onCall(1).rejects(new Error('An Error occured while inserting'))
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntries([ledgerEntry], transferId)
+      test.fail('Error not thrown')
+    } catch (err) {
+      test.ok(err instanceof Error, 'should throw an error')
+      test.equal(err.message, 'An Error occured while inserting')
+      test.equal(trxSpyRollBack.get.calledOnce, true, 'should rollback the transaction')
+      test.end()
+    }
+  })
+  
+  await transferSettlementTest.test('updateTransferSettlement should', async (test) => {
+    try {
+      const transferId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
+      const status = 'success'
+
+      sandbox.stub(Db, 'getKnex')
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+      knexStub.where.onCall(0).callsArgOn(0, knexStub)
+      knexStub.where.onCall(0).returns(knexStub)
+
+      knexStub.andWhere.onCall(0).callsArgOn(0, knexStub)
+      knexStub.andWhere.onCall(0).returns(knexStub)
+      knexStub.andWhere.onCall(1).returns(knexStub)
+
+      knexStub.insert.onCall(1).callsArgOn(0, knexStub)
+      knexStub.insert.onCall(1).returns(knexStub)
+
+      knexStub.union.onCall(0).callsArgOn(0, knexStub)
+      knexStub.innerJoin.onCall(6).callsArgOn(1, knexStub)
+      knexStub.innerJoin.onCall(6).returns(knexStub)
+      knexStub.where.onCall(2).callsArgOn(0, knexStub)
+      knexStub.andWhere.onCall(2).callsArgOn(0, knexStub)
+      knexStub.innerJoin.onCall(7).callsArgOn(0, knexStub)
+      knexStub.innerJoin.onCall(7).returns(knexStub)
+      knexStub.where.onCall(4).callsArgOn(0, knexStub)
+      knexStub.where.onCall(4).returns(knexStub)
+      knexStub.union.onCall(1).callsArgOn(0, knexStub)
+      knexStub.union.onCall(1).returns(knexStub)
+
+      knexStub.andWhere.onCall(4).callsArgOn(0, knexStub)
+      knexStub.innerJoin.onCall(14).callsArgOn(1, knexStub)
+      knexStub.innerJoin.onCall(14).returns(knexStub)
+      knexStub.where.onCall(4).callsArgOn(0, knexStub)
+      knexStub.where.onCall(4).returns(knexStub)
+      knexStub.andWhere.onCall(4).callsArgOn(0, knexStub)
+      knexStub.where.onCall(6).callsArgOn(0, knexStub)
+      knexStub.where.onCall(6).returns(knexStub)
+      knexStub.andWhere.onCall(6).callsArgOn(0, knexStub)
+
+      knexStub.insert.onCall(3).callsArgOn(0, knexStub)
+      knexStub.insert.onCall(3).returns(knexStub)
+      knexStub.innerJoin.onCall(15).callsArgOn(0, knexStub)
+      knexStub.innerJoin.onCall(15).returns(knexStub)
+
+      knexStub.where.onCall(8).callsArgOn(0, knexStub)
+      knexStub.where.onCall(8).returns(knexStub)
+      knexStub.andWhere.onCall(8).callsArgOn(0, knexStub)
+      knexStub.union.onCall(2).callsArgOn(0, knexStub)
+      knexStub.union.onCall(2).returns(knexStub)
+      knexStub.innerJoin.onCall(22).callsArgOn(1, knexStub)
+      knexStub.innerJoin.onCall(22).returns(knexStub)
+      knexStub.where.onCall(10).callsArgOn(0, knexStub)
+      knexStub.where.onCall(10).returns(knexStub)
+
+      knexStub.andWhere.onCall(10).callsArgOn(0, knexStub)
+      knexStub.innerJoin.onCall(23).callsArgOn(1, knexStub)
+      knexStub.innerJoin.onCall(23).returns(knexStub)
+
+      await Model.updateTransferSettlement(transferId, status)
+      test.ok('update the transfer Settlement')
+      // TODO add expectations
+      test.end()
+    } catch (err) {
+      Logger.error(`updateTransferSettlement failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.end()
 })
