@@ -67,11 +67,72 @@ Test('TransferFulfilFacade', async (transferFulfilModelTest) => {
             whereIn: sandbox.stub().returnsThis(),
             andWhere: sandbox.stub().returnsThis(),
             orWhere: sandbox.stub().returnsThis(),
-            transacting: sandbox.stub()
+            transacting: sandbox.stub(),
+            union: sandbox.stub().returnsThis(),
+            on: sandbox.stub().returnsThis(),
+            andOn: sandbox.stub().returnsThis(),
+            update: sandbox.stub().returnsThis(),
+            joinRaw: sandbox.stub().returnsThis(),
           }
           const knexFunc = sandbox.stub().returns(knexStub)
           Object.assign(knexFunc, knexStub)
           Db.getKnex.returns(knexFunc)
+          knexStub.where.onCall(0).callsArgOn(0, knexStub)
+          knexStub.where.onCall(0).returns(knexStub)
+
+          knexStub.andWhere.onCall(0).callsArgOn(0, knexStub)
+          knexStub.andWhere.onCall(0).returns(knexStub)
+          knexStub.andWhere.onCall(1).returns(knexStub)
+
+          knexStub.insert.onCall(1).callsArgOn(0, knexStub)
+          knexStub.insert.onCall(1).returns(knexStub)
+
+          knexStub.union.onCall(0).callsArgOn(0, knexStub)
+          // knexStub.select.onCall(0).callsArgOn(0, knexStub)
+          knexStub.innerJoin.onCall(6).callsArgOn(1, knexStub)
+          knexStub.innerJoin.onCall(6).returns(knexStub)
+          knexStub.where.onCall(2).callsArgOn(0, knexStub)
+          knexStub.andWhere.onCall(2).callsArgOn(0, knexStub)
+          knexStub.innerJoin.onCall(7).callsArgOn(0, knexStub)
+          knexStub.innerJoin.onCall(7).returns(knexStub)
+          knexStub.where.onCall(4).callsArgOn(0, knexStub)
+          knexStub.where.onCall(4).returns(knexStub)
+          knexStub.union.onCall(1).callsArgOn(0, knexStub)
+          knexStub.union.onCall(1).returns(knexStub)
+
+          knexStub.andWhere.onCall(4).callsArgOn(0, knexStub)
+          knexStub.innerJoin.onCall(14).callsArgOn(1, knexStub)
+          knexStub.innerJoin.onCall(14).returns(knexStub)
+          knexStub.where.onCall(4).callsArgOn(0, knexStub)
+          knexStub.where.onCall(4).returns(knexStub)
+          knexStub.andWhere.onCall(4).callsArgOn(0, knexStub)
+          knexStub.where.onCall(6).callsArgOn(0, knexStub)
+          knexStub.where.onCall(6).returns(knexStub)
+          knexStub.andWhere.onCall(6).callsArgOn(0, knexStub)
+
+
+          knexStub.insert.onCall(3).callsArgOn(0, knexStub)
+          knexStub.insert.onCall(3).returns(knexStub)
+          knexStub.innerJoin.onCall(15).callsArgOn(0, knexStub)
+          knexStub.innerJoin.onCall(15).returns(knexStub)
+
+
+          knexStub.where.onCall(8).callsArgOn(0, knexStub)
+          knexStub.where.onCall(8).returns(knexStub)
+          knexStub.andWhere.onCall(8).callsArgOn(0, knexStub)
+          knexStub.union.onCall(2).callsArgOn(0, knexStub)
+          knexStub.union.onCall(2).returns(knexStub)
+          knexStub.innerJoin.onCall(22).callsArgOn(1, knexStub)
+          knexStub.innerJoin.onCall(22).returns(knexStub)
+          knexStub.where.onCall(10).callsArgOn(0, knexStub)
+          knexStub.where.onCall(10).returns(knexStub)
+
+          knexStub.andWhere.onCall(10).callsArgOn(0, knexStub)
+          knexStub.innerJoin.onCall(23).callsArgOn(1, knexStub)
+          knexStub.innerJoin.onCall(23).returns(knexStub)
+
+          // knexStub.where.onCall(2).returns(knexStub)
+
 
           /*Db.getKnex = sandbox.stub()
           const knexStub = sandbox.stub()
