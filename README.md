@@ -51,6 +51,8 @@ Running the tests:
 
 Tests include code coverage via istanbul. See the test/ folder for testing scripts.
 
+Running integration tests (narrow)
+    npm run test:int:new
 ### Running Integration Tests interactively
 
 If you want to run integration tests in a repetitive manner, you can startup the test containers using `docker-compose`, login to running `central-settlement` container like so:
