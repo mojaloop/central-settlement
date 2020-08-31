@@ -1,12 +1,26 @@
 /* eslint-env jest */
-
 let request = require('supertest')
 const config = require('../../config/default.json')
 
-const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
-const Config = require('../../src/lib/config')
-const KafkaProducer = require('@mojaloop/central-services-stream').Util.Producer
 const Enum = require('@mojaloop/central-services-shared').Enum
+const Sinon = require('sinon')
+const test_start_date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+sandbox = Sinon.createSandbox()
+
+const Config = require('../../src/lib/config')
+Config.PORT = 9998
+console.log('WORKER ID:', process.env.JEST_WORKER_ID)
+
+Config.DATABASE.connection.database = `central_ledger_integration_${process.env.JEST_WORKER_ID}`
+Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE = `topic-{{functionality}}-{{action}}${process.env.JEST_WORKER_ID}`
+const Logger = require('@mojaloop/central-services-logger')
+
+const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
+const KafkaConsumer = require('@mojaloop/central-services-stream').Kafka.Consumer
+const processSpy = sandbox.spy(Logger, 'info')
+
+const KafkaProducer = require('@mojaloop/central-services-stream').Util.Producer
 const Uuid = require('uuid4')
 const Db = require('../../src/lib/db')
 const ilpPacket = require('ilp-packet')
@@ -23,16 +37,18 @@ const expect = chai.expect
 function timeout (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
-
+let server
 describe('when a transfer notification with COMMITTED status is received  ', () => {
-  // TODO refactor send kafka message in  before()
-  // refactor separate checks
   it(`it should
     update the ledger entries,
     update the participantPosition records for payeer and payee
     update participantPositionChange records for payeer and payee
     with a 0.006 % fee amount`, async () => {
-    await require('../../src/api/index.js')
+    try {
+      server = await require('../../src/api/index.js')
+    } catch (err) {
+      console.log(`err ${err}`)
+    }
     request = request(`http://localhost:${config.PORT}`)
 
     const transactionId = Uuid()
@@ -156,11 +172,8 @@ describe('when a transfer notification with COMMITTED status is received  ', () 
       data: ilpData // base64url encoded attached data
     }
     const packet = ilpPacket.serializeIlpPayment(packetInput)
-
     const base64encodedIlpPacket = base64url.fromBase64(packet.toString('base64')).replace('"', '')
-
-    // const jsonPacket2 = await ilpPacket.deserializeIlpPayment(Buffer.from(base64encodedIlpPacket, 'base64'))
-
+    //const jsonPacket2 = await ilpPacket.deserializeIlpPayment(Buffer.from(base64encodedIlpPacket, 'base64'))
     await Db.transferDuplicateCheck.insert({
       transferId: transactionId,
       hash: 'someHash'
@@ -199,9 +212,11 @@ describe('when a transfer notification with COMMITTED status is received  ', () 
       Enum.Events.EventStatus.SUCCESS,
       'fsp511290656'
     )
+    // await timeout(3000)
+    while (processSpy.lastCall.args[0] !== 'TransferFulfilHandler::processTransferSettlement::validationPassed::done--C2') {
+     await timeout(500)
+    }
 
-    // wait timeout for processing the records
-    await timeout(7000)
 
     const transferParticipantRecords = await knex('transferParticipant')
       .where('transferId', transactionId)
@@ -223,6 +238,7 @@ describe('when a transfer notification with COMMITTED status is received  ', () 
           ledgerEntryTypeId: 2,
           amount: -1.27
         }])
+
     const newParticipantPositionRecords = await knex('participantPosition')
       .select('participantPositionId', 'value', 'reservedValue')
       .where('participantCurrencyId', 14)
@@ -236,3 +252,17 @@ describe('when a transfer notification with COMMITTED status is received  ', () 
     expect(participantPositionChangeRecords[1].value.toFixed(decimalPlaces)).to.equal(newParticipantPositionRecords[1].value.toFixed(decimalPlaces))
   }, 30000)
 })
+
+
+afterAll (async () => {
+  console.log(test_start_date)
+  const knex = await Db.getKnex()
+  await knex.raw('SET FOREIGN_KEY_CHECKS = 0;')
+  const allTables = await knex.raw(`SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = '${Config.DATABASE.connection.database}';`);
+  await Promise.allSettled(allTables[0].map(table => {
+    if (table.TABLE_NAME !== 'migration' && table.TABLE_NAME !== 'migration_lock') {
+      return knex.raw(`DELETE FROM ${table.TABLE_NAME} WHERE createdDate > '${test_start_date}'`)
+    }
+  }))
+  await knex.raw('SET FOREIGN_KEY_CHECKS = 1')
+});

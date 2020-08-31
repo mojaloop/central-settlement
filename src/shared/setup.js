@@ -97,6 +97,11 @@ const createServer = async function (port, modules) {
         }
       }
     ])
+    server.events.on('stop', async () => {
+      await Db.disconnect()
+
+      console.log('Server stopped')
+    })
     await Plugins.registerPlugins(server)
     await server.register(modules)
     await server.start()
