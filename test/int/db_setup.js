@@ -3,7 +3,6 @@ const Path = require('path')
 const Migrations = require('@mojaloop/central-services-database').Migrations
 const Knex = require('knex')
 const data = require('./data')
-const ledgerAccountTypes = require('./data/ledger_account_types')
 const migrationsDirectory = '../../migrations'
 const seedsDirectory = '../../seeds'
 
@@ -53,7 +52,7 @@ exports.migrate = async function () {
   }
   const knexRoot = Knex(rootConfig)
   const baseMigrations = []
-  let onBoarding = []
+  const onBoarding = []
   // TODO  use a env variable
   const workers = 3
   console.log(`initializing ${workers} schemas`)
@@ -75,26 +74,25 @@ exports.migrate = async function () {
 }
 
 // running in series to guarantee foreign key checks are respected
-function runInSeries(array) {
-  return new Promise(async (resolve,reject) => {
-    for (let i =0; i < array.length; i++) {
+function runInSeries (array) {
+  return new Promise(async (resolve, reject) => {
+    for (let i = 0; i < array.length; i++) {
       try {
         await array[i]
-      }
-      catch (err) {
+      } catch (err) {
         reject(err)
       }
     }
     resolve()
   })
 }
-function onBoardingData(knex, schema) {
+function onBoardingData (knex, schema) {
   // TODO ADD - populate more initial data
   return [
-     knex('participant').withSchema(schema).insert(data.participants) ,
-     knex('ledgerAccountType').withSchema(schema).insert(data.ledgerAccountTypes) ,
-     knex('participantCurrency').withSchema(schema).insert(data.participantCurrencies) ,
-     knex('participantPosition').withSchema(schema).insert(data.participantsPositions),
+    knex('participant').withSchema(schema).insert(data.participants),
+    knex('ledgerAccountType').withSchema(schema).insert(data.ledgerAccountTypes),
+    knex('participantCurrency').withSchema(schema).insert(data.participantCurrencies),
+    knex('participantPosition').withSchema(schema).insert(data.participantsPositions)
   ]
 }
 

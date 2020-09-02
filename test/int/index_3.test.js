@@ -4,12 +4,12 @@ const config = require('../../config/default.json')
 
 const Enum = require('@mojaloop/central-services-shared').Enum
 const Sinon = require('sinon')
-const test_start_date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+const testStartDate = new Date().toISOString().slice(0, 19).replace('T', ' ')
 
-sandbox = Sinon.createSandbox()
+const sandbox = Sinon.createSandbox()
 
 const Config = require('../../src/lib/config')
-Config.PORT = 9999
+Config.PORT = `999${process.env.JEST_WORKER_ID}`
 console.log('WORKER ID:', process.env.JEST_WORKER_ID)
 
 Config.DATABASE.connection.database = `central_ledger_integration_${process.env.JEST_WORKER_ID}`
@@ -17,7 +17,6 @@ Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE = `topic-{{f
 const Logger = require('@mojaloop/central-services-logger')
 
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
-const KafkaConsumer = require('@mojaloop/central-services-stream').Kafka.Consumer
 const processSpy = sandbox.spy(Logger, 'info')
 
 const KafkaProducer = require('@mojaloop/central-services-stream').Util.Producer
@@ -173,7 +172,7 @@ describe('when a transfer notification with COMMITTED status is received  ', () 
     }
     const packet = ilpPacket.serializeIlpPayment(packetInput)
     const base64encodedIlpPacket = base64url.fromBase64(packet.toString('base64')).replace('"', '')
-    //const jsonPacket2 = await ilpPacket.deserializeIlpPayment(Buffer.from(base64encodedIlpPacket, 'base64'))
+    // const jsonPacket2 = await ilpPacket.deserializeIlpPayment(Buffer.from(base64encodedIlpPacket, 'base64'))
     await Db.transferDuplicateCheck.insert({
       transferId: transactionId,
       hash: 'someHash'
@@ -214,9 +213,8 @@ describe('when a transfer notification with COMMITTED status is received  ', () 
     )
     // await timeout(3000)
     while (processSpy.lastCall.args[0] !== 'TransferFulfilHandler::processTransferSettlement::validationPassed::done--C2') {
-     await timeout(500)
+      await timeout(500)
     }
-
 
     const transferParticipantRecords = await knex('transferParticipant')
       .where('transferId', transactionId)
@@ -253,16 +251,14 @@ describe('when a transfer notification with COMMITTED status is received  ', () 
   }, 30000)
 })
 
-
-afterAll (async () => {
-  console.log(test_start_date)
+afterAll(async () => {
   const knex = await Db.getKnex()
   await knex.raw('SET FOREIGN_KEY_CHECKS = 0;')
-  const allTables = await knex.raw(`SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = '${Config.DATABASE.connection.database}';`);
+  const allTables = await knex.raw(`SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = '${Config.DATABASE.connection.database}';`)
   await Promise.allSettled(allTables[0].map(table => {
     if (table.TABLE_NAME !== 'migration' && table.TABLE_NAME !== 'migration_lock') {
-      return knex.raw(`DELETE FROM ${table.TABLE_NAME} WHERE createdDate > '${test_start_date}'`)
+      return knex.raw(`DELETE FROM ${table.TABLE_NAME} WHERE createdDate > '${testStartDate}'`)
     }
   }))
   await knex.raw('SET FOREIGN_KEY_CHECKS = 1')
-});
+})

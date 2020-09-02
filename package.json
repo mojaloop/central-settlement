@@ -64,6 +64,8 @@
         "eslint": "7.5.0",
         "faucet": "0.0.1",
         "get-port": "5.1.1",
+        "istanbul": "^0.4.5",
+        "istanbul-merge": "^1.1.1",
         "jest": "^26.3.0",
         "jest-junit": "^11.1.0",
         "nodemon": "2.0.4",
@@ -100,6 +102,16 @@
         "test:xunit": "tape 'test/unit/**/*.test.js' | tap-xunit",
         "test:coverage": "nyc --reporter=lcov --reporter=text-summary tapes -- 'test/unit/**/**.test.js'",
         "test:coverage-check": "npm run test:coverage && nyc check-coverage",
+
+        "test:coverage:2": "nyc --reporter=json --reporter=html tapes -- 'test/unit/**/**.test.js'",
+        "test:coverage:inst:merge": "istanbul-merge --out coverage_merge/coverage.json ./coverage/coverage-final.json ./coverage_integration/coverage-final.json",
+        "test:coverage:inst:report": "istanbul report --include coverage_merge/coverage.json --dir coverage_merge_instanbul html",
+        "test:coverage:nyc:check": "nyc --nycrc-path .nycrc.combined.yml -t coverage_merge report ",
+
+        "test:coverage:combine2:nyc:cp": "rm -rf ./coverage_merge/*.* && rm -rf ./coverage_merged/* && cp ./coverage/coverage-final.json ./coverage_merge/coverage-final-unit.json && cp ./coverage_integration/coverage-final.json ./coverage_merge/coverage-final-int.json",
+        "test:coverage:combine2:nyc:combine": "nyc merge ./coverage_merge ./coverage_merged/merged-coverage.json",
+        "test:coverage:combine2:nyc:check": "nyc report -t coverage_merged --report-dir coverage_merged --reporter=html",
+
         "test:int": "tape 'test/integration/**/*.test.js'",
         "test:integration": "sh ./test/integration-runner.sh ./test/integration-runner.env",
         "test:int:new:parallel": "docker-compose  -f docker-compose.integration_2.yml up -d && jest --config './jest.integration.config.js' --coverage  --forceExit --maxWorkers=3 --testMatch '**/test/int/**/*.(test|spec).js'",
