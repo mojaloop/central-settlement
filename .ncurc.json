@@ -1,0 +1,13 @@
+{
+  "reject":
+    [
+      "@mojaloop/central-services-database",
+      "@hapi/hapi",
+      "@hapi/inert",
+      "@hapi/vision",
+      "@hapi/joi",
+      "hapi-swagger",
+      "@hapi/boom",
+      "hapi-openapi"
+    ]
+}

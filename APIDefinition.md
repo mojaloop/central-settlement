@@ -1,6 +1,6 @@
 # MOJALOOP Central Settlements, version 1.0.0
 
-Base URL: http|https://undefined/v1
+Base URL: http|https://undefined/v2
 
 - [Endpoints](#endpoints)
   - [GET /settlementWindows/{id}](#get-settlementwindowsid)
