@@ -80,7 +80,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       // Mock request Path templates({}) are resolved using path parameters
       const options = {
         method: 'get',
-        url: '/v1' + mock.request.path
+        url: '/v2' + mock.request.path
       }
       if (mock.request.body) {
         // Send the request body
@@ -127,7 +127,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       // Mock request Path templates({}) are resolved using path parameters
       const options = {
         method: 'get',
-        url: '/v1' + mock.request.path
+        url: '/v2' + mock.request.path
       }
       if (mock.request.body) {
         // Send the request body
@@ -181,7 +181,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       // Mock request Path templates({}) are resolved using path parameters
       const options = {
         method: 'put',
-        url: '/v1' + mock.request.path
+        url: '/v2' + mock.request.path
       }
       if (mock.request.body) {
         // Send the request body
@@ -241,7 +241,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       // Mock request Path templates({}) are resolved using path parameters
       const options = {
         method: 'put',
-        url: '/v1' + mock.request.path
+        url: '/v2' + mock.request.path
       }
       if (mock.request.body) {
         // Send the request body
@@ -299,7 +299,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       // Mock request Path templates({}) are resolved using path parameters
       const options = {
         method: 'put',
-        url: '/v1' + mock.request.path
+        url: '/v2' + mock.request.path
       }
       if (mock.request.body) {
         // Send the request body
@@ -357,7 +357,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       // Mock request Path templates({}) are resolved using path parameters
       const options = {
         method: 'put',
-        url: '/v1' + mock.request.path
+        url: '/v2' + mock.request.path
       }
       if (mock.request.body) {
         // Send the request body
@@ -414,7 +414,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       // Mock request Path templates({}) are resolved using path parameters
       const options = {
         method: 'put',
-        url: '/v1' + mock.request.path
+        url: '/v2' + mock.request.path
       }
       if (mock.request.body) {
         // Send the request body
@@ -471,7 +471,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       // Mock request Path templates({}) are resolved using path parameters
       const options = {
         method: 'put',
-        url: '/v1' + mock.request.path
+        url: '/v2' + mock.request.path
       }
       if (mock.request.body) {
         // Send the request body
