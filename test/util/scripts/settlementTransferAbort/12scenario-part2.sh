@@ -11,7 +11,7 @@ echo "---------------------------------------------------------------------"
 echo "Abort from PENDING_SETTLEMENT"
 echo "---------------------------------------------------------------------"
 sh -c "curl -X PUT \
-  http://127.0.0.1:3007/v1/settlements/1 \
+  http://127.0.0.1:3007/v2/settlements/1 \
   -H 'Content-Type: application/json' \
   -H 'Postman-Token: adea248c-ac2f-41b3-9386-70c328fbcfa8' \
   -H 'cache-control: no-cache' \
@@ -26,7 +26,7 @@ echo "---------------------------------------------------------------------"
 echo "Abort from PS_TRANSFERS_RECORDED"
 echo "---------------------------------------------------------------------"
 sh -c "curl -X PUT \
-  http://127.0.0.1:3007/v1/settlements/2 \
+  http://127.0.0.1:3007/v2/settlements/2 \
   -H 'Content-Type: application/json' \
   -H 'Postman-Token: adea248c-ac2f-41b3-9386-70c328fbcfa8' \
   -H 'cache-control: no-cache' \
@@ -41,7 +41,7 @@ echo "---------------------------------------------------------------------"
 echo "Abort from PS_TRANSFERS_RESERVED"
 echo "---------------------------------------------------------------------"
 sh -c "curl -X PUT \
-  http://127.0.0.1:3007/v1/settlements/3 \
+  http://127.0.0.1:3007/v2/settlements/3 \
   -H 'Content-Type: application/json' \
   -H 'Postman-Token: adea248c-ac2f-41b3-9386-70c328fbcfa8' \
   -H 'cache-control: no-cache' \
@@ -56,7 +56,7 @@ echo "---------------------------------------------------------------------"
 echo "Abort from PS_TRANSFERS_COMMITTED (1) - not allowed"
 echo "---------------------------------------------------------------------"
 sh -c "curl -X PUT \
-  http://127.0.0.1:3007/v1/settlements/4 \
+  http://127.0.0.1:3007/v2/settlements/4 \
   -H 'Content-Type: application/json' \
   -H 'Postman-Token: adea248c-ac2f-41b3-9386-70c328fbcfa8' \
   -H 'cache-control: no-cache' \
@@ -71,7 +71,7 @@ echo "---------------------------------------------------------------------"
 echo "Abort from ABORTED"
 echo "---------------------------------------------------------------------"
 sh -c "curl -X PUT \
-  http://127.0.0.1:3007/v1/settlements/1 \
+  http://127.0.0.1:3007/v2/settlements/1 \
   -H 'Content-Type: application/json' \
   -H 'Postman-Token: adea248c-ac2f-41b3-9386-70c328fbcfa8' \
   -H 'cache-control: no-cache' \

@@ -114,6 +114,7 @@ Deploy to Dev:
     - helm init --client-only
     - cd tips-helm-repo
     - sh ./update-charts-dep.sh
+    - echo "Deploying ${CI_REGISTRY_IMAGE} version ${IMAGE_TAG}"
     - |
       helm upgrade mojaloop ./tips \
       --reuse-values \
