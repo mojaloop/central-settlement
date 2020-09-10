@@ -442,7 +442,6 @@ workflows:
             - setup
             - test-unit
             - test-coverage
-            - test-integration
             - vulnerability-check
             - audit-licenses
           filters:
