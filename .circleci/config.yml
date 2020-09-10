@@ -114,7 +114,7 @@ jobs:
       - store_test_results:
           path: ./test/results
 
-  test-integration:
+  test-coverage:
     executor: default-machine
     steps:
       - checkout
@@ -403,17 +403,17 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
-      - test-integration:
-          context: org-global
-          requires:
-            - setup
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              ignore:
-                - /feature*/
-                - /bugfix*/
+      # - test-integration:
+      #     context: org-global
+      #     requires:
+      #       - setup
+      #     filters:
+      #       tags:
+      #         only: /.*/
+      #       branches:
+      #         ignore:
+      #           - /feature*/
+      #           - /bugfix*/
       - vulnerability-check:
           context: org-global
           requires:
