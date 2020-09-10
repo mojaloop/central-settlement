@@ -74,20 +74,13 @@ exports.migrate = async function () {
 }
 
 // running in series to guarantee foreign key checks are respected
-function runInSeries (array) {
-  return new Promise(async (resolve, reject) => {
-    for (let i = 0; i < array.length; i++) {
-      try {
-        await array[i]
-      } catch (err) {
-        reject(err)
-      }
-    }
-    resolve()
-  })
+async function runInSeries (array) {
+  for (let i = 0; i < array.length; i++) {
+    await array[i]
+  }
 }
 function onBoardingData (knex, schema) {
-  // TODO ADD - populate more initial data
+  // TODO  populate more initial data
   return [
     knex('participant').withSchema(schema).insert(data.participants),
     knex('ledgerAccountType').withSchema(schema).insert(data.ledgerAccountTypes),

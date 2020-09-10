@@ -27,7 +27,6 @@
  --------------
  ******/
 'use strict'
-
 const Boom = require('@hapi/boom')
 const Config = require('../lib/config')
 const Db = require('../lib/db')
@@ -37,7 +36,7 @@ const Hapi = require('@hapi/hapi')
 const Logger = require('@mojaloop/central-services-logger')
 const Plugins = require('./plugins')
 const RegisterHandlers = require('../handlers/register')
-
+const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 const getEnums = (id) => {
   return Enums[id]()
 }
@@ -99,13 +98,14 @@ const createServer = async function (port, modules) {
     ])
     server.events.on('stop', async () => {
       await Db.disconnect()
-
-      console.log('Server stopped')
+      const topics = Consumer.getListOfTopics()
+      await Promise.all(topics.map(async topic => {
+        await Consumer.getConsumer(topic).disconnect()
+      }))
     })
     await Plugins.registerPlugins(server)
     await server.register(modules)
     await server.start()
-
     try {
       server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
       server.log('info', `Server running on ${server.info.host}:${server.info.port}`)

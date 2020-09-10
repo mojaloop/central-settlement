@@ -1,56 +1,29 @@
 /* eslint-env jest */
-let request = require('supertest')
-const config = require('../../config/default.json')
-
-const Enum = require('@mojaloop/central-services-shared').Enum
-const Sinon = require('sinon')
-const testStartDate = new Date().toISOString().slice(0, 19).replace('T', ' ')
-
-const sandbox = Sinon.createSandbox()
-
-const Config = require('../../src/lib/config')
-Config.PORT = `999${process.env.JEST_WORKER_ID}`
-console.log('WORKER ID:', process.env.JEST_WORKER_ID)
-
-Config.DATABASE.connection.database = `central_ledger_integration_${process.env.JEST_WORKER_ID}`
-Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE = `topic-{{functionality}}-{{action}}${process.env.JEST_WORKER_ID}`
-const Logger = require('@mojaloop/central-services-logger')
-
-const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
-const processSpy = sandbox.spy(Logger, 'info')
-
-const KafkaProducer = require('@mojaloop/central-services-stream').Util.Producer
-const Uuid = require('uuid4')
-const Db = require('../../src/lib/db')
 const ilpPacket = require('ilp-packet')
 const base64url = require('base64url')
+const Enum = require('@mojaloop/central-services-shared').Enum
+const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
+const KafkaProducer = require('@mojaloop/central-services-stream').Util.Producer
+const Logger = require('@mojaloop/central-services-logger')
+const Uuid = require('uuid4')
+const Config = require('../../src/lib/config')
+const Db = require('../../src/lib/db')
+const utils = require('./utils')
 
-const chai = require('chai')
-const chaiExclude = require('chai-exclude')
-const chaiSubset = require('chai-subset')
+const Sinon = require('sinon')
+const sandbox = Sinon.createSandbox()
+const processSpy = sandbox.spy(Logger, 'info')
 
-chai.use(chaiExclude)
-chai.use(chaiSubset)
-const expect = chai.expect
+let transactionId
+let transferStateChangeId
+let knex
+let previousParticipantPositionRecords
+let newParticipantPositionRecords
+const decimalPlaces = 2
 
-function timeout (ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-let server
-describe('when a transfer notification with COMMITTED status is received  ', () => {
-  it(`it should
-    update the ledger entries,
-    update the participantPosition records for payeer and payee
-    update participantPositionChange records for payeer and payee
-    with a 0.006 % fee amount`, async () => {
-    try {
-      server = await require('../../src/api/index.js')
-    } catch (err) {
-      console.log(`err ${err}`)
-    }
-    request = request(`http://localhost:${config.PORT}`)
-
-    const transactionId = Uuid()
+describe('when a transfer notification with COMMITTED status is received', () => {
+  beforeAll(async () => {
+    transactionId = Uuid()
     const message = {
       value: {
         from: 'fsp781121341',
@@ -164,7 +137,6 @@ describe('when a transfer notification with COMMITTED status is received  ', () 
     }
 
     const ilpData = Buffer.from(base64url(JSON.stringify(transactionObject)))
-    const decimalPlaces = 2
     const packetInput = {
       amount: `${Number(TRANSACTION.amount) * Math.pow(10, decimalPlaces)}`, // unsigned 64bit integer as a string
       account: `g.${TRANSACTION.payer.fspId}.${TRANSACTION.payer.partyIdInfo.partyIdType.toLowerCase()}.${TRANSACTION.payer.partyIdInfo.partyIdentifier.toLowerCase()}`, // ilp address
@@ -172,7 +144,6 @@ describe('when a transfer notification with COMMITTED status is received  ', () 
     }
     const packet = ilpPacket.serializeIlpPayment(packetInput)
     const base64encodedIlpPacket = base64url.fromBase64(packet.toString('base64')).replace('"', '')
-    // const jsonPacket2 = await ilpPacket.deserializeIlpPayment(Buffer.from(base64encodedIlpPacket, 'base64'))
     await Db.transferDuplicateCheck.insert({
       transferId: transactionId,
       hash: 'someHash'
@@ -192,12 +163,12 @@ describe('when a transfer notification with COMMITTED status is received  ', () 
       transferId: transactionId,
       transferStateId: 'COMMITTED'
     })
-    const knex = await Db.getKnex()
-    const transferStateChangeId = await knex('transferStateChange')
+    knex = await Db.getKnex()
+    transferStateChangeId = await knex('transferStateChange')
       .select('transferStateChangeId')
       .where('transferId', transactionId)
       .andWhere('transferStateId', 'COMMITTED')
-    const previousParticipantPositionRecords = await knex('participantPosition')
+    previousParticipantPositionRecords = await knex('participantPosition')
       .select('participantPositionId', 'value', 'reservedValue')
       .where('participantCurrencyId', 14)
       .orWhere('participantCurrencyId', 13)
@@ -211,17 +182,18 @@ describe('when a transfer notification with COMMITTED status is received  ', () 
       Enum.Events.EventStatus.SUCCESS,
       'fsp511290656'
     )
-    // await timeout(3000)
+    // hack to know that processing of the message has finished..
     while (processSpy.lastCall.args[0] !== 'TransferFulfilHandler::processTransferSettlement::validationPassed::done--C2') {
-      await timeout(500)
+      await utils.timeout(500)
     }
+  })
 
+  it('it should update the transferParticipant records ', async () => {
     const transferParticipantRecords = await knex('transferParticipant')
       .where('transferId', transactionId)
 
     expect(transferParticipantRecords)
-      .excluding(['transferParticipantId', 'createdDate'])
-      .to.deep.members([
+      .toMatchObject([
         {
           transferId: transactionId,
           participantCurrencyId: 13,
@@ -236,29 +208,24 @@ describe('when a transfer notification with COMMITTED status is received  ', () 
           ledgerEntryTypeId: 2,
           amount: -1.27
         }])
+  })
 
-    const newParticipantPositionRecords = await knex('participantPosition')
+  it('it should update the participantPosition INTERCHANGE_FEE records for payeer and payee for 0.06% of the transaction amount ', async () => {
+    newParticipantPositionRecords = await knex('participantPosition')
       .select('participantPositionId', 'value', 'reservedValue')
       .where('participantCurrencyId', 14)
       .orWhere('participantCurrencyId', 13)
-    expect(newParticipantPositionRecords[0].value).to.equal(previousParticipantPositionRecords[0].value + 1.27)
-    expect(newParticipantPositionRecords[1].value).to.equal(previousParticipantPositionRecords[1].value - 1.27)
+    expect(newParticipantPositionRecords[0].value.toFixed(decimalPlaces)).toEqual((previousParticipantPositionRecords[0].value + 1.27).toFixed(decimalPlaces))
+    expect(newParticipantPositionRecords[1].value.toFixed(decimalPlaces)).toEqual((previousParticipantPositionRecords[1].value - 1.27).toFixed(decimalPlaces))
 
+    expect(newParticipantPositionRecords[0].value.toFixed(decimalPlaces)).toEqual((previousParticipantPositionRecords[0].value + 1.27).toFixed(decimalPlaces))
+    expect(newParticipantPositionRecords[1].value.toFixed(decimalPlaces)).toEqual((previousParticipantPositionRecords[1].value - 1.27).toFixed(decimalPlaces))
+  })
+
+  it('it should update the participantPositionChange INTERCHANGE_FEE records for payeer and payee for 0.06% of the transaction amount', async () => {
     const participantPositionChangeRecords = await knex('participantPositionChange')
       .where('transferStateChangeId', transferStateChangeId[0].transferStateChangeId)
-    expect(participantPositionChangeRecords[0].value.toFixed(decimalPlaces)).to.equal(newParticipantPositionRecords[0].value.toFixed(decimalPlaces))
-    expect(participantPositionChangeRecords[1].value.toFixed(decimalPlaces)).to.equal(newParticipantPositionRecords[1].value.toFixed(decimalPlaces))
-  }, 30000)
-})
-
-afterAll(async () => {
-  const knex = await Db.getKnex()
-  await knex.raw('SET FOREIGN_KEY_CHECKS = 0;')
-  const allTables = await knex.raw(`SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = '${Config.DATABASE.connection.database}';`)
-  await Promise.allSettled(allTables[0].map(table => {
-    if (table.TABLE_NAME !== 'migration' && table.TABLE_NAME !== 'migration_lock') {
-      return knex.raw(`DELETE FROM ${table.TABLE_NAME} WHERE createdDate > '${testStartDate}'`)
-    }
-  }))
-  await knex.raw('SET FOREIGN_KEY_CHECKS = 1')
+    expect(participantPositionChangeRecords[0].value.toFixed(decimalPlaces)).toEqual(newParticipantPositionRecords[0].value.toFixed(decimalPlaces))
+    expect(participantPositionChangeRecords[1].value.toFixed(decimalPlaces)).toEqual(newParticipantPositionRecords[1].value.toFixed(decimalPlaces))
+  })
 })

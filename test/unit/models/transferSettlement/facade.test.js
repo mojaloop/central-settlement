@@ -409,7 +409,7 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       test.end()
     }
   })
-  
+
   await transferSettlementTest.test('updateTransferSettlement should', async (test) => {
     try {
       const transferId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
