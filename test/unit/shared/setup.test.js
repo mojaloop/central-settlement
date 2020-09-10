@@ -71,7 +71,10 @@ Test('Server Setup', async setupTest => {
           host: Config.HOSTNAME,
           port: Config.PORT
         },
-        ext: sandbox.stub()
+        ext: sandbox.stub(),
+        events: {
+          on: sandbox.stub()
+        }
       }
       HapiStub = {
         Server: sandbox.stub().returns(serverStub)
