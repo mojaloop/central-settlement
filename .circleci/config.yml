@@ -121,9 +121,6 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run: |
-            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
-            echo ' [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
-      - run: |
           node -v
       - run:
           name: Install packages
@@ -400,6 +397,7 @@ workflows:
       #           - /feature*/
       #           - /bugfix*/
       - test-coverage:
+          node-version: "12.16.3"
           context: org-global
           requires:
             - setup
