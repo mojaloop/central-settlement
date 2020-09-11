@@ -13,7 +13,7 @@ module.exports = {
       database: RC.DATABASE.SCHEMA
     },
     pool: {
-      log: (message, logLevel) => console.log(`${logLevel}: ${message}`)
+      log: (message, logLevel) => console.log(`${logLevel}: ${message}`),
 
       // minimum size
       min: RC.DATABASE.POOL_MIN_SIZE,
