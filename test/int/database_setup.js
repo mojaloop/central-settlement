@@ -54,7 +54,7 @@ exports.migrate = async function () {
   const baseMigrations = []
   const onBoarding = []
   // TODO  use a env variable
-  const workers = 3
+  const workers = process.env.WORKERS
   console.log(`initializing ${workers} schemas`)
   for (let i = 1; i <= workers; i++) {
     // TODO ADD VAR TO NOT DROP and NOT REMIGRATE to make it quicker while coding...

@@ -1,6 +1,6 @@
 module.exports = [
   {
-    ledgerAccountTypeId: 7,
+    ledgerAccountTypeId: 6,
     name: 'INTERCHANGE_FEE_SETTLEMENT',
     description: 'Settlement account for interchange fees.',
     isActive: 1,

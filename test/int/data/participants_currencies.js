@@ -93,7 +93,7 @@ module.exports = [
     participantCurrencyId: 11,
     participantId: 2,
     currencyId: 'TZS',
-    ledgerAccountTypeId: 6,
+    ledgerAccountTypeId: 5,
     isActive: 1,
     createdDate: '2020-06-25T19:52:47',
     createdBy: 'Add Interchange fee'
@@ -102,7 +102,7 @@ module.exports = [
     participantCurrencyId: 12,
     participantId: 3,
     currencyId: 'TZS',
-    ledgerAccountTypeId: 6,
+    ledgerAccountTypeId: 5,
     isActive: 1,
     createdDate: '2020-06-25T19:52:47',
     createdBy: 'Add Interchange fee'
@@ -111,7 +111,7 @@ module.exports = [
     participantCurrencyId: 13,
     participantId: 4,
     currencyId: 'TZS',
-    ledgerAccountTypeId: 6,
+    ledgerAccountTypeId: 5,
     isActive: 1,
     createdDate: '2020-06-25T19:52:47',
     createdBy: 'Add Interchange fee'
@@ -120,7 +120,7 @@ module.exports = [
     participantCurrencyId: 14,
     participantId: 5,
     currencyId: 'TZS',
-    ledgerAccountTypeId: 6,
+    ledgerAccountTypeId: 5,
     isActive: 1,
     createdDate: '2020-06-25T19:52:47',
     createdBy: 'Add Interchange fee'
@@ -165,7 +165,7 @@ module.exports = [
     participantCurrencyId: 22,
     participantId: 6,
     currencyId: 'TZS',
-    ledgerAccountTypeId: 6,
+    ledgerAccountTypeId: 5,
     isActive: 1,
     createdDate: '2020-06-26 05:36:00',
     createdBy: 'Add Interchange fee'
@@ -174,7 +174,7 @@ module.exports = [
     participantCurrencyId: 23,
     participantId: 7,
     currencyId: 'TZS',
-    ledgerAccountTypeId: 6,
+    ledgerAccountTypeId: 5,
     isActive: 1,
     createdDate: '2020-06-26 05:36:00',
     createdBy: 'Add Interchange fee'
@@ -183,7 +183,7 @@ module.exports = [
     participantCurrencyId: 24,
     participantId: 2,
     currencyId: 'TZS',
-    ledgerAccountTypeId: 7,
+    ledgerAccountTypeId: 6,
     isActive: 1,
     createdDate: '2020-08-13 07:40:46',
     createdBy: 'Add Interchange fee settlement'
@@ -192,7 +192,7 @@ module.exports = [
     participantCurrencyId: 25,
     participantId: 3,
     currencyId: 'TZS',
-    ledgerAccountTypeId: 7,
+    ledgerAccountTypeId: 6,
     isActive: 1,
     createdDate: '2020-08-13 07:40:46',
     createdBy: 'Add Interchange fee settlement'
@@ -201,7 +201,7 @@ module.exports = [
     participantCurrencyId: 26,
     participantId: 4,
     currencyId: 'TZS',
-    ledgerAccountTypeId: 7,
+    ledgerAccountTypeId: 6,
     isActive: 1,
     createdDate: '2020-08-13 07:40:46',
     createdBy: 'Add Interchange fee settlement'
@@ -210,7 +210,7 @@ module.exports = [
     participantCurrencyId: 27,
     participantId: 5,
     currencyId: 'TZS',
-    ledgerAccountTypeId: 7,
+    ledgerAccountTypeId: 6,
     isActive: 1,
     createdDate: '2020-08-13 07:40:46',
     createdBy: 'Add Interchange fee settlement'
@@ -219,7 +219,7 @@ module.exports = [
     participantCurrencyId: 28,
     participantId: 6,
     currencyId: 'TZS',
-    ledgerAccountTypeId: 7,
+    ledgerAccountTypeId: 6,
     isActive: 1,
     createdDate: '2020-08-13 07:40:46',
     createdBy: 'Add Interchange fee settlement'
@@ -228,7 +228,7 @@ module.exports = [
     participantCurrencyId: 29,
     participantId: 7,
     currencyId: 'TZS',
-    ledgerAccountTypeId: 7,
+    ledgerAccountTypeId: 6,
     isActive: 1,
     createdDate: '2020-08-13 07:40:46',
     createdBy: 'Add Interchange fee settlement'

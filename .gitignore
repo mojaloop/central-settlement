@@ -58,3 +58,5 @@ jspm_packages
 .history
 /.gitlab-ci.env
 junit.xml
+migrations
+seeds
