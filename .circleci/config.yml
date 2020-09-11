@@ -86,33 +86,33 @@ jobs:
           paths:
             - node_modules
 
-  test-unit:
-    executor: default-docker
-    steps:
-      - checkout
-      - run:
-          name: Install general dependencies
-          command: *defaults_Dependencies
-      - restore_cache:
-          keys:
-            - dependency-cache-{{ checksum "package.json" }}
-      - run:
-          name: Create dir for test results
-          command: mkdir -p ./test/results
-      - run:
-          name: Install tape and tap-xunit
-          command: npm install -g tape tap-xunit
-      - run:
-          name: Install tapes
-          command: npm install -g tapes
-      - run:
-          name: Execute unit tests
-          command: npm -s run test:xunit > ./test/results/tape.xml
-      - store_artifacts:
-          path: ./test/results
-          prefix: test
-      - store_test_results:
-          path: ./test/results
+  # test-unit:
+  #   executor: default-docker
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: Install general dependencies
+  #         command: *defaults_Dependencies
+  #     - restore_cache:
+  #         keys:
+  #           - dependency-cache-{{ checksum "package.json" }}
+  #     - run:
+  #         name: Create dir for test results
+  #         command: mkdir -p ./test/results
+  #     - run:
+  #         name: Install tape and tap-xunit
+  #         command: npm install -g tape tap-xunit
+  #     - run:
+  #         name: Install tapes
+  #         command: npm install -g tapes
+  #     - run:
+  #         name: Execute unit tests
+  #         command: npm -s run test:xunit > ./test/results/tape.xml
+  #     - store_artifacts:
+  #         path: ./test/results
+  #         prefix: test
+  #     - store_test_results:
+  #         path: ./test/results
 
   test-coverage:
     executor: default-machine
@@ -120,6 +120,11 @@ jobs:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
+      - run: |
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo ' [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+      - run: |
+          node -v
       - run:
           name: Install packages
           command: npm install
