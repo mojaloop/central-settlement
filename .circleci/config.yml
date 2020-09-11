@@ -121,6 +121,9 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
+          name: Install packages
+          command: npm install
+      - run:
           name: Execute unit test with coverage
           command: npm -s run test:coverage
       - run:
@@ -132,8 +135,7 @@ jobs:
       - run:
           name: Check Combined Code Coverage
           command: test:coverage:nyc:check
-  #
-  #
+
   # test-coverage:
   #   executor: default-docker
   #   steps:
