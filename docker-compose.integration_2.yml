@@ -13,13 +13,19 @@ services:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=central_ledger_integration
       - MYSQL_ALLOW_EMPTY_PASSWORD=true
-    healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "mysql"]
-      timeout: 20s
-      retries: 10
-      start_period: 40s
-      interval: 30s
-    # command: --skip-grant-tables
+    # command: ["./wait-for-mysql.sh" ]
+
+    # healthcheck:
+      # test: "/etc/init.d/mysql status"
+      # interval: 1s
+      # retries: 120
+      #
+      # # test: ["CMD", "mysqladmin" ,"ping", "-h", "mysql"]
+      # test: ["CMD", "mysql", "-h", "localhost", "-P 3306", "-u central_ledger", "-p password", "-e 'select 1'"]
+      # timeout: 20s
+      # retries: 10
+      # start_period: 40s
+      # interval: 30s
 
   kafka:
     image: johnnypark/kafka-zookeeper:2.3.0

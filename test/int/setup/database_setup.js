@@ -2,7 +2,7 @@
 const Path = require('path')
 const Migrations = require('@mojaloop/central-services-database').Migrations
 const Knex = require('knex')
-const data = require('./data')
+const data = require('../data')
 const migrationsDirectory = '../../migrations'
 const seedsDirectory = '../../seeds'
 

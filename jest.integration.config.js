@@ -17,9 +17,9 @@ module.exports = {
       lines: 0
     }
   },
-  setupFilesAfterEnv: ['<rootDir>/test/int/test_setup_file.js'],
+  setupFilesAfterEnv: ['<rootDir>/test/int/setup/test_setup_file.js'],
   // setupFiles: ['<rootDir>/test/int/global_setup.js' ],
-  globalSetup: '<rootDir>/test/int/global_tests_setup.js',
+  globalSetup: '<rootDir>/test/int/setup/global_tests_setup.js',
   // globalTeardown: '<rootDir>/test/int/global_tear_down.js',
   reporters: ['jest-junit', 'default'],
   coverageDirectory: '<rootDir>/coverage_integration/'
