@@ -364,15 +364,15 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - setup:
-          context: org-global
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              ignore:
-                - /feature*/
-                - /bugfix*/
+      # - setup:
+      #     context: org-global
+      #     filters:
+      #       tags:
+      #         only: /.*/
+      #       branches:
+      #         ignore:
+      #           - /feature*/
+      #           - /bugfix*/
       # - test-unit:
       #     context: org-global
       #     requires:
