@@ -17,8 +17,6 @@
  optionally within square brackets <email>.
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
-
- * Claudio Viola <claudio.viola@modusbox.com>
  --------------
  ******/
 
@@ -26,9 +24,10 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
+const Logger = require('@mojaloop/central-services-logger')
+const Model = require('../../../../src/models/transferSettlement/facade')
 const Db = require('../../../../src/lib/db')
 
-const Model = require('../../../../src/models/transferSettlement/facade')
 const recordsToInsert = [{
   transferId: '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93',
   participantCurrencyId: 13,
@@ -99,7 +98,12 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       whereIn: sandbox.stub().returnsThis(),
       andWhere: sandbox.stub().returnsThis(),
       orWhere: sandbox.stub().returnsThis(),
-      transacting: sandbox.stub()
+      transacting: sandbox.stub(),
+      union: sandbox.stub().returnsThis(),
+      on: sandbox.stub().returnsThis(),
+      andOn: sandbox.stub().returnsThis(),
+      update: sandbox.stub().returnsThis(),
+      joinRaw: sandbox.stub().returnsThis()
     }
     t.end()
   })
@@ -400,6 +404,77 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       test.ok(err instanceof Error, 'should throw an error')
       test.equal(err.message, 'An Error occured while inserting')
       test.equal(trxSpyRollBack.get.calledOnce, true, 'should rollback the transaction')
+      test.end()
+    }
+  })
+  
+  await transferSettlementTest.test('updateTransferSettlement should', async (test) => {
+    try {
+      const transferId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
+      const status = 'success'
+
+      sandbox.stub(Db, 'getKnex')
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+      knexStub.where.onCall(0).callsArgOn(0, knexStub)
+      knexStub.where.onCall(0).returns(knexStub)
+
+      knexStub.andWhere.onCall(0).callsArgOn(0, knexStub)
+      knexStub.andWhere.onCall(0).returns(knexStub)
+      knexStub.andWhere.onCall(1).returns(knexStub)
+
+      knexStub.insert.onCall(1).callsArgOn(0, knexStub)
+      knexStub.insert.onCall(1).returns(knexStub)
+
+      knexStub.union.onCall(0).callsArgOn(0, knexStub)
+      knexStub.innerJoin.onCall(6).callsArgOn(1, knexStub)
+      knexStub.innerJoin.onCall(6).returns(knexStub)
+      knexStub.where.onCall(2).callsArgOn(0, knexStub)
+      knexStub.andWhere.onCall(2).callsArgOn(0, knexStub)
+      knexStub.innerJoin.onCall(7).callsArgOn(0, knexStub)
+      knexStub.innerJoin.onCall(7).returns(knexStub)
+      knexStub.where.onCall(4).callsArgOn(0, knexStub)
+      knexStub.where.onCall(4).returns(knexStub)
+      knexStub.union.onCall(1).callsArgOn(0, knexStub)
+      knexStub.union.onCall(1).returns(knexStub)
+
+      knexStub.andWhere.onCall(4).callsArgOn(0, knexStub)
+      knexStub.innerJoin.onCall(14).callsArgOn(1, knexStub)
+      knexStub.innerJoin.onCall(14).returns(knexStub)
+      knexStub.where.onCall(4).callsArgOn(0, knexStub)
+      knexStub.where.onCall(4).returns(knexStub)
+      knexStub.andWhere.onCall(4).callsArgOn(0, knexStub)
+      knexStub.where.onCall(6).callsArgOn(0, knexStub)
+      knexStub.where.onCall(6).returns(knexStub)
+      knexStub.andWhere.onCall(6).callsArgOn(0, knexStub)
+
+      knexStub.insert.onCall(3).callsArgOn(0, knexStub)
+      knexStub.insert.onCall(3).returns(knexStub)
+      knexStub.innerJoin.onCall(15).callsArgOn(0, knexStub)
+      knexStub.innerJoin.onCall(15).returns(knexStub)
+
+      knexStub.where.onCall(8).callsArgOn(0, knexStub)
+      knexStub.where.onCall(8).returns(knexStub)
+      knexStub.andWhere.onCall(8).callsArgOn(0, knexStub)
+      knexStub.union.onCall(2).callsArgOn(0, knexStub)
+      knexStub.union.onCall(2).returns(knexStub)
+      knexStub.innerJoin.onCall(22).callsArgOn(1, knexStub)
+      knexStub.innerJoin.onCall(22).returns(knexStub)
+      knexStub.where.onCall(10).callsArgOn(0, knexStub)
+      knexStub.where.onCall(10).returns(knexStub)
+
+      knexStub.andWhere.onCall(10).callsArgOn(0, knexStub)
+      knexStub.innerJoin.onCall(23).callsArgOn(1, knexStub)
+      knexStub.innerJoin.onCall(23).returns(knexStub)
+
+      await Model.updateTransferSettlement(transferId, status)
+      test.ok('update the transfer Settlement')
+      // TODO add expectations
+      test.end()
+    } catch (err) {
+      Logger.error(`updateTransferSettlement failed with error - ${err}`)
+      test.fail()
       test.end()
     }
   })
