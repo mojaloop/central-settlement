@@ -386,8 +386,8 @@ workflows:
       #           - /bugfix*/
       - test-coverage:
           context: org-global
-          requires:
-            - setup
+          # requires:
+          #   - setup
           filters:
             tags:
               only: /.*/
