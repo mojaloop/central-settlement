@@ -31,7 +31,7 @@ default_ubuntu_dependencies: &default_ubuntu_dependencies |
   sudo apt-get install ca-certificates
   sudo apt-get install curl
   sudo apt-get install openssh-client
-  sudo apt-get install build-essential make gcc g++ python libtool autoconf automake
+  sudo apt-get install build-essential make glibc gcc g++ python libtool autoconf automake
 
 
 defaults_awsCliDependencies: &defaults_awsCliDependencies |
