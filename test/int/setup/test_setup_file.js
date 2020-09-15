@@ -2,20 +2,22 @@
 // This setupFiles allow to run test in parallel by making use of JEST_WORKER_ID
 // the right test knows which database to target and each kafka message is sent to the right server instance
 //  listening on the shared kafka broker on multiple topics for the same functionality.
-//
-const Db = require('../../src/lib/db')
+const Db = require('../../../src/lib/db')
 const KafkaProducer = require('@mojaloop/central-services-stream').Util.Producer
-const Config = require('../../src/lib/config')
+const Config = require('../../../src/lib/config')
+const utils = require('../utils')
 const testStartDate = new Date().toISOString().slice(0, 19).replace('T', ' ')
 Config.DATABASE.connection.database = `central_ledger_integration_${process.env.JEST_WORKER_ID}`
 Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE = `topic-{{functionality}}-{{action}}${process.env.JEST_WORKER_ID}`
 Config.PORT = `999${process.env.JEST_WORKER_ID}`
+// to avoid pooled connections remaining open..
+Config.DATABASE.pool = { }
 jest.setTimeout(30000)
 
 let server
 beforeAll(async () => {
   try {
-    server = await require('../../src/api/index.js')
+    server = await require('../../../src/api/index.js')
   } catch (err) {
     console.log(`err ${err}`)
   }
@@ -34,6 +36,7 @@ afterAll(async () => {
     }
   }))
   await knex.raw('SET FOREIGN_KEY_CHECKS = 1')
+  await Db.disconnect()
   await server.stop()
   await KafkaProducer.getProducer(`topic-notification-event${process.env.JEST_WORKER_ID}`).disconnect()
 }, 5000)

@@ -82,7 +82,8 @@
         "swagmock": "1.0.0",
         "tap-xunit": "2.4.1",
         "tape": "5.0.1",
-        "tapes": "4.1.0"
+        "tapes": "4.1.0",
+        "wtfnode": "^0.8.3"
     },
     "pre-commit": [
         "standard",
@@ -111,6 +112,7 @@
         "test:coverage:nyc:check": "nyc --nycrc-path .nycrc.combined.yml -t coverage_merge report ",
         "test:int:new:parallel": "sh ./test/int/scripts/pre_start.sh && WORKERS=3 jest --config './jest.integration.config.js' --coverage   --maxWorkers=${WORKERS} --testMatch '**/test/int/**/*.(test|spec).js'",
         "test:int:new:series": "sh ./test/int/scripts/pre_start.sh && WORKERS=1 jest --config './jest.integration.config.js' --coverage  --runInBand --testMatch '**/test/int/**/*.(test|spec).js'",
+        "test:int:new:series:ci": "sh ./test/int/scripts/pre_start.sh && sh ./test/int/scripts/ci.sh",
         "audit:resolve": "SHELL=sh resolve-audit --production",
         "audit:check": "SHELL=sh check-audit --production",
         "dep:check": "npx ncu -e 2",

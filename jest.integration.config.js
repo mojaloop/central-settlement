@@ -22,5 +22,6 @@ module.exports = {
   globalSetup: '<rootDir>/test/int/setup/global_tests_setup.js',
   // globalTeardown: '<rootDir>/test/int/global_tear_down.js',
   reporters: ['jest-junit', 'default'],
-  coverageDirectory: '<rootDir>/coverage_integration/'
+  coverageDirectory: '<rootDir>/coverage_integration/',
+  moduleDirectories: [ 'node_modules' ],
 }

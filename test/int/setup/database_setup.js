@@ -5,26 +5,16 @@ const Knex = require('knex')
 const data = require('../data')
 const migrationsDirectory = '../../migrations'
 const seedsDirectory = '../../seeds'
-
+const DB_HOST = process.env.DB_HOST
 const conf = {
   client: 'mysql',
   version: '5.5',
   connection: {
-    host: 'localhost',
+    host: DB_HOST || 'localhost',
     port: 3306,
     user: 'central_ledger',
     password: 'password',
     database: 'central_ledger_integration'
-  },
-  pool: {
-    min: 10,
-    max: 10,
-    acquireTimeoutMillis: 30000,
-    createTimeoutMillis: 30000,
-    destroyTimeoutMillis: 5000,
-    idleTimeoutMillis: 30000,
-    reapIntervalMillis: 1000,
-    createRetryIntervalMillis: 200
   },
   debug: false,
   migrations: {
@@ -43,7 +33,7 @@ exports.migrate = async function () {
     client: 'mysql',
     version: '5.5',
     connection: {
-      host: 'localhost',
+      host: DB_HOST || 'localhost',
       port: 3306,
       user: 'root',
       password: 'root',
@@ -71,6 +61,7 @@ exports.migrate = async function () {
   }
   await Promise.all(baseMigrations)
   await Promise.all(onBoarding.map(x => runInSeries(x)))
+  await knexRoot.destroy()
 }
 
 // running in series to guarantee foreign key checks are respected
