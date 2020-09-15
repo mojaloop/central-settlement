@@ -32,6 +32,12 @@ default_ubuntu_dependencies: &default_ubuntu_dependencies |
   sudo apt-get install curl
   sudo apt-get install openssh-client
   sudo apt-get install build-essential make libc6 gcc g++ python libtool autoconf automake
+  sudo add-apt-repository ppa:jonathonf/gcc-7.1
+  sudo apt update
+  sudo apt install gcc-7
+  sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7.0 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7.0
+  sudo update-alternatives --config gcc
+
 
 
 defaults_awsCliDependencies: &defaults_awsCliDependencies |
