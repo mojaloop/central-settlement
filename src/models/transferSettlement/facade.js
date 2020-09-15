@@ -312,18 +312,6 @@ const Facade = {
   insertLedgerEntry,
   insertLedgerEntries,
   updateTransferSettlement
-
-  /*,
-      getTransactionRequest: async function (transactionId) {
-        try {
-          const requestedEndpoint = `${Config.SWITCH_ENDPOINT}/transactions/${transactionId}`
-          Logger.debug(`transfers endpoint url: ${requestedEndpoint}`)
-          return await Utility.Request.sendRequest(requestedEndpoint, { 'fspiop-source': 'HUB' }, 'HUB', 'HUB')
-        } catch (err) {
-          Logger.error(err)
-          throw ErrorHandler.Factory.reformatFSPIOPError(err)
-        }
-      } */
 }
 
 module.exports = Facade

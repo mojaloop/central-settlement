@@ -61,7 +61,7 @@ function loadScripts (scriptDirectory) {
 async function executeScripts (scriptsMap, scriptType, scriptAction, scriptStatus, payload) {
   try {
     const scriptResults = {}
-    if (scriptsMap[scriptType][scriptAction][scriptStatus]) {
+    if (scriptsMap[scriptType] && scriptsMap[scriptType][scriptAction] && scriptsMap[scriptType][scriptAction][scriptStatus]) {
       const now = new Date()
       for (const script of scriptsMap[scriptType][scriptAction][scriptStatus]) {
         if (now.getTime() >= script.startTime.getTime() && now.getTime() <= script.endTime.getTime()) {
