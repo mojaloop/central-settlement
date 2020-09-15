@@ -122,9 +122,9 @@ jobs:
       - run:
          name: check node version
          command: node -v
-      - run:
-          name: Install general dependencies
-          command: npm install -g node-gyp
+      - run: |
+          npm config set unsafe-perm true
+          npm install -g node-gyp
       - run:
           name: Install packages
           command: npm install
