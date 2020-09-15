@@ -26,11 +26,11 @@ defaults_Dependencies: &defaults_Dependencies |
   npm install -g node-gyp
 
 default_ubuntu_dependencies: &default_ubuntu_dependencies |
-  apt-get install git
-  apt-get install ca-certificates
-  apt-get installcurl
-  apt-get install openssh-client
-  apt-get install build-dependencies make gcc g++ python libtool autoconf automake
+  sudo apt-get install git
+  sudo apt-get install ca-certificates
+  sudo apt-get installcurl
+  sudo apt-get install openssh-client
+  sudo apt-get install build-dependencies make gcc g++ python libtool autoconf automake
 
 
 defaults_awsCliDependencies: &defaults_awsCliDependencies |
