@@ -25,6 +25,14 @@ defaults_Dependencies: &defaults_Dependencies |
   npm config set unsafe-perm true
   npm install -g node-gyp
 
+default_ubuntu_dependencies: &default_ubuntu_dependencies |
+  apt-get install git
+  apt-get install ca-certificates
+  apt-get installcurl
+  apt-get install openssh-client
+  apt-get install build-dependencies make gcc g++ python libtool autoconf automake
+
+
 defaults_awsCliDependencies: &defaults_awsCliDependencies |
   apk upgrade --no-cache
   apk --no-cache add \
@@ -96,6 +104,9 @@ jobs:
     executor: default-machine
     steps:
       - checkout
+      - run:
+          name: Install general dependencies
+          command: *default_ubuntu_dependencies
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run: |
