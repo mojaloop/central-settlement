@@ -108,6 +108,9 @@ jobs:
           node -v
           nvm alias default v12
       - run:
+         name: check node version
+         command: node -v
+      - run:
           name: Install general dependencies
           command: npm install -g node-gyp
       - run:
