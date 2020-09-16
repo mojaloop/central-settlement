@@ -112,6 +112,7 @@
         "test:coverage:combined:check": "npm run test:coverage:inst:merge && npm run test:coverage:inst:report && npm run test:coverage:nyc:check",
         "test:int:new:parallel": "sh ./test/int/scripts/pre_start.sh && npm run test:int:new:parallel:run",
         "test:int:new:series": "sh ./test/int/scripts/pre_start.sh && npm run test:int:new:series",
+        "test:int:new:ci:prepare": "sh ./test/int/scripts/pre_start_ci.sh",
         "test:int:new:ci": "sh ./test/int/scripts/pre_start_ci.sh && sh ./test/int/scripts/ci.sh",
         "test:int:new:series:run": "WORKERS=1 jest --config './jest.integration.config.js' --coverage  --runInBand --testMatch '**/test/int/**/*.(test|spec).js'",
         "test:int:new:parallel:run": "WORKERS=3 jest --config './jest.integration.config.js' --coverage  --maxWorkers=${WORKERS} --testMatch '**/test/int/**/*.(test|spec).js'",

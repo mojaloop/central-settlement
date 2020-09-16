@@ -55,7 +55,7 @@ executors:
 
   default-machine:
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202008-01
 
 ##
 # Jobs
@@ -98,11 +98,17 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Downloading latest docker compose version
-          command: sudo curl -L "https://github.com/docker/compose/releases/download/1.27.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          name: Prepare docker environment
+          command: npm -s run test:int:new:ci:prepare
       - run:
-          name: Execute Tests and coverage checks
-          command: npm -s run test:int:new:ci
+          name: Execute unit tests
+          command: docker exec -it cs_central-settlement sh -c "npm run test:coverage"
+      - run:
+          name: Execute narrow integration tests
+          command: docker exec -it cs_central-settlement sh -c "npm run test:int:new:series:run"
+      - run:
+          name: Execute combined tests coverage check
+          command: npm run test:coverage:combined:check"
       # - run:
       #     name: Execute Coverage Checks
       #     command: npm -s run test:int:new:parallel
