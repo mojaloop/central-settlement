@@ -97,6 +97,8 @@ jobs:
     executor: default-machine
     steps:
       - checkout
+      - setup_remote_docker:
+         docker_layer_caching: true
       - run:
           name: Prepare docker environment
           command: npm -s run test:int:new:ci:prepare

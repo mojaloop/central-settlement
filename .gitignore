@@ -60,3 +60,4 @@ jspm_packages
 junit.xml
 migrations
 seeds
+tmp
