@@ -26,7 +26,6 @@
 
 // Ledger functions:
 // addLedgerEntry: Adds a debit and credit ledger entry to the specified account to the specified DFSPs
-
 log(JSON.stringify(transfer))
 const payerFspId = transfer.payer.partyIdInfo.fspId
 const payeeFspId = transfer.payee.partyIdInfo.fspId
@@ -44,4 +43,7 @@ if ((payeeFspId !== payerFspId) &&
     transfer.amount.currency,
     payerFspId,
     payeeFspId)
+
+    //insert [ ]
+
 }
