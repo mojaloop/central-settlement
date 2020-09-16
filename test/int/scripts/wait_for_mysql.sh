@@ -7,7 +7,7 @@ is_db_up() {
 MAX_ATTEMPT=1
 set +e
 echo 'waiting 20 seconds until mysql database is ready to accept connection'
-until is_db_up = 0|| [ $MAX_ATTEMPT = 10 ]; do
+until is_db_up = 0 || [ $MAX_ATTEMPT = 10 ]; do
   echo "checking connection ... attempt: $MAX_ATTEMPT"
   sleep 2
   (( MAX_ATTEMPT++ ))

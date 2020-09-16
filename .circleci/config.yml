@@ -55,7 +55,7 @@ executors:
 
   default-machine:
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202008-01
 
 ##
 # Jobs
@@ -97,6 +97,9 @@ jobs:
     executor: default-machine
     steps:
       - checkout
+      - run:
+          name: Check compose version
+          command: docker-compose -v
       - run:
           name: Execute Tests and coverage checks
           command: npm -s run test:int:new:ci
