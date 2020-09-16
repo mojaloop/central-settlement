@@ -98,6 +98,14 @@ jobs:
     executor: default-machine
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - v1-docker-{{ .Branch }}
+      - run:
+          name: Load Docker layers cache
+          command: |
+            set +o pipefail
+            docker load -i ~/docker-layers.tar | true
       - run:
           name: Prepare docker environment
           command: npm -s run test:int:new:ci:prepare
@@ -107,9 +115,25 @@ jobs:
       - run:
           name: Execute narrow integration tests
           command: docker exec -it cs_central-settlement sh -c "npm run test:int:new:series:run"
+      # - run:
+      #     name: Execute combined tests coverage check
+      #     command: docker exec -it cs_central-settlement sh -c "npm run test:coverage:combined:check"
+      # - run:
+      #     name: Build Docker images
+      #     command: docker-compose -p $CIRCLE_PROJECT_REPONAME build
       - run:
-          name: Execute combined tests coverage check
-          command: npm run test:coverage:combined:check"
+          name: Save Docker layers cache
+          command: |
+            DOCKER_IMAGES=$(docker images --format "{{.Repository}}" --filter=reference="${CIRCLE_PROJECT_REPONAME}_*")
+            DOCKER_LAYERS=$(for image in $DOCKER_IMAGES; do docker history $image -q | grep -v missing; done)
+            docker save -o ~/docker-layers.tar $DOCKER_LAYERS
+      - save_cache:
+          key: v1-docker-{{ .Branch }}-{{ epoch }}
+          paths:
+            - ~/docker-layers.tar
+
+
+
       # - run:
       #     name: Execute Coverage Checks
       #     command: npm -s run test:int:new:parallel
