@@ -98,8 +98,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Checking docker compose version
-          command: docker-compose -v
+          name: Downloading latest docker compose version
+          command: sudo curl -L "https://github.com/docker/compose/releases/download/1.27.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
       - run:
           name: Execute Tests and coverage checks
           command: npm -s run test:int:new:ci
