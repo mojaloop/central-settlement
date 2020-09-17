@@ -64,7 +64,8 @@ executors:
 # A map of CircleCI jobs
 ##
 jobs:
- executor: default-docker
+  setup:
+    executor: default-docker
     steps:
       - checkout
       - run:
