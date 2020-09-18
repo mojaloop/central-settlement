@@ -29,9 +29,9 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const TransferSettlementModel = require('../../models/transferSettlement')
 
 module.exports = {
-  processMsgFulfil: async function (transferEventId, transferEventStateStatus, ledgerEntries, trx) {
+  processMsgFulfil: async function (transferEventId, transferEventStateStatus, trx) {
     try {
-      await TransferSettlementModel.updateStateChange(transferEventId, transferEventStateStatus, ledgerEntries, trx)
+      await TransferSettlementModel.updateStateChange(transferEventId, transferEventStateStatus, trx)
       return true
     } catch (err) {
       throw ErrorHandler.Factory.reformatFSPIOPError(err)

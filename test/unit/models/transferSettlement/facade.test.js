@@ -17,8 +17,6 @@
  optionally within square brackets <email>.
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
-
- * Deon Botha <deon.botha@modusbox.com>
  --------------
  ******/
 
@@ -406,6 +404,45 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       test.ok(err instanceof Error, 'should throw an error')
       test.equal(err.message, 'An Error occured while inserting')
       test.equal(trxSpyRollBack.get.calledOnce, true, 'should rollback the transaction')
+      test.end()
+    }
+  })
+
+
+  await transferSettlementTest.test('updateTransferSettlement should handle errors', async (test) => {
+    try {
+      const transferId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
+      const status = 'success'
+      await Model.updateTransferSettlement(transferId, status)
+      test.fail('An error is expected')
+      test.end()
+    } catch (err) {
+      Logger.error(`updateTransferSettlement failed with error - ${err}`)
+      test.pass('Error expected')
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('updateTransferSettlement should handle knex errors', async (test) => {
+    try {
+      const transferId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
+      const status = 'success'
+      sandbox.stub(Db, 'getKnex').returns({
+        transaction: async (trxFunction) => {
+          try {
+            await trxFunction(sandbox.stub())
+          } catch (err) {
+            Logger.error(`Got error ${err}`)
+            throw err
+          }
+        }
+      })
+      await Model.updateTransferSettlement(transferId, status)
+      test.fail('An error is expected')
+      test.end()
+    } catch (err) {
+      Logger.error(`updateTransferSettlement failed with error - ${err}`)
+      test.pass('Error is expected')
       test.end()
     }
   })

@@ -198,7 +198,7 @@ async function initTransfers () {
     try {
       await Api.sendTransfer(payerFsp, payeeFsp, transfer)
       await Api.waitForTransferToBeCommited(transfer.transferId, SLEEP_MS, 10)
-      await transferParticipantStateChangeService.processMsgFulfil(transfer.transferId, 'success', [])
+      await transferParticipantStateChangeService.processMsgFulfil(transfer.transferId, 'success')
     } catch (err) {
       Logger.error(`prepareTransferDataTest failed with error - ${err}`)
     }
