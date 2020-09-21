@@ -1,9 +1,11 @@
-mkdir -p ./migrations ./seeds
-rm -rf ./migrations/* ./seeds/*
-docker_id=$(docker ps -aq -f name=cl_int)
-if ! [ docker_id ]
+BRANCH='feature/OTC-816-additional-ledger-account-initial-setup'
+TMP_FOLDER='tmp/central-ledger'
+if ! [  -d $TMP_FOLDER ]
 then
-  docker_id=$(docker create  --name	cl_int mojaloop/central-ledger:latest)
+ rm -rf $TMP_FOLDER
+ git clone --depth 1 --single-branch --branch $BRANCH git@github.com:mojaloop/central-ledger.git $TMP_FOLDER
+ mkdir -p ./migrations ./seeds
+ rm -rf ./migrations/* ./seeds/*
+ mv $TMP_FOLDER/migrations/* ./migrations
+ mv $TMP_FOLDER/seeds/* ./seeds
 fi
-docker cp $docker_id:/opt/central-ledger/migrations ./
-docker cp $docker_id:/opt/central-ledger/seeds ./
