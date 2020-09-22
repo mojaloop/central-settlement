@@ -58,11 +58,11 @@ async function connectDatabase () {
 const createSettlementModels = async function (settlementModelsToCreate = []) {
   try {
     const url = `${Config.CENTRAL_LEDGER_ENDPOINT}/settlementModels`
-    const existingSettlementModels = await request({ url, method: 'GET', }).data
+    const existingSettlementModels = await request({ url, method: 'GET' }).data
 
     const hasNoConfiguredSettlementModels =
-      (settlementModelsToCreate == null || settlementModelsToCreate.length < 1)
-      && existingSettlementModels.length < 1
+      (settlementModelsToCreate == null || settlementModelsToCreate.length < 1) &&
+      existingSettlementModels.length < 1
     if (hasNoConfiguredSettlementModels) {
       const error = 'Central Settlement cannot start without at least one configured settlement model'
       Logger.error(error)
