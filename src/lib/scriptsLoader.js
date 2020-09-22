@@ -46,7 +46,7 @@ function loadScripts (scriptDirectory) {
   }
   catch (err) {
     Logger.error(`Error loading scripts from : ${scriptDirectoryPath}, ${err}`)
-    return scriptsMap;
+    return scriptsMap
   }
   for (const scriptFile of scriptFiles) {
     const scriptSource = fs.readFileSync(path.join(scriptDirectoryPath, scriptFile), 'utf8')

@@ -139,7 +139,7 @@ Test('ScriptsLoader', async (scriptsLoaderTest) => {
     })
     loadScriptsTest.test('load scripts fail gracefully if no directory exists and return empty contents ', async (test) => {
       const result = await ScriptsLoader.loadScripts('test/unit/missing_folder')
-      test.equal(result, {})
+      test.deepEqual(result, {})
       test.end()
     })
     loadScriptsTest.end()
