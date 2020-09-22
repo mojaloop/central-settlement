@@ -9,7 +9,7 @@ RUN apk add --no-cache -t build-dependencies git make gcc g++ python libtool aut
     && npm install -g tape tap-xunit
 
 COPY package.json package-lock.json* /opt/central-settlement/
-RUN npm install
+RUN npm ci
 
 RUN apk del build-dependencies
 
