@@ -40,7 +40,14 @@ const scriptEngine = require('./scriptEngine')
 function loadScripts (scriptDirectory) {
   const scriptsMap = {}
   const scriptDirectoryPath = path.join(process.cwd(), scriptDirectory)
-  const scriptFiles = fs.readdirSync(scriptDirectoryPath)
+  let scriptFiles
+  try {
+    scriptFiles = fs.readdirSync(scriptDirectoryPath)
+  }
+  catch (err) {
+    Logger.error(`Error loading scripts from : ${scriptDirectoryPath}, ${err}`)
+    return scriptsMap
+  }
   for (const scriptFile of scriptFiles) {
     const scriptSource = fs.readFileSync(path.join(scriptDirectoryPath, scriptFile), 'utf8')
     const scriptLines = scriptSource.split(/\r?\n/)
