@@ -108,6 +108,7 @@ run_test_command() {
     --env CENTRAL_LEDGER_PORT=$CENTRAL_LEDGER_PORT \
     --env ML_API_ADAPTER_HOST=$ML_API_ADAPTER_HOST \
     --env ML_API_ADAPTER_PORT=$ML_API_ADAPTER_PORT \
+    --env SETTLEMENT_MODELS="[{\\\"name\\\": \\\"DEFERREDNET\\\", \\\"settlementGranularity\\\": \\\"NET\\\", \\\"settlementInterchange\\\": \\\"MULTILATERAL\\\", \\\"settlementDelay\\\": \\\"DEFERRED\\\", \\\"requireLiquidityCheck\\\": true, \\\"ledgerAccountType\\\": \\\"POSITION\\\", \\\"autoPositionReset\\\": true}]" \
     $DOCKER_IMAGE:$DOCKER_TAG \
     /bin/sh \
     -c "$TEST_CMD"

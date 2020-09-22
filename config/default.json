@@ -115,5 +115,7 @@
         }
       }
     }
-  }
+  },
+  "CENTRAL_LEDGER_ENDPOINT": "http://localhost:3001",
+  "SETTLEMENT_MODELS": []
 }
