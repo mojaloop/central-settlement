@@ -1,4 +1,4 @@
-FROM node:12.16.0-alpine
+FROM node:12.18.4-alpine
 USER root
 
 WORKDIR /opt/central-settlement
