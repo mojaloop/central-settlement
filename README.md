@@ -52,7 +52,9 @@ Running the tests:
 Tests include code coverage via istanbul. See the test/ folder for testing scripts.
 
 Running integration tests (narrow)
+
     npm run test:int:new
+
 ### Running Integration Tests interactively
 
 If you want to run integration tests in a repetitive manner, you can startup the test containers using `docker-compose`, login to running `central-settlement` container like so:
@@ -94,4 +96,3 @@ If you find your release builds are failing, refer to the [container scanning](h
 For more information on anchore and anchore-cli, refer to:
 - [Anchore CLI](https://github.com/anchore/anchore-cli)
 - [Circle Orb Registry](https://circleci.com/orbs/registry/orb/anchore/anchore-engine)
-
