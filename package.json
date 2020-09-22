@@ -12,7 +12,8 @@
         "Miguel de Barros <miguel.debarros@modusbox.com>",
         "Rajiv Mothilal <rajiv.mothilal@modusbox.com>",
         "Valentin Genev <valentin.genev@modusbox.com>",
-        "Adrian Enns <adrian.enns@modusbox.com>"
+        "Adrian Enns <adrian.enns@modusbox.com>",
+        "Kamuela Franco <kamuela.franco@modusbox.com>"
     ],
     "repository": {
         "type": "git",
@@ -76,6 +77,7 @@
         "watch:api": "nodemon src/api/index.js",
         "regenerate": "yo swaggerize:test --framework hapi --apiPath './src/interface/swagger.yaml'",
         "standard": "standard",
+        "standard:fix": "standard --fix",
         "lint": "eslint .",
         "test": "npm run test:unit | faucet",
         "test:all": "run-s test",
