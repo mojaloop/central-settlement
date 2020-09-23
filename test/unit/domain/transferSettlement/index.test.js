@@ -30,75 +30,80 @@ const Logger = require('@mojaloop/central-services-logger')
 const TransferFulfilService = require('../../../../src/domain/transferSettlement')
 const TransferFulfilModel = require('../../../../src/models/transferSettlement')
 
-Test('TransferFulfilService', async (transferFulfilServiceTest) => {
+Test('TransferSettlementService', async (transferSettlementServiceTest) => {
   let sandbox
 
-  transferFulfilServiceTest.beforeEach(test => {
+  transferSettlementServiceTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
     test.end()
   })
 
-  transferFulfilServiceTest.afterEach(test => {
+  transferSettlementServiceTest.afterEach(test => {
     sandbox.restore()
     test.end()
   })
 
-  await transferFulfilServiceTest.test('updateStateChange should', async updateStateChange => {
-    try {
-      const transferEventId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
-      const transferEventStateStatus = 'error'
-      const participantSateChangeUpdateMock = true
+  const transferEventId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
 
-      await updateStateChange.test('create participant state change records', async test => {
-        try {
-          TransferFulfilModel.updateStateChange = sandbox.stub().returns(participantSateChangeUpdateMock)
-          const result = await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus, [])
-          test.ok(result, 'Result returned')
-          test.ok(TransferFulfilModel.updateStateChange.withArgs(transferEventId, transferEventStateStatus).calledOnce, 'TransferFulfilModel.updateStateChange with args ... called once')
-          TransferFulfilModel.updateStateChange = sandbox.stub().returns()
+  await transferSettlementServiceTest.test('processMsgFulfil should', async processFulfilTest => {
+    const transferEventStateStatus = 'error'
 
-          try {
-            await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus, [])
-            test.pass('transferParticipantTable updated')
-          } catch (err) {
-            test.notOk(err instanceof Error, `Error ${err.message} thrown`)
-          }
-          test.end()
-        } catch (err) {
-          Logger.error(`updateStateChangeTest failed with error - ${err}`)
-          test.fail()
-          test.end()
-        }
-      })
+    await processFulfilTest.test('process a fulfil message', async test => {
+      try {
+        TransferFulfilModel.updateStateChange = sandbox.stub().returns()
+        await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus)
+        test.ok(TransferFulfilModel.updateStateChange.withArgs(transferEventId, transferEventStateStatus).calledOnce, 'TransferFulfilModel.updateStateChange with args ... called once')
+        test.end()
+      } catch (err) {
+        Logger.error(`processFulfilTest failed with error - ${err}`)
+        test.fail()
+        test.end()
+      }
+    })
 
-      await updateStateChange.test('throw an exception', async test => {
-        try {
-          TransferFulfilModel.updateStateChange = sandbox.stub().throws(new Error('Error occurred'))
-          const result = await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus, [])
-          test.ok(result, 'Result returned')
-          test.ok(TransferFulfilModel.updateStateChange.withArgs(transferEventId, transferEventStateStatus).calledOnce, 'TransferFulfilModel.updateStateChange with args ... called once')
-          TransferFulfilModel.updateStateChange = sandbox.stub().returns()
-
-          try {
-            await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus, [])
-            test.fail('transferParticipantTable updated')
-          } catch (err) {
-            test.notOk(err instanceof Error, `Error ${err.message} thrown`)
-          }
-          test.end()
-        } catch (err) {
-          Logger.error(`updateStateChangeTest failed with error - ${err}`)
-          test.pass()
-          test.end()
-        }
-      })
-
-      await updateStateChange.end()
-    } catch (err) {
-      Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
-      updateStateChange.fail()
-      updateStateChange.end()
-    }
+    await processFulfilTest.test('throw an exception', async test => {
+      try {
+        TransferFulfilModel.updateStateChange = sandbox.stub().throws(new Error('Error occurred'))
+        await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus)
+        test.fail()
+        test.end()
+      } catch (err) {
+        Logger.error(`processFulfilTest failed with error - ${err}`)
+        test.pass()
+        test.end()
+      }
+    })
+    await processFulfilTest.end()
   })
-  await transferFulfilServiceTest.end()
+
+  await transferSettlementServiceTest.test('insertLedgerEntries should', async ledgerEntriesTest => {
+    const ledgerEntries = []
+
+    await ledgerEntriesTest.test('insert ledger entries', async test => {
+      try {
+        TransferFulfilModel.insertLedgerEntries = sandbox.stub().returns()
+        await TransferFulfilService.insertLedgerEntries(ledgerEntries, transferEventId)
+        test.ok(TransferFulfilModel.insertLedgerEntries.withArgs(ledgerEntries, transferEventId).calledOnce, 'TransferFulfilModel.insertLedgerEntries with args ... called once')
+        test.end()
+      } catch (err) {
+        test.fail()
+        test.end()
+      }
+    })
+
+    await ledgerEntriesTest.test('throw an exception', async test => {
+      try {
+        TransferFulfilModel.insertLedgerEntries = sandbox.stub().throws(new Error('Error occurred'))
+        await TransferFulfilService.insertLedgerEntries(ledgerEntries, transferEventId)
+        test.fail()
+        test.end()
+      } catch (err) {
+        Logger.error(`insertLedgerEntries failed with error - ${err}`)
+        test.pass()
+        test.end()
+      }
+    })
+    await ledgerEntriesTest.end()
+  })
+  await transferSettlementServiceTest.end()
 })

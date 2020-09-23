@@ -40,7 +40,14 @@ const scriptEngine = require('./scriptEngine')
 function loadScripts (scriptDirectory) {
   const scriptsMap = {}
   const scriptDirectoryPath = path.join(process.cwd(), scriptDirectory)
-  const scriptFiles = fs.readdirSync(scriptDirectoryPath)
+  let scriptFiles
+  try {
+    scriptFiles = fs.readdirSync(scriptDirectoryPath)
+  }
+  catch (err) {
+    Logger.error(`Error loading scripts from : ${scriptDirectoryPath}, ${err}`)
+    return scriptsMap
+  }
   for (const scriptFile of scriptFiles) {
     const scriptSource = fs.readFileSync(path.join(scriptDirectoryPath, scriptFile), 'utf8')
     const scriptLines = scriptSource.split(/\r?\n/)
@@ -61,7 +68,7 @@ function loadScripts (scriptDirectory) {
 async function executeScripts (scriptsMap, scriptType, scriptAction, scriptStatus, payload) {
   try {
     const scriptResults = {}
-    if (scriptsMap[scriptType][scriptAction][scriptStatus]) {
+    if (scriptsMap[scriptType] && scriptsMap[scriptType][scriptAction] && scriptsMap[scriptType][scriptAction][scriptStatus]) {
       const now = new Date()
       for (const script of scriptsMap[scriptType][scriptAction][scriptStatus]) {
         if (now.getTime() >= script.startTime.getTime() && now.getTime() <= script.endTime.getTime()) {
