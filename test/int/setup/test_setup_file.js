@@ -5,7 +5,6 @@
 const Db = require('../../../src/lib/db')
 const KafkaProducer = require('@mojaloop/central-services-stream').Util.Producer
 const Config = require('../../../src/lib/config')
-const utils = require('../utils')
 const testStartDate = new Date().toISOString().slice(0, 19).replace('T', ' ')
 Config.DATABASE.connection.database = `central_ledger_integration_${process.env.JEST_WORKER_ID}`
 Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE = `topic-{{functionality}}-{{action}}${process.env.JEST_WORKER_ID}`

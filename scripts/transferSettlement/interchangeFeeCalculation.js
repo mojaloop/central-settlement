@@ -44,6 +44,5 @@ if ((payeeFspId !== payerFspId) &&
     payerFspId,
     payeeFspId)
 
-    //insert [ ]
-
+  // insert [ ]
 }

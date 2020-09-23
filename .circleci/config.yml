@@ -114,56 +114,42 @@ jobs:
             paths:
               - ~/docker-layers.tar
 
-  # test-unit:
-  #   executor: default-docker
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Install general dependencies
-  #         command: *defaults_Dependencies
-  #     - restore_cache:
-  #         keys:
-  #           - dependency-cache-{{ checksum "package.json" }}
-  #     - run:
-  #         name: Create dir for test results
-  #         command: mkdir -p ./test/results
-  #     - run:
-  #         name: Install tape and tap-xunit
-  #         command: npm install -g tape tap-xunit
-  #     - run:
-  #         name: Install tapes
-  #         command: npm install -g tapes
-  #     - run:
-  #         name: Execute unit tests
-  #         command: npm -s run test:xunit > ./test/results/tape.xml
-  #     - store_artifacts:
-  #         path: ./test/results
-  #         prefix: test
-  #     - store_test_results:
-  #         path: ./test/results
   test-unit:
-      executor: default-machine
-      steps:
-        - checkout
-        - restore_cache:
-            keys:
-              - v1-docker-{{ checksum "package.json" }}
-        - run:
-            name: Load Docker layers cache
-            command: |
-              set +o pipefail
-              docker load -i ~/docker-layers.tar | true
-        - run:
-            name: Prepare docker environment
-            command: npm -s run test:int:new:ci:prepare
-        - run:
-            name: Execute unit tests
-            command: docker exec -it cs_central-settlement sh -c "npm run test:coverage"
-        # copy coverage from docker file to machine
-        #
+    executor: default-docker
+    steps:
+      - checkout
+      - run:
+          name: Install general dependencies
+          command: *defaults_Dependencies
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: Create dir for test results
+          command: mkdir -p ./test/results
+      - run:
+          name: Install tape and tap-xunit
+          command: npm install -g tape tap-xunit
+      - run:
+          name: Install tapes
+          command: npm install -g tapes
+      - run:
+          name: Execute unit tests
+          command: npm -s run test:xunit > ./test/results/tape.xml
+      - run:
+          name: Execute unit tests with coverage
+          command: npm -s run test:coverage
+      - persist_to_workspace:
+          root: ~/
+          paths: ~/coverage
+      - store_artifacts:
+          path: ./test/results
+          prefix: test
+      - store_test_results:
+          path: ./test/results
 
   test-integration:
-      executor: default-machine
+      executor: default-docker
       steps:
         - checkout
         - restore_cache:
@@ -181,25 +167,29 @@ jobs:
         - run:
             name: Execute narrow integration tests
             command: docker exec -it cs_central-settlement sh -c "npm run test:int:new:series:run"
+        - run:
+            name: Copy coverage report
+            command: docker cp cs_central-settlement:/coverage_integration/coverage-final.json /coverage_integration/coverage-final.json
         # copy coverage from docker file to machine
+        - persist_to_workspace:
+            root: ~/
+            paths: ~/coverage_integration
+
   test-coverage:
-    executor: default-machine
+    executor: default-docker
     steps:
+      - attach_workspace:
+          at: ~/
       - checkout
+      - run:
+          name: Install general dependencies
+          command: *defaults_Dependencies
       - restore_cache:
           keys:
-            - v1-docker-{{ checksum "package.json" }}
-      - run:
-          name: Load Docker layers cache
-          command: |
-            set +o pipefail
-            docker load -i ~/docker-layers.tar | true
-      - run:
-          name: Prepare docker environment
-          command: npm -s run test:int:new:ci:prepare
+            - dependency-cache-{{ checksum "package.json" }}
       - run:
           name: Execute combined tests coverage check
-          command: docker exec -it cs_central-settlement sh -c "npm run test:coverage:merge && npm run test:coverage:merge:check"
+          command: npm run test:coverage:merge && npm run test:coverage:merge:check
       # - store_artifacts:
       #     path: coverage_combined
       # - store_test_results:
@@ -434,7 +424,7 @@ workflows:
       - test-unit:
           context: org-global
           requires:
-            - test-setup
+            - setup
           filters:
             tags:
               only: /.*/
@@ -445,7 +435,6 @@ workflows:
       - test-integration:
           context: org-global
           requires:
-            - test-unit
             - test-setup
           filters:
             tags:
