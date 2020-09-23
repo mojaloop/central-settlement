@@ -461,9 +461,8 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       knexStub.andWhere.onCall(0).callsArgOn(0, knexStub)
       knexStub.andWhere.onCall(0).returns(knexStub)
       knexStub.andWhere.onCall(1).returns(knexStub)
-
-      knexStub.insert.onCall(1).callsArgOn(0, knexStub)
-      knexStub.insert.onCall(1).returns(knexStub)
+      knexStub.insert.onCall(0).callsArgOn(0, knexStub)
+      knexStub.insert.onCall(0).returns(knexStub)
 
       knexStub.union.onCall(0).callsArgOn(0, knexStub)
       knexStub.innerJoin.onCall(6).callsArgOn(1, knexStub)
@@ -487,8 +486,8 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       knexStub.where.onCall(6).returns(knexStub)
       knexStub.andWhere.onCall(6).callsArgOn(0, knexStub)
 
-      knexStub.insert.onCall(3).callsArgOn(0, knexStub)
-      knexStub.insert.onCall(3).returns(knexStub)
+      knexStub.insert.onCall(2).callsArgOn(0, knexStub)
+      knexStub.insert.onCall(2).returns(knexStub)
       knexStub.innerJoin.onCall(15).callsArgOn(0, knexStub)
       knexStub.innerJoin.onCall(15).returns(knexStub)
 
