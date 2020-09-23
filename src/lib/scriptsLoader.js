@@ -43,12 +43,15 @@ function loadScripts (scriptDirectory) {
   let scriptFiles
   try {
     scriptFiles = fs.readdirSync(scriptDirectoryPath)
+    scriptFiles = scriptFiles.filter(fileName => {
+     return fs.statSync(path.join(scriptDirectoryPath, fileName)).isFile()
+   })
   } catch (err) {
     Logger.error(`Error loading scripts from : ${scriptDirectoryPath}, ${err}`)
     return scriptsMap
   }
   for (const scriptFile of scriptFiles) {
-    const scriptSource = fs.readFileSync(path.join(scriptDirectoryPath, scriptFile), 'utf8')
+    const scriptSource = fs.readFileSync(fs.realpathSync(scriptDirectoryPath + '/' + scriptFile), 'utf8')
     const scriptLines = scriptSource.split(/\r?\n/)
     retrieveScriptConfiguration(scriptLines, scriptsMap, scriptFile, scriptSource)
   }
