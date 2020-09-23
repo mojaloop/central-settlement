@@ -141,7 +141,7 @@ jobs:
           command: npm -s run test:coverage
       - persist_to_workspace:
           root: ~/
-          paths: ~/coverage
+          paths: /coverage
       - store_artifacts:
           path: ./test/results
           prefix: test
@@ -173,7 +173,7 @@ jobs:
         # copy coverage from docker file to machine
         - persist_to_workspace:
             root: ~/
-            paths: ~/coverage_integration
+            paths: /coverage_integration
 
   test-coverage:
     executor: default-docker
