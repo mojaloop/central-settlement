@@ -10,6 +10,11 @@ echo 'waiting 20 seconds until mysql database is ready to accept connection'
 until is_db_up = 0 || [ $MAX_ATTEMPT = 10 ]; do
   echo "checking connection ... attempt: $MAX_ATTEMPT"
   sleep 2
-  (( MAX_ATTEMPT++ ))
+  (( MAX_ATTEMPT=MAX_ATTEMPT+1 ))
 done
+if [ $MAX_ATTEMPT = 10 ]
+then
+ echo "could not connect to database...exiting"
+ exit 1
+fi
 echo 'finished waiting'
