@@ -149,18 +149,6 @@ async function updateTransferSettlement (transferId, status, trx = null) {
     const knex = await Db.getKnex()
     const trxFunction = async (trx, doCommit = true) => {
       try {
-        // Insert Transfer State.
-        const transferState = [
-          {
-            transferStateId: 'SETTLED',
-            enumeration: 'SETTLED',
-            description: 'The transfer has been settled',
-            isActive: 1
-          }
-        ]
-        await knex.raw(knex('transferState').insert(transferState).toString().replace('insert', 'INSERT IGNORE'))
-          .transacting(trx)
-
         // Insert TransferParticipant ledger entry type.
         await knex.from(knex.raw('transferParticipant (transferID, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, amount)'))
           .insert(function () {

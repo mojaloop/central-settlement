@@ -43,8 +43,7 @@ function loadScripts (scriptDirectory) {
   let scriptFiles
   try {
     scriptFiles = fs.readdirSync(scriptDirectoryPath)
-  }
-  catch (err) {
+  } catch (err) {
     Logger.error(`Error loading scripts from : ${scriptDirectoryPath}, ${err}`)
     return scriptsMap
   }
