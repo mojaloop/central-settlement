@@ -137,6 +137,11 @@ Test('ScriptsLoader', async (scriptsLoaderTest) => {
       test.equal(JSON.stringify(result), JSON.stringify(expectedScriptsMap))
       test.end()
     })
+    loadScriptsTest.test('load scripts fail gracefully if no directory exists and return empty contents ', async (test) => {
+      const result = await ScriptsLoader.loadScripts('test/unit/missing_folder')
+      test.deepEqual(result, {})
+      test.end()
+    })
     loadScriptsTest.end()
   })
   scriptsLoaderTest.test('executeScripts should', executeScriptsTest => {
