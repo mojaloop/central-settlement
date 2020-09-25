@@ -1,4 +1,4 @@
-BRANCH='feature/OTC-816-additional-ledger-account-initial-setup'
+BRANCH='feature/OTC'
 TMP_FOLDER='tmp/central-ledger'
 if ! [  -d $TMP_FOLDER ]
 then
