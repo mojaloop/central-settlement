@@ -140,8 +140,7 @@ jobs:
           name: Execute unit tests with coverage
           command: npm -s run test:coverage
       - persist_to_workspace:
-          root: /coverage
-          paths: ./
+          root: ./coverage
       - store_artifacts:
           path: ./test/results
           prefix: test
@@ -172,8 +171,7 @@ jobs:
             command: docker cp cs_central-settlement:/coverage_integration/coverage-final.json /coverage_integration/coverage-final.json
         # copy coverage from docker file to machine
         - persist_to_workspace:
-            root: /coverage_integration
-            paths: ./
+            root: ./coverage_integration
 
   test-coverage:
     executor: default-docker
