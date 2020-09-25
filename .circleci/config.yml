@@ -144,6 +144,7 @@ jobs:
           command: ls -la
       - persist_to_workspace:
           root: ./coverage
+          path: ./
       - store_artifacts:
           path: ./test/results
           prefix: test
