@@ -140,9 +140,6 @@ jobs:
           name: Execute unit tests with coverage
           command: npm -s run test:coverage
       - run:
-          name: Execute unit tests with coverage
-          command: npm -s run test:coverage
-      - run:
           name: List folders
           command: ls -la
       - persist_to_workspace:
@@ -178,6 +175,7 @@ jobs:
         # copy coverage from docker file to machine
         - persist_to_workspace:
             root: ./coverage_integration
+            path: ./
 
   test-coverage:
     executor: default-docker
