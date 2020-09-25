@@ -115,7 +115,6 @@
         "test:int:new:parallel:run": "WORKERS=3 jest --config './jest.integration.config.js' --coverage  --maxWorkers=${WORKERS} --testMatch '<rootDir>/test/int/**/*.(test|spec).js'",
         "test:coverage:merge": "node ./test/int/scripts/merge_coverage.js",
         "test:coverage:merge:check": "nyc --nycrc-path .nycrc.combined.yml -t coverage_merged report ",
-
         "audit:resolve": "SHELL=sh resolve-audit --production",
         "audit:check": "SHELL=sh check-audit --production",
         "dep:check": "npx ncu -e 2",

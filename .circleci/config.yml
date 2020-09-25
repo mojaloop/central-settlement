@@ -149,7 +149,7 @@ jobs:
           path: ./test/results
 
   test-integration:
-      executor: default-docker
+      executor: default-machine
       steps:
         - checkout
         - restore_cache:
