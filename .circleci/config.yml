@@ -143,8 +143,8 @@ jobs:
           name: List folders
           command: ls -la
       - persist_to_workspace:
-          root: /root/project
-          paths: coverage/
+          root: /home/circleci/project
+          paths: ./coverage
 
       - store_artifacts:
           path: ./test/results
