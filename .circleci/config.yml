@@ -186,8 +186,6 @@ jobs:
   test-coverage:
     executor: default-docker
     steps:
-      - attach_workspace:
-          at: /home/circleci/project
       - checkout
       - run:
           name: Install general dependencies
@@ -195,6 +193,8 @@ jobs:
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
+      - attach_workspace:
+          at: /home/circleci/project
       - run:
           name: Execute combined tests coverage check
           command: npm run test:coverage:merge && npm run test:coverage:merge:check
