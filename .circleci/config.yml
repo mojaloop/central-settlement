@@ -172,6 +172,9 @@ jobs:
             name: Execute narrow integration tests
             command: docker exec -it cs_central-settlement sh -c "npm run test:int:new:series:run"
         - run:
+            name: Create dir for test coverage results
+            command: mkdir -p ./coverage_integration
+        - run:
             name: Copy coverage report
             command: docker cp cs_central-settlement:/opt/central-settlement/coverage_integration/coverage-final.json /coverage_integration/coverage-final.json
         # copy coverage from docker file to machine
