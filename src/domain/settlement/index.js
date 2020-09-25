@@ -90,15 +90,15 @@ module.exports = {
       const windowContentRecords = []
       let windowContentResponseData = {}
 
-      for (var key of Object.keys(settlementWindowsList)) {
+      for (const key of Object.keys(settlementWindowsList)) {
         const windowContentRecord = await SettlementWindowContentModel.getBySettlementAndWindowId(settlementId, settlementWindowsList[key].id)
         windowContentResponseData = {
-          id: windowContentRecord[key].id,
-          state: windowContentRecord[key].state,
-          ledgerAccountType: windowContentRecord[key].ledgerAccountType,
-          currencyId: windowContentRecord[key].currencyId,
-          createdDate: windowContentRecord[key].createdDate,
-          changedDate: windowContentRecord[key].changedDate
+          id: windowContentRecord[0].id,
+          state: windowContentRecord[0].state,
+          ledgerAccountType: windowContentRecord[0].ledgerAccountType,
+          currencyId: windowContentRecord[0].currencyId,
+          createdDate: windowContentRecord[0].createdDate,
+          changedDate: windowContentRecord[0].changedDate
         }
         windowContentRecords.push(windowContentResponseData)
         settlementWindowsList[key].content = windowContentRecords
