@@ -173,7 +173,7 @@ jobs:
             command: docker exec -it cs_central-settlement sh -c "npm run test:int:new:series:run"
         - run:
             name: Copy coverage report
-            command: docker cp cs_central-settlement:/coverage_integration/coverage-final.json /coverage_integration/coverage-final.json
+            command: docker cp cs_central-settlement:/opt/central-settlement/coverage_integration/coverage-final.json /coverage_integration/coverage-final.json
         # copy coverage from docker file to machine
         - persist_to_workspace:
             root: /home/circleci/project
