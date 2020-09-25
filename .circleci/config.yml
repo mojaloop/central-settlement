@@ -144,7 +144,7 @@ jobs:
           command: ls -la
       - persist_to_workspace:
           root: /home/circleci/project
-          paths: ./coverage
+          paths: ./coverage/*
 
       - store_artifacts:
           path: ./test/results
@@ -180,14 +180,14 @@ jobs:
         # copy coverage from docker file to machine
         - persist_to_workspace:
             root: /home/circleci/project
-            paths: ./coverage_integration
+            paths: ./coverage_integration/*
 
 
   test-coverage:
     executor: default-docker
     steps:
       - attach_workspace:
-          at: /
+          at: /home/circleci/project
       - checkout
       - run:
           name: Install general dependencies
