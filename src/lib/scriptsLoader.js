@@ -44,8 +44,8 @@ function loadScripts (scriptDirectory) {
   try {
     scriptFiles = fs.readdirSync(scriptDirectoryPath)
     scriptFiles = scriptFiles.filter(fileName => {
-     return fs.statSync(path.join(scriptDirectoryPath, fileName)).isFile()
-   })
+      return fs.statSync(path.join(scriptDirectoryPath, fileName)).isFile()
+    })
   } catch (err) {
     Logger.error(`Error loading scripts from : ${scriptDirectoryPath}, ${err}`)
     return scriptsMap
