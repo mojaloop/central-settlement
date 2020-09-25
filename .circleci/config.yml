@@ -139,6 +139,12 @@ jobs:
       - run:
           name: Execute unit tests with coverage
           command: npm -s run test:coverage
+      - run:
+          name: Execute unit tests with coverage
+          command: npm -s run test:coverage
+      - run:
+          name: List folders
+          command: ls -la
       - persist_to_workspace:
           root: ./coverage
       - store_artifacts:
