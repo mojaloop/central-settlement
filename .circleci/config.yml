@@ -143,8 +143,9 @@ jobs:
           name: List folders
           command: ls -la
       - persist_to_workspace:
-          root: ./coverage
-          path: ./
+          root: ./
+          paths:
+            - /coverage/*
       - store_artifacts:
           path: ./test/results
           prefix: test
