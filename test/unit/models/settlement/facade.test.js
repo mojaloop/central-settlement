@@ -1422,6 +1422,126 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         }
       })
 
+      await settlementTransfersReserveTest.test('make transfer commit when called from within a transaction without liquidity check', async test => {
+        try {
+          const settlementId = 1
+          const transactionTimestamp = new Date().toISOString().replace(/[TZ]/g, ' ').trim()
+          const trxStub = sandbox.stub()
+
+          const knexStub = sandbox.stub()
+          knexStub.raw = sandbox.stub()
+          sandbox.stub(Db, 'getKnex').returns(knexStub)
+          const context = sandbox.stub()
+          context.on = sandbox.stub().returns({
+            andOn: sandbox.stub()
+          })
+          const join1Stub = sandbox.stub().callsArgOn(1, context)
+          const join2Stub = sandbox.stub().callsArgOn(1, context)
+          const leftJoin1Stub = sandbox.stub().callsArgOn(1, context)
+          const join3Stub = sandbox.stub().callsArgOn(1, context)
+          const join4Stub = sandbox.stub().callsArgOn(1, context)
+          knexStub.returns({
+            join: join1Stub.returns({
+              join: join2Stub.returns({
+                leftJoin: leftJoin1Stub.returns({
+                  join: join3Stub.returns({
+                    join: sandbox.stub().returns({
+                      join: sandbox.stub().returns({
+                        join: join4Stub.returns({
+                          select: sandbox.stub().returns({
+                            where: sandbox.stub().returns({
+                              whereNull: sandbox.stub().returns({
+                                transacting: sandbox.stub().returns(
+                                  Promise.resolve(
+                                    stubData.settlementTransfersReserve.settlementTransferList
+                                  )
+                                )
+                              })
+                            })
+                          })
+                        })
+                      })
+                    })
+                  })
+                })
+              })
+            }),
+            insert: sandbox.stub().returns({
+              transacting: sandbox.stub()
+            })
+          })
+          knexStub.withArgs('participantPosition').returns({
+            select: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                first: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns({
+                    forUpdate: sandbox.stub().returns(
+                      Promise.resolve({
+                        dfspPositionId: 1,
+                        dfspPositionValue: 0,
+                        dfspReservedValue: 0
+                      })
+                    )
+                  })
+                })
+              })
+            }),
+            update: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                transacting: sandbox.stub()
+              })
+            })
+          })
+          knexStub.withArgs('participantPositionChange').returns({
+            select: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                orderBy: sandbox.stub().returns({
+                  first: sandbox.stub().returns({
+                    transacting: sandbox.stub()
+                  })
+                })
+              })
+            }),
+            insert: sandbox.stub().returns({
+              transacting: sandbox.stub()
+            })
+          })
+          knexStub.withArgs('participantLimit').returns({
+            select: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                andWhere: sandbox.stub().returns({
+                  first: sandbox.stub().returns({
+                    transacting: sandbox.stub().returns({
+                      forUpdate: sandbox.stub().returns(
+                        Promise.resolve({ netDebitCap: 1000 })
+                      )
+                    })
+                  })
+                })
+              })
+            })
+          })
+
+          sandbox.stub(Utility, 'produceGeneralMessage').returns()
+
+          const result = await SettlementFacade.settlementTransfersReserve(settlementId, transactionTimestamp, 0, enums, trxStub)
+          test.equal(result, 0, 'Result for successful operation returned')
+          test.equal(knexStub.withArgs('settlementParticipantCurrency AS spc').callCount, 1)
+          test.equal(knexStub.withArgs('transferStateChange').callCount, 3)
+          test.equal(knexStub.withArgs('participantPosition').callCount, 8)
+          test.equal(knexStub.withArgs('participantLimit').callCount, 0)
+          test.equal(knexStub.withArgs('participantPosition').callCount, 8)
+          test.equal(knexStub.withArgs('transferFulfilment').callCount, 0)
+          test.equal(knexStub.withArgs('participantPositionChange').callCount, 4)
+
+          test.end()
+        } catch (err) {
+          Logger.error(`settlementTransfersReserve failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
       await settlementTransfersReserveTest.test('throw error if insert fails', async test => {
         try {
           const settlementId = 1
