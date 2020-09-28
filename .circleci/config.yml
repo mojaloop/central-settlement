@@ -143,10 +143,6 @@ jobs:
           key: test-unit-coverage-{{ .Branch }}
           paths:
             - /home/circleci/project/coverage/*
-      - save_cache:
-          key: test-unit-coverage-{{ .Branch }}
-          paths:
-            - /home/circleci/project/coverage/*
       # - persist_to_workspace:
       #     root: /home/circleci/project
       #     paths: ./coverage/*
@@ -203,10 +199,10 @@ jobs:
             - dependency-cache-{{ checksum "package.json" }}
       - restore_cache:
           keys:
-            - test-int-coverage-{{ .Branch }}-{{ .Revision }}
+            - test-int-coverage-{{ .Branch }}
       - restore_cache:
           keys:
-            - test-unit-coverage-{{ .Branch }}-{{ .Revision }}
+            - test-unit-coverage-{{ .Branch }}
       - run:
           name: List folders
           command: ls -la
