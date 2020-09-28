@@ -239,7 +239,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
  * @param enums.transferParticipantRoleTypes.HUB
  * @param enums.transferStates
  */
-const settlementTransfersReserve = async function (settlementId, transactionTimestamp, enums, trx = null) {
+const settlementTransfersReserve = async function (settlementId, transactionTimestamp, requireLiquidityCheck, enums, trx = null) {
   const knex = await Db.getKnex()
   let isLimitExceeded, transferStateChangeId
 
@@ -299,30 +299,33 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             .transacting(trx)
             .forUpdate()
 
-          // Select dfsp NET_DEBIT_CAP limit
-          const { netDebitCap } = await knex('participantLimit')
-            .select('value AS netDebitCap')
-            .where('participantCurrencyId', dfspAccountId)
-            .andWhere('participantLimitTypeId', enums.participantLimitTypes.NET_DEBIT_CAP)
-            .first()
-            .transacting(trx)
-            .forUpdate()
-          isLimitExceeded = netDebitCap - dfspPositionValue - dfspReservedValue - dfspAmount < 0
-
-          if (isLimitExceeded) {
-            /* let { startAfterParticipantPositionChangeId } = */ await knex('participantPositionChange')
-              .select('participantPositionChangeId AS startAfterParticipantPositionChangeId')
-              .where('participantPositionId', dfspPositionId)
-              .orderBy('participantPositionChangeId', 'desc')
+          if (requireLiquidityCheck) {
+            // Select dfsp NET_DEBIT_CAP limit
+            const { netDebitCap } = await knex('participantLimit')
+              .select('value AS netDebitCap')
+              .where('participantCurrencyId', dfspAccountId)
+              .andWhere('participantLimitTypeId', enums.participantLimitTypes.NET_DEBIT_CAP)
               .first()
               .transacting(trx)
+              .forUpdate()
+            isLimitExceeded = netDebitCap - dfspPositionValue - dfspReservedValue - dfspAmount < 0
 
-            // TODO:: notify dfsp for NDC change
-            // TODO:: insert new limit with correct value for startAfterParticipantPositionChangeId
-            await ParticipantFacade.adjustLimits(dfspAccountId, {
-              type: 'NET_DEBIT_CAP',
-              value: new MLNumber(netDebitCap).add(dfspAmount).toNumber()
-            }, trx)
+            if (isLimitExceeded) {
+              /* let { startAfterParticipantPositionChangeId } = */
+              await knex('participantPositionChange')
+                .select('participantPositionChangeId AS startAfterParticipantPositionChangeId')
+                .where('participantPositionId', dfspPositionId)
+                .orderBy('participantPositionChangeId', 'desc')
+                .first()
+                .transacting(trx)
+
+              // TODO:: notify dfsp for NDC change
+              // TODO:: insert new limit with correct value for startAfterParticipantPositionChangeId
+              await ParticipantFacade.adjustLimits(dfspAccountId, {
+                type: 'NET_DEBIT_CAP',
+                value: new MLNumber(netDebitCap).add(dfspAmount).toNumber()
+              }, trx)
+            }
           }
 
           // Persist dfsp latestPosition
@@ -758,7 +761,7 @@ const Facade = {
         const settlementData = await knex('settlement AS s')
           .join('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 's.currentStateChangeId')
           .join('settlementModel AS sm', 'sm.settlementModelId', 's.settlementModelId')
-          .select('s.settlementId', 'ssc.settlementStateId', 'ssc.reason', 'ssc.createdDate', 'sm.autoPositionReset')
+          .select('s.settlementId', 'ssc.settlementStateId', 'ssc.reason', 'ssc.createdDate', 'sm.autoPositionReset', 'sm.requireLiquidityCheck')
           .where('s.settlementId', settlementId)
           .first()
           .transacting(trx)
@@ -769,6 +772,8 @@ const Facade = {
         } else {
           const autoPositionReset = settlementData.autoPositionReset
           delete settlementData.autoPositionReset
+          const requireLiquidityCheck = settlementData.requireLiquidityCheck
+          delete settlementData.requireLiquidityCheck
 
           // seq-settlement-6.2.5, step 5
           const settlementAccountList = await knex('settlementParticipantCurrency AS spc')
@@ -999,7 +1004,7 @@ const Facade = {
             if (settlementData.settlementStateId === enums.settlementStates.PENDING_SETTLEMENT) {
               await Facade.settlementTransfersPrepare(settlementId, transactionTimestamp, enums, trx)
             } else if (settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_RECORDED) {
-              await Facade.settlementTransfersReserve(settlementId, transactionTimestamp, enums, trx)
+              await Facade.settlementTransfersReserve(settlementId, transactionTimestamp, requireLiquidityCheck, enums, trx)
             } else if (settlementData.settlementStateId === enums.settlementStates.PS_TRANSFERS_RESERVED) {
               await Facade.settlementTransfersCommit(settlementId, transactionTimestamp, enums, trx)
             }

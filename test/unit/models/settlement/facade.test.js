@@ -1291,7 +1291,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           sandbox.stub(Db, 'getKnex').returns(knexStub)
           sandbox.stub(Utility, 'produceGeneralMessage').returns()
 
-          await SettlementFacade.settlementTransfersReserve(settlementId, transactionTimestamp, enums, trxStub)
+          await SettlementFacade.settlementTransfersReserve(settlementId, transactionTimestamp, 1, enums, trxStub)
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
@@ -1404,7 +1404,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           sandbox.stub(Utility, 'produceGeneralMessage').returns()
 
-          const result = await SettlementFacade.settlementTransfersReserve(settlementId, transactionTimestamp, enums, trxStub)
+          const result = await SettlementFacade.settlementTransfersReserve(settlementId, transactionTimestamp, 1, enums, trxStub)
           test.equal(result, 0, 'Result for successful operation returned')
           test.equal(knexStub.withArgs('settlementParticipantCurrency AS spc').callCount, 1)
           test.equal(knexStub.withArgs('transferStateChange').callCount, 3)
@@ -1524,7 +1524,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           sandbox.stub(Utility, 'produceGeneralMessage').returns()
 
-          await SettlementFacade.settlementTransfersReserve(settlementId, transactionTimestamp, enums, trxStub)
+          await SettlementFacade.settlementTransfersReserve(settlementId, transactionTimestamp, 1, enums, trxStub)
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
@@ -1639,7 +1639,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           sandbox.stub(Utility, 'produceGeneralMessage').returns()
 
-          const result = await SettlementFacade.settlementTransfersReserve(settlementId, transactionTimestamp, enums)
+          const result = await SettlementFacade.settlementTransfersReserve(settlementId, transactionTimestamp, 1, enums)
           test.equal(result, 0, 'Result for successful operation returned')
           test.end()
         } catch (err) {
@@ -1738,7 +1738,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             })
           })
 
-          await SettlementFacade.settlementTransfersReserve(settlementId, transactionTimestamp, enums)
+          await SettlementFacade.settlementTransfersReserve(settlementId, transactionTimestamp, 1, enums)
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
