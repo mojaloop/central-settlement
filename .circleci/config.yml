@@ -143,7 +143,7 @@ jobs:
           name: List folders
           command: ls -la
       - save_cache:
-          key: test-unit-coverage-{{ .Branch }}-{{ .BuildNum }}
+          key: test-unit-coverage-{{ .Branch }}-{{ .Revision }}	
           paths:
             - /home/circleci/project/coverage/*
       # - persist_to_workspace:
@@ -182,7 +182,7 @@ jobs:
             command: docker cp cs_central-settlement:/opt/central-settlement/coverage_integration/coverage-final.json /home/circleci/project/coverage_integration/coverage-final.json
         # copy coverage from docker file to machine
         - save_cache:
-            key: test-int-coverage-{{ .Branch }}-{{ .BuildNum }}
+            key: test-int-coverage-{{ .Branch }}-{{ .Revision }}
             paths:
               - /home/circleci/project/coverage_integration/*
         - persist_to_workspace:
@@ -202,10 +202,10 @@ jobs:
             - dependency-cache-{{ checksum "package.json" }}
       - restore_cache:
           keys:
-            - test-int-coverage-{{ .Branch }}-{{ .BuildNum }}
+            - test-int-coverage-{{ .Branch }}-{{ .Revision }}
       - restore_cache:
           keys:
-            - test-unit-coverage-{{ .Branch }}-{{ .BuildNum }}
+            - test-unit-coverage-{{ .Branch }}-{{ .Revision }}
       # - attach_workspace:
       #     at: /home/circleci/project
       - run:
