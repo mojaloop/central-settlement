@@ -142,10 +142,13 @@ jobs:
       - run:
           name: List folders
           command: ls -la
-      - persist_to_workspace:
-          root: /home/circleci/project
-          paths: ./coverage/*
-
+      - save_cache:
+          key: test-unit-coverage-{{ .Branch }}-{{ .BuildNum }}
+          paths:
+            - /home/circleci/project/coverage/*
+      # - persist_to_workspace:
+      #     root: /home/circleci/project
+      #     paths: ./coverage/*
       - store_artifacts:
           path: ./test/results
           prefix: test
@@ -178,6 +181,10 @@ jobs:
             name: Copy coverage report
             command: docker cp cs_central-settlement:/opt/central-settlement/coverage_integration/coverage-final.json /home/circleci/project/coverage_integration/coverage-final.json
         # copy coverage from docker file to machine
+        - save_cache:
+            key: test-int-coverage-{{ .Branch }}-{{ .BuildNum }}
+            paths:
+              - /home/circleci/project/coverage_integration/*
         - persist_to_workspace:
             root: /home/circleci/project
             paths: ./coverage_integration/*
@@ -193,8 +200,14 @@ jobs:
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
-      - attach_workspace:
-          at: /home/circleci/project
+      - restore_cache:
+          keys:
+            - test-int-coverage-{{ .Branch }}-{{ .BuildNum }}
+      - restore_cache:
+          keys:
+            - test-unit-coverage-{{ .Branch }}-{{ .BuildNum }}
+      # - attach_workspace:
+      #     at: /home/circleci/project
       - run:
           name: Execute combined tests coverage check
           command: npm run test:coverage:merge && npm run test:coverage:merge:check
