@@ -140,7 +140,11 @@ jobs:
           name: Execute unit tests with coverage
           command: npm -s run test:coverage
       - save_cache:
-          key: test-unit-coverage-{{ .Branch }}-{{ .Revision }}
+          key: test-unit-coverage-{{ .Branch }}
+          paths:
+            - /home/circleci/project/coverage/*
+      - save_cache:
+          key: test-unit-coverage-{{ .Branch }}
           paths:
             - /home/circleci/project/coverage/*
       # - persist_to_workspace:
@@ -179,7 +183,7 @@ jobs:
             command: docker cp cs_central-settlement:/opt/central-settlement/coverage_integration/coverage-final.json /home/circleci/project/coverage_integration/coverage-final.json
         # copy coverage from docker file to machine
         - save_cache:
-            key: test-int-coverage-{{ .Branch }}-{{ .Revision }}
+            key: test-int-coverage-{{ .Branch }}
             paths:
               - /home/circleci/project/coverage_integration/*
         - persist_to_workspace:
