@@ -139,11 +139,8 @@ jobs:
       - run:
           name: Execute unit tests with coverage
           command: npm -s run test:coverage
-      - run:
-          name: List folders
-          command: ls -la
       - save_cache:
-          key: test-unit-coverage-{{ .Branch }}-{{ .Revision }}	
+          key: test-unit-coverage-{{ .Branch }}-{{ .Revision }}
           paths:
             - /home/circleci/project/coverage/*
       # - persist_to_workspace:
@@ -206,8 +203,9 @@ jobs:
       - restore_cache:
           keys:
             - test-unit-coverage-{{ .Branch }}-{{ .Revision }}
-      # - attach_workspace:
-      #     at: /home/circleci/project
+      - run:
+          name: List folders
+          command: ls -la
       - run:
           name: Execute combined tests coverage check
           command: npm run test:coverage:merge && npm run test:coverage:merge:check
