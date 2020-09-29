@@ -46,6 +46,7 @@ Run Test:
     - apk --no-cache add openssh-client
   script:
     - apk update && apk --no-cache add git
+    - mkdir -p ~/.ssh && ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
     - sh ./test/int/scripts/pre_start_ci.sh
     - docker exec -it cs_central-settlement sh -c "mkdir -p ./test/results && npm -s run test:xunit > ./test/results/tape.xml"
     - docker exec -it cs_central-settlement sh -c "npm run test:coverage"
