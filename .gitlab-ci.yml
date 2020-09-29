@@ -41,7 +41,9 @@ Run Test:
     - curl -O https://bootstrap.pypa.io/get-pip.py
     - python3 get-pip.py
     - pip install docker-compose
-    - ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+    - apk --no-cache add ca-certificates
+    - apk --no-cache add curl
+    - apk --no-cache add openssh-client
   script:
     - apk update && apk --no-cache add git
     - sh ./test/int/scripts/pre_start_ci.sh

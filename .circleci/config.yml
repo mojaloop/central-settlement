@@ -345,26 +345,6 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
-      # - test-setup:
-      #     context: org-global
-      #     filters:
-      #       tags:
-      #         only: /.*/
-      #       branches:
-      #         ignore:
-      #           - /feature*/
-      #           - /bugfix*/
-      # - test-unit:
-      #     context: org-global
-      #     requires:
-      #       - setup
-      #     filters:
-      #       tags:
-      #         only: /.*/
-      #       branches:
-      #         ignore:
-      #           - /feature*/
-      #           - /bugfix*/
       - tests:
           context: org-global
           filters:
@@ -374,30 +354,6 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
-      # - test-coverage:
-      #     context: org-global
-      #     requires:
-      #       - test-setup
-      #       - test-unit
-      #       - test-integration
-      #     filters:
-      #       tags:
-      #         only: /.*/
-      #       branches:
-      #         ignore:
-      #           - /feature*/
-      #           - /bugfix*/
-      # - test-integration:
-      #     context: org-global
-      #     requires:
-      #       - setup
-      #     filters:
-      #       tags:
-      #         only: /.*/
-      #       branches:
-      #         ignore:
-      #           - /feature*/
-      #           - /bugfix*/
       - vulnerability-check:
           context: org-global
           requires:
