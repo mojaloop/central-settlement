@@ -1,5 +1,5 @@
 stages:
-  - build
+  # - build
   - test
   - deploy
 
@@ -13,8 +13,6 @@ stages:
   - apk --no-cache add curl
   - apk --no-cache add openssh-client
   - apk add --no-cache -t build-dependencies make gcc g++ python libtool autoconf automake
-  - npm config set unsafe-perm true
-  - npm install -g node-gyp
 
 # Build the image and push it to gitlab package registry
 Build:
@@ -36,6 +34,7 @@ Run Test:
   services:
     - docker:dind
   script:
+    - apk update && apk --no-cache add git
     - sh ./test/int/scripts/pre_start_ci.sh
     - docker exec -it cs_central-settlement sh -c "mkdir -p ./test/results && npm -s run test:xunit > ./test/results/tape.xml"
     - docker exec -it cs_central-settlement sh -c "npm run test:coverage"
