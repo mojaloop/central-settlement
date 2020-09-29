@@ -36,7 +36,7 @@ Run Test:
   services:
     - docker:dind
   script:
-    - npm -s run test:int:new:ci:prepare
+    - sh ./test/int/scripts/pre_start_ci.sh
     - docker exec -it cs_central-settlement sh -c "mkdir -p ./test/results && npm -s run test:xunit > ./test/results/tape.xml"
     - docker exec -it cs_central-settlement sh -c "npm run test:coverage"
     - mkdir -p ./test/results && docker cp cs_central-settlement:/opt/central-settlement/test/results/ .
