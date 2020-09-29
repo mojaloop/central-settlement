@@ -207,6 +207,9 @@ jobs:
           name: List folders
           command: ls -la
       - run:
+          name: List current folder
+          command: pwd
+      - run:
           name: Execute combined tests coverage check
           command: npm run test:coverage:merge && npm run test:coverage:merge:check
       # - store_artifacts:
