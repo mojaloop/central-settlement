@@ -185,7 +185,7 @@ jobs:
             command: docker exec -it cs_central-settlement sh -c "npm run test:coverage"
         - run:
             name: Copy unit test results
-            command: mkdir -p ./test/results && docker cp cs_central-settlement:/opt/central-settlement/test/results/. /home/circleci/project/
+            command: mkdir -p ./test/results && docker cp cs_central-settlement:/opt/central-settlement/test/results/ .
         - run:
             name: List files
             command: ls -la
@@ -198,7 +198,7 @@ jobs:
             command: docker exec -it cs_central-settlement sh -c  "npm run test:coverage:merge && npm run test:coverage:merge:check"
         - run:
             name: Copy combined coverage results
-            command: mkdir -p ./test/coverage_combined && docker cp cs_central-settlement:/opt/central-settlement/coverage_combined/. /home/circleci/project/
+            command: mkdir -p ./test/coverage_combined && docker cp cs_central-settlement:/opt/central-settlement/coverage_combined/ .
         - run:
             name: List files
             command: ls -la
