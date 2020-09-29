@@ -1,7 +1,7 @@
 
 
 is_db_up() {
-  docker exec -it cs_int_mysql sh -c 'mysql -h"localhost" -P"3306" -u"central_ledger" -p"password" -e "select 1"'
+  docker exec -i cs_int_mysql sh -c 'mysql -h"localhost" -P"3306" -u"central_ledger" -p"password" -e "select 1"'
 }
 
 MAX_ATTEMPT=1
