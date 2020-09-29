@@ -33,6 +33,14 @@ Run Test:
   image: docker:latest
   services:
     - docker:dind
+  before_script:
+    - docker info
+    - apk update
+    - apk upgrade
+    - apk add curl jq python3 python3-dev build-base libffi-dev libressl-dev gettext
+    - curl -O https://bootstrap.pypa.io/get-pip.py
+    - python3 get-pip.py
+    - pip install docker-compose
   script:
     - apk update && apk --no-cache add git
     - sh ./test/int/scripts/pre_start_ci.sh
