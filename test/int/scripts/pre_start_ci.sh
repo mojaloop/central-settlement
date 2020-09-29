@@ -1,7 +1,7 @@
 #!/bin/sh
 mydir="${0%/*}"
 sh "$mydir"/cp_migrations_ci.sh
-if [  -z  "$CIRCLE_PROJECT_REPONAME" ]
+if [ ! -z  "$CIRCLE_PROJECT_REPONAME" ]
 then
   docker-compose -p $CIRCLE_PROJECT_REPONAME --env-file ./test/int/docker/.env -f docker-compose.integration_2.yml up -d --build
 else
