@@ -30,25 +30,30 @@ Build:
     - docker push "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
 
 # Execute unit tests
-Unit Test:
+Run Test:
   stage: test
-  image: node:12.16.0-alpine
+  image: docker:latest
+  services:
+    - docker:dind
   script:
-    - *defaults_Dependencies
-    # - cd $(npm root -g)/npm
-    # - npm install --no-save github:interledgerjs/five-bells-ledger-api-tests
-    - npm install
+    - npm -s run test:int:new:ci:prepare
+    - docker exec -it cs_central-settlement sh -c "mkdir -p ./test/results && npm -s run test:xunit > ./test/results/tape.xml"
+    - docker exec -it cs_central-settlement sh -c "npm run test:coverage"
+    - mkdir -p ./test/results && docker cp cs_central-settlement:/opt/central-settlement/test/results/ .
+    - docker exec -it cs_central-settlement sh -c "npm run test:int:new:series:run"
+    - docker exec -it cs_central-settlement sh -c  "npm run test:coverage:merge && npm run test:coverage:merge:check"
+    - docker cp cs_central-settlement:/opt/central-settlement/coverage_combined/ .
     # - apk del build-dependencies
     # - mkdir -p ./test/results
     #- npm install -g tape tap-xunit
     #- npm install -g tapes
-    - npm -s run test:coverage-check
-  #artifacts:
-  #  paths:
-  #    - ./test/results/*.*
-  #  reports:
-  #    junit:
-  #      - ./test/results/tape.xml
+    # - npm -s run test:coverage-check
+  artifacts:
+   paths:
+     - ./test/results/*.*
+   reports:
+     junit:
+       - ./test/results/tape.xml
 
 
 # Deployment requires the mojaloop cluster to be configured in gitlab
@@ -69,7 +74,7 @@ Deploy to Dev:
     # This allows the cluster to pull images from the private repo
     # without needing to modify the upstream OSS helm chart to allow specifying image pull credentials
     # NOTE: This step requires a deploy token to be created in this project called gitlab-deploy-token
-    # See https://docs.gitlab.com/ee/user/project/deploy_tokens/index.html#gitlab-deploy-token for details  
+    # See https://docs.gitlab.com/ee/user/project/deploy_tokens/index.html#gitlab-deploy-token for details
     # Install coreutils so that we can use the GNU version of base64 and disable line wrapping (-w)
     - apk update && apk add coreutils
     # Set the required variables and base64 them
