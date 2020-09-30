@@ -1,5 +1,5 @@
 stages:
-  # - build
+  - build
   - test
   - deploy
 
@@ -15,17 +15,17 @@ stages:
   - apk add --no-cache -t build-dependencies make gcc g++ python libtool autoconf automake
 
 # Build the image and push it to gitlab package registry
-# Build:
-#   stage: build
-#   image: docker:latest
-#   services:
-#     - docker:dind
-#   before_script:
-#     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-#   script:
-#     - *env_vars
-#     - docker build --pull -t $CI_REGISTRY_IMAGE:$IMAGE_TAG .
-#     - docker push "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
+Build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - *env_vars
+    - docker build --pull -t $CI_REGISTRY_IMAGE:$IMAGE_TAG .
+    - docker push "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
 
 # Execute unit tests
 Run Test:
