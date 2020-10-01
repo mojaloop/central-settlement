@@ -129,21 +129,21 @@ jobs:
             command: docker exec -it cs_central-settlement sh -c  "npm run test:coverage:merge && npm run test:coverage:merge:check"
         - run:
             name: Copy combined coverage results
-            command: docker cp cs_central-settlement:/opt/central-settlement/coverage_combined/ .
+            command: docker cp cs_central-settlement:/opt/central-settlement/coverage_merged/ .
         - store_artifacts:
             path: ./test/results
             prefix: test
         - store_test_results:
             path: ./test/results
         - store_artifacts:
-            path: ./coverage_combined
+            path: ./coverage_merged
         - run:
             name: Copy code coverage to SonarQube
             command: |
               if [ "${CIRCLE_BRANCH}" == "master" ];
               then
                   echo "Sending lcov.info to SonarQube..."
-                  aws s3 cp ./coverage_combined/lcov.info $AWS_S3_DIR_SONARQUBE/central-settlement/lcov.info
+                  aws s3 cp ./coverage_merged/lcov.info $AWS_S3_DIR_SONARQUBE/central-settlement/lcov.info
               else
                   echo "Not a release (env CIRCLE_BRANCH != 'master'), skipping sending lcov.info to SonarQube."
               fi
