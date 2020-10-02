@@ -16,8 +16,11 @@ RUN apk del build-dependencies
 COPY config /opt/central-settlement/config
 COPY src /opt/central-settlement/src
 COPY test /opt/central-settlement/test
-COPY README.md /opt/central-settlement
+COPY scripts /opt/central-settlement/scripts
+COPY jest.integration.config.js .nycrc.combined.yml .nycrc.yml .nycrc.integration.yml /opt/central-settlement/
 
+COPY README.md /opt/central-settlement
+COPY jest.integration.config.js .nycrc.combined.yml .nycrc.yml .nycrc.integration.yml /opt/central-settlement/
 # overwrite default.json with integration environment specific config
 RUN cp -f /opt/central-settlement/test/integration-config-centralsettlement.json /opt/central-settlement/config/default.json
 

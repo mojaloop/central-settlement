@@ -25,6 +25,7 @@ defaults_Dependencies: &defaults_Dependencies |
   npm config set unsafe-perm true
   npm install -g node-gyp
 
+
 defaults_awsCliDependencies: &defaults_awsCliDependencies |
   apk upgrade --no-cache
   apk --no-cache add \
@@ -54,7 +55,8 @@ executors:
 
   default-machine:
     machine:
-      image: ubuntu-1604:201903-01
+      docker_layer_caching: true
+      image: ubuntu-2004:202008-01
 
 ##
 # Jobs
@@ -85,84 +87,66 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - node_modules
-
-  test-unit:
-    executor: default-docker
-    steps:
-      - checkout
-      - run:
-          name: Install general dependencies
-          command: *defaults_Dependencies
-      - restore_cache:
-          keys:
-            - dependency-cache-{{ checksum "package.json" }}
-      - run:
-          name: Create dir for test results
-          command: mkdir -p ./test/results
-      - run:
-          name: Install tape and tap-xunit
-          command: npm install -g tape tap-xunit
-      - run:
-          name: Install tapes
-          command: npm install -g tapes
-      - run:
-          name: Execute unit tests
-          command: npm -s run test:xunit > ./test/results/tape.xml
-      - store_artifacts:
-          path: ./test/results
-          prefix: test
-      - store_test_results:
-          path: ./test/results
-
-  test-coverage:
-    executor: default-docker
-    steps:
-      - checkout
-      - run:
-          name: Install general dependencies
-          command: *defaults_Dependencies
-      - run:
-          name: Install AWS CLI dependencies
-          command: *defaults_awsCliDependencies
-      - restore_cache:
-          keys:
-            - dependency-cache-{{ checksum "package.json" }}
-      - run:
-          name: Execute code coverage check
-          command: npm -s run test:coverage
-      - store_artifacts:
-          path: coverage
-          prefix: test
-      - store_test_results:
-          path: coverage
-      - run:
-          name: Copy code coverage to SonarQube
-          command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ];
-            then
-                echo "Sending lcov.info to SonarQube..."
-                aws s3 cp coverage/lcov.info $AWS_S3_DIR_SONARQUBE/central-settlement/lcov.info
-            else
-                echo "Not a release (env CIRCLE_BRANCH != 'master'), skipping sending lcov.info to SonarQube."
-            fi
-
-  test-integration:
-    executor: default-machine
-    steps:
-      - checkout
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-      - run:
-          name: Create dir for test results
-          command: mkdir -p ./test/results
-      - run:
-          name: Execute integration tests
-          command: npm -s run test:integration
-      - store_artifacts:
-          path: ./test/results
-          prefix: test
-      - store_test_results:
-          path: ./test/results
+  tests:
+      executor: default-machine
+      steps:
+        - checkout
+        - restore_cache:
+            keys:
+              - v1-docker-{{ checksum "package.json" }}
+        - run:
+            name: Load Docker layers cache
+            command: |
+              set +o pipefail
+              docker load -i ~/docker-layers.tar | true
+        - run:
+            name: Prepare docker environment
+            command: npm -s run test:int:new:ci:prepare
+        - run:
+            name: Save Docker layers cache
+            command: |
+              DOCKER_IMAGES=$(docker images --format "{{.Repository}}" --filter=reference="${CIRCLE_PROJECT_REPONAME}_*")
+              DOCKER_LAYERS=$(for image in $DOCKER_IMAGES; do docker history $image -q | grep -v missing; done)
+              docker save -o ~/docker-layers.tar $DOCKER_LAYERS
+        - save_cache:
+            key: v1-docker-{{ checksum "package.json" }}
+            paths:
+              - ~/docker-layers.tar
+        - run:
+            name: Execute unit tests
+            command: docker exec -it cs_central-settlement sh -c "mkdir -p ./test/results && npm -s run test:xunit > ./test/results/tape.xml"
+        - run:
+            name: Execute unit tests with coverage
+            command: docker exec -it cs_central-settlement sh -c "npm run test:coverage"
+        - run:
+            name: Copy unit test results
+            command: mkdir -p ./test/results && docker cp cs_central-settlement:/opt/central-settlement/test/results/ .
+        - run:
+            name: Execute narrow integration tests
+            command: docker exec -it cs_central-settlement sh -c "npm run test:int:new:series:run"
+        - run:
+            name: Execute combined tests coverage check
+            command: docker exec -it cs_central-settlement sh -c  "npm run test:coverage:merge && npm run test:coverage:merge:check"
+        - run:
+            name: Copy combined coverage results
+            command: docker cp cs_central-settlement:/opt/central-settlement/coverage_merged/ .
+        - store_artifacts:
+            path: ./test/results
+            prefix: test
+        - store_test_results:
+            path: ./test/results
+        - store_artifacts:
+            path: ./coverage_merged
+        - run:
+            name: Copy code coverage to SonarQube
+            command: |
+              if [ "${CIRCLE_BRANCH}" == "master" ];
+              then
+                  echo "Sending lcov.info to SonarQube..."
+                  aws s3 cp ./coverage_merged/lcov.info $AWS_S3_DIR_SONARQUBE/central-settlement/lcov.info
+              else
+                  echo "Not a release (env CIRCLE_BRANCH != 'master'), skipping sending lcov.info to SonarQube."
+              fi
 
   vulnerability-check:
     executor: default-docker
@@ -361,32 +345,8 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
-      - test-unit:
+      - tests:
           context: org-global
-          requires:
-            - setup
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              ignore:
-                - /feature*/
-                - /bugfix*/
-      - test-coverage:
-          context: org-global
-          requires:
-            - setup
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              ignore:
-                - /feature*/
-                - /bugfix*/
-      - test-integration:
-          context: org-global
-          requires:
-            - setup
           filters:
             tags:
               only: /.*/
@@ -420,9 +380,7 @@ workflows:
           context: org-global
           requires:
             - setup
-            - test-unit
-            - test-coverage
-            - test-integration
+            - tests
             - vulnerability-check
             - audit-licenses
           filters:

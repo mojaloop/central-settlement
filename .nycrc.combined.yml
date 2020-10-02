@@ -1,5 +1,5 @@
-temp-directory: "./.nyc_output"
-check-coverage: false
+# temp-directory: "./.nyc_output"
+check-coverage: true
 per-file: true
 lines: 90
 statements: 90
@@ -15,6 +15,7 @@ reporter: [
   "text-summary",
   "html"
 ]
+report-dir: "./coverage_combined"
 exclude: [
   "**/node_modules/**",
   '**/migrations/**',

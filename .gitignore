@@ -17,7 +17,7 @@ lib-cov
 
 # Coverage directory used by tools like istanbul
 coverage
-
+coverage_*
 #Docs folder created for documentation
 docs
 
@@ -58,3 +58,6 @@ jspm_packages
 .history
 /.gitlab-ci.env
 junit.xml
+migrations
+seeds
+tmp

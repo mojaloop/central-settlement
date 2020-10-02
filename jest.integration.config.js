@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = {
-  verbose: true,
+  verbose: false,
   // preset: 'ts-jest',
   testEnvironment: 'node',
   collectCoverage: true,
@@ -17,7 +17,11 @@ module.exports = {
       lines: 0
     }
   },
-  // globalSetup: '<rootDir>/test/int/global_setup.js',
+  setupFilesAfterEnv: ['<rootDir>/test/int/setup/test_setup_file.js'],
+  // setupFiles: ['<rootDir>/test/int/global_setup.js' ],
+  globalSetup: '<rootDir>/test/int/setup/global_tests_setup.js',
   // globalTeardown: '<rootDir>/test/int/global_tear_down.js',
-  reporters: ['jest-junit', 'default']
+  reporters: ['jest-junit', 'default'],
+  coverageDirectory: '<rootDir>/coverage_integration/',
+  moduleDirectories: ['node_modules']
 }
