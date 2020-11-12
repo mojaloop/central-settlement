@@ -6,7 +6,7 @@
     },
     "1523|@mojaloop/central-services-database>lodash": {
       "decision": "fix",
-      "madeAt": 1605151549068
+      "madeAt": 1605157671071
     },
     "1523|@mojaloop/central-ledger>@mojaloop/central-object-store>@mojaloop/central-services-logger>winston>async>lodash": {
       "decision": "fix",
