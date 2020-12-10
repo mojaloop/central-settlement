@@ -24,7 +24,6 @@
  ******/
 'use strict'
 
-const Package = require('../../package')
 const Path = require('path')
 const Inert = require('@hapi/inert')
 const Vision = require('@hapi/vision')
