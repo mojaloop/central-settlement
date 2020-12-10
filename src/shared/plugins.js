@@ -30,7 +30,6 @@ const Vision = require('@hapi/vision')
 const Blipp = require('blipp')
 const ErrorHandling = require('@mojaloop/central-services-error-handling')
 const RawPayloadToDataUri = require('@mojaloop/central-services-shared').Util.Hapi.HapiRawPayload
-const HeadersValidator = require('@mojaloop/central-services-shared').Util.Hapi.FSPIOPHeaderValidation
 const APIDocumentation = require('@mojaloop/central-services-shared').Util.Hapi.APIDocumentation
 const Config = require('../lib/config')
 
@@ -69,7 +68,7 @@ const registerPlugins = async (server) => {
     plugin: require('hapi-auth-bearer-token')
   })
 
-  await server.register([Inert, Vision, Blipp, HeadersValidator, ErrorHandling, RawPayloadToDataUri])
+  await server.register([Inert, Vision, Blipp, ErrorHandling, RawPayloadToDataUri])
 }
 
 module.exports = {
