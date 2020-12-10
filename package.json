@@ -45,7 +45,7 @@
         "event-stream": "4.0.1",
         "hapi-auth-bearer-token": "8.0.0",
         "hapi-openapi": "1.2.6",
-        "mustache": "4.1.0",
+        "mustache": "4.0.1",
         "parse-strings-in-object": "2.0.0",
         "rc": "1.2.8",
         "uuid4": "2.0.2"

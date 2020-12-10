@@ -8,6 +8,7 @@
       "@hapi/joi",
       "hapi-swagger",
       "@hapi/boom",
-      "hapi-openapi"
+      "hapi-openapi",
+      "mustache"
     ]
 }
