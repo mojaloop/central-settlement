@@ -96,7 +96,7 @@ module.exports = {
       const windowContentRecords = []
       let windowContentResponseData = {}
 
-      for (var key of Object.keys(settlementWindowsList)) {
+      for (const key of Object.keys(settlementWindowsList)) {
         const windowContentRecord = await SettlementWindowContentModel.getBySettlementAndWindowId(settlementId, settlementWindowsList[key].id)
         windowContentResponseData = {
           id: windowContentRecord[key].id,
@@ -140,7 +140,7 @@ module.exports = {
           if (!settlements[s.settlementId]) {
             const settlementId = s.settlementId
             const settlementWindowsList = await SettlementWindowModel.getBySettlementId({ settlementId })
-            for (var key of Object.keys(settlementWindowsList)) {
+            for (const key of Object.keys(settlementWindowsList)) {
               settlementWindowsList[key].content = await SettlementWindowContentModel.getBySettlementAndWindowId(s.settlementId, settlementWindowsList[key].id)
             }
             settlements[s.settlementId] = {

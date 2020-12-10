@@ -31,7 +31,7 @@
         "@hapi/inert": "5.2.2",
         "@hapi/vision": "5.5.4",
         "@mojaloop/central-ledger": "9.2.2",
-        "@mojaloop/central-services-database": "^10.6.1",
+        "@mojaloop/central-services-database": "9.2.0",
         "@mojaloop/central-services-error-handling": "10.6.0",
         "@mojaloop/central-services-health": "10.6.0",
         "@mojaloop/central-services-logger": "10.6.0",
