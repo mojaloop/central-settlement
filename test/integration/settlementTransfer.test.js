@@ -32,6 +32,7 @@ const TransferData = require('./helpers/transferData')
 const Models = require('./helpers/models')
 const Config = require('../../src/lib/config')
 const Db = require('../../src/lib/db')
+const CLDb = require('@mojaloop/central-ledger/src/lib/db')
 const SettlementWindowService = require('../../src/domain/settlementWindow')
 const SettlementService = require('../../src/domain/settlement')
 const Enums = require('../../src/models/lib/enums')
@@ -96,6 +97,8 @@ TransferData.setup()
 
 Test('SettlementTransfer should', async settlementTransferTest => {
   await Db.connect(Config.DATABASE)
+  await CLDb.connect(Config.DATABASE)
+
   const enums = await getEnums()
   let settlementWindowId
   let settlementData
@@ -228,6 +231,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
             netSettlementAmount = account.netSettlementAmount.amount
             return true
           }
+          return false
         })
       })
       netSettlementSenderId = participantFilter[0].id
@@ -237,6 +241,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
             netRecipientAccountId = account.id
             return true
           }
+          return false
         })
       })
       netSettlementRecipientId = participantFilter[0].id
@@ -263,6 +268,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       test.equal(settlementParticipantCurrencyRecord.settlementStateId, enums.settlementStates.PS_TRANSFERS_RECORDED, 'record for payer changed to PS_TRANSFERS_RECORDED')
 
       netSenderSettlementTransferId = settlementParticipantCurrencyRecord.settlementTransferId
+
       const transferRecord = await TransferModel.getById(netSenderSettlementTransferId)
       test.ok(transferRecord, 'settlement transfer is created for payer')
 
@@ -641,6 +647,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
   await settlementTransferTest.test('finally disconnect open handles', async test => {
     try {
       await Db.disconnect()
+      await CLDb.disconnect()
       test.pass('database connection closed')
       await Producer.getProducer('topic-notification-event').disconnect()
       test.pass('producer to topic-notification-event disconnected')
