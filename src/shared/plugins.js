@@ -24,26 +24,28 @@
  ******/
 'use strict'
 
-const Package = require('../../package')
+const Path = require('path')
 const Inert = require('@hapi/inert')
 const Vision = require('@hapi/vision')
 const Blipp = require('blipp')
 const ErrorHandling = require('@mojaloop/central-services-error-handling')
 const RawPayloadToDataUri = require('@mojaloop/central-services-shared').Util.Hapi.HapiRawPayload
+const APIDocumentation = require('@mojaloop/central-services-shared').Util.Hapi.APIDocumentation
+const Config = require('../lib/config')
+
 /**
  * @module src/shared/plugin
  */
 
 const registerPlugins = async (server) => {
-  await server.register({
-    plugin: require('hapi-swagger'),
-    options: {
-      info: {
-        title: 'ml api adapter API Documentation',
-        version: Package.version
+  if (Config.API_DOC_ENDPOINTS_ENABLED) {
+    await server.register({
+      plugin: APIDocumentation,
+      options: {
+        documentPath: Path.resolve(__dirname, '../interface/swagger.json')
       }
-    }
-  })
+    })
+  }
 
   await server.register({
     plugin: require('@hapi/good'),
