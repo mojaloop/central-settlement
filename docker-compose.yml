@@ -4,7 +4,7 @@ services:
     build:
       context: .
       cache_from:
-        - mojaloop/central-settlement
+        - chinchillah/central-settlement:otc
     container_name: cs_central-settlement
     command:
       - "sh"
@@ -25,7 +25,7 @@ services:
       - ./docker/wait-for:/opt/wait-for
 
   central-ledger:
-    image: mojaloop/central-ledger:latest
+    image: chinchillah/central-ledger:otc3 # mojaloop/central-ledger:latest # 
     container_name: cs_central-ledger
     command:
       - "sh"
