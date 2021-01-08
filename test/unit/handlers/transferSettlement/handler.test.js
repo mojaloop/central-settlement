@@ -284,7 +284,7 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
       sandbox.stub(ScriptsLoader, 'loadScripts').returns({})
       const result = await TransferFulfilHandler.registerAllHandlers()
       test.equal(result, true)
-      test.ok(ScriptsLoader.loadScripts.withArgs('/scripts/transferSettlement').calledOnce, 'ScriptsLoader loadScripts called once')
+      test.ok(ScriptsLoader.loadScripts.withArgs('./scripts/transferSettlementTemp').calledOnce, 'ScriptsLoader loadScripts called once')
       test.end()
     })
 

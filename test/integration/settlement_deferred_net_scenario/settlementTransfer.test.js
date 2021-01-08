@@ -199,6 +199,8 @@ Test('SettlementTransfer should', async settlementTransferTest => {
             netSenderAccountId = account.id
             netSettlementAmount = account.netSettlementAmount.amount
             return true
+          } else {
+            return false
           }
         })
       })
@@ -208,6 +210,8 @@ Test('SettlementTransfer should', async settlementTransferTest => {
           if (account.netSettlementAmount.currency === currency && account.netSettlementAmount.amount < 0) {
             netRecipientAccountId = account.id
             return true
+          } else {
+            return false
           }
         })
       })

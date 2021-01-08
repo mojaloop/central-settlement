@@ -76,7 +76,8 @@ const closeSettlementWindow = async (error, messages) => {
     const kafkaTopic = message.topic
     const params = { message, kafkaTopic, decodedPayload: payload, consumer: Consumer, producer: Producer }
 
-    const actionLetter = action === Enum.Events.Event.Action.CLOSE ? Enum.Events.ActionLetter.close
+    const actionLetter = action === Enum.Events.Event.Action.CLOSE
+      ? Enum.Events.ActionLetter.close
       : Enum.Events.ActionLetter.unknown
 
     if (!payload) {

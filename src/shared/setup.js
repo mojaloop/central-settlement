@@ -140,7 +140,8 @@ const createHandlers = async (handlers) => {
   }
 
   for (handlerIndex in handlers) {
-    var handler = handlers[handlerIndex]
+    const handler = handlers[handlerIndex]
+    let error
     if (handler.enabled) {
       Logger.info(`Handler Setup - Registering ${JSON.stringify(handler)}!`)
       console.log(`Handler Setup - Registering ${JSON.stringify(handler)}!`)
@@ -152,7 +153,7 @@ const createHandlers = async (handlers) => {
           await RegisterHandlers.transfersettlement.registerTransferSettlementHandler()
           break
         default:
-          var error = `Handler Setup - ${JSON.stringify(handler)} is not a valid handler to register!`
+          error = `Handler Setup - ${JSON.stringify(handler)} is not a valid handler to register!`
           Logger.error(error)
           throw ErrorHandling.Factory.reformatFSPIOPError(error)
       }

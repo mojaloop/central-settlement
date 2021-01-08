@@ -53,7 +53,8 @@ const RETRY_OPTIONS = {
   minTimeout: Config.WINDOW_AGGREGATION_RETRY_INTERVAL,
   maxTimeout: Config.WINDOW_AGGREGATION_RETRY_INTERVAL
 }
-const SCRIPTS_FOLDER = '/scripts/transferSettlement'
+
+const SCRIPTS_FOLDER = Config.HANDLERS_SETTINGS_SCRIPTS_FOLDER
 let INJECTED_SCRIPTS = {}
 
 async function processTransferSettlement (error, messages) {
@@ -77,7 +78,8 @@ async function processTransferSettlement (error, messages) {
     const transferEventId = message.value.id
     const transferEventAction = message.value.metadata.event.action
     const transferEventStateStatus = message.value.metadata.event.state.status
-    const actionLetter = transferEventAction === Enum.Events.Event.Action.COMMIT ? Enum.Events.ActionLetter.commit
+    const actionLetter = transferEventAction === Enum.Events.Event.Action.COMMIT
+      ? Enum.Events.ActionLetter.commit
       : Enum.Events.ActionLetter.unknown
 
     if (!payload) {
