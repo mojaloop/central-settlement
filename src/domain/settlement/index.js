@@ -134,7 +134,7 @@ module.exports = {
           if (!settlements[s.settlementId]) {
             const settlementId = s.settlementId
             const settlementWindowsList = await SettlementWindowModel.getBySettlementId({ settlementId })
-            for (var key of Object.keys(settlementWindowsList)) {
+            for (const key of Object.keys(settlementWindowsList)) {
               settlementWindowsList[key].content = await SettlementWindowContentModel.getBySettlementAndWindowId(s.settlementId, settlementWindowsList[key].id)
             }
             settlements[s.settlementId] = {
