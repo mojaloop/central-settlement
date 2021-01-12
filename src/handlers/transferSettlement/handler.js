@@ -44,6 +44,7 @@ const transferSettlementService = require('../../domain/transferSettlement')
 const scriptsLoader = require('../../lib/scriptsLoader')
 const Utility = require('@mojaloop/central-services-shared').Util
 const Db = require('../../lib/db')
+const SettlementModelModel = ('../../models/settlement/settlementModel.js')
 const LOG_LOCATION = { module: 'TransferFulfilHandler', method: '', path: '' } // var object used as pointer
 const CONSUMER_COMMIT = true
 const FROM_SWITCH = true
@@ -57,7 +58,13 @@ const RETRY_OPTIONS = {
 const SCRIPTS_FOLDER = Config.HANDLERS_SETTINGS_SCRIPTS_FOLDER
 let INJECTED_SCRIPTS = {}
 
+const MODEL_IS_CGS = (async () => {
+  const result = await SettlementModelModel.getByName('CGS')
+  return !!result
+})()
+
 async function processTransferSettlement (error, messages) {
+  if (!MODEL_IS_CGS) return true
   if (error) {
     Logger.error(error)
     throw ErrorHandling.Factory.reformatFSPIOPError(error)
