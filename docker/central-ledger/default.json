@@ -1,6 +1,23 @@
 {
   "PORT": 3001,
   "HOSTNAME": "http://central-ledger",
+  "DATABASE": {
+    "DIALECT": "mysql",
+    "HOST": "mysql",
+    "PORT": 3306,
+    "USER": "central_ledger",
+    "PASSWORD": "password",
+    "SCHEMA": "central_ledger",
+    "POOL_MIN_SIZE": 10,
+    "POOL_MAX_SIZE": 10,
+    "ACQUIRE_TIMEOUT_MILLIS": 30000,
+    "CREATE_TIMEOUT_MILLIS": 30000,
+    "DESTROY_TIMEOUT_MILLIS": 5000,
+    "IDLE_TIMEOUT_MILLIS": 30000,
+    "REAP_INTERVAL_MILLIS": 1000,
+    "CREATE_RETRY_INTERVAL_MILLIS": 200,
+    "DEBUG": false
+  },
   "MIGRATIONS": {
     "DISABLED": false,
     "RUN_DATA_MIGRATIONS": true
@@ -16,17 +33,13 @@
     "CONNECT_TIMEOUT": 45000,
     "RECONNECT_INTERVAL": 5000
   },
-  "DB_CONNECTION": {
-    "POOL_MIN": 10,
-    "POOL_MAX": 30
-  },
   "MONGODB": {
-    "DISABLED": false,
+    "DISABLED": true,
     "URI": "mongodb://localhost:27017/mlos"
   },
   "ERROR_HANDLING": {
     "includeCauseExtension": true,
-    "truncateCause": false
+    "truncateExtensions": false
   },
   "HANDLERS": {
     "DISABLED": false,
@@ -70,6 +83,7 @@
     ]
   },
   "INTERNAL_TRANSFER_VALIDITY_SECONDS": "432000",
+  "ENABLE_ON_US_TRANSFERS": false,
   "CACHE": {
     "CACHE_ENABLED": false,
     "MAX_BYTE_SIZE": 10000000,
@@ -103,7 +117,7 @@
             "rdkafkaConf": {
               "client.id": "cl-con-bulk-prepare",
               "group.id": "cl-group-bulk-prepare",
-              "metadata.broker.list": "localhost:9092",
+              "metadata.broker.list": "kafka:9092",
               "socket.keepalive.enable": true
             },
             "topicConf": {
@@ -126,7 +140,7 @@
             "rdkafkaConf": {
               "client.id": "cl-con-bulk-processing",
               "group.id": "cl-group-bulk-processing",
-              "metadata.broker.list": "localhost:9092",
+              "metadata.broker.list": "kafka:9092",
               "socket.keepalive.enable": true
             },
             "topicConf": {
@@ -149,7 +163,30 @@
             "rdkafkaConf": {
               "client.id": "cl-con-bulk-fulfil",
               "group.id": "cl-group-bulk-fulfil",
-              "metadata.broker.list": "localhost:9092",
+              "metadata.broker.list": "kafka:9092",
+              "socket.keepalive.enable": true
+            },
+            "topicConf": {
+              "auto.offset.reset": "earliest"
+            }
+          }
+        },
+        "GET": {
+          "config": {
+            "options": {
+              "mode": 2,
+              "batchSize": 1,
+              "pollFrequency": 10,
+              "recursiveTimeout": 100,
+              "messageCharset": "utf8",
+              "messageAsJSON": true,
+              "sync": true,
+              "consumeTimeout": 1000
+            },
+            "rdkafkaConf": {
+              "client.id": "cl-con-bulk-get",
+              "group.id": "cl-group-bulk-get",
+              "metadata.broker.list": "kafka:9092",
               "socket.keepalive.enable": true
             },
             "topicConf": {
@@ -294,7 +331,8 @@
               "queue.buffering.max.messages": 10000000
             },
             "topicConf": {
-              "request.required.acks": "all"
+              "request.required.acks": "all",
+              "partitioner": "murmur2_random"
             }
           }
         }
@@ -314,7 +352,8 @@
               "queue.buffering.max.messages": 10000000
             },
             "topicConf": {
-              "request.required.acks": "all"
+              "request.required.acks": "all",
+              "partitioner": "murmur2_random"
             }
           }
         },
@@ -332,7 +371,8 @@
               "queue.buffering.max.messages": 10000000
             },
             "topicConf": {
-              "request.required.acks": "all"
+              "request.required.acks": "all",
+              "partitioner": "murmur2_random"
             }
           }
         },
@@ -350,7 +390,8 @@
               "queue.buffering.max.messages": 10000000
             },
             "topicConf": {
-              "request.required.acks": "all"
+              "request.required.acks": "all",
+              "partitioner": "murmur2_random"
             }
           }
         }
@@ -370,7 +411,8 @@
               "queue.buffering.max.messages": 10000000
             },
             "topicConf": {
-              "request.required.acks": "all"
+              "request.required.acks": "all",
+              "partitioner": "murmur2_random"
             }
           }
         }
@@ -390,7 +432,8 @@
               "queue.buffering.max.messages": 10000000
             },
             "topicConf": {
-              "request.required.acks": "all"
+              "request.required.acks": "all",
+              "partitioner": "murmur2_random"
             }
           }
         }
