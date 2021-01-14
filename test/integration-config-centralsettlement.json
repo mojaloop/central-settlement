@@ -31,6 +31,9 @@
     "DISABLED": false,
     "API": {
       "DISABLED": false
+    },
+    "SETTINGS": {
+      "SCRIPTS_FOLDER": "./scripts/transferSettlementTemp"
     }
   },
   "KAFKA": {
