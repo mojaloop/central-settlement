@@ -37,6 +37,7 @@ const Utils = require('../helpers/utils')
 const currencies = ['USD', 'TZS']
 
 const settlementModels = [
+
   {
     name: 'DEFERREDNET',
     settlementGranularity: 'NET',
@@ -44,18 +45,40 @@ const settlementModels = [
     settlementDelay: 'DEFERRED',
     ledgerAccountType: 'POSITION',
     autoPositionReset: true,
-    requireLiquidityCheck: true
+    requireLiquidityCheck: true,
+    settlementAccountType: 'SETTLEMENT'
   },
+  // {
+  //   name: 'CGS',
+  //   settlementGranularity: 'GROSS',
+  //   settlementInterchange: 'BILATERAL',
+  //   settlementDelay: 'IMMEDIATE',
+  //   requireLiquidityCheck: true,
+  //   ledgerAccountType: 'POSITION',
+  //   autoPositionReset: false,
+  //   settlementAccountType: 'SETTLEMENT'
+  // },
   {
-    name: 'DEFERREDNETUSD',
+    name: 'INTERCHANGEFEE',
     settlementGranularity: 'NET',
     settlementInterchange: 'MULTILATERAL',
     settlementDelay: 'DEFERRED',
-    ledgerAccountType: 'POSITION',
+    requireLiquidityCheck: false,
+    ledgerAccountType: 'INTERCHANGE_FEE',
     autoPositionReset: true,
-    currency: 'USD',
-    requireLiquidityCheck: true
+    settlementAccountType: 'INTERCHANGE_FEE_SETTLEMENT'
   }
+  // {
+  //   name: 'DEFERREDNETUSD',
+  //   settlementGranularity: 'NET',
+  //   settlementInterchange: 'MULTILATERAL',
+  //   settlementDelay: 'DEFERRED',
+  //   ledgerAccountType: 'POSITION',
+  //   autoPositionReset: true,
+  //   currency: 'USD',
+  //   requireLiquidityCheck: true,
+  //   settlementAccountType: 'SETTLEMENT'
+  // }
 ]
 
 const payerFsp = `fsp${Utils.rand8()}`

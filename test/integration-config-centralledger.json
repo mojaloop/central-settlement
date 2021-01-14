@@ -444,5 +444,12 @@
         }
       }
     }
-  }
+  },
+  "SETTLEMENT_MODELS": [ "CGS"],
+  "VALID_SETTLEMENT_MODEL_COMBINATIONS": [
+    ["DEFERREDNET"],
+    ["CGS"],
+    ["DEFERREDNET", "INTERCHANGEFEE"],
+    ["CGS", "INTERCHANGEFEE"]
+  ]
 }
