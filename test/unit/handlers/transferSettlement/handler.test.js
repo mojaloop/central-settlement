@@ -37,7 +37,6 @@ const Db = require('../../../../src/lib/db')
 const TransferFulfilService = require('../../../../src/domain/transferSettlement/index')
 const ScriptsLoader = require('../../../../src/lib/scriptsLoader')
 const TransferFulfilHandler = require('../../../../src/handlers/transferSettlement/handler')
-const SettlementModelModel = require('../../../../src/models/settlement/settlementModel.js')
 
 const payload = {
   settlementWindowId: '3',

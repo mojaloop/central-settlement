@@ -25,7 +25,7 @@ services:
       - ./docker/wait-for:/opt/wait-for
 
   central-ledger:
-    image: chinchillah/central-ledger:otc3 # mojaloop/central-ledger:latest # 
+    image: mojaloop/central-ledger:latest # mojaloop/central-ledger:latest # 
     container_name: cs_central-ledger
     command:
       - "sh"

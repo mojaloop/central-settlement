@@ -37,17 +37,18 @@ const Utils = require('../helpers/utils')
 const currencies = ['USD', 'TZS']
 
 const settlementModels = [
-
   {
-    name: 'DEFERREDNET',
+    name: 'DEFERRED_NET',
     settlementGranularity: 'NET',
     settlementInterchange: 'MULTILATERAL',
     settlementDelay: 'DEFERRED',
-    ledgerAccountType: 'POSITION',
-    autoPositionReset: true,
+    settlementCurrency: 'USD',
     requireLiquidityCheck: true,
-    settlementAccountType: 'SETTLEMENT'
-  },
+    type: 'POSITION',
+    autoPositionReset: true,
+    ledgerAccountType: 'SETTLEMENT',
+    settlementAccountType: 'POSITION'
+  }
   // {
   //   name: 'CGS',
   //   settlementGranularity: 'GROSS',
@@ -58,16 +59,16 @@ const settlementModels = [
   //   autoPositionReset: false,
   //   settlementAccountType: 'SETTLEMENT'
   // },
-  {
-    name: 'INTERCHANGEFEE',
-    settlementGranularity: 'NET',
-    settlementInterchange: 'MULTILATERAL',
-    settlementDelay: 'DEFERRED',
-    requireLiquidityCheck: false,
-    ledgerAccountType: 'INTERCHANGE_FEE',
-    autoPositionReset: true,
-    settlementAccountType: 'INTERCHANGE_FEE_SETTLEMENT'
-  }
+  // {
+  //   name: 'INTERCHANGEFEE',
+  //   settlementGranularity: 'NET',
+  //   settlementInterchange: 'MULTILATERAL',
+  //   settlementDelay: 'DEFERRED',
+  //   requireLiquidityCheck: false,
+  //   ledgerAccountType: 'INTERCHANGE_FEE',
+  //   autoPositionReset: true,
+  //   settlementAccountType: 'INTERCHANGE_FEE_SETTLEMENT'
+  // }
   // {
   //   name: 'DEFERREDNETUSD',
   //   settlementGranularity: 'NET',
@@ -113,8 +114,8 @@ for (const currency of currencies) {
 async function init () {
   Logger.info('Setting up initial data for settlement transfer test')
   try {
-    Logger.info('Initializing settlement models')
-    await initSettlementModels()
+    // Logger.info('Initializing settlement models')
+    // await initSettlementModels()
 
     Logger.info('Checking that hub accounts exist')
     await checkHubAccountsExist()
@@ -144,7 +145,7 @@ async function initSettlementModels () {
   await Db.settlementModel.truncate()
   await knex.raw('SET FOREIGN_KEY_CHECKS = 1;')
   await Api.createSettlementModel(settlementModels[0])
-  await Api.createSettlementModel(settlementModels[1])
+  // await Api.createSettlementModel(settlementModels[1])
 }
 
 /**
