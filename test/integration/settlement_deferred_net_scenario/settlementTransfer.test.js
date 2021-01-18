@@ -57,13 +57,13 @@ let netRecipientSettlementTransferId
 
 const settlementModels = [
   {
-    name: 'DEFERRED_NET',
+    name: 'DEFERREDNET',
     settlementGranularityId: 2, // NET
     settlementInterchangeId: 2, // MULTILATERAL
     settlementDelayId: 2, // DEFERRED
     ledgerAccountTypeId: 1, // POSITION
     autoPositionReset: true,
-    currencyId: null
+    currencyId: 'USD'
   },
   {
     name: 'DEFERRED_NET_USD',
@@ -154,7 +154,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
   await settlementTransferTest.test('create a settlement:', async test => {
     try {
       const params = {
-        settlementModel: settlementModels[1].name,
+        settlementModel: settlementModels[0].name,
         reason: 'reason',
         settlementWindows: [
           {
