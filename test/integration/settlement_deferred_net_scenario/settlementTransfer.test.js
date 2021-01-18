@@ -32,6 +32,7 @@ const SettlementTransferData = require('./settlementTransferData')
 const Models = require('../helpers/models')
 const Config = require('../../../src/lib/config')
 const Db = require('../../../src/lib/db')
+const CLDb = require('@mojaloop/central-ledger/src/lib/db')
 const SettlementWindowService = require('../../../src/domain/settlementWindow')
 const SettlementService = require('../../../src/domain/settlement')
 const Enums = require('../../../src/models/lib/enums')
@@ -39,11 +40,12 @@ const SettlementWindowStateChangeModel = require('../../../src/models/settlement
 const SettlementModel = require('../../../src/models/settlement/settlement')
 const SettlementStateChangeModel = require('../../../src/models/settlement/settlementStateChange')
 const SettlementParticipantCurrencyModel = require('../../../src/models/settlement/settlementParticipantCurrency')
-const TransferModel = require('@mojaloop/central-ledger/src/models/transfer/transfer')
 const TransferStateChangeModel = require('@mojaloop/central-ledger/src/models/transfer/transferStateChange')
 const ParticipantPositionModel = require('@mojaloop/central-ledger/src/models/position/participantPosition')
 const Producer = require('../../../src/lib/kafka/producer')
 const StreamProducer = require('@mojaloop/central-services-stream').Util.Producer
+const TransferModel = require('@mojaloop/central-ledger/src/models/transfer/transfer')
+
 // require('leaked-handles').set({ fullStack: true, timeout: 5000, debugSockets: true })
 
 const currency = 'USD'
@@ -93,6 +95,7 @@ const getEnums = async () => {
 
 Test('SettlementTransfer should', async settlementTransferTest => {
   await Db.connect(Config.DATABASE)
+  await CLDb.connect(Config.DATABASE)
   await SettlementTransferData.init()
   const enums = await getEnums()
   let settlementWindowId
@@ -617,7 +620,8 @@ Test('SettlementTransfer should', async settlementTransferTest => {
   await settlementTransferTest.test('finally disconnect open handles', async test => {
     try {
       await Db.disconnect()
-      test.pass('database connection closed')
+      await CLDb.disconnect()
+      // test.pass('database connection closed')
       await Producer.getProducer('topic-notification-event').disconnect()
       test.pass('producer to topic-notification-event disconnected')
       await StreamProducer.getProducer('topic-settlementwindow-close').disconnect()
