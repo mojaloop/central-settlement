@@ -37,6 +37,7 @@ const Db = require('../../../../src/lib/db')
 const TransferFulfilService = require('../../../../src/domain/transferSettlement/index')
 const ScriptsLoader = require('../../../../src/lib/scriptsLoader')
 const TransferFulfilHandler = require('../../../../src/handlers/transferSettlement/handler')
+const SettlementModelModel = require('../../../../src/models/settlement/settlementModel.js')
 
 const payload = {
   settlementWindowId: '3',
@@ -152,6 +153,39 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
     test.end()
   })
 
+  transferSettlementHandlerTest.test('registerAllHandlers should', registerAllHandlersTest => {
+    registerAllHandlersTest.test('register all consumers on Kafka', async (test) => {
+      await Consumer.createHandler(topicName, config, command)
+      Kafka.transformAccountToTopicName.returns(topicName)
+      Kafka.proceed.returns(true)
+      Kafka.transformGeneralTopicName.returns(topicName)
+      Kafka.getKafkaConfig.returns(config)
+      sandbox.stub(ScriptsLoader, 'loadScripts').returns({})
+      const result = await TransferFulfilHandler.registerAllHandlers()
+      test.equal(result, true)
+      test.ok(ScriptsLoader.loadScripts.withArgs('./scripts/transferSettlementTemp').calledOnce, 'ScriptsLoader loadScripts called once')
+      test.end()
+    })
+
+    transferSettlementHandlerTest.test('throw error registerAllHandlers', async (test) => {
+      try {
+        await Consumer.createHandler(topicName, config, command)
+        Kafka.transformAccountToTopicName.returns(topicName)
+        Kafka.proceed.returns(true)
+        Kafka.transformGeneralTopicName.returns(topicName)
+        Kafka.getKafkaConfig.throws(new Error())
+
+        await TransferFulfilHandler.registerAllHandlers()
+        test.fail('Error not thrown')
+        test.end()
+      } catch (e) {
+        test.pass('Error thrown')
+        test.end()
+      }
+    })
+    registerAllHandlersTest.end()
+  })
+
   transferSettlementHandlerTest.test('processTransferSettlement should', processTransferSettlementTest => {
     processTransferSettlementTest.test('process when messages is in array', async (test) => {
       const localMessages = Util.clone(messages)
@@ -160,6 +194,7 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
       Kafka.proceed.returns(true)
       sandbox.stub(TransferFulfilService, 'insertLedgerEntries')
       sandbox.stub(TransferFulfilService, 'processMsgFulfil')
+      sandbox.stub(ScriptsLoader, 'executeScripts').returns({})
       const result = await TransferFulfilHandler.processTransferSettlement(null, localMessages)
       test.equal(result, true)
       test.ok(TransferFulfilService.processMsgFulfil.calledOnce, 'processMsgFulfil called once')
@@ -174,6 +209,7 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
       Kafka.proceed.returns(true)
       sandbox.stub(TransferFulfilService, 'insertLedgerEntries')
       sandbox.stub(TransferFulfilService, 'processMsgFulfil')
+      sandbox.stub(ScriptsLoader, 'executeScripts').returns({})
       const result = await TransferFulfilHandler.processTransferSettlement(null, localMessages[0])
       test.equal(result, true)
       test.ok(TransferFulfilService.processMsgFulfil.calledOnce, 'processMsgFulfil called once')
@@ -220,7 +256,6 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
       })
       const result = await TransferFulfilHandlerProxy.processTransferSettlement(null, localMessages[0])
       test.equal(result, true)
-      test.ok(TransferFulfilService.processMsgFulfil.calledOnce, 'processMsgFulfil called once')
       test.ok(TransferFulfilService.insertLedgerEntries.notCalled, 'insertLedgerEntries called once')
       test.end()
     })
@@ -274,37 +309,5 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
     processTransferSettlementTest.end()
   })
 
-  transferSettlementHandlerTest.test('registerAllHandlers should', registerAllHandlersTest => {
-    registerAllHandlersTest.test('register all consumers on Kafka', async (test) => {
-      await Consumer.createHandler(topicName, config, command)
-      Kafka.transformAccountToTopicName.returns(topicName)
-      Kafka.proceed.returns(true)
-      Kafka.transformGeneralTopicName.returns(topicName)
-      Kafka.getKafkaConfig.returns(config)
-      sandbox.stub(ScriptsLoader, 'loadScripts').returns({})
-      const result = await TransferFulfilHandler.registerAllHandlers()
-      test.equal(result, true)
-      test.ok(ScriptsLoader.loadScripts.withArgs('./scripts/transferSettlementTemp').calledOnce, 'ScriptsLoader loadScripts called once')
-      test.end()
-    })
-
-    transferSettlementHandlerTest.test('throw error registerAllHandlers', async (test) => {
-      try {
-        await Consumer.createHandler(topicName, config, command)
-        Kafka.transformAccountToTopicName.returns(topicName)
-        Kafka.proceed.returns(true)
-        Kafka.transformGeneralTopicName.returns(topicName)
-        Kafka.getKafkaConfig.throws(new Error())
-
-        await TransferFulfilHandler.registerAllHandlers()
-        test.fail('Error not thrown')
-        test.end()
-      } catch (e) {
-        test.pass('Error thrown')
-        test.end()
-      }
-    })
-    registerAllHandlersTest.end()
-  })
   transferSettlementHandlerTest.end()
 })

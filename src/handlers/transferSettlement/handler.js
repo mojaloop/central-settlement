@@ -58,10 +58,7 @@ const RETRY_OPTIONS = {
 const SCRIPTS_FOLDER = Config.HANDLERS.SETTINGS.SCRIPTS_FOLDER
 let INJECTED_SCRIPTS = {}
 
-const MODEL_IS_CGS = (async () => {
-  const result = await SettlementModelModel.getByName('CGS')
-  return !!result
-})()
+let MODEL_IS_CGS = false
 
 async function processTransferSettlement (error, messages) {
   if (!MODEL_IS_CGS) return true
@@ -137,6 +134,7 @@ async function processTransferSettlement (error, messages) {
 async function registerTransferSettlement () {
   try {
     INJECTED_SCRIPTS = scriptsLoader.loadScripts(SCRIPTS_FOLDER)
+    MODEL_IS_CGS = await SettlementModelModel.getByName('CGS')
     const transferFulfillHandler = {
       command: processTransferSettlement,
       topicName: Kafka.transformGeneralTopicName(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, Enum.Events.Event.Type.NOTIFICATION, Enum.Events.Event.Action.EVENT),
