@@ -30,4 +30,4 @@ COPY --chown=ml-user --from=builder /opt/central-settlement .
 RUN npm prune --production
 
 EXPOSE 3007
-CMD ["node" "src/handlers/index.js" "h" "--settlementwindow"]
+CMD ["node" "src/handlers/index.js" "h" "--transfersettlement"]
