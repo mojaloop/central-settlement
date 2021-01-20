@@ -31,8 +31,6 @@ const Logger = require('@mojaloop/central-services-logger')
 
 async function createSettlementModel (settlementModel) {
   const url = `${Config.CENTRAL_LEDGER_URL}/settlementModels`
-  console.log('* URL * URL * ', url, ' * URL * URL * ')
-  console.log(` * settlementModel *** ${settlementModel} ***`)
   return axios.post(url, settlementModel, {
     headers: {
       'content-type': 'application/json'

@@ -798,15 +798,12 @@ const Facade = {
             changedIdList: []
           }
           const allAccounts = new Map()
-          let pid // participantId
-          let aid // accountId
-          let state
 
           // seq-settlement-6.2.5, step 8
           for (const account of settlementAccountList) {
-            pid = account.participantId
-            aid = account.participantCurrencyId
-            state = account.settlementStateId
+            const pid = account.participantId
+            const aid = account.participantCurrencyId
+            const state = account.settlementStateId
             allAccounts[aid] = {
               id: aid,
               state,

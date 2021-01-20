@@ -85,7 +85,7 @@
             "rdkafkaConf": {
               "client.id": "cs-con-transferfulfil-process",
               "group.id": "cs-group-transferfulfil-process",
-              "metadata.broker.list": "kafka-int:9092",
+              "metadata.broker.list": "db-int:9092",
               "socket.keepalive.enable": true
             },
             "topicConf": {

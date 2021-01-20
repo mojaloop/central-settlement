@@ -7,7 +7,7 @@ services:
       cache_from: 
         - mojaloop/central-settlement
         - central-settlement:test
-    container_name: central-settlement-int
+    container_name: cs_central-settlement
     links:
       - mysql
       - kafka

@@ -38,48 +38,27 @@ const currencies = ['USD', 'TZS']
 
 const settlementModels = [
   {
-    name: 'DEFERRED_NET',
+    name: 'DEFERREDNETTZS',
     settlementGranularity: 'NET',
     settlementInterchange: 'MULTILATERAL',
+    settlementAccountType: 'SETTLEMENT',
     settlementDelay: 'DEFERRED',
-    settlementCurrency: 'USD',
-    requireLiquidityCheck: true,
-    type: 'POSITION',
+    ledgerAccountType: 'POSITION',
     autoPositionReset: true,
-    ledgerAccountType: 'SETTLEMENT',
-    settlementAccountType: 'POSITION'
+    requireLiquidityCheck: true,
+    currency: 'TZS'
+  },
+  {
+    name: 'DEFERREDNETUSD',
+    settlementGranularity: 'NET',
+    settlementInterchange: 'MULTILATERAL',
+    settlementAccountType: 'SETTLEMENT',
+    settlementDelay: 'DEFERRED',
+    ledgerAccountType: 'POSITION',
+    autoPositionReset: true,
+    currency: 'USD',
+    requireLiquidityCheck: true
   }
-  // {
-  //   name: 'CGS',
-  //   settlementGranularity: 'GROSS',
-  //   settlementInterchange: 'BILATERAL',
-  //   settlementDelay: 'IMMEDIATE',
-  //   requireLiquidityCheck: true,
-  //   ledgerAccountType: 'POSITION',
-  //   autoPositionReset: false,
-  //   settlementAccountType: 'SETTLEMENT'
-  // },
-  // {
-  //   name: 'INTERCHANGEFEE',
-  //   settlementGranularity: 'NET',
-  //   settlementInterchange: 'MULTILATERAL',
-  //   settlementDelay: 'DEFERRED',
-  //   requireLiquidityCheck: false,
-  //   ledgerAccountType: 'INTERCHANGE_FEE',
-  //   autoPositionReset: true,
-  //   settlementAccountType: 'INTERCHANGE_FEE_SETTLEMENT'
-  // }
-  // {
-  //   name: 'DEFERREDNETUSD',
-  //   settlementGranularity: 'NET',
-  //   settlementInterchange: 'MULTILATERAL',
-  //   settlementDelay: 'DEFERRED',
-  //   ledgerAccountType: 'POSITION',
-  //   autoPositionReset: true,
-  //   currency: 'USD',
-  //   requireLiquidityCheck: true,
-  //   settlementAccountType: 'SETTLEMENT'
-  // }
 ]
 
 const payerFsp = `fsp${Utils.rand8()}`
@@ -102,8 +81,8 @@ for (const currency of currencies) {
       amount: (10 + Math.floor(Math.random() * 9000) / 100).toString().substr(0, 5), // transfer amount between 10.00 and 100
       currency
     },
-    ilpPacket: 'AQAAAAAAAADIEHByaXZhdGUucGF5ZWVmc3CCAiB7InRyYW5zYWN0aW9uSWQiOiIyZGY3NzRlMi1mMWRiLTRmZjctYTQ5NS0yZGRkMzdhZjdjMmMiLCJxdW90ZUlkIjoiMDNhNjA1NTAtNmYyZi00NTU2LThlMDQtMDcwM2UzOWI4N2ZmIiwicGF5ZWUiOnsicGFydHlJZEluZm8iOnsicGFydHlJZFR5cGUiOiJNU0lTRE4iLCJwYXJ0eUlkZW50aWZpZXIiOiIyNzcxMzgwMzkxMyIsImZzcElkIjoicGF5ZWVmc3AifSwicGVyc29uYWxJbmZvIjp7ImNvbXBsZXhOYW1lIjp7fX19LCJwYXllciI6eyJwYXJ0eUlkSW5mbyI6eyJwYXJ0eUlkVHlwZSI6Ik1TSVNETiIsInBhcnR5SWRlbnRpZmllciI6IjI3NzEzODAzOTExIiwiZnNwSWQiOiJwYXllcmZzcCJ9LCJwZXJzb25hbEluZm8iOnsiY29tcGxleE5hbWUiOnt9fX0sImFtb3VudCI6eyJjdXJyZW5jeSI6IlVTRCIsImFtb3VudCI6IjIwMCJ9LCJ0cmFuc2FjdGlvblR5cGUiOnsic2NlbmFyaW8iOiJERVBPU0lUIiwic3ViU2NlbmFyaW8iOiJERVBPU0lUIiwiaW5pdGlhdG9yIjoiUEFZRVIiLCJpbml0aWF0b3JUeXBlIjoiQ09OU1VNRVIiLCJyZWZ1bmRJbmZvIjp7fX19',
-    ilpCondition: 'HOr22-H3AfTDHrSkPjJtVPRdKouuMkDXTR4ejlQa8Ks'
+    ilpPacket: 'AYIC9AAAAAAAABdwHWcucGF5ZWVmc3AubXNpc2RuLjIyNTU2OTk5MTI1ggLKZXlKMGNtRnVjMkZqZEdsdmJrbGtJam9pTXpFek16SmtNamN0TnpRM1lpMDBPVGs1TFRnd09USXROak01T1dJM1pEa3hZakU0SWl3aWNYVnZkR1ZKWkNJNkltUTVZVEZqT1RWa0xUUmxaall0TkdFeU5DMWhObU5pTFdJek5HSTFPRFEzT1RNeU1pSXNJbkJoZVdWbElqcDdJbkJoY25SNVNXUkpibVp2SWpwN0luQmhjblI1U1dSVWVYQmxJam9pVFZOSlUwUk9JaXdpY0dGeWRIbEpaR1Z1ZEdsbWFXVnlJam9pTWpJMU5UWTVPVGt4TWpVaUxDSm1jM0JKWkNJNkluQmhlV1ZsWm5Od0luMTlMQ0p3WVhsbGNpSTZleUp3WVhKMGVVbGtTVzVtYnlJNmV5SndZWEowZVVsa1ZIbHdaU0k2SWsxVFNWTkVUaUlzSW5CaGNuUjVTV1JsYm5ScFptbGxjaUk2SWpJeU5UQTNNREE0TVRneElpd2labk53U1dRaU9pSndZWGxsY21aemNDSjlMQ0p3WlhKemIyNWhiRWx1Wm04aU9uc2lZMjl0Y0d4bGVFNWhiV1VpT25zaVptbHljM1JPWVcxbElqb2lUV0YwY3lJc0lteGhjM1JPWVcxbElqb2lTR0ZuYldGdUluMHNJbVJoZEdWUFprSnBjblJvSWpvaU1UazRNeTB4TUMweU5TSjlmU3dpWVcxdmRXNTBJanA3SW1GdGIzVnVkQ0k2SWpZd0lpd2lZM1Z5Y21WdVkza2lPaUpWVTBRaWZTd2lkSEpoYm5OaFkzUnBiMjVVZVhCbElqcDdJbk5qWlc1aGNtbHZJam9pVkZKQlRsTkdSVklpTENKcGJtbDBhV0YwYjNJaU9pSlFRVmxGVWlJc0ltbHVhWFJwWVhSdmNsUjVjR1VpT2lKRFQwNVRWVTFGVWlKOWZRAA',
+    ilpCondition: 'u1cSTBLEZ03awvrLHWaQjCnd3GAB9_17Y2WhGdvepjk'
   })
 }
 
@@ -114,8 +93,8 @@ for (const currency of currencies) {
 async function init () {
   Logger.info('Setting up initial data for settlement transfer test')
   try {
-    // Logger.info('Initializing settlement models')
-    // await initSettlementModels()
+    Logger.info('Initializing settlement models')
+    await initSettlementModels()
 
     Logger.info('Checking that hub accounts exist')
     await checkHubAccountsExist()
@@ -139,13 +118,13 @@ async function init () {
  * [initSettlementModels Initialize the settlement models required for the test]
  * @return {[type]} [description]
  */
-async function initSettlementModels () {
+async function initSettlementModels() {
   const knex = await Db.getKnex()
   await knex.raw('SET FOREIGN_KEY_CHECKS = 0;')
   await Db.settlementModel.truncate()
   await knex.raw('SET FOREIGN_KEY_CHECKS = 1;')
   await Api.createSettlementModel(settlementModels[0])
-  // await Api.createSettlementModel(settlementModels[1])
+  await Api.createSettlementModel(settlementModels[1])
 }
 
 /**
