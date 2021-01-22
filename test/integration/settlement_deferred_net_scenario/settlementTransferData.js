@@ -93,11 +93,11 @@ for (const currency of currencies) {
 async function init () {
   Logger.info('Setting up initial data for settlement transfer test')
   try {
-    Logger.info('Initializing settlement models')
-    await initSettlementModels()
-
     Logger.info('Checking that hub accounts exist')
     await checkHubAccountsExist()
+
+    Logger.info('Initializing settlement models')
+    await initSettlementModels()
 
     Logger.info('Initializing participants')
     await initParticipants()
