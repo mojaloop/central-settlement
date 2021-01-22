@@ -1,0 +1,12 @@
+{
+  "reject":
+    [
+      "mustache",
+      "nodemon",
+      "npm-check-updates",
+      "nyc",
+      "sinon",
+      "standard",
+      "tape",
+    ],
+}

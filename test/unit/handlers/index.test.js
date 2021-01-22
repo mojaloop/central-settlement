@@ -58,15 +58,21 @@ Test('cli', async (cliTest) => {
         'node',
         'index.js',
         'handler',
-        '--settlementwindow'
+        '--settlementwindow',
+        '--transfersettlement'
       ]
       process.argv = argv
       const settlementwindowHandler = {
         type: 'settlementwindow',
         enabled: true
       }
+      const transfersettlement = {
+        type: 'transfersettlement',
+        enabled: true
+      }
       const handlerList = [
-        settlementwindowHandler
+        settlementwindowHandler,
+        transfersettlement
       ]
       const initOptions = {
         service: 'handler',

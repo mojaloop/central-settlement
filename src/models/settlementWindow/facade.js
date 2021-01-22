@@ -182,7 +182,6 @@ const Facade = {
       return knex.transaction(async (trx) => {
         try {
           const transactionTimestamp = new Date()
-
           // Insert settlementWindowContent
           let builder = knex
             .from(knex.raw('settlementWindowContent (settlementWindowId, ledgerAccountTypeId, currencyId, createdDate)'))
@@ -190,7 +189,9 @@ const Facade = {
               this.from('transferFulfilment AS tf')
                 .join('transferParticipant AS tp', 'tp.transferId', 'tf.transferId')
                 .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'tp.participantCurrencyId')
+                .join('settlementModel AS m', 'm.ledgerAccountTypeId', 'pc.ledgerAccountTypeId')
                 .where('tf.settlementWindowId', settlementWindowId)
+                .andWhere('m.settlementGranularityId', Enum.Settlements.SettlementGranularity.NET)
                 .distinct('tf.settlementWindowId', 'pc.ledgerAccountTypeId', 'pc.currencyId',
                   knex.raw('? AS ??', [transactionTimestamp, 'createdDate']))
             })
@@ -204,12 +205,14 @@ const Facade = {
               this.from('transferFulfilment AS tf')
                 .join('transferParticipant AS tp', 'tp.transferId', 'tf.transferId')
                 .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'tp.participantCurrencyId')
+                .join('settlementModel AS m', 'm.ledgerAccountTypeId', 'pc.ledgerAccountTypeId')
                 .join('settlementWindowContent AS swc', function () {
                   this.on('swc.settlementWindowId', 'tf.settlementWindowId')
                     .on('swc.ledgerAccountTypeId', 'pc.ledgerAccountTypeId')
                     .on('swc.currencyId', 'pc.currencyId')
                 })
                 .where('tf.settlementWindowId', settlementWindowId)
+                .andWhere('m.settlementGranularityId', Enum.Settlements.SettlementGranularity.NET)
                 .groupBy('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId')
                 .select('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId',
                   knex.raw('? AS ??', [Enum.Settlements.SettlementWindowState.CLOSED, 'settlementWindowStateId']),
