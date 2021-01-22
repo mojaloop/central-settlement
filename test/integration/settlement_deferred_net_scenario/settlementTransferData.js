@@ -118,7 +118,7 @@ async function init () {
  * [initSettlementModels Initialize the settlement models required for the test]
  * @return {[type]} [description]
  */
-async function initSettlementModels() {
+async function initSettlementModels () {
   const knex = await Db.getKnex()
   await knex.raw('SET FOREIGN_KEY_CHECKS = 0;')
   await Db.settlementModel.truncate()
