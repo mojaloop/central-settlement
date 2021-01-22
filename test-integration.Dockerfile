@@ -22,4 +22,4 @@ COPY README.md /opt/central-settlement
 RUN cp -f /opt/central-settlement/test/integration-config-centralsettlement.json /opt/central-settlement/config/default.json
 
 EXPOSE 3007
-CMD node src/server.js
+CMD node src/api/index.js

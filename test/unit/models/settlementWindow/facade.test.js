@@ -735,11 +735,20 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
                 where: sandbox.stub().returns({
                   distinct: sandbox.stub()
                 }),
-                join: sandbox.stub().callsArgOn(1, context2).returns({
+                join: sandbox.stub().returns({
                   where: sandbox.stub().returns({
-                    groupBy: sandbox.stub().returns({
-                      select: sandbox.stub().returns({
-                        sum: sandbox.stub()
+                    andWhere: sandbox.stub().returns({
+                      distinct: sandbox.stub()
+                    })
+                  }),
+                  join: sandbox.stub().callsArgOn(1, context2).returns({
+                    where: sandbox.stub().returns({
+                      andWhere: sandbox.stub().returns({
+                        groupBy: sandbox.stub().returns({
+                          select: sandbox.stub().returns({
+                            sum: sandbox.stub()
+                          })
+                        })
                       })
                     })
                   })

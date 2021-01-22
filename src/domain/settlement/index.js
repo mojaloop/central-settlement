@@ -3,11 +3,8 @@
  --------------
  Copyright © 2017 Bill & Melinda Gates Foundation
  The Mojaloop files are made available by the Bill & Melinda Gates Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
-
  http://www.apache.org/licenses/LICENSE-2.0
-
  Unless required by applicable law or agreed to in writing, the Mojaloop files are distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-
  Contributors
  --------------
  This is the official list of the Mojaloop project contributors for this file.
@@ -18,17 +15,14 @@
  Gates Foundation organization for an example). Those individuals should have
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
-
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
-
  * ModusBox
  - Deon Botha <deon.botha@modusbox.com>
  - Georgi Georgiev <georgi.georgiev@modusbox.com>
  - Miguel de Barros <miguel.debarros@modusbox.com>
  - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
  - Valentin Genev <valentin.genev@modusbox.com>
-
  --------------
  ******/
 'use strict'
@@ -99,12 +93,12 @@ module.exports = {
       for (const key of Object.keys(settlementWindowsList)) {
         const windowContentRecord = await SettlementWindowContentModel.getBySettlementAndWindowId(settlementId, settlementWindowsList[key].id)
         windowContentResponseData = {
-          id: windowContentRecord[key].id,
-          state: windowContentRecord[key].state,
-          ledgerAccountType: windowContentRecord[key].ledgerAccountType,
-          currencyId: windowContentRecord[key].currencyId,
-          createdDate: windowContentRecord[key].createdDate,
-          changedDate: windowContentRecord[key].changedDate
+          id: windowContentRecord[0].id,
+          state: windowContentRecord[0].state,
+          ledgerAccountType: windowContentRecord[0].ledgerAccountType,
+          currencyId: windowContentRecord[0].currencyId,
+          createdDate: windowContentRecord[0].createdDate,
+          changedDate: windowContentRecord[0].changedDate
         }
         windowContentRecords.push(windowContentResponseData)
         settlementWindowsList[key].content = windowContentRecords
