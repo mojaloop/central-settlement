@@ -56,3 +56,5 @@ jspm_packages
 **/*.iml
 
 .history
+/.gitlab-ci.env
+junit.xml

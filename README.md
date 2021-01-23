@@ -12,13 +12,17 @@ The service manages Settlement Windows and Settlements Event Triggers and provid
 
 ## Contents:
 
-- [Deployment](#deployment)
-- [Configuration](#configuration)
-- [API](#api)
-- [Logging](#logging)
-- [Tests](#tests)
-- [Auditing Dependencies](#auditing-dependencies)
-- [Container Scans](#container-scans)
+- [central-settlements](#central-settlements)
+  - [Contents:](#contents)
+  - [Deployment](#deployment)
+  - [Configuration](#configuration)
+  - [Environmental variables](#environmental-variables)
+  - [API](#api)
+  - [Logging](#logging)
+  - [Tests](#tests)
+    - [Running Integration Tests interactively](#running-integration-tests-interactively)
+  - [Auditing Dependencies](#auditing-dependencies)
+  - [Container Scans](#container-scans)
 
 ## Deployment
 
@@ -50,6 +54,10 @@ Running the tests:
     npm run test:all
 
 Tests include code coverage via istanbul. See the test/ folder for testing scripts.
+
+Running integration tests (narrow)
+
+    npm run test:int:new
 
 ### Running Integration Tests interactively
 
@@ -92,4 +100,4 @@ If you find your release builds are failing, refer to the [container scanning](h
 For more information on anchore and anchore-cli, refer to:
 - [Anchore CLI](https://github.com/anchore/anchore-cli)
 - [Circle Orb Registry](https://circleci.com/orbs/registry/orb/anchore/anchore-engine)
-
+- 
