@@ -55,7 +55,7 @@ Program.command('handler') // sub-command name, coffeeType = type, required
   // function to execute when command is used
   .action(async (args) => {
     const handlerList = []
-    if (args.settlementwindow && typeof args.settlementwindow === 'boolean') {
+    if (args.settlementwindow === true) {
       Logger.debug('CLI: Executing --settlementwindow')
       const handler = {
         type: 'settlementwindow',
@@ -64,7 +64,7 @@ Program.command('handler') // sub-command name, coffeeType = type, required
       handlerList.push(handler)
     }
 
-    if (args.transfersettlement && typeof args.transfersettlement === 'boolean') {
+    if (args.transfersettlement === true) {
       Logger.debug('CLI: Executing --transfersettlement')
       const handler = {
         type: 'transfersettlement',

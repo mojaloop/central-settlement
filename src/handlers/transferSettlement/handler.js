@@ -44,7 +44,6 @@ const transferSettlementService = require('../../domain/transferSettlement')
 const scriptsLoader = require('../../lib/scriptsLoader')
 const Utility = require('@mojaloop/central-services-shared').Util
 const Db = require('../../lib/db')
-const SettlementModelModel = require('../../models/settlement/settlementModel.js')
 const LOG_LOCATION = { module: 'TransferFulfilHandler', method: '', path: '' } // var object used as pointer
 const CONSUMER_COMMIT = true
 const FROM_SWITCH = true
@@ -58,10 +57,7 @@ const RETRY_OPTIONS = {
 const SCRIPTS_FOLDER = Config.HANDLERS.SETTINGS.SCRIPTS_FOLDER
 let INJECTED_SCRIPTS = {}
 
-let MODEL_IS_CGS = false
-
 async function processTransferSettlement (error, messages) {
-  if (!MODEL_IS_CGS) return true
   if (error) {
     Logger.error(error)
     throw ErrorHandling.Factory.reformatFSPIOPError(error)
@@ -134,7 +130,6 @@ async function processTransferSettlement (error, messages) {
 async function registerTransferSettlement () {
   try {
     INJECTED_SCRIPTS = scriptsLoader.loadScripts(SCRIPTS_FOLDER)
-    MODEL_IS_CGS = await SettlementModelModel.getByName('CGS')
     const transferFulfillHandler = {
       command: processTransferSettlement,
       topicName: Kafka.transformGeneralTopicName(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, Enum.Events.Event.Type.NOTIFICATION, Enum.Events.Event.Action.EVENT),

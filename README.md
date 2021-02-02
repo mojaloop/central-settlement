@@ -57,7 +57,7 @@ Tests include code coverage via istanbul. See the test/ folder for testing scrip
 
 Running integration tests (narrow)
 
-    npm run test:int:new
+    npm run test:int:narrow
 
 ### Running Integration Tests interactively
 
