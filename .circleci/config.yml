@@ -284,7 +284,7 @@ jobs:
           anchore_version: v0.6.1
           image_name: "docker.io/node:12.16.1-alpine $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG"
           policy_failure: false
-          timeout: '500'
+          timeout: "$IMAGE_SCAN_ANCHORE_ANALYSE_TIMEOUT"
           # Note: if the generated policy is invalid, this will fallback to the default policy, which we don't want!
           policy_bundle_file_path: /tmp/mojaloop-policy.json
       - run:
