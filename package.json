@@ -1,7 +1,7 @@
 {
     "name": "central-settlement",
     "description": "Central settlements hosted by a scheme to record and make settlements.",
-    "version": "12.0.0",
+    "version": "12.0.1",
     "license": "Apache-2.0",
     "private": false,
     "author": "ModusBox",
@@ -32,7 +32,7 @@
         "@hapi/vision": "6.0.0",
         "@mojaloop/central-ledger": "13.0.0",
         "@mojaloop/central-services-database": "10.6.1",
-        "@mojaloop/central-services-error-handling": "11.0.0",
+        "@mojaloop/central-services-error-handling": "11.1.0",
         "@mojaloop/central-services-health": "11.0.0",
         "@mojaloop/central-services-logger": "10.6.0",
         "@mojaloop/central-services-shared": "11.5.5",
