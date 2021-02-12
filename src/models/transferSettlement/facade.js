@@ -52,7 +52,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           .where('PC.currencyId', ledgerEntry.currency)
           .transacting(trx)
 
-        if (recordsToInsert && recordsToInsert.length === 0) {
+        if (!Array.isArray(recordsToInsert) || recordsToInsert.length === 0) {
           throw new Error(`No settlement model defined for transferId: ${transferId} and ledgerEntry: ${JSON.stringify(ledgerEntry)}`)
         }
 

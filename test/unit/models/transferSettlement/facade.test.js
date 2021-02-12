@@ -165,6 +165,46 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
     }
   })
 
+  await transferSettlementTest.test('insertLedgerEntry throw error, when nothing to insert', async (test) => {
+    try {
+      sandbox.stub(Db, 'getKnex')
+
+      knexStub.transacting.onCall(0).resolves(null)
+      knexStub.transacting.onCall(1).resolves(1)
+      knexStub.transacting.onCall(2).resolves(1)
+      knexStub.transacting.onCall(3).resolves(1)
+
+      knexStub.transacting.onCall(4).resolves([{
+        transferStateChangeId: 4581
+      }])
+      knexStub.transacting.onCall(5).resolves([
+        {
+          participantPositionId: 130,
+          value: 39.37,
+          reservedValue: 0
+        },
+        {
+          participantPositionId: 129,
+          value: -39.37,
+          reservedValue: 0
+        }
+      ])
+      knexStub.transacting.onCall(6).resolves(1)
+      const knexFunc = sandbox.stub().returns(knexStub)
+      Object.assign(knexFunc, knexStub)
+      Db.getKnex.returns(knexFunc)
+
+      const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
+      await Model.insertLedgerEntry(ledgerEntry, transferId, trxStub)
+      test.fail('should throw an error')
+
+      test.end()
+    } catch (err) {
+      test.ok(err instanceof Error)
+      test.end()
+    }
+  })
+
   await transferSettlementTest.test('insertLedgerEntry when participantPosition records are not updated correctly', async (test) => {
     try {
       sandbox.stub(Db, 'getKnex')
@@ -514,6 +554,56 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       test.end()
     } catch (err) {
       Logger.error(`updateTransferSettlement failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('getSettlementModelByTransferId should', async (test) => {
+    try {
+      const transferId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
+      const settlementGranularityName = 'GROSS'
+      const settlementModelResult = {
+        settlementModelId: 1,
+        name: 'CGS',
+        isActive: 1,
+        settlementGranularityId: 1,
+        settlementInterchangeId: 1,
+        settlementDelayId: 1,
+        currencyId: 'USD',
+        ledgerAccountTypeId: 1
+      }
+
+      sandbox.stub(Db, 'getKnex')
+
+      const context = sandbox.stub()
+      context.on = sandbox.stub().returns({
+        andOn: sandbox.stub()
+      })
+      const join1Stub = sandbox.stub().callsArgOn(1, context)
+
+      const knexStub = sandbox.stub()
+      Db.getKnex.returns(knexStub)
+      knexStub.returns({
+        join: join1Stub.returns({
+          join: sandbox.stub().returns({
+            join: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  where: sandbox.stub().returns({
+                    select: sandbox.stub().returns(settlementModelResult)
+                  })
+                })
+              })
+            })
+          })
+        })
+      })
+      const result = await Model.getSettlementModelByTransferId(transferId, settlementGranularityName)
+      test.deepEqual(result, settlementModelResult, 'results match')
+      test.end()
+    } catch (err) {
+      Logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
       test.fail()
       test.end()
     }

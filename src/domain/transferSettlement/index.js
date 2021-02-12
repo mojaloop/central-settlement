@@ -38,7 +38,7 @@ module.exports = {
       const grossSettlementModel = await TransferSettlementModel.getSettlementModelByTransferId(transferEventId, 'GROSS')
       Logger.debug(`transferSettlement::processMsgFulfil - result grossSettlementModel=${JSON.stringify(grossSettlementModel)}`)
       Logger.debug(`transferSettlement::processMsgFulfil - grossSettlementModel.length=${grossSettlementModel.length}`)
-      if (grossSettlementModel.length >= 0) {
+      if (grossSettlementModel.length > 0) {
         Logger.debug(`transferSettlement::processMsgFulfil - updateStateChange(transferEventId=${transferEventId}, transferEventStateStatus=${transferEventStateStatus}) - start`)
         await TransferSettlementModel.updateStateChange(transferEventId, transferEventStateStatus, trx)
         Logger.debug('transferSettlement::processMsgFulfil - updateStateChange - end')
