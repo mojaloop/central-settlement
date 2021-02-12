@@ -27,14 +27,19 @@
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const TransferSettlementModel = require('../../models/transferSettlement')
+const Logger = require('@mojaloop/central-services-logger')
 
 module.exports = {
   processMsgFulfil: async function (transferEventId, transferEventStateStatus, trx) {
+    Logger.debug(`transferSettlement::processMsgFulfil(transferEventId=${transferEventId}, transferEventStateStatus=${transferEventStateStatus})}`)
     try {
       // TODO: Refactor to use ENUM for settlementGranularityName = 'GROSS' function input param
       // Get the 'GROSS' settlement model by transfer
       const grossSettlementModel = await TransferSettlementModel.getSettlementModelByTransferId(transferEventId, 'GROSS')
-      if (grossSettlementModel.length === 1) {
+      Logger.debug(`transferSettlement::processMsgFulfil - result grossSettlementModel=${JSON.stringify(grossSettlementModel)}`)
+      Logger.debug(`transferSettlement::processMsgFulfil - grossSettlementModel.length=${grossSettlementModel.length}`)
+      if (grossSettlementModel.length >= 0) {
+        Logger.debug(`transferSettlement::processMsgFulfil - updateStateChange(transferEventId=${transferEventId}, transferEventStateStatus=${transferEventStateStatus})}`)
         await TransferSettlementModel.updateStateChange(transferEventId, transferEventStateStatus, trx)
       }
       return true

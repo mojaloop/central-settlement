@@ -308,6 +308,7 @@ async function getSettlementModelByTransferId (transferId, settlementGranularity
     .join('settlementGranularity AS g', 'g.settlementGranularityId', 'settlementModel.settlementGranularityId')
     .where('tp.transferId', transferId)
     .where('g.name', settlementGranularityName)
+    .where('settlementModel.isActive', 1)
     .select('settlementModel.*')
 }
 const Facade = {
