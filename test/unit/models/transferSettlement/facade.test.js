@@ -74,6 +74,9 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
 
   transferSettlementTest.beforeEach(t => {
     sandbox = Sinon.createSandbox()
+    Db.from = (table) => {
+      return Db[table]
+    }
     trxStub = {
       get commit () {
 

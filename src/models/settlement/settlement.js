@@ -29,14 +29,14 @@
 const Db = require('../../lib/db')
 
 const create = async (settlement) => {
-  return Db.settlement.insert({
+  return Db.from('settlement').insert({
     reason: settlement.reason,
     createdDate: settlement.createdDate
   })
 }
 
 const getById = async (id) => {
-  return Db.settlement.findOne({ settlementId: id })
+  return Db.from('settlement').findOne({ settlementId: id })
 }
 
 module.exports = {

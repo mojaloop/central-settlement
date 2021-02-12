@@ -32,7 +32,7 @@ const Enum = require('@mojaloop/central-services-shared').Enum
 
 const Facade = {
   getById: async function ({ settlementWindowId }) {
-    return Db.settlementWindow.query(builder => {
+    return Db.from('settlementWindow').query(builder => {
       return builder
         .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
         .select(
@@ -48,7 +48,7 @@ const Facade = {
   },
 
   getTransfersCount: async function ({ settlementWindowId }) {
-    return Db.transferFulfilment.query(builder => {
+    return Db.from('transferFulfilment').query(builder => {
       return builder
         .count('* as cnt')
         .first()
@@ -58,7 +58,7 @@ const Facade = {
 
   getByListOfIds: async function (listOfIds, settlementModel, winStateEnum) {
     const knex = await Db.getKnex()
-    return Db.settlementWindow.query(builder => {
+    return Db.from('settlementWindow').query(builder => {
       const b = builder
         .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
         .join('settlementWindowContent AS swc', 'swc.settlementWindowId', 'settlementWindow.settlementWindowId')
@@ -78,7 +78,7 @@ const Facade = {
 
   getByParams: async function ({ query }) {
     const { participantId, state, fromDateTime, toDateTime, currency } = query
-    return Db.settlementWindow.query(builder => {
+    return Db.from('settlementWindow').query(builder => {
       if (!participantId) {
         const b = builder
           .leftJoin('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
@@ -279,7 +279,7 @@ const Facade = {
   },
 
   getBySettlementId: async function ({ settlementId }) {
-    return Db.settlementSettlementWindow.query(builder => {
+    return Db.from('settlementSettlementWindow').query(builder => {
       return builder
         .join('settlementWindow AS sw', 'sw.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
         .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'sw.currentStateChangeId')

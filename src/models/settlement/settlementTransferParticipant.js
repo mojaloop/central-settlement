@@ -32,7 +32,7 @@ const Db = require('../../lib/db')
 
 module.exports = {
   getBySettlementId: async function ({ settlementId }) {
-    return Db.settlementTransferParticipant.query(builder => {
+    return Db.from('settlementTransferParticipant').query(builder => {
       return builder
         .select()
         .distinct('settlementWindowId', 'participantCurrencyId')

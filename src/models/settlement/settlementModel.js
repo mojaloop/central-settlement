@@ -27,7 +27,7 @@
 const Db = require('../../lib/db')
 
 const getByName = async (name) => {
-  return Db.settlementModel.findOne({ name, isActive: 1 })
+  return Db.from('settlementModel').findOne({ name, isActive: 1 })
 }
 
 module.exports = {

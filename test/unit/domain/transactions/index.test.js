@@ -40,6 +40,11 @@ Test('Transactions Service', async (transactionsTest) => {
     Db.ilpPacket = {
       find: sandbox.stub()
     }
+
+    Db.from = (table) => {
+      return Db[table]
+    }
+
     t.end()
   })
 

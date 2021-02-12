@@ -35,6 +35,9 @@ Test('SettlementStateChangeModel', async (SettlementStateChangeModelTest) => {
 
   SettlementStateChangeModelTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
+    Db.from = (table) => {
+      return Db[table]
+    }
     test.end()
   })
 

@@ -53,6 +53,9 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
   settlementWindowFacadeTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
     clock = Sinon.useFakeTimers(now.getTime())
+    Db.from = (table) => {
+      return Db[table]
+    }
     Db.settlementWindow = {
       query: sandbox.stub()
     }

@@ -29,7 +29,7 @@
 const Db = require('../../lib/db')
 
 const getAccountInSettlement = async ({ settlementId, accountId }) => {
-  const result = await Db.settlementParticipantCurrency.query(builder => {
+  const result = await Db.from('settlementParticipantCurrency').query(builder => {
     return builder
       .select('settlementParticipantCurrencyId')
       .where({ settlementId })
@@ -40,7 +40,7 @@ const getAccountInSettlement = async ({ settlementId, accountId }) => {
 }
 
 const getBySettlementAndAccount = async (settlementId, accountId) => {
-  const result = await Db.settlementParticipantCurrency.query(builder => {
+  const result = await Db.from('settlementParticipantCurrency').query(builder => {
     return builder
       .innerJoin('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
       .select('settlementParticipantCurrency.*', 'spcsc.settlementStateId', 'spcsc.reason', 'spcsc.externalReference')
