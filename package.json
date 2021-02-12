@@ -85,7 +85,7 @@
     "pre-commit": [
         "lint",
         "dep:check",
-        "test"
+        "test:unit"
     ],
     "scripts": {
         "start": "run-p start:api",
