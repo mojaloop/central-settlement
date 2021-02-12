@@ -29,7 +29,7 @@
 const Db = require('../../lib/db')
 
 const checkParticipantAccountExists = async ({ participantId, accountId }, enums = {}) => {
-  return Db.participantCurrency.query(builder => {
+  return Db.from('participantCurrency').query(builder => {
     return builder
       .select('participantCurrencyId')
       .where({ participantId })

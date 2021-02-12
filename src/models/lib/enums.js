@@ -37,7 +37,7 @@ module.exports = {
 
   ledgerAccountTypes: async function () {
     const ledgerAccountTypeEnum = {}
-    const ledgerAccountTypeEnumsList = await Db.ledgerAccountType.find({})
+    const ledgerAccountTypeEnumsList = await Db.from('ledgerAccountType').find({})
     if (ledgerAccountTypeEnumsList) {
       for (const state of ledgerAccountTypeEnumsList) {
         ledgerAccountTypeEnum[`${state.name}`] = state.ledgerAccountTypeId
@@ -47,7 +47,7 @@ module.exports = {
   },
   ledgerEntryTypes: async function () {
     const ledgerEntryTypeEnum = {}
-    const ledgerEntryTypeEnumsList = await Db.ledgerEntryType.find({})
+    const ledgerEntryTypeEnumsList = await Db.from('ledgerEntryType').find({})
     if (ledgerEntryTypeEnumsList) {
       for (const state of ledgerEntryTypeEnumsList) {
         ledgerEntryTypeEnum[`${state.name}`] = state.ledgerEntryTypeId
@@ -57,7 +57,7 @@ module.exports = {
   },
   participantLimitTypes: async function () {
     const participantLimitTypeEnum = {}
-    const participantLimitTypeEnumsList = await Db.participantLimitType.find({})
+    const participantLimitTypeEnumsList = await Db.from('participantLimitType').find({})
     if (participantLimitTypeEnumsList) {
       for (const state of participantLimitTypeEnumsList) {
         participantLimitTypeEnum[`${state.name}`] = state.participantLimitTypeId
@@ -68,7 +68,7 @@ module.exports = {
   settlementDelay: async function () {
     const settlementDelayName = {}
 
-    const settlementDelayNamesList = await Db.settlementDelay.find({})
+    const settlementDelayNamesList = await Db.from('settlementDelay').find({})
     if (settlementDelayNamesList) {
       for (const record of settlementDelayNamesList) {
         settlementDelayName[`${record.name}`] = record.settlementDelayId
@@ -79,7 +79,7 @@ module.exports = {
   settlementDelayEnums: async function () {
     const settlementDelayEnum = {}
 
-    const settlementDelayEnumsList = await Db.settlementDelay.find({})
+    const settlementDelayEnumsList = await Db.from('settlementDelay').find({})
     if (settlementDelayEnumsList) {
       for (const record of settlementDelayEnumsList) {
         settlementDelayEnum[`${record.name}`] = record.name
@@ -90,7 +90,7 @@ module.exports = {
   settlementGranularity: async function () {
     const settlementGranularityName = {}
 
-    const settlementGranularityNamesList = await Db.settlementGranularity.find({})
+    const settlementGranularityNamesList = await Db.from('settlementGranularity').find({})
     if (settlementGranularityNamesList) {
       for (const record of settlementGranularityNamesList) {
         settlementGranularityName[`${record.name}`] = record.settlementGranularityId
@@ -101,7 +101,7 @@ module.exports = {
   settlementGranularityEnums: async function () {
     const settlementGranularityEnum = {}
 
-    const settlementGranularityEnumsList = await Db.settlementGranularity.find({})
+    const settlementGranularityEnumsList = await Db.from('settlementGranularity').find({})
     if (settlementGranularityEnumsList) {
       for (const record of settlementGranularityEnumsList) {
         settlementGranularityEnum[`${record.name}`] = record.name
@@ -112,7 +112,7 @@ module.exports = {
   settlementInterchange: async function () {
     const settlementInterchangeName = {}
 
-    const settlementInterchangeNamesList = await Db.settlementInterchange.find({})
+    const settlementInterchangeNamesList = await Db.from('settlementInterchange').find({})
     if (settlementInterchangeNamesList) {
       for (const record of settlementInterchangeNamesList) {
         settlementInterchangeName[`${record.name}`] = record.settlementInterchangeId
@@ -123,7 +123,7 @@ module.exports = {
   settlementInterchangeEnums: async function () {
     const settlementInterchangeEnum = {}
 
-    const settlementInterchangeEnumsList = await Db.settlementInterchange.find({})
+    const settlementInterchangeEnumsList = await Db.from('settlementInterchange').find({})
     if (settlementInterchangeEnumsList) {
       for (const record of settlementInterchangeEnumsList) {
         settlementInterchangeEnum[`${record.name}`] = record.name
@@ -134,7 +134,7 @@ module.exports = {
   settlementStates: async function () {
     const settlementStateEnum = {}
 
-    const settlementStateEnumsList = await Db.settlementState.find({})
+    const settlementStateEnumsList = await Db.from('settlementState').find({})
     if (settlementStateEnumsList) {
       for (const state of settlementStateEnumsList) {
         settlementStateEnum[`${state.enumeration}`] = state.settlementStateId
@@ -144,7 +144,7 @@ module.exports = {
   },
   settlementWindowStates: async function () {
     const settlementWindowStateEnum = {}
-    const settlementWindowStateEnumsList = await Db.settlementWindowState.find({})
+    const settlementWindowStateEnumsList = await Db.from('settlementWindowState').find({})
     if (settlementWindowStateEnumsList) {
       for (const state of settlementWindowStateEnumsList) {
         settlementWindowStateEnum[`${state.enumeration}`] = state.settlementWindowStateId
@@ -154,7 +154,7 @@ module.exports = {
   },
   transferParticipantRoleTypes: async function () {
     const transferParticipantRoleTypeEnum = {}
-    const transferParticipantRoleTypeEnumsList = await Db.transferParticipantRoleType.find({})
+    const transferParticipantRoleTypeEnumsList = await Db.from('transferParticipantRoleType').find({})
     if (transferParticipantRoleTypeEnumsList) {
       for (const state of transferParticipantRoleTypeEnumsList) {
         transferParticipantRoleTypeEnum[`${state.name}`] = state.transferParticipantRoleTypeId
@@ -164,7 +164,7 @@ module.exports = {
   },
   transferStateEnums: async function () {
     const transferStateEnum = {}
-    const transferStateEnumsList = await Db.transferState.find({})
+    const transferStateEnumsList = await Db.from('transferState').find({})
     if (transferStateEnumsList) {
       for (const state of transferStateEnumsList) {
         // apply distinct even though final result would contain distinct values
@@ -177,7 +177,7 @@ module.exports = {
   },
   transferStates: async function () {
     const transferStateEnum = {}
-    const transferStateEnumsList = await Db.transferState.find({})
+    const transferStateEnumsList = await Db.from('transferState').find({})
     if (transferStateEnumsList) {
       for (const state of transferStateEnumsList) {
         transferStateEnum[`${state.transferStateId}`] = state.transferStateId

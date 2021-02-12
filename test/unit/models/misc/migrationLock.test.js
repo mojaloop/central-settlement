@@ -34,6 +34,11 @@ Test('MigrationLock model', async (migrationLockTest) => {
 
   migrationLockTest.beforeEach(t => {
     sandbox = Sinon.createSandbox()
+
+    Db.from = (table) => {
+      return Db[table]
+    }
+
     Db.migration_lock = {
       query: sandbox.stub()
     }

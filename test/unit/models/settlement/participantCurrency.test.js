@@ -35,6 +35,9 @@ Test('ParticipantCurrencyModel', async (participantCurrencyModelTest) => {
 
   participantCurrencyModelTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
+    Db.from = (table) => {
+      return Db[table]
+    }
     test.end()
   })
 

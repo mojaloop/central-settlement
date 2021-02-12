@@ -1330,7 +1330,7 @@ const Facade = {
   },
 
   getById: async function ({ settlementId }) {
-    return Db.settlement.query(builder => {
+    return Db.from('settlement').query(builder => {
       return builder
         .join('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 'settlement.currentStateChangeId')
         .select('settlement.settlementId',
@@ -1345,7 +1345,7 @@ const Facade = {
   },
 
   getByParams: async function ({ state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId }) {
-    return Db.settlement.query(builder => {
+    return Db.from('settlement').query(builder => {
       const b = builder
         .innerJoin('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 'settlement.currentStateChangeId')
         .innerJoin('settlementSettlementWindow AS ssw', 'ssw.settlementId', 'settlement.settlementId')
@@ -1537,7 +1537,7 @@ const Facade = {
 
   settlementParticipantCurrency: {
     getByListOfIds: async function (listOfIds) {
-      return Db.settlementParticipantCurrency.query(builder => {
+      return Db.from('settlementParticipantCurrency').query(builder => {
         return builder
           .leftJoin('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
           .leftJoin('participant as p', 'p.participantCurrencyId', 'pc.participantCurrencyId')
@@ -1551,7 +1551,7 @@ const Facade = {
     },
 
     getAccountsInSettlementByIds: async function ({ settlementId, participantId }) {
-      return Db.settlementParticipantCurrency.query(builder => {
+      return Db.from('settlementParticipantCurrency').query(builder => {
         return builder
           .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
           .select('settlementParticipantCurrencyId')
@@ -1561,7 +1561,7 @@ const Facade = {
     },
 
     getParticipantCurrencyBySettlementId: async function ({ settlementId }) {
-      return Db.settlementParticipantCurrency.query(builder => {
+      return Db.from('settlementParticipantCurrency').query(builder => {
         return builder
           .leftJoin('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
           .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
@@ -1579,7 +1579,7 @@ const Facade = {
     },
 
     getSettlementAccountById: async function (settlementParticipantCurrencyId) {
-      return Db.settlementParticipantCurrency.query(builder => {
+      return Db.from('settlementParticipantCurrency').query(builder => {
         return builder
           .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
           .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
@@ -1596,7 +1596,7 @@ const Facade = {
     },
 
     getSettlementAccountsByListOfIds: async function (settlementParticipantCurrencyIdList) {
-      return Db.settlementParticipantCurrency.query(builder => {
+      return Db.from('settlementParticipantCurrency').query(builder => {
         return builder
           .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
           .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
@@ -1614,7 +1614,7 @@ const Facade = {
   },
   settlementSettlementWindow: {
     getWindowsBySettlementIdAndAccountId: async function ({ settlementId, accountId }) {
-      return Db.settlementSettlementWindow.query(builder => {
+      return Db.from('settlementSettlementWindow').query(builder => {
         return builder
           .join('settlementWindow', 'settlementWindow.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
           .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
@@ -1635,8 +1635,8 @@ const Facade = {
     },
 
     getWindowsBySettlementIdAndParticipantId: async function ({ settlementId, participantId }, enums) {
-      const participantAccountList = (await Db.participantCurrency.find({ participantId, ledgerAccountTypeId: enums.ledgerAccountTypes.POSITION })).map(record => record.participantCurrencyId)
-      return Db.settlementSettlementWindow.query(builder => {
+      const participantAccountList = (await Db.from('participantCurrency').find({ participantId, ledgerAccountTypeId: enums.ledgerAccountTypes.POSITION })).map(record => record.participantCurrencyId)
+      return Db.from('settlementSettlementWindow').query(builder => {
         return builder
           .join('settlementWindow', 'settlementWindow.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')
           .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')

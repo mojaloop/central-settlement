@@ -29,7 +29,7 @@ const Db = require('../../lib/db')
 const Facade = {
   getApplicableByWindowIdList: async function (idList, settlementModel, winStateEnum) {
     const knex = await Db.getKnex()
-    return Db.settlementWindow.query(builder => {
+    return Db.from('settlementWindow').query(builder => {
       const b = builder
         .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'settlementWindow.currentStateChangeId')
         .join('settlementWindowContent AS swc', 'swc.settlementWindowId', 'settlementWindow.settlementWindowId')

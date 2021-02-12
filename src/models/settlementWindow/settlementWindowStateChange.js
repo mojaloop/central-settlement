@@ -29,7 +29,7 @@
 const Db = require('../../lib/db')
 
 const create = async ({ settlementWindowId, state, reason }, enums = {}) => {
-  return Db.settlementWindowStateChange.insert({
+  return Db.from('settlementWindowStateChange').insert({
     settlementWindowId,
     settlementWindowStateId: enums[state.toUpperCase()],
     reason

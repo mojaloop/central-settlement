@@ -35,6 +35,11 @@ Test('Enums', async (enumsTest) => {
 
   enumsTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
+
+    Db.from = (table) => {
+      return Db[table]
+    }
+
     test.end()
   })
 

@@ -36,6 +36,9 @@ Test('SettlementModelModel', async (settlementModelModelTest) => {
 
   settlementModelModelTest.beforeEach(t => {
     sandbox = Sinon.createSandbox()
+    Db.from = (table) => {
+      return Db[table]
+    }
     t.end()
   })
 
