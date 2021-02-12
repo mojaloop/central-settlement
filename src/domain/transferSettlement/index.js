@@ -31,7 +31,12 @@ const TransferSettlementModel = require('../../models/transferSettlement')
 module.exports = {
   processMsgFulfil: async function (transferEventId, transferEventStateStatus, trx) {
     try {
-      await TransferSettlementModel.updateStateChange(transferEventId, transferEventStateStatus, trx)
+      // TODO: Refactor to use ENUM for settlementGranularityName = 'GROSS' function input param
+      // Get the 'GROSS' settlement model by transfer
+      const grossSettlementModel = await TransferSettlementModel.getSettlementModelByTransferId(transferEventId, 'GROSS')
+      if (grossSettlementModel.length === 1) {
+        await TransferSettlementModel.updateStateChange(transferEventId, transferEventStateStatus, trx)
+      }
       return true
     } catch (err) {
       throw ErrorHandler.Factory.reformatFSPIOPError(err)

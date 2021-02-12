@@ -51,8 +51,23 @@ Test('TransferSettlementService', async (transferSettlementServiceTest) => {
     await processFulfilTest.test('process a fulfil message', async test => {
       try {
         TransferFulfilModel.updateStateChange = sandbox.stub().returns()
+        TransferFulfilModel.getSettlementModelByTransferId = sandbox.stub().returns([{ name: 'CGS' }])
         await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus)
         test.ok(TransferFulfilModel.updateStateChange.withArgs(transferEventId, transferEventStateStatus).calledOnce, 'TransferFulfilModel.updateStateChange with args ... called once')
+        test.end()
+      } catch (err) {
+        Logger.error(`processFulfilTest failed with error - ${err}`)
+        test.fail()
+        test.end()
+      }
+    })
+
+    await processFulfilTest.test('process a fulfil message with no matching settlement model', async test => {
+      try {
+        TransferFulfilModel.updateStateChange = sandbox.stub().returns()
+        TransferFulfilModel.getSettlementModelByTransferId = sandbox.stub().returns([])
+        await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus)
+        test.ok(TransferFulfilModel.updateStateChange.notCalled, 'TransferFulfilModel.updateStateChange is not called')
         test.end()
       } catch (err) {
         Logger.error(`processFulfilTest failed with error - ${err}`)
@@ -64,6 +79,7 @@ Test('TransferSettlementService', async (transferSettlementServiceTest) => {
     await processFulfilTest.test('throw an exception', async test => {
       try {
         TransferFulfilModel.updateStateChange = sandbox.stub().throws(new Error('Error occurred'))
+        TransferFulfilModel.getSettlementModelByTransferId = sandbox.stub().returns([{ name: 'CGS' }])
         await TransferFulfilService.processMsgFulfil(transferEventId, transferEventStateStatus)
         test.fail()
         test.end()
