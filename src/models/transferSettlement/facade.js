@@ -52,6 +52,10 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           .where('PC.currencyId', ledgerEntry.currency)
           .transacting(trx)
 
+        if (!Array.isArray(recordsToInsert) || recordsToInsert.length === 0) {
+          throw new Error(`No settlement model defined for transferId: ${transferId} and ledgerEntry: ${JSON.stringify(ledgerEntry)}`)
+        }
+
         await knex('transferParticipant')
           .insert(recordsToInsert)
           .transacting(trx)
@@ -296,10 +300,26 @@ async function updateTransferSettlement (transferId, status, trx = null) {
   }
 }
 
+async function getSettlementModelByTransferId (transferId, settlementGranularityName) {
+  Logger.info(Utility.breadcrumb(location, { method: 'getSettlementModelByTransferId' }))
+  const knex = await Db.getKnex()
+  return knex('settlementModel')
+    .join('participantCurrency AS pc', function () {
+      this.on('pc.currencyId', 'settlementModel.currencyId')
+        .andOn('pc.ledgerAccountTypeId', 'settlementModel.ledgerAccountTypeId')
+    })
+    .join('transferParticipant AS tp', 'tp.participantCurrencyId', 'pc.participantCurrencyId')
+    .join('settlementGranularity AS g', 'g.settlementGranularityId', 'settlementModel.settlementGranularityId')
+    .where('tp.transferId', transferId)
+    .where('g.name', settlementGranularityName)
+    .where('settlementModel.isActive', 1)
+    .select('settlementModel.*')
+}
 const Facade = {
   insertLedgerEntry,
   insertLedgerEntries,
-  updateTransferSettlement
+  updateTransferSettlement,
+  getSettlementModelByTransferId
 }
 
 module.exports = Facade

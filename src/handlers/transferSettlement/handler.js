@@ -114,7 +114,7 @@ async function processTransferSettlement (error, messages) {
       return true
     }
   } catch (err) {
-    Logger.error(`${Utility.breadcrumb(LOG_LOCATION)}::${err.message}--0`)
+    Logger.error(`${Utility.breadcrumb(LOG_LOCATION)}::${err.message}--0`, err)
     return true
   }
 }
