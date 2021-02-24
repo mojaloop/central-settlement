@@ -52,6 +52,7 @@ Program.command('handler') // sub-command name, coffeeType = type, required
   .description('Start a specified Handler') // command description
   .option('--settlementwindow', 'Start the Settlement Window Handler')
   .option('--transfersettlement', 'Start the Transfer Settlement Handler')
+  .option('--rules', 'Start the Rules Handler')
   // function to execute when command is used
   .action(async (args) => {
     const handlerList = []
@@ -68,6 +69,15 @@ Program.command('handler') // sub-command name, coffeeType = type, required
       Logger.debug('CLI: Executing --transfersettlement')
       const handler = {
         type: 'transfersettlement',
+        enabled: true
+      }
+      handlerList.push(handler)
+    }
+
+    if (args.rules === true) {
+      Logger.debug('CLI: Executing --rules')
+      const handler = {
+        type: 'rules',
         enabled: true
       }
       handlerList.push(handler)

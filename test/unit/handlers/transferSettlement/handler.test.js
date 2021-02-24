@@ -35,7 +35,6 @@ const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 const KafkaConsumer = require('@mojaloop/central-services-stream').Kafka.Consumer
 const Db = require('../../../../src/lib/db')
 const TransferFulfilService = require('../../../../src/domain/transferSettlement/index')
-const ScriptsLoader = require('../../../../src/lib/scriptsLoader')
 const TransferFulfilHandler = require('../../../../src/handlers/transferSettlement/handler')
 
 const payload = {
@@ -159,10 +158,8 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
       Kafka.proceed.returns(true)
       Kafka.transformGeneralTopicName.returns(topicName)
       Kafka.getKafkaConfig.returns(config)
-      sandbox.stub(ScriptsLoader, 'loadScripts').returns({})
       const result = await TransferFulfilHandler.registerAllHandlers()
       test.equal(result, true)
-      test.ok(ScriptsLoader.loadScripts.withArgs('./scripts/transferSettlementTemp').calledOnce, 'ScriptsLoader loadScripts called once')
       test.end()
     })
 
@@ -191,13 +188,10 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
-      sandbox.stub(TransferFulfilService, 'insertLedgerEntries')
       sandbox.stub(TransferFulfilService, 'processMsgFulfil')
-      sandbox.stub(ScriptsLoader, 'executeScripts').returns({})
       const result = await TransferFulfilHandler.processTransferSettlement(null, localMessages)
       test.equal(result, true)
       test.ok(TransferFulfilService.processMsgFulfil.calledOnce, 'processMsgFulfil called once')
-      test.ok(TransferFulfilService.insertLedgerEntries.notCalled, 'insertLedgerEntries called once')
       test.end()
     })
 
@@ -206,13 +200,10 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
-      sandbox.stub(TransferFulfilService, 'insertLedgerEntries')
       sandbox.stub(TransferFulfilService, 'processMsgFulfil')
-      sandbox.stub(ScriptsLoader, 'executeScripts').returns({})
       const result = await TransferFulfilHandler.processTransferSettlement(null, localMessages[0])
       test.equal(result, true)
       test.ok(TransferFulfilService.processMsgFulfil.calledOnce, 'processMsgFulfil called once')
-      test.ok(TransferFulfilService.insertLedgerEntries.notCalled, 'insertLedgerEntries called once')
       test.end()
     })
 
@@ -221,23 +212,10 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
-      sandbox.stub(ScriptsLoader, 'executeScripts').returns({
-        ledgerEntries: [{
-          transferId: 'b51ec534-ee48-4575-b6a9-ead2955b8999',
-          ledgerAccountTypeId: 'INTERCHANGE_FEE',
-          ledgerEntryTypeId: 'INTERCHANGE_FEE',
-          amount: 0.02,
-          currency: 'USD',
-          payerFspId: 'dfsp1',
-          payeeFspId: 'dfsp2'
-        }]
-      })
-      sandbox.stub(TransferFulfilService, 'insertLedgerEntries')
       sandbox.stub(TransferFulfilService, 'processMsgFulfil')
       const result = await TransferFulfilHandler.processTransferSettlement(null, localMessages[0])
       test.equal(result, true)
       test.ok(TransferFulfilService.processMsgFulfil.calledOnce, 'processMsgFulfil called once')
-      test.ok(TransferFulfilService.insertLedgerEntries.calledOnce, 'insertLedgerEntries called once')
       test.end()
     })
 
@@ -246,8 +224,6 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
-      sandbox.stub(ScriptsLoader, 'executeScripts').returns({})
-      sandbox.stub(TransferFulfilService, 'insertLedgerEntries')
       sandbox.stub(TransferFulfilService, 'processMsgFulfil').throws(new Error('Error occurred'))
       const retryStub = sandbox.stub().callsArg(0)
       const TransferFulfilHandlerProxy = Proxyquire('../../../../src/handlers/transferSettlement/handler', {
@@ -255,7 +231,6 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
       })
       const result = await TransferFulfilHandlerProxy.processTransferSettlement(null, localMessages[0])
       test.equal(result, true)
-      test.ok(TransferFulfilService.insertLedgerEntries.notCalled, 'insertLedgerEntries called once')
       test.end()
     })
 
