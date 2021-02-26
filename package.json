@@ -113,5 +113,10 @@
     "generator-swaggerize": {
         "version": "4.1.0"
     },
-    "main": "./server"
+    "main": "./server",
+    "standard": {
+        "ignore": [
+            "test/unit/data/invalidFile/dummyFeeCalculationTestScriptInvalidFile.js"
+        ]
+    }
 }

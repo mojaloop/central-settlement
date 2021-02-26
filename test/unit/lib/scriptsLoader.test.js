@@ -202,6 +202,18 @@ Test('ScriptsLoader', async (scriptsLoaderTest) => {
       }
     })
 
+    loadScriptsTest.test('load scripts fail if invalid rules file', async (test) => {
+      try {
+        await ScriptsLoader.loadScripts(`${scriptDirectory}/invalidFile`)
+        test.fail('should throw')
+        test.end()
+      } catch (error) {
+        test.ok(error instanceof Error)
+        test.equal(error.message, 'Rules file: dummyFeeCalculationTestScriptInvalidFile.js: is not a valid JavaScript file')
+        test.end()
+      }
+    })
+
     loadScriptsTest.end()
   })
   scriptsLoaderTest.test('executeScripts should', executeScriptsTest => {

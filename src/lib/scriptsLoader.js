@@ -138,11 +138,20 @@ function retrieveScriptConfiguration (scriptLines, scriptsMap, scriptFile, scrip
         throw new Error(errorMessage)
       }
 
+      let compiledScript
+      try {
+        compiledScript = new vm.Script(scriptSource)
+      } catch (error) {
+        const errorMessage = `Rules file: ${scriptFile}: is not a valid JavaScript file`
+        Logger.error(errorMessage)
+        throw new Error(errorMessage)
+      }
+
       const script = {
         filename: scriptFile,
         startTime: new Date(scriptStart),
         endTime: new Date(scriptEnd),
-        script: new vm.Script(scriptSource)
+        script: compiledScript
       }
       const scriptMap = {}
       scriptMap[scriptType] = {}
