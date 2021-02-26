@@ -54,6 +54,12 @@ Test('Server Setup', async setupTest => {
         registerAllHandlers: sandbox.stub().returns(Promise.resolve()),
         settlementWindow: {
           registerSettlementWindowHandler: sandbox.stub().returns(Promise.resolve())
+        },
+        transfersettlement: {
+          registerTransferSettlementHandler: sandbox.stub().returns(Promise.resolve())
+        },
+        rules: {
+          registerRulesHandler: sandbox.stub().returns(Promise.resolve())
         }
       }
 
@@ -259,6 +265,92 @@ Test('Server Setup', async setupTest => {
           const server = await SetupProxy1.initialize({ service: 'handler', port, modules: [], runHandlers: true, handlers: modulesList })
           test.ok(server, 'return server object')
           test.ok(RegisterHandlersStub.settlementWindow.registerSettlementWindowHandler.called)
+          test.end()
+        } catch (err) {
+          Logger.error(`init failed with error - ${err}`)
+          test.fail(`Should have not received an error: ${err}`)
+          test.end()
+        }
+      })
+
+      await initTest.test('test - handler transferSettlement handler', async test => {
+        try {
+          const errorToThrow = new Error('Throw Boom error')
+
+          const HapiStubThrowError = {
+            Server: sandbox.stub().callsFake((opt) => {
+              opt.routes.validate.failAction(sandbox.stub(), sandbox.stub(), errorToThrow)
+              return serverStub
+            })
+          }
+
+          const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
+            '../handlers/register': RegisterHandlersStub,
+            '@hapi/catbox-memory': EngineStub,
+            '@hapi/hapi': HapiStubThrowError,
+            'hapi-openapi': HapiOpenAPIStub,
+            path: PathStub,
+            '../lib/db': DbStub,
+            '../models/lib/enums': EnumsStub,
+            '../lib/config': ConfigStub
+          })
+
+          const transferSettlementHandler = {
+            type: 'transfersettlement',
+            enabled: true
+          }
+
+          const modulesList = [
+            transferSettlementHandler
+          ]
+
+          const port = await getPort()
+          const server = await SetupProxy1.initialize({ service: 'handler', port, modules: [], runHandlers: true, handlers: modulesList })
+          test.ok(server, 'return server object')
+          test.ok(RegisterHandlersStub.transfersettlement.registerTransferSettlementHandler.called)
+          test.end()
+        } catch (err) {
+          Logger.error(`init failed with error - ${err}`)
+          test.fail(`Should have not received an error: ${err}`)
+          test.end()
+        }
+      })
+
+      await initTest.test('test - handler rules handler', async test => {
+        try {
+          const errorToThrow = new Error('Throw Boom error')
+
+          const HapiStubThrowError = {
+            Server: sandbox.stub().callsFake((opt) => {
+              opt.routes.validate.failAction(sandbox.stub(), sandbox.stub(), errorToThrow)
+              return serverStub
+            })
+          }
+
+          const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
+            '../handlers/register': RegisterHandlersStub,
+            '@hapi/catbox-memory': EngineStub,
+            '@hapi/hapi': HapiStubThrowError,
+            'hapi-openapi': HapiOpenAPIStub,
+            path: PathStub,
+            '../lib/db': DbStub,
+            '../models/lib/enums': EnumsStub,
+            '../lib/config': ConfigStub
+          })
+
+          const rulesHandler = {
+            type: 'rules',
+            enabled: true
+          }
+
+          const modulesList = [
+            rulesHandler
+          ]
+
+          const port = await getPort()
+          const server = await SetupProxy1.initialize({ service: 'handler', port, modules: [], runHandlers: true, handlers: modulesList })
+          test.ok(server, 'return server object')
+          test.ok(RegisterHandlersStub.rules.registerRulesHandler.called)
           test.end()
         } catch (err) {
           Logger.error(`init failed with error - ${err}`)

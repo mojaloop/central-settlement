@@ -39,20 +39,13 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Logger = require('@mojaloop/central-services-logger')
 const Producer = require('@mojaloop/central-services-stream').Util.Producer
-const retry = require('async-retry')
-const transferSettlementService = require('../../domain/transferSettlement')
+const RulesService = require('../../domain/rules')
 const scriptsLoader = require('../../lib/scriptsLoader')
 const Utility = require('@mojaloop/central-services-shared').Util
 const Db = require('../../lib/db')
 const LOG_LOCATION = { module: 'RulesHandler', method: '', path: '' } // var object used as pointer
 const CONSUMER_COMMIT = true
 const FROM_SWITCH = true
-
-const RETRY_OPTIONS = {
-  retries: Config.WINDOW_AGGREGATION_RETRY_COUNT,
-  minTimeout: Config.WINDOW_AGGREGATION_RETRY_INTERVAL,
-  maxTimeout: Config.WINDOW_AGGREGATION_RETRY_INTERVAL
-}
 
 const SCRIPTS_FOLDER = Config.HANDLERS.SETTINGS.SCRIPTS_FOLDER
 let INJECTED_SCRIPTS = {}
@@ -76,6 +69,7 @@ async function processRules (error, messages) {
     const params = { message, kafkaTopic, decodedPayload: payload, consumer: Consumer, producer: Producer }
 
     const transferEventId = message.value.id
+    const transferEventType = message.value.metadata.event.type
     const transferEventAction = message.value.metadata.event.action
     const transferEventStateStatus = message.value.metadata.event.state.status
     const actionLetter = transferEventAction === Enum.Events.Event.Action.COMMIT
@@ -91,27 +85,26 @@ async function processRules (error, messages) {
     }
     Logger.info(Utility.breadcrumb(LOG_LOCATION, 'validationPassed'))
 
-    if (transferEventAction === Enum.Events.Event.Action.COMMIT) {
-      const scriptResults = await scriptsLoader.executeScripts(INJECTED_SCRIPTS, 'notification', transferEventAction, transferEventStateStatus, message.value)
-      const ledgerEntries = scriptResults.ledgerEntries ? scriptResults.ledgerEntries : []
-      await retry(async () => { // use bail(new Error('to break before max retries'))
-        const knex = Db.getKnex()
-        await knex.transaction(async trx => {
-          try {
-            if (ledgerEntries.length > 0) {
-              await transferSettlementService.insertLedgerEntries(ledgerEntries, transferEventId, trx)
-            }
-            await trx.commit
-          } catch (err) {
-            await trx.rollback
-            throw ErrorHandler.Factory.reformatFSPIOPError(err)
-          }
-        })
-        Logger.info(Utility.breadcrumb(LOG_LOCATION, `done--${actionLetter}2`))
-        return true
-      }, RETRY_OPTIONS)
-      return true
+    // execute the rule
+    Logger.info(Utility.breadcrumb(LOG_LOCATION, 'executing the scripts'))
+    const scriptResults = await scriptsLoader.executeScripts(INJECTED_SCRIPTS, transferEventType, transferEventAction, transferEventStateStatus, message.value)
+    Logger.debug(`Rules Handler - scriptResults: ${JSON.stringify(scriptResults)}`)
+
+    const ledgerEntries = scriptResults.ledgerEntries ? scriptResults.ledgerEntries : []
+    if (ledgerEntries.length > 0) {
+      const knex = Db.getKnex()
+      await knex.transaction(async trx => {
+        try {
+          await RulesService.insertLedgerEntries(ledgerEntries, transferEventId, trx)
+          await trx.commit
+        } catch (err) {
+          await trx.rollback
+          throw ErrorHandler.Factory.reformatFSPIOPError(err)
+        }
+      })
     }
+    Logger.info(Utility.breadcrumb(LOG_LOCATION, `done--${actionLetter}2`))
+    return true
   } catch (err) {
     Logger.error(`${Utility.breadcrumb(LOG_LOCATION)}::${err.message}--0`, err)
     return true
@@ -119,10 +112,10 @@ async function processRules (error, messages) {
 }
 
 /**
- * @function registerRulesHandler
+ * @function registerRules
  *
  * @async
- * @description Registers registerRulesHandler for processing fulfilled transfers. Gets Kafka config from default.json
+ * @description Registers RulesHandler for processing settlement rules. Gets Kafka config from default.json
  * Calls createHandler to register the handler against the Stream Processing API
  * @returns {boolean} - Returns a boolean: true if successful, or throws and error if failed
  */

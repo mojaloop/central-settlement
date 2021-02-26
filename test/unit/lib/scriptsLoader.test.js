@@ -142,6 +142,66 @@ Test('ScriptsLoader', async (scriptsLoaderTest) => {
       test.deepEqual(result, {})
       test.end()
     })
+    loadScriptsTest.test('load scripts fail if invalid header: Type ', async (test) => {
+      try {
+        await ScriptsLoader.loadScripts(`${scriptDirectory}/invalidType`)
+        test.fail('should throw')
+        test.end()
+      } catch (error) {
+        test.ok(error instanceof Error)
+        test.equal(error.message, 'Rules file: dummyFeeCalculationTestScriptInvalidType.js: has invalid or missing header \'Type\'')
+        test.end()
+      }
+    })
+
+    loadScriptsTest.test('load scripts fail if invalid header: Action ', async (test) => {
+      try {
+        await ScriptsLoader.loadScripts(`${scriptDirectory}/invalidAction`)
+        test.fail('should throw')
+        test.end()
+      } catch (error) {
+        test.ok(error instanceof Error)
+        test.equal(error.message, 'Rules file: dummyFeeCalculationTestScriptInvalidAction.js: has invalid or missing header \'Action\'')
+        test.end()
+      }
+    })
+
+    loadScriptsTest.test('load scripts fail if invalid header: Status ', async (test) => {
+      try {
+        await ScriptsLoader.loadScripts(`${scriptDirectory}/invalidStatus`)
+        test.fail('should throw')
+        test.end()
+      } catch (error) {
+        test.ok(error instanceof Error)
+        test.equal(error.message, 'Rules file: dummyFeeCalculationTestScriptInvalidStatus.js: has invalid or missing header \'Status\'')
+        test.end()
+      }
+    })
+
+    loadScriptsTest.test('load scripts fail if invalid header: Start ', async (test) => {
+      try {
+        await ScriptsLoader.loadScripts(`${scriptDirectory}/invalidStartDate`)
+        test.fail('should throw')
+        test.end()
+      } catch (error) {
+        test.ok(error instanceof Error)
+        test.equal(error.message, 'Rules file: dummyFeeCalculationTestScriptInvalidStartDate.js: has invalid or missing header \'Start\'')
+        test.end()
+      }
+    })
+
+    loadScriptsTest.test('load scripts fail if invalid header: End ', async (test) => {
+      try {
+        await ScriptsLoader.loadScripts(`${scriptDirectory}/invalidEndDate`)
+        test.fail('should throw')
+        test.end()
+      } catch (error) {
+        test.ok(error instanceof Error)
+        test.equal(error.message, 'Rules file: dummyFeeCalculationTestScriptInvalidEndDate.js: has invalid or missing header \'End\'')
+        test.end()
+      }
+    })
+
     loadScriptsTest.end()
   })
   scriptsLoaderTest.test('executeScripts should', executeScriptsTest => {
