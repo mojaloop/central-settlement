@@ -24,6 +24,7 @@
 
  * Claudio Viola <claudio.viola@modusbox.com>
  * Lazola Lucas <lazola.lucas@modusbox.com>
+ * Shashikant Hirugade <shashikant.hirugade@modusbox.com>
 
  --------------
  ******/
@@ -36,6 +37,7 @@ const path = require('path')
 const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const scriptEngine = require('./scriptEngine')
+const Enum = require('@mojaloop/central-services-shared').Enum
 
 function loadScripts (scriptDirectory) {
   const scriptsMap = {}
@@ -108,11 +110,48 @@ function retrieveScriptConfiguration (scriptLines, scriptsMap, scriptFile, scrip
       const scriptStatus = scriptLines[i + 2].split(':').pop().trim()
       const scriptStart = scriptLines[i + 3].substring(scriptLines[i + 3].indexOf(':') + 1).trim()
       const scriptEnd = scriptLines[i + 4].substring(scriptLines[i + 4].indexOf(':') + 1).trim()
+      Logger.info(`Rules file: ${scriptFile}: Type: ${scriptType}, Action: ${scriptAction}, Status: ${scriptStatus}, Start: ${scriptStart}, End: ${scriptEnd}`)
+
+      if (Object.values(Enum.Events.Event.Type).indexOf(scriptType) === -1) {
+        const errorMessage = `Rules file: ${scriptFile}: has invalid or missing header 'Type'`
+        Logger.error(errorMessage)
+        throw new Error(errorMessage)
+      }
+      if (Object.values(Enum.Events.Event.Action).indexOf(scriptAction) === -1) {
+        const errorMessage = `Rules file: ${scriptFile}: has invalid or missing header 'Action'`
+        Logger.error(errorMessage)
+        throw new Error(errorMessage)
+      }
+      if (Object.values(Enum.Events.EventState).indexOf(scriptStatus) === -1) {
+        const errorMessage = `Rules file: ${scriptFile}: has invalid or missing header 'Status'`
+        Logger.error(errorMessage)
+        throw new Error(errorMessage)
+      }
+      if (new Date(scriptStart).toString() === 'Invalid Date') {
+        const errorMessage = `Rules file: ${scriptFile}: has invalid or missing header 'Start'`
+        Logger.error(errorMessage)
+        throw new Error(errorMessage)
+      }
+      if (new Date(scriptEnd).toString() === 'Invalid Date') {
+        const errorMessage = `Rules file: ${scriptFile}: has invalid or missing header 'End'`
+        Logger.error(errorMessage)
+        throw new Error(errorMessage)
+      }
+
+      let compiledScript
+      try {
+        compiledScript = new vm.Script(scriptSource)
+      } catch (error) {
+        const errorMessage = `Rules file: ${scriptFile}: is not a valid JavaScript file`
+        Logger.error(errorMessage)
+        throw new Error(errorMessage)
+      }
+
       const script = {
         filename: scriptFile,
         startTime: new Date(scriptStart),
         endTime: new Date(scriptEnd),
-        script: new vm.Script(scriptSource)
+        script: compiledScript
       }
       const scriptMap = {}
       scriptMap[scriptType] = {}

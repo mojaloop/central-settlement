@@ -89,8 +89,8 @@
               "consumeTimeout": 1000
             },
             "rdkafkaConf": {
-              "client.id": "cs-con-transferfulfil-process",
-              "group.id": "cs-group-transferfulfil-process",
+              "client.id": "cs-con-notification-event",
+              "group.id": "cs-group-notification-event",
               "metadata.broker.list": "localhost:9092",
               "socket.keepalive.enable": true
             },

@@ -19,7 +19,7 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * ModusBox
- - Deon Botha <deon.botha@modusbox.com>
+ - Shashikant Hirugade <shashikant.hirugade@modusbox.com>
  --------------
  ******/
 'use strict'
@@ -27,15 +27,17 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Uuid = require('uuid4')
-const Proxyquire = require('proxyquire')
 const Util = require('@mojaloop/central-services-shared').Util
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Logger = require('@mojaloop/central-services-logger')
 const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 const KafkaConsumer = require('@mojaloop/central-services-stream').Kafka.Consumer
 const Db = require('../../../../src/lib/db')
-const TransferFulfilService = require('../../../../src/domain/transferSettlement/index')
-const TransferFulfilHandler = require('../../../../src/handlers/transferSettlement/handler')
+const RulesService = require('../../../../src/domain/rules/index')
+const ScriptsLoader = require('../../../../src/lib/scriptsLoader')
+const RulesHandler = require('../../../../src/handlers/rules/handler')
+const Config = require('../../../../src/lib/config')
+const Proxyquire = require('proxyquire')
 
 const payload = {
   settlementWindowId: '3',
@@ -78,7 +80,7 @@ const messageProtocol = {
   metadata: {
     event: {
       id: Uuid(),
-      type: 'settlement',
+      type: 'notification',
       action: 'commit',
       createdAt: new Date(),
       state: {
@@ -121,9 +123,11 @@ const config = {
 
 const command = () => {}
 
-Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
+Test('RulesHandler', async (rulesHandlerTest) => {
   let sandbox
-  transferSettlementHandlerTest.beforeEach(test => {
+  let knexStub
+  let trxStub
+  rulesHandlerTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(KafkaConsumer.prototype, 'constructor').returns(Promise.resolve())
     sandbox.stub(KafkaConsumer.prototype, 'connect').returns(Promise.resolve())
@@ -139,31 +143,36 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
     sandbox.stub(Logger)
     sandbox.stub(Util.StreamingProtocol)
     Kafka.produceGeneralMessage.returns(Promise.resolve())
-    const knexStub = sandbox.stub()
+    knexStub = sandbox.stub()
     sandbox.stub(Db, 'getKnex').returns(knexStub)
-    const trxStub = sandbox.stub()
+    trxStub = sandbox.stub().returns({
+      rollback: sandbox.stub()
+    })
     knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+    // knexStub.transaction.rollback = sandbox.stub() //.callsArgWith(0, trxStub)
     test.end()
   })
 
-  transferSettlementHandlerTest.afterEach(test => {
+  rulesHandlerTest.afterEach(test => {
     sandbox.restore()
     test.end()
   })
 
-  transferSettlementHandlerTest.test('registerAllHandlers should', registerAllHandlersTest => {
+  rulesHandlerTest.test('registerAllHandlers should', registerAllHandlersTest => {
     registerAllHandlersTest.test('register all consumers on Kafka', async (test) => {
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
       Kafka.transformGeneralTopicName.returns(topicName)
       Kafka.getKafkaConfig.returns(config)
-      const result = await TransferFulfilHandler.registerAllHandlers()
+      sandbox.stub(ScriptsLoader, 'loadScripts').returns({})
+      const result = await RulesHandler.registerAllHandlers()
       test.equal(result, true)
+      test.ok(ScriptsLoader.loadScripts.withArgs('./scripts/transferSettlementTemp').calledOnce, 'ScriptsLoader loadScripts called once')
       test.end()
     })
 
-    transferSettlementHandlerTest.test('throw error registerAllHandlers', async (test) => {
+    rulesHandlerTest.test('throw error registerAllHandlers', async (test) => {
       try {
         await Consumer.createHandler(topicName, config, command)
         Kafka.transformAccountToTopicName.returns(topicName)
@@ -171,7 +180,7 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
         Kafka.transformGeneralTopicName.returns(topicName)
         Kafka.getKafkaConfig.throws(new Error())
 
-        await TransferFulfilHandler.registerAllHandlers()
+        await RulesHandler.registerAllHandlers()
         test.fail('Error not thrown')
         test.end()
       } catch (e) {
@@ -179,68 +188,112 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
         test.end()
       }
     })
+
+    rulesHandlerTest.test('registerAllHandlers throws error when SCRIPTS_FOLDER config is missing', async (test) => {
+      try {
+        Config.HANDLERS.SETTINGS.SCRIPTS_FOLDER = null
+        await Consumer.createHandler(topicName, config, command)
+        Kafka.transformAccountToTopicName.returns(topicName)
+        Kafka.proceed.returns(true)
+        Kafka.transformGeneralTopicName.returns(topicName)
+        Kafka.getKafkaConfig.returns(config)
+        sandbox.stub(ScriptsLoader, 'loadScripts').returns({})
+        const RulesHandlerProxy = Proxyquire('../../../../src/handlers/rules/handler', {
+          '../../lib/config': Config
+        })
+        await RulesHandlerProxy.registerAllHandlers()
+        test.fail('Error not thrown')
+        test.end()
+      } catch (e) {
+        test.pass('Error thrown')
+        test.end()
+      }
+    })
+
     registerAllHandlersTest.end()
   })
 
-  transferSettlementHandlerTest.test('processTransferSettlement should', processTransferSettlementTest => {
-    processTransferSettlementTest.test('process when messages is in array', async (test) => {
+  rulesHandlerTest.test('processRules should', processRulesTest => {
+    processRulesTest.test('process when messages is in array', async (test) => {
       const localMessages = Util.clone(messages)
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
-      sandbox.stub(TransferFulfilService, 'processMsgFulfil')
-      const result = await TransferFulfilHandler.processTransferSettlement(null, localMessages)
+      sandbox.stub(RulesService, 'insertLedgerEntries')
+      sandbox.stub(ScriptsLoader, 'executeScripts').returns({})
+      const result = await RulesHandler.processRules(null, localMessages)
       test.equal(result, true)
-      test.ok(TransferFulfilService.processMsgFulfil.calledOnce, 'processMsgFulfil called once')
+      test.ok(RulesService.insertLedgerEntries.notCalled, 'insertLedgerEntries called once')
       test.end()
     })
 
-    processTransferSettlementTest.test('process when there is a single message', async (test) => {
+    processRulesTest.test('process when there is a single message', async (test) => {
       const localMessages = Util.clone(messages)
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
-      sandbox.stub(TransferFulfilService, 'processMsgFulfil')
-      const result = await TransferFulfilHandler.processTransferSettlement(null, localMessages[0])
+      sandbox.stub(RulesService, 'insertLedgerEntries')
+      sandbox.stub(ScriptsLoader, 'executeScripts').returns({})
+      const result = await RulesHandler.processRules(null, localMessages[0])
       test.equal(result, true)
-      test.ok(TransferFulfilService.processMsgFulfil.calledOnce, 'processMsgFulfil called once')
+      test.ok(RulesService.insertLedgerEntries.notCalled, 'insertLedgerEntries called once')
       test.end()
     })
 
-    processTransferSettlementTest.test('process when there is a single message with ledger entries', async (test) => {
+    processRulesTest.test('process when there is a single message with ledger entries', async (test) => {
       const localMessages = Util.clone(messages)
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
-      sandbox.stub(TransferFulfilService, 'processMsgFulfil')
-      const result = await TransferFulfilHandler.processTransferSettlement(null, localMessages[0])
-      test.equal(result, true)
-      test.ok(TransferFulfilService.processMsgFulfil.calledOnce, 'processMsgFulfil called once')
-      test.end()
-    })
-
-    processTransferSettlementTest.test('rollback a transaction on error', async (test) => {
-      const localMessages = Util.clone(messages)
-      await Consumer.createHandler(topicName, config, command)
-      Kafka.transformAccountToTopicName.returns(topicName)
-      Kafka.proceed.returns(true)
-      sandbox.stub(TransferFulfilService, 'processMsgFulfil').throws(new Error('Error occurred'))
-      const retryStub = sandbox.stub().callsArg(0)
-      const TransferFulfilHandlerProxy = Proxyquire('../../../../src/handlers/transferSettlement/handler', {
-        'async-retry': retryStub
+      sandbox.stub(ScriptsLoader, 'executeScripts').returns({
+        ledgerEntries: [{
+          transferId: 'b51ec534-ee48-4575-b6a9-ead2955b8999',
+          ledgerAccountTypeId: 'INTERCHANGE_FEE',
+          ledgerEntryTypeId: 'INTERCHANGE_FEE',
+          amount: 0.02,
+          currency: 'USD',
+          payerFspId: 'dfsp1',
+          payeeFspId: 'dfsp2'
+        }]
       })
-      const result = await TransferFulfilHandlerProxy.processTransferSettlement(null, localMessages[0])
+      sandbox.stub(RulesService, 'insertLedgerEntries')
+      const result = await RulesHandler.processRules(null, localMessages[0])
       test.equal(result, true)
+      console.log(RulesService.insertLedgerEntries.callCount)
+      test.ok(RulesService.insertLedgerEntries.calledOnce, 'insertLedgerEntries called once')
       test.end()
     })
 
-    processTransferSettlementTest.test('create a FSPIOP error when an error condition is passed in', async (test) => {
+    processRulesTest.test('rollback a transaction on error', async (test) => {
+      const localMessages = Util.clone(messages)
+      await Consumer.createHandler(topicName, config, command)
+      Kafka.transformAccountToTopicName.returns(topicName)
+      Kafka.proceed.returns(true)
+      sandbox.stub(ScriptsLoader, 'executeScripts').returns({
+        ledgerEntries: [{
+          transferId: 'b51ec534-ee48-4575-b6a9-ead2955b8999',
+          ledgerAccountTypeId: 'INTERCHANGE_FEE',
+          ledgerEntryTypeId: 'INTERCHANGE_FEE',
+          amount: 0.02,
+          currency: 'USD',
+          payerFspId: 'dfsp1',
+          payeeFspId: 'dfsp2'
+        }]
+      })
+      sandbox.stub(RulesService, 'insertLedgerEntries').throws(new Error())
+      const result = await RulesHandler.processRules(null, localMessages[0])
+      test.equal(result, true)
+      test.ok(RulesService.insertLedgerEntries.calledOnce, 'insertLedgerEntries called once')
+      test.end()
+    })
+
+    processRulesTest.test('create a FSPIOP error when an error condition is passed in', async (test) => {
       const localMessages = Util.clone(messages)
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
       try {
-        await TransferFulfilHandler.processTransferSettlement(true, localMessages[0])
+        await RulesHandler.processRules(true, localMessages[0])
         test.fail('should throw error')
         test.end()
       } catch (err) {
@@ -249,14 +302,14 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
       }
     })
 
-    processTransferSettlementTest.test('create a FSPIOP error when the payload is null', async (test) => {
+    processRulesTest.test('create a FSPIOP error when the payload is null', async (test) => {
       const localMessages = Util.clone(messages)
       localMessages[0].value.content.payload = null
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
       try {
-        await TransferFulfilHandler.processTransferSettlement(null, localMessages[0])
+        await RulesHandler.processRules(null, localMessages[0])
         test.pass('Update terminated due to missing payload')
         test.end()
       } catch (err) {
@@ -265,14 +318,14 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
       }
     })
 
-    processTransferSettlementTest.test('create a FSPIOP error when the event action is unknown', async (test) => {
+    processRulesTest.test('create a FSPIOP error when the event action is unknown', async (test) => {
       const localMessages = Util.clone(messages)
       localMessages[0].value.metadata.event.action = 'unknown'
       await Consumer.createHandler(topicName, config, command)
       Kafka.transformAccountToTopicName.returns(topicName)
       Kafka.proceed.returns(true)
       try {
-        await TransferFulfilHandler.processTransferSettlement(null, localMessages[0])
+        await RulesHandler.processRules(null, localMessages[0])
         test.pass('Update terminated due to unknown event action')
         test.end()
       } catch (err) {
@@ -280,8 +333,8 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
         test.end()
       }
     })
-    processTransferSettlementTest.end()
+    processRulesTest.end()
   })
 
-  transferSettlementHandlerTest.end()
+  rulesHandlerTest.end()
 })

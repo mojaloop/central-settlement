@@ -34,6 +34,7 @@ const Logger = require('@mojaloop/central-services-logger')
 const requireGlob = require('require-glob')
 const SettlementWindowHandlers = require('./settlementWindow/handler')
 const TransferSettlementHandler = require('./transferSettlement/handler')
+const RulesHandler = require('./rules/handler')
 
 /**
  * @module src/handlers
@@ -80,6 +81,11 @@ module.exports = {
   },
   transfersettlement: {
     registerAllHandlers: TransferSettlementHandler.registerAllHandlers,
-    registerTransferSettlementHandler: TransferSettlementHandler.registerTransferSettlement
+    registerTransferSettlementHandler: TransferSettlementHandler.registerTransferSettlement,
+    registerRulesHandler: RulesHandler.registerRules
+  },
+  rules: {
+    registerAllHandlers: RulesHandler.registerAllHandlers,
+    registerRulesHandler: RulesHandler.registerRules
   }
 }

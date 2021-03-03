@@ -19,9 +19,7 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * ModusBox
- - Deon Botha <deon.botha@modusbox.com>
- - Lazola Lucas <lazola.lucas@modusbox.com>
- - Claudio Viola <claudio.viola@modusbox.com>
+ - Shashikant Hirugade <shashikant.hirugade@modusbox.com>
  --------------
  ******/
 
@@ -30,24 +28,15 @@ const TransferSettlementModel = require('../../models/transferSettlement')
 const Logger = require('@mojaloop/central-services-logger')
 
 module.exports = {
-  processMsgFulfil: async function (transferEventId, transferEventStateStatus, trx) {
-    Logger.debug(`transferSettlement::processMsgFulfil(transferEventId=${transferEventId}, transferEventStateStatus=${transferEventStateStatus}) - start`)
+  insertLedgerEntries: async function insertLedgerEntries (ledgerEntries, transferEventId, trx) {
+    Logger.debug(`rules::insertLedgerEntries - ledgerEntries=${JSON.stringify(ledgerEntries)}`)
+
     try {
-      // TODO: Refactor to use ENUM for settlementGranularityName = 'GROSS' function input param
-      // Get the 'GROSS' settlement model by transfer
-      const grossSettlementModel = await TransferSettlementModel.getSettlementModelByTransferId(transferEventId, 'GROSS')
-      Logger.debug(`transferSettlement::processMsgFulfil - result grossSettlementModel=${JSON.stringify(grossSettlementModel)}`)
-      Logger.debug(`transferSettlement::processMsgFulfil - grossSettlementModel.length=${grossSettlementModel.length}`)
-      if (grossSettlementModel.length > 0) {
-        Logger.debug(`transferSettlement::processMsgFulfil - updateStateChange(transferEventId=${transferEventId}, transferEventStateStatus=${transferEventStateStatus}) - start`)
-        await TransferSettlementModel.updateStateChange(transferEventId, transferEventStateStatus, trx)
-        Logger.debug('transferSettlement::processMsgFulfil - updateStateChange - end')
-      }
-      Logger.debug('transferSettlement::processMsgFulfil - end')
+      await TransferSettlementModel.insertLedgerEntries(ledgerEntries, transferEventId, trx)
       return true
     } catch (err) {
-      Logger.debug('transferSettlement::processMsgFulfil - error!', err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
+
 }

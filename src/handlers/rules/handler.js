@@ -23,7 +23,7 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * ModusBox
- - Deon Botha <deon.botha@modusbox.com>
+ - Shashikant Hirugade <shashikant.hirugade@modusbox.com>
  --------------
  ******/
 'use strict'
@@ -39,21 +39,18 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Logger = require('@mojaloop/central-services-logger')
 const Producer = require('@mojaloop/central-services-stream').Util.Producer
-const retry = require('async-retry')
-const transferSettlementService = require('../../domain/transferSettlement')
+const RulesService = require('../../domain/rules')
+const scriptsLoader = require('../../lib/scriptsLoader')
 const Utility = require('@mojaloop/central-services-shared').Util
 const Db = require('../../lib/db')
-const LOG_LOCATION = { module: 'TransferFulfilHandler', method: '', path: '' } // var object used as pointer
+const LOG_LOCATION = { module: 'RulesHandler', method: '', path: '' } // var object used as pointer
 const CONSUMER_COMMIT = true
 const FROM_SWITCH = true
 
-const RETRY_OPTIONS = {
-  retries: Config.WINDOW_AGGREGATION_RETRY_COUNT,
-  minTimeout: Config.WINDOW_AGGREGATION_RETRY_INTERVAL,
-  maxTimeout: Config.WINDOW_AGGREGATION_RETRY_INTERVAL
-}
+const SCRIPTS_FOLDER = Config.HANDLERS.SETTINGS.SCRIPTS_FOLDER
+let INJECTED_SCRIPTS = {}
 
-async function processTransferSettlement (error, messages) {
+async function processRules (error, messages) {
   if (error) {
     Logger.error(error)
     throw ErrorHandling.Factory.reformatFSPIOPError(error)
@@ -61,7 +58,7 @@ async function processTransferSettlement (error, messages) {
   Logger.info(Utility.breadcrumb(LOG_LOCATION, messages))
   let message = {}
   try {
-    Logger.info(Utility.breadcrumb(LOG_LOCATION, { method: 'processTransferSettlement' }))
+    Logger.info(Utility.breadcrumb(LOG_LOCATION, { method: 'processRules' }))
     if (Array.isArray(messages)) {
       message = messages[0]
     } else {
@@ -72,6 +69,7 @@ async function processTransferSettlement (error, messages) {
     const params = { message, kafkaTopic, decodedPayload: payload, consumer: Consumer, producer: Producer }
 
     const transferEventId = message.value.id
+    const transferEventType = message.value.metadata.event.type
     const transferEventAction = message.value.metadata.event.action
     const transferEventStateStatus = message.value.metadata.event.state.status
     const actionLetter = transferEventAction === Enum.Events.Event.Action.COMMIT
@@ -80,30 +78,33 @@ async function processTransferSettlement (error, messages) {
 
     if (!payload) {
       Logger.info(Utility.breadcrumb(LOG_LOCATION, `missingPayload--${actionLetter}1`))
-      const fspiopError = ErrorHandling.Factory.createInternalServerFSPIOPError('TransferSettlement handler missing payload')
+      const fspiopError = ErrorHandling.Factory.createInternalServerFSPIOPError('Rules handler missing payload')
       const eventDetail = { functionality: Enum.Events.Event.Type.NOTIFICATION, action: Enum.Events.Event.Action.SETTLEMENT_WINDOW }
       await Kafka.proceed(Config.KAFKA_CONFIG, params, { CONSUMER_COMMIT, fspiopError: fspiopError.toApiErrorObject(Config.ERROR_HANDLING), eventDetail, FROM_SWITCH })
       throw fspiopError
     }
     Logger.info(Utility.breadcrumb(LOG_LOCATION, 'validationPassed'))
 
-    if (transferEventAction === Enum.Events.Event.Action.COMMIT) {
-      await retry(async () => { // use bail(new Error('to break before max retries'))
-        const knex = Db.getKnex()
-        await knex.transaction(async trx => {
-          try {
-            await transferSettlementService.processMsgFulfil(transferEventId, transferEventStateStatus, trx)
-            await trx.commit
-          } catch (err) {
-            await trx.rollback
-            throw ErrorHandler.Factory.reformatFSPIOPError(err)
-          }
-        })
-        Logger.info(Utility.breadcrumb(LOG_LOCATION, `done--${actionLetter}2`))
-        return true
-      }, RETRY_OPTIONS)
-      return true
+    // execute the rule
+    Logger.info(Utility.breadcrumb(LOG_LOCATION, 'executing the scripts'))
+    const scriptResults = await scriptsLoader.executeScripts(INJECTED_SCRIPTS, transferEventType, transferEventAction, transferEventStateStatus, message.value)
+    Logger.debug(`Rules Handler - scriptResults: ${JSON.stringify(scriptResults)}`)
+
+    const ledgerEntries = scriptResults.ledgerEntries ? scriptResults.ledgerEntries : []
+    if (ledgerEntries.length > 0) {
+      const knex = Db.getKnex()
+      await knex.transaction(async trx => {
+        try {
+          await RulesService.insertLedgerEntries(ledgerEntries, transferEventId, trx)
+          await trx.commit
+        } catch (err) {
+          await trx.rollback
+          throw ErrorHandler.Factory.reformatFSPIOPError(err)
+        }
+      })
     }
+    Logger.info(Utility.breadcrumb(LOG_LOCATION, `done--${actionLetter}2`))
+    return true
   } catch (err) {
     Logger.error(`${Utility.breadcrumb(LOG_LOCATION)}::${err.message}--0`, err)
     return true
@@ -111,22 +112,26 @@ async function processTransferSettlement (error, messages) {
 }
 
 /**
- * @function registerTransferFulfillHandler
+ * @function registerRules
  *
  * @async
- * @description Registers TransferFulfillHandler for processing fulfilled transfers. Gets Kafka config from default.json
+ * @description Registers RulesHandler for processing settlement rules. Gets Kafka config from default.json
  * Calls createHandler to register the handler against the Stream Processing API
  * @returns {boolean} - Returns a boolean: true if successful, or throws and error if failed
  */
-async function registerTransferSettlement () {
+async function registerRules () {
   try {
-    const transferFulfillHandler = {
-      command: processTransferSettlement,
+    if (SCRIPTS_FOLDER == null) {
+      throw new Error('No SCRIPTS_FOLDER configured for running the rules handler')
+    }
+    INJECTED_SCRIPTS = scriptsLoader.loadScripts(SCRIPTS_FOLDER)
+    const registerRulesHandler = {
+      command: processRules,
       topicName: Kafka.transformGeneralTopicName(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, Enum.Events.Event.Type.NOTIFICATION, Enum.Events.Event.Action.EVENT),
       config: Kafka.getKafkaConfig(Config.KAFKA_CONFIG, Enum.Kafka.Config.CONSUMER, Enum.Events.Event.Type.NOTIFICATION.toUpperCase(), Enum.Events.Event.Action.EVENT.toUpperCase())
     }
-    transferFulfillHandler.config.rdkafkaConf['client.id'] = transferFulfillHandler.topicName
-    await Consumer.createHandler(transferFulfillHandler.topicName, transferFulfillHandler.config, transferFulfillHandler.command)
+    registerRulesHandler.config.rdkafkaConf['client.id'] = registerRulesHandler.topicName
+    await Consumer.createHandler(registerRulesHandler.topicName, registerRulesHandler.config, registerRulesHandler.command)
     return true
   } catch (err) {
     Logger.error(err)
@@ -144,7 +149,7 @@ async function registerTransferSettlement () {
  */
 async function registerAllHandlers () {
   try {
-    await registerTransferSettlement()
+    await registerRules()
     return true
   } catch (err) {
     throw ErrorHandling.Factory.reformatFSPIOPError(err)
@@ -152,7 +157,7 @@ async function registerAllHandlers () {
 }
 
 module.exports = {
-  processTransferSettlement,
+  processRules,
   registerAllHandlers,
-  registerTransferSettlement
+  registerRules
 }

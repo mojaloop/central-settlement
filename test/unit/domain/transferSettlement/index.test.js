@@ -92,34 +92,5 @@ Test('TransferSettlementService', async (transferSettlementServiceTest) => {
     await processFulfilTest.end()
   })
 
-  await transferSettlementServiceTest.test('insertLedgerEntries should', async ledgerEntriesTest => {
-    const ledgerEntries = []
-
-    await ledgerEntriesTest.test('insert ledger entries', async test => {
-      try {
-        TransferFulfilModel.insertLedgerEntries = sandbox.stub().returns()
-        await TransferFulfilService.insertLedgerEntries(ledgerEntries, transferEventId)
-        test.ok(TransferFulfilModel.insertLedgerEntries.withArgs(ledgerEntries, transferEventId).calledOnce, 'TransferFulfilModel.insertLedgerEntries with args ... called once')
-        test.end()
-      } catch (err) {
-        test.fail()
-        test.end()
-      }
-    })
-
-    await ledgerEntriesTest.test('throw an exception', async test => {
-      try {
-        TransferFulfilModel.insertLedgerEntries = sandbox.stub().throws(new Error('Error occurred'))
-        await TransferFulfilService.insertLedgerEntries(ledgerEntries, transferEventId)
-        test.fail()
-        test.end()
-      } catch (err) {
-        Logger.error(`insertLedgerEntries failed with error - ${err}`)
-        test.pass()
-        test.end()
-      }
-    })
-    await ledgerEntriesTest.end()
-  })
   await transferSettlementServiceTest.end()
 })
