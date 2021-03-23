@@ -32,8 +32,8 @@
 const ErrorHandling = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const requireGlob = require('require-glob')
-const SettlementWindowHandlers = require('./settlementWindow/handler')
-const TransferSettlementHandler = require('./transferSettlement/handler')
+const DeferredSettlementHandler = require('./deferredSettlement/handler')
+const GrossSettlementHandler = require('./grossSettlement/handler')
 const RulesHandler = require('./rules/handler')
 
 /**
@@ -76,12 +76,12 @@ const registerAllHandlers = async () => {
 module.exports = {
   registerAllHandlers,
   settlementWindow: {
-    registerAllHandlers: SettlementWindowHandlers.registerAllHandlers,
-    registerSettlementWindowHandler: SettlementWindowHandlers.registerSettlementWindowHandler
+    registerAllHandlers: DeferredSettlementHandler.registerAllHandlers,
+    registerSettlementWindowHandler: DeferredSettlementHandler.registerSettlementWindowHandler
   },
   transfersettlement: {
-    registerAllHandlers: TransferSettlementHandler.registerAllHandlers,
-    registerTransferSettlementHandler: TransferSettlementHandler.registerTransferSettlement,
+    registerAllHandlers: GrossSettlementHandler.registerAllHandlers,
+    registerTransferSettlementHandler: GrossSettlementHandler.registerTransferSettlement,
     registerRulesHandler: RulesHandler.registerRules
   },
   rules: {

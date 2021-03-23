@@ -39,7 +39,7 @@ const Config = require('../lib/config')
 const Setup = require('../shared/setup')
 const PJson = require('../../package.json')
 const { Command } = require('commander')
-const Routes = require('../api/routes')
+const HandlerRoutes = require('../api/handlerRoutes')
 
 const Program = new Command()
 
@@ -86,7 +86,7 @@ Program.command('handler') // sub-command name, coffeeType = type, required
     module.exports = Setup.initialize({
       service: 'handler',
       port: Config.PORT,
-      modules: [Routes],
+      modules: [HandlerRoutes],
       handlers: handlerList,
       runHandlers: true
     })

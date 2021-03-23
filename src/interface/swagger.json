@@ -10,7 +10,7 @@
         "http",
         "https"
     ],
-    "paths": {
+    "paths": {  
         "/health": {
             "get": {
                 "produces": [

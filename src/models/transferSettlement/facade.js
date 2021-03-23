@@ -25,13 +25,17 @@ License
  - Claudio Viola <claudio.viola@modusbox.com>
  --------------
  ******/
+
 'use strict'
+
 const Db = require('../../lib/db')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const Utility = require('@mojaloop/central-services-shared').Util
 const location = { module: 'TransferFulfilHandler', method: '', path: '' }
 // const Config = require('../../lib/config')
+const SettlementEnum = require('@mojaloop/central-services-shared').Enum.Settlements
+const TransferStateEnum = require('@mojaloop/central-services-shared').Enum.Transfers.TransferState
 
 async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
   try {
@@ -73,7 +77,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
         const transferStateChangeId = await knex('transferStateChange')
           .select('transferStateChangeId')
           .where('transferId', transferId)
-          .andWhere('transferStateId', 'COMMITTED')
+          .andWhere('transferStateId', TransferStateEnum.COMMITTED)
           .transacting(trx)
         if (transferStateChangeId.length === 0 || !transferStateChangeId[0].transferStateChangeId || transferStateChangeId.length > 1) {
           throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to find transfer with COMMITTED state for transferId : ${transferId}`)
@@ -164,7 +168,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
               .where(function () {
                 this.where({ 'TP.transferId': transferId })
                 this.andWhere(function () {
-                  this.andWhere({ 'G.name': 'GROSS' })
+                  this.andWhere({ 'G.name': SettlementEnum.settlementGranularityName.GROSS })
                 })
               })
               .union(function () {
@@ -181,7 +185,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
                   .where(function () {
                     this.where({ 'TP.transferId': transferId })
                     this.andWhere(function () {
-                      this.andWhere({ 'G.name': 'GROSS' })
+                      this.andWhere({ 'G.name': SettlementEnum.settlementGranularityName.GROSS })
                     })
                   })
               })
@@ -192,7 +196,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
         const transferStateChange = [
           {
             transferId: transferId,
-            transferStateId: 'SETTLED',
+            transferStateId: TransferStateEnum.SETTLED,
             reason: 'Gross settlement process'
           }
         ]
@@ -212,7 +216,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
               .where(function () {
                 this.where({ 'TP.transferId': transferId })
                 this.andWhere(function () {
-                  this.andWhere({ 'G.name': 'GROSS' })
+                  this.andWhere({ 'G.name': SettlementEnum.settlementGranularityName.GROSS })
                 })
               })
               .union(function () {
@@ -229,7 +233,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
                   .where(function () {
                     this.where({ 'TP.transferId': transferId })
                     this.andWhere(function () {
-                      this.andWhere({ 'G.name': 'GROSS' })
+                      this.andWhere({ 'G.name': SettlementEnum.settlementGranularityName.GROSS })
                     })
                   })
               })
@@ -250,7 +254,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
                   .where(function () {
                     this.where({ 'TP.transferId': transferId })
                     this.andWhere(function () {
-                      this.andWhere({ 'G.name': 'GROSS' })
+                      this.andWhere({ 'G.name': SettlementEnum.settlementGranularityName.GROSS })
                     })
                   })
                   .union(function () {
@@ -267,7 +271,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
                       .where(function () {
                         this.where({ 'TP.transferId': transferId })
                         this.andWhere(function () {
-                          this.andWhere({ 'G.name': 'GROSS' })
+                          this.andWhere({ 'G.name': SettlementEnum.settlementGranularityName.GROSS })
                         })
                       })
                   })
@@ -275,7 +279,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
             this.joinRaw('AS TR ON PP.participantCurrencyId = TR.ParticipantCurrencyId')
               .innerJoin('transferStateChange AS TSC', function () {
                 this.on('TSC.transferID', knex.raw('?', [transferId]))
-                  .andOn('TSC.transferStateId', '=', knex.raw('?', ['SETTLED']))
+                  .andOn('TSC.transferStateId', '=', knex.raw('?', [TransferStateEnum.SETTLED]))
               })
           })
           .transacting(trx)
