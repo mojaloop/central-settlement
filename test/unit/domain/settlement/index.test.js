@@ -217,6 +217,31 @@ Test('SettlementService', async (settlementServiceTest) => {
     }
   })
 
+  await settlementServiceTest.test('abortById should', async abortByIdTest => {
+    try {
+      let enums = {}
+
+      const settlementMock = {
+        settlementId: 1,
+        state: 'ABORTED'
+      }
+
+      enums = {
+        settlementStates: { PS_TRANSFERS_COMMITTED: 'PS_TRANSFERS_COMMITTED' }
+      }
+
+      SettlementModel.getById = sandbox.stub().returns(settlementMock)
+      SettlementModel.abortByIdStateAborted = sandbox.stub().returns(true)
+      await SettlementService.abortById(settlementMock.settlementId, {}, enums)
+      abortByIdTest.pass()
+      abortByIdTest.end()
+    } catch (err) {
+      Logger.error(`settlementServiceTest failed with error - ${err}`)
+      abortByIdTest.fail()
+      abortByIdTest.end()
+    }
+  })
+
   await settlementServiceTest.test('getSettlementsByParams should', async getSettlementsByParamsTest => {
     try {
       const params = {

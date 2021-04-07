@@ -240,15 +240,15 @@ is_ml_api_adapter_up() {
 
 # Script execution
 
->&1 echo "Building Docker Image $DOCKER_IMAGE:$DOCKER_TAG with $DOCKER_FILE"
-docker build --cache-from $DOCKER_IMAGE:$DOCKER_TAG -t $DOCKER_IMAGE:$DOCKER_TAG -f $DOCKER_FILE .
+# >&1 echo "Building Docker Image $DOCKER_IMAGE:$DOCKER_TAG with $DOCKER_FILE"
+# docker build --cache-from $DOCKER_IMAGE:$DOCKER_TAG -t $DOCKER_IMAGE:$DOCKER_TAG -f $DOCKER_FILE .
 
-if [ "$?" != 0 ]
-then
-  >&2 echo "Build failed...exiting"
-  clean_docker
-  exit 1
-fi
+# if [ "$?" != 0 ]
+# then
+#   >&2 echo "Build failed...exiting"
+#   clean_docker
+#   exit 1
+# fi
 
 >&1 echo "Creating test network: $DOCKER_NETWORK"
 docker network create $DOCKER_NETWORK
@@ -343,27 +343,27 @@ until is_ml_api_adapter_up; do
   sleep 5
 done
 
->&1 echo "Integration tests are starting"
-run_test_command
-test_exit_code=$?
->&2 echo "Test exited with result code.... $test_exit_code ..."
+# >&1 echo "Integration tests are starting"
+# run_test_command
+# test_exit_code=$?
+# >&2 echo "Test exited with result code.... $test_exit_code ..."
 
->&1 echo "Displaying test logs"
-docker logs $APP_HOST
+# >&1 echo "Displaying test logs"
+# docker logs $APP_HOST
 
->&1 echo "Copy results to local directory"
-docker cp $APP_HOST:$DOCKER_WORKING_DIR/$APP_DIR_TEST_RESULTS $TEST_DIR
+# >&1 echo "Copy results to local directory"
+# docker cp $APP_HOST:$DOCKER_WORKING_DIR/$APP_DIR_TEST_RESULTS $TEST_DIR
 
-if [ "$test_exit_code" = "0" ]
-then
-  >&1 echo "Showing results..."
-  cat $APP_DIR_TEST_RESULTS/$TEST_RESULTS_FILE
-else
-  >&2 echo "Integration tests failed...exiting"
-  >&2 echo "Test environment logs..."
-  docker logs $APP_HOST
-fi
+# if [ "$test_exit_code" = "0" ]
+# then
+#   >&1 echo "Showing results..."
+#   cat $APP_DIR_TEST_RESULTS/$TEST_RESULTS_FILE
+# else
+#   >&2 echo "Integration tests failed...exiting"
+#   >&2 echo "Test environment logs..."
+#   docker logs $APP_HOST
+# fi
 
-clean_docker
->&1 echo "Integration tests exited with code: $test_exit_code"
-exit "$test_exit_code"
+# clean_docker
+# >&1 echo "Integration tests exited with code: $test_exit_code"
+# exit "$test_exit_code"
