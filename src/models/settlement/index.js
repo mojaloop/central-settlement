@@ -49,5 +49,7 @@ module.exports = {
   settlementParticipantCurrency: settlementFacade.settlementParticipantCurrency,
   settlementSettlementWindow: settlementFacade.settlementSettlementWindow,
   checkParticipantAccountExists: participantCurrencyModel.checkParticipantAccountExists,
-  getAccountInSettlement: settlementParticipantCurrencyModel.getAccountInSettlement
+  getAccountInSettlement: settlementParticipantCurrencyModel.getAccountInSettlement,
+  abortByIdStateAborted: settlementFacade.abortByIdStateAborted,
+  getTransferCommitedAccount: settlementFacade.getTransferCommitedAccount
 }

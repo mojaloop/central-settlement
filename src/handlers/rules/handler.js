@@ -44,10 +44,13 @@ const scriptsLoader = require('../../lib/scriptsLoader')
 const Utility = require('@mojaloop/central-services-shared').Util
 const Db = require('../../lib/db')
 const LOG_LOCATION = { module: 'RulesHandler', method: '', path: '' } // var object used as pointer
-const CONSUMER_COMMIT = true
-const FROM_SWITCH = true
 
-const SCRIPTS_FOLDER = Config.HANDLERS.SETTINGS.SCRIPTS_FOLDER
+const {
+  CONSUMER_COMMIT,
+  FROM_SWITCH,
+  SCRIPTS_FOLDER
+} = Config.HANDLERS.SETTINGS.RULES
+
 let INJECTED_SCRIPTS = {}
 
 async function processRules (error, messages) {

@@ -730,7 +730,41 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
   return 0
 }
 
+const abortByIdStateAborted = async (settlementId, payload, enums) => {
+  const knex = await Db.getKnex()
+  // seq-settlement-6.2.6, step 5
+  const settlementStateChangeId = await knex('settlementStateChange')
+    .insert({
+      settlementId,
+      settlementStateId: enums.settlementStates.ABORTED,
+      reason: payload.reason
+    })
+  // seq-settlement-6.2.6, step 5a
+  await knex('settlement')
+    .where('settlementId', settlementId)
+    .update({ currentStateChangeId: settlementStateChangeId })
+
+  return {
+    id: settlementId,
+    state: payload.state,
+    reason: payload.reason
+  }
+}
+
+const getTransferCommitedAccount = async (settlementId, enums) => {
+  const knex = await Db.getKnex()
+  // seq-settlement-6.2.6, step 6
+  return await knex('settlementParticipantCurrency AS spc')
+    .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'spc.currentStateChangeId')
+    .where('spc.settlementId', settlementId)
+    .where('spcsc.settlementStateId', enums.settlementStates.PS_TRANSFERS_COMMITTED)
+    .first()
+}
+
 const Facade = {
+
+  abortByIdStateAborted,
+  getTransferCommitedAccount,
   getNotificationMessage,
   settlementTransfersPrepare,
   settlementTransfersReserve,
@@ -1178,47 +1212,6 @@ const Facade = {
 
   abortById: async function (settlementId, payload, enums) {
     const knex = await Db.getKnex()
-
-    // seq-settlement-6.2.6, step 3
-    const settlementData = await Facade.getById({ settlementId })
-
-    if (!settlementData) {
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement not found')
-    }
-    if (settlementData.state === enums.settlementStates.PS_TRANSFERS_COMMITTED ||
-        settlementData.state === enums.settlementStates.SETTLING ||
-        settlementData.state === enums.settlementStates.SETTLED) {
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'State change is not allowed')
-    } else if (settlementData.state === enums.settlementStates.ABORTED) {
-      // seq-settlement-6.2.6, step 5
-      const settlementStateChangeId = await knex('settlementStateChange')
-        .insert({
-          settlementId,
-          settlementStateId: enums.settlementStates.ABORTED,
-          reason: payload.reason
-        })
-        // seq-settlement-6.2.6, step 5a
-      await knex('settlement')
-        .where('settlementId', settlementId)
-        .update({ currentStateChangeId: settlementStateChangeId })
-
-      return {
-        id: settlementId,
-        state: payload.state,
-        reason: payload.reason
-      }
-    } else if (settlementData.state === enums.settlementStates.PS_TRANSFERS_RESERVED) {
-      // seq-settlement-6.2.6, step 6
-      const transferCommittedAccount = await knex('settlementParticipantCurrency AS spc')
-        .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'spc.currentStateChangeId')
-        .where('spc.settlementId', settlementId)
-        .where('spcsc.settlementStateId', enums.settlementStates.PS_TRANSFERS_COMMITTED)
-        .first()
-      if (transferCommittedAccount !== undefined) {
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'At least one settlement transfer is committed')
-      }
-    }
-
     return knex.transaction(async (trx) => {
       try {
         const transactionTimestamp = new Date().toISOString().replace(/[TZ]/g, ' ').trim()
@@ -1310,7 +1303,7 @@ const Facade = {
             reason: payload.reason
           })
           .transacting(trx)
-          // seq-settlement-6.2.6, step 22
+        // seq-settlement-6.2.6, step 22
         await knex('settlement')
           .where('settlementId', settlementId)
           .update({ currentStateChangeId: settlementStateChangeId })

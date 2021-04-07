@@ -171,6 +171,52 @@ Test('SettlementService', async (settlementServiceTest) => {
     }
   })
 
+  await settlementServiceTest.test('abortById should throw an error when state is PS_TRANSFERS_COMMITTED', async abortByIdTest => {
+    try {
+      let enums = {}
+
+      const settlementMock = {
+        settlementId: 1,
+        state: 'PS_TRANSFERS_COMMITTED'
+      }
+      enums = {
+        settlementStates: { PS_TRANSFERS_COMMITTED: 'PS_TRANSFERS_COMMITTED' }
+      }
+
+      SettlementModel.getById = sandbox.stub().returns(settlementMock)
+      await SettlementService.abortById(settlementMock.settlementId, {}, enums)
+      abortByIdTest.fail()
+      abortByIdTest.end()
+    } catch (err) {
+      Logger.error(`settlementServiceTest failed with error - ${err}`)
+      abortByIdTest.ok(err, 'error thrown')
+      abortByIdTest.end()
+    }
+  })
+
+  await settlementServiceTest.test('abortById should throw an error when settlementId is not found', async abortByIdTest => {
+    try {
+      let enums = {}
+
+      const settlementMock = {
+        settlementId: 1,
+        state: 'PS_TRANSFERS_COMMITTED'
+      }
+      enums = {
+        settlementStates: { PS_TRANSFERS_COMMITTED: 'PS_TRANSFERS_COMMITTED' }
+      }
+
+      SettlementModel.getById = sandbox.stub().returns({})
+      await SettlementService.abortById(settlementMock.settlementId, {}, enums)
+      abortByIdTest.fail()
+      abortByIdTest.end()
+    } catch (err) {
+      Logger.error(`settlementServiceTest failed with error - ${err}`)
+      abortByIdTest.ok(err, 'error thrown')
+      abortByIdTest.end()
+    }
+  })
+
   await settlementServiceTest.test('getSettlementsByParams should', async getSettlementsByParamsTest => {
     try {
       const params = {

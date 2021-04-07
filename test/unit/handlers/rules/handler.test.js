@@ -191,7 +191,7 @@ Test('RulesHandler', async (rulesHandlerTest) => {
 
     rulesHandlerTest.test('registerAllHandlers throws error when SCRIPTS_FOLDER config is missing', async (test) => {
       try {
-        Config.HANDLERS.SETTINGS.SCRIPTS_FOLDER = null
+        Config.HANDLERS.SETTINGS.RULES.SCRIPTS_FOLDER = null
         await Consumer.createHandler(topicName, config, command)
         Kafka.transformAccountToTopicName.returns(topicName)
         Kafka.proceed.returns(true)

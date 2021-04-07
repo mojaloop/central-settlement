@@ -121,8 +121,8 @@ const registerSettlementWindowHandler = async () => {
   try {
     const settlementWindowHandler = {
       command: closeSettlementWindow,
-      topicName: Kafka.transformGeneralTopicName(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, Enum.Events.Event.Type.SETTLEMENT_WINDOW, Enum.Events.Event.Action.CLOSE),
-      config: Kafka.getKafkaConfig(Config.KAFKA_CONFIG, Enum.Kafka.Config.CONSUMER, Enum.Events.Event.Type.SETTLEMENT_WINDOW.toUpperCase(), Enum.Events.Event.Action.CLOSE.toUpperCase())
+      topicName: Kafka.transformGeneralTopicName(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, Enum.Events.Event.Type.DEFERRED_SETTLEMENT, Enum.Events.Event.Action.CLOSE),
+      config: Kafka.getKafkaConfig(Config.KAFKA_CONFIG, Enum.Kafka.Config.CONSUMER, Enum.Events.Event.Type.DEFERRED_SETTLEMENT.toUpperCase(), Enum.Events.Event.Action.CLOSE.toUpperCase())
     }
     settlementWindowHandler.config.rdkafkaConf['client.id'] = settlementWindowHandler.topicName
     await Consumer.createHandler(settlementWindowHandler.topicName, settlementWindowHandler.config, settlementWindowHandler.command)

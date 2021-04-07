@@ -31,8 +31,8 @@ const Sinon = require('sinon')
 const Handlers = require('../../../src/handlers/register')
 const Proxyquire = require('proxyquire')
 
-const SettlementWindowHandlers = require('../../../src/handlers/settlementWindow/handler')
-const TransferFulfilHandlers = require('../../../src/handlers/transferSettlement/handler')
+const SettlementWindowHandlers = require('../../../src/handlers/deferredSettlement/handler')
+const TransferFulfilHandlers = require('../../../src/handlers/grossSettlement/handler')
 const RulesHandlers = require('../../../src/handlers/rules/handler')
 
 Test('handlers', handlersTest => {

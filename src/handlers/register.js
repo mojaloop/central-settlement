@@ -75,11 +75,11 @@ const registerAllHandlers = async () => {
 
 module.exports = {
   registerAllHandlers,
-  settlementWindow: {
+  deferredSettlement: {
     registerAllHandlers: DeferredSettlementHandler.registerAllHandlers,
     registerSettlementWindowHandler: DeferredSettlementHandler.registerSettlementWindowHandler
   },
-  transfersettlement: {
+  grossSettlement: {
     registerAllHandlers: GrossSettlementHandler.registerAllHandlers,
     registerTransferSettlementHandler: GrossSettlementHandler.registerTransferSettlement,
     registerRulesHandler: RulesHandler.registerRules

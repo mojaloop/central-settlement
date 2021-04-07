@@ -149,11 +149,11 @@ const createHandlers = async (handlers) => {
       Logger.info(`Handler Setup - Registering ${JSON.stringify(handler)}!`)
       console.log(`Handler Setup - Registering ${JSON.stringify(handler)}!`)
       switch (handler.type) {
-        case 'settlementwindow':
-          await RegisterHandlers.settlementWindow.registerSettlementWindowHandler()
+        case 'deferredSettlement':
+          await RegisterHandlers.deferredSettlement.registerSettlementWindowHandler()
           break
-        case 'transfersettlement':
-          await RegisterHandlers.transfersettlement.registerTransferSettlementHandler()
+        case 'grossSettlement':
+          await RegisterHandlers.grossSettlement.registerTransferSettlementHandler()
           break
         case 'rules':
           await RegisterHandlers.rules.registerRulesHandler()
@@ -188,7 +188,9 @@ const createHandlers = async (handlers) => {
  * @param {handler[]} handlers List of Handlers to be registered
  * @returns {object} Returns HTTP Server object
  */
-const initialize = async function ({ service, port, modules = [], runHandlers = false, handlers = [] }) {
+const initialize = async function (options = { modules: [], runHandlers: false, handlers: [] }) {
+  const { service, port, modules, runHandlers, handlers } = options
+  console.log(JSON.stringify(options))
   let server
   switch (service) {
     case 'api':
