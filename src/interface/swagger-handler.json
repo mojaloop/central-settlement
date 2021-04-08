@@ -2,8 +2,8 @@
     "swagger": "2.0",
     "info": {
         "version": "2.0",
-        "title": "MOJALOOP Central Settlements",
-        "description": "Mojaloop API for Settlements."
+        "title": "MOJALOOP Central Settlements Handlers service API",
+        "description": "API of Settlements handlers to provide health service"
     },
     "basePath": "/v2",
     "schemes": [

@@ -42,7 +42,7 @@
     }
   },
   "API_DOC_ENDPOINTS_ENABLED": true,
-  "SWITCH_ENDPOINT": "http://localhost:3001",
+  "SWITCH_ENDPOINT": "http://cs_central-ledger:3001",
   "AMOUNT": {
     "PRECISION": 18,
     "SCALE": 4
@@ -71,7 +71,7 @@
             "rdkafkaConf": {
               "client.id": "cs-con-deferredsettlement-close",
               "group.id": "cs-group-deferredsettlement-close",
-              "metadata.broker.list": "localhost:9092",
+              "metadata.broker.list": "kafka:9092",
               "socket.keepalive.enable": true
             },
             "topicConf": {
@@ -96,7 +96,7 @@
             "rdkafkaConf": {
               "client.id": "cs-con-notification-event",
               "group.id": "cs-group-notification-event",
-              "metadata.broker.list": "localhost:9092",
+              "metadata.broker.list": "kafka:9092",
               "socket.keepalive.enable": true
             },
             "topicConf": {
@@ -115,7 +115,7 @@
             },
             "rdkafkaConf": {
               "debug": "all",
-              "metadata.broker.list": "localhost:9092",
+              "metadata.broker.list": "kafka:9092",
               "client.id": "cs-prod-notification-event",
               "event_cb": true,
               "compression.codec": "none",
@@ -140,7 +140,7 @@
               "messageCharset": "utf8"
             },
             "rdkafkaConf": {
-              "metadata.broker.list": "localhost:9092",
+              "metadata.broker.list": "kafka:9092",
               "client.id": "cs-prod-deferredsettlement-close",
               "event_cb": true,
               "dr_cb": true,
