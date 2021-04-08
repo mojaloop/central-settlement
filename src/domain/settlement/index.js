@@ -119,7 +119,26 @@ module.exports = {
   },
 
   putById: SettlementModel.putById,
-  abortById: SettlementModel.abortById,
+  abortById: async function (settlementId, payload, enums) {
+    // seq-settlement-6.2.6, step 3
+    const settlementData = await SettlementModel.getById({ settlementId })
+
+    if (!settlementData) {
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement not found')
+    }
+    if (settlementData.state === enums.settlementStates.PS_TRANSFERS_COMMITTED ||
+      settlementData.state === enums.settlementStates.SETTLING ||
+      settlementData.state === enums.settlementStates.SETTLED) {
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'State change is not allowed')
+    } else if (settlementData.state === enums.settlementStates.ABORTED) {
+      return SettlementModel.abortByIdStateAborted(settlementId, payload, enums)
+    } else if (settlementData.state === enums.settlementStates.PS_TRANSFERS_RESERVED) {
+      const transferCommittedAccount = await SettlementModel.getTransferCommitedAccount(settlementId, enums)
+      if (transferCommittedAccount !== undefined) {
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'At least one settlement transfer is committed')
+      }
+    }
+  },
 
   getSettlementsByParams: async function (params, enums) {
     // 7 filters - at least one should be used

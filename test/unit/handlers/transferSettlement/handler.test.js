@@ -35,7 +35,7 @@ const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 const KafkaConsumer = require('@mojaloop/central-services-stream').Kafka.Consumer
 const Db = require('../../../../src/lib/db')
 const TransferFulfilService = require('../../../../src/domain/transferSettlement/index')
-const TransferFulfilHandler = require('../../../../src/handlers/transferSettlement/handler')
+const TransferFulfilHandler = require('../../../../src/handlers/grossSettlement/handler')
 
 const payload = {
   settlementWindowId: '3',
@@ -226,7 +226,7 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
       Kafka.proceed.returns(true)
       sandbox.stub(TransferFulfilService, 'processMsgFulfil').throws(new Error('Error occurred'))
       const retryStub = sandbox.stub().callsArg(0)
-      const TransferFulfilHandlerProxy = Proxyquire('../../../../src/handlers/transferSettlement/handler', {
+      const TransferFulfilHandlerProxy = Proxyquire('../../../../src/handlers/grossSettlement/handler', {
         'async-retry': retryStub
       })
       const result = await TransferFulfilHandlerProxy.processTransferSettlement(null, localMessages[0])

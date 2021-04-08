@@ -29,8 +29,9 @@ const Transaction = require('../domain/transactions/index')
 const BigNumber = require('bignumber.js')
 const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Config = require('../../src/lib/config')
 
-const SCRIPT_TIMEOUT = 100
+const { SCRIPT_TIMEOUT } = Config.HANDLERS.SETTINGS.RULES
 
 async function getTransferFromCentralLedger (transferId) {
   const entity = await Transaction.getById(transferId)

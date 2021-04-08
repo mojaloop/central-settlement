@@ -33,7 +33,12 @@
       "DISABLED": false
     },
     "SETTINGS": {
-      "SCRIPTS_FOLDER": "./scripts/transferSettlementTemp"
+      "RULES": {
+        "SCRIPTS_FOLDER": "./scripts/transferSettlementTemp",
+        "SCRIPT_TIMEOUT": 100,
+        "CONSUMER_COMMIT": true,
+        "FROM_SWITCH": true
+      }
     }
   },
   "API_DOC_ENDPOINTS_ENABLED": true,
@@ -50,7 +55,7 @@
       }
     },
     "CONSUMER": {
-      "SETTLEMENTWINDOW": {
+      "DEFERREDSETTLEMENT": {
         "CLOSE": {
           "config": {
             "options": {
@@ -64,8 +69,8 @@
               "consumeTimeout": 1000
             },
             "rdkafkaConf": {
-              "client.id": "cs-con-setlementwindow-close",
-              "group.id": "cs-group-setlementwindow-close",
+              "client.id": "cs-con-deferredsettlement-close",
+              "group.id": "cs-group-deferredsettlement-close",
               "metadata.broker.list": "localhost:9092",
               "socket.keepalive.enable": true
             },
@@ -128,7 +133,7 @@
           }
         }
       },
-      "SETTLEMENTWINDOW": {
+      "DEFERREDSETTLEMENT": {
         "CLOSE": {
           "config": {
             "options": {
@@ -136,7 +141,7 @@
             },
             "rdkafkaConf": {
               "metadata.broker.list": "localhost:9092",
-              "client.id": "cs-prod-setlementwindow-close",
+              "client.id": "cs-prod-deferredsettlement-close",
               "event_cb": true,
               "dr_cb": true,
               "socket.keepalive.enable": true,

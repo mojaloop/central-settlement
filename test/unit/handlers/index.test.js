@@ -30,7 +30,7 @@ const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Config = require('../../../src/lib/config')
 const Proxyquire = require('proxyquire')
-const Routes = require('../../../src/api/routes')
+const Routes = require('../../../src/api/handlerRoutes')
 
 Test('cli', async (cliTest) => {
   cliTest.test('Commander should', async (commanderTest) => {
@@ -58,17 +58,17 @@ Test('cli', async (cliTest) => {
         'node',
         'index.js',
         'handler',
-        '--settlementwindow',
-        '--transfersettlement',
+        '--grossSettlement',
+        '--deferredSettlement',
         '--rules'
       ]
       process.argv = argv
-      const settlementwindowHandler = {
-        type: 'settlementwindow',
+      const deferredSettlementHandler = {
+        type: 'deferredSettlement',
         enabled: true
       }
-      const transfersettlement = {
-        type: 'transfersettlement',
+      const grossSettlementHandler = {
+        type: 'grossSettlement',
         enabled: true
       }
       const rules = {
@@ -76,8 +76,8 @@ Test('cli', async (cliTest) => {
         enabled: true
       }
       const handlerList = [
-        settlementwindowHandler,
-        transfersettlement,
+        deferredSettlementHandler,
+        grossSettlementHandler,
         rules
       ]
       const initOptions = {

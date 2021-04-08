@@ -23,33 +23,18 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * ModusBox
- - Deon Botha <deon.botha@modusbox.com>
  - Georgi Georgiev <georgi.georgiev@modusbox.com>
- - Miguel de Barros <miguel.debarros@modusbox.com>
- - Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- - Valentin Genev <valentin.genev@modusbox.com>
  --------------
  ******/
 'use strict'
 
-const settlementFacade = require('./facade')
-const settlementModel = require('./settlement')
-const settlementTransferParticipantModel = require('./settlementTransferParticipant')
-const participantCurrencyModel = require('./participantCurrency')
-const settlementParticipantCurrencyModel = require('./settlementParticipantCurrency')
+const HapiOpenAPI = require('hapi-openapi')
+const Path = require('path')
 
 module.exports = {
-  create: settlementModel.create,
-  triggerSettlementEvent: settlementFacade.triggerSettlementEvent,
-  getByParams: settlementFacade.getByParams,
-  getById: settlementFacade.getById,
-  putById: settlementFacade.putById,
-  abortById: settlementFacade.abortById,
-  getSettlementTransferParticipantBySettlementId: settlementTransferParticipantModel.getBySettlementId,
-  settlementParticipantCurrency: settlementFacade.settlementParticipantCurrency,
-  settlementSettlementWindow: settlementFacade.settlementSettlementWindow,
-  checkParticipantAccountExists: participantCurrencyModel.checkParticipantAccountExists,
-  getAccountInSettlement: settlementParticipantCurrencyModel.getAccountInSettlement,
-  abortByIdStateAborted: settlementFacade.abortByIdStateAborted,
-  getTransferCommitedAccount: settlementFacade.getTransferCommitedAccount
+  plugin: HapiOpenAPI,
+  options: {
+    api: Path.resolve(__dirname, '../interface/swagger-handler.json'),
+    handlers: Path.resolve(__dirname, './handlers')
+  }
 }

@@ -3695,10 +3695,10 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           const knexStub = sandbox.stub()
           const trxStub = sandbox.stub()
           trxStub.commit = sandbox.stub()
-          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
 
           Db.getKnex.returns(knexStub)
           knexStub.returns({
+            transaction: sandbox.stub().callsArgWith(0, trxStub),
             join: sandbox.stub().returns({
               select: sandbox.stub().returns({
                 where: sandbox.stub().returns({
@@ -3737,14 +3737,15 @@ Test('Settlement facade', async (settlementFacadeTest) => {
       await abortByIdTest.test('throw error if settlement not found', async test => {
         try {
           const settlementId = 1
-          const settlementResultStub = null
-
           sandbox.stub(Db, 'getKnex')
           const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub().returns(Promise.resolve({}))
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
 
           Db.getKnex.returns(knexStub)
           sandbox.stub(SettlementFacade, 'getById')
-          SettlementFacade.getById.returns(settlementResultStub)
+          SettlementFacade.getById.returns()
 
           await SettlementFacade.abortById({ settlementId }, {}, enums)
           test.fail('Error not thrown!')
@@ -3760,9 +3761,11 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         try {
           const settlementId = 1
           const settlementResultStub = { id: 1, state: 'PS_TRANSFERS_COMMITTED' }
-
           sandbox.stub(Db, 'getKnex')
           const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub().returns(Promise.resolve({}))
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
 
           Db.getKnex.returns(knexStub)
           sandbox.stub(SettlementFacade, 'getById')
@@ -3785,6 +3788,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           sandbox.stub(Db, 'getKnex')
           const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub().returns(Promise.resolve({}))
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
 
           Db.getKnex.returns(knexStub)
           sandbox.stub(SettlementFacade, 'getById')
@@ -3807,6 +3813,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           sandbox.stub(Db, 'getKnex')
           const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub().returns(Promise.resolve({}))
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
 
           Db.getKnex.returns(knexStub)
           sandbox.stub(SettlementFacade, 'getById')
@@ -3838,15 +3847,45 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           sandbox.stub(Db, 'getKnex')
           const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub().returns(Promise.resolve({}))
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          sandbox.stub(SettlementFacade, 'settlementTransfersAbort')
 
           Db.getKnex.returns(knexStub)
           sandbox.stub(SettlementFacade, 'getById')
           SettlementFacade.getById.returns(settlementResultStub)
 
           knexStub.returns({
-            insert: sandbox.stub(),
+            leftJoin: sandbox.stub().returns({
+              join: sandbox.stub().returns({
+                select: sandbox.stub().returns({
+                  where: sandbox.stub().returns({
+                    transacting: sandbox.stub().returns({
+                      forUpdate: sandbox.stub().returns(Promise.resolve([]))
+                    })
+                  })
+                })
+              })
+            }),
+            join: sandbox.stub().returns({
+              join: sandbox.stub().returns({
+                select: sandbox.stub().returns({
+                  where: sandbox.stub().returns({
+                    transacting: sandbox.stub().returns({
+                      forUpdate: sandbox.stub().returns(Promise.resolve([]))
+                    })
+                  })
+                })
+              })
+            }),
+            insert: sandbox.stub().returns({
+              transacting: sandbox.stub().returns({})
+            }),
             where: sandbox.stub().returns({
-              update: sandbox.stub()
+              update: sandbox.stub().returns({
+                transacting: sandbox.stub().returns({})
+              })
             })
           })
 
@@ -3871,6 +3910,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           sandbox.stub(Db, 'getKnex')
           const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub().returns(Promise.resolve({}))
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
 
           Db.getKnex.returns(knexStub)
           sandbox.stub(SettlementFacade, 'getById')
@@ -3926,6 +3968,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           sandbox.stub(Db, 'getKnex')
           const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub().returns(Promise.resolve({}))
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
 
           Db.getKnex.returns(knexStub)
           sandbox.stub(SettlementFacade, 'getById')
@@ -3968,10 +4013,6 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             })
           })
-
-          const trxStub = sandbox.stub()
-          trxStub.commit = sandbox.stub()
-          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
           sandbox.stub(SettlementFacade, 'settlementTransfersAbort')
 
           const result = await SettlementFacade.abortById(settlementId, payload, enums)
@@ -4009,6 +4050,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           sandbox.stub(Db, 'getKnex')
           const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub().returns(Promise.resolve({}))
+          trxStub.commit = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
 
           Db.getKnex.returns(knexStub)
           sandbox.stub(SettlementFacade, 'getById')
@@ -4052,8 +4096,6 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             })
           })
 
-          const trxStub = sandbox.stub()
-          trxStub.commit = sandbox.stub()
           trxStub.rollback = sandbox.stub()
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
           sandbox.stub(SettlementFacade, 'settlementTransfersAbort')

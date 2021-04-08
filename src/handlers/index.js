@@ -39,7 +39,7 @@ const Config = require('../lib/config')
 const Setup = require('../shared/setup')
 const PJson = require('../../package.json')
 const { Command } = require('commander')
-const Routes = require('../api/routes')
+const HandlerRoutes = require('../api/handlerRoutes')
 
 const Program = new Command()
 
@@ -50,25 +50,25 @@ Program
 Program.command('handler') // sub-command name, coffeeType = type, required
   .alias('h') // alternative sub-command is `h`
   .description('Start a specified Handler') // command description
-  .option('--settlementwindow', 'Start the Settlement Window Handler')
-  .option('--transfersettlement', 'Start the Transfer Settlement Handler')
+  .option('--deferredSettlement', 'Start the Deffered Settlement Handler')
+  .option('--grossSettlement', 'Start the Gross Settlement Handler')
   .option('--rules', 'Start the Rules Handler')
   // function to execute when command is used
   .action(async (args) => {
     const handlerList = []
-    if (args.settlementwindow === true) {
-      Logger.debug('CLI: Executing --settlementwindow')
+    if (args.deferredSettlement === true) {
+      Logger.debug('CLI: Executing --deferredSettlement')
       const handler = {
-        type: 'settlementwindow',
+        type: 'deferredSettlement',
         enabled: true
       }
       handlerList.push(handler)
     }
 
-    if (args.transfersettlement === true) {
-      Logger.debug('CLI: Executing --transfersettlement')
+    if (args.grossSettlement === true) {
+      Logger.debug('CLI: Executing --grossSettlement')
       const handler = {
-        type: 'transfersettlement',
+        type: 'grossSettlement',
         enabled: true
       }
       handlerList.push(handler)
@@ -86,7 +86,7 @@ Program.command('handler') // sub-command name, coffeeType = type, required
     module.exports = Setup.initialize({
       service: 'handler',
       port: Config.PORT,
-      modules: [Routes],
+      modules: [HandlerRoutes],
       handlers: handlerList,
       runHandlers: true
     })

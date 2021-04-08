@@ -52,10 +52,10 @@ Test('Server Setup', async setupTest => {
 
       RegisterHandlersStub = {
         registerAllHandlers: sandbox.stub().returns(Promise.resolve()),
-        settlementWindow: {
+        deferredSettlement: {
           registerSettlementWindowHandler: sandbox.stub().returns(Promise.resolve())
         },
-        transfersettlement: {
+        grossSettlement: {
           registerTransferSettlementHandler: sandbox.stub().returns(Promise.resolve())
         },
         rules: {
@@ -239,16 +239,16 @@ Test('Server Setup', async setupTest => {
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
             '../handlers/register': RegisterHandlersStub,
             '@hapi/catbox-memory': EngineStub,
-            '@hapi/hapi': HapiStubThrowError,
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
             '../models/lib/enums': EnumsStub,
-            '../lib/config': ConfigStub
+            '../lib/config': ConfigStub,
+            '@hapi/hapi': HapiStubThrowError
           })
 
           const settlementwindowHandler = {
-            type: 'settlementwindow',
+            type: 'deferredSettlement',
             enabled: true
           }
           const fakeHandler = {
@@ -264,7 +264,7 @@ Test('Server Setup', async setupTest => {
           const port = await getPort()
           const server = await SetupProxy1.initialize({ service: 'handler', port, modules: [], runHandlers: true, handlers: modulesList })
           test.ok(server, 'return server object')
-          test.ok(RegisterHandlersStub.settlementWindow.registerSettlementWindowHandler.called)
+          test.ok(RegisterHandlersStub.deferredSettlement.registerSettlementWindowHandler.called)
           test.end()
         } catch (err) {
           Logger.error(`init failed with error - ${err}`)
@@ -296,7 +296,7 @@ Test('Server Setup', async setupTest => {
           })
 
           const transferSettlementHandler = {
-            type: 'transfersettlement',
+            type: 'grossSettlement',
             enabled: true
           }
 
@@ -307,7 +307,7 @@ Test('Server Setup', async setupTest => {
           const port = await getPort()
           const server = await SetupProxy1.initialize({ service: 'handler', port, modules: [], runHandlers: true, handlers: modulesList })
           test.ok(server, 'return server object')
-          test.ok(RegisterHandlersStub.transfersettlement.registerTransferSettlementHandler.called)
+          test.ok(RegisterHandlersStub.grossSettlement.registerTransferSettlementHandler.called)
           test.end()
         } catch (err) {
           Logger.error(`init failed with error - ${err}`)

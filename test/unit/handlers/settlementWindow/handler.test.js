@@ -34,7 +34,7 @@ const KafkaConsumer = require('@mojaloop/central-services-stream').Kafka.Consume
 const Uuid = require('uuid4')
 const Enum = require('@mojaloop/central-services-shared').Enum
 const SettlementWindowService = require('../../../../src/domain/settlementWindow/index')
-const SettlementWindowHandler = require('../../../../src/handlers/settlementWindow/handler')
+const SettlementWindowHandler = require('../../../../src/handlers/deferredSettlement/handler')
 const Proxyquire = require('proxyquire')
 
 const payload = {
@@ -247,7 +247,7 @@ Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
       SettlementWindowService.close.returns(Promise.resolve(openSettlementWindow))
 
       const retryStub = sandbox.stub().callsArg(0)
-      const SettlementWindowHandlerProxy = Proxyquire('../../../../src/handlers/settlementWindow/handler', {
+      const SettlementWindowHandlerProxy = Proxyquire('../../../../src/handlers/deferredSettlement/handler', {
         'async-retry': retryStub
       })
 
@@ -266,7 +266,7 @@ Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
       SettlementWindowService.close.returns(Promise.resolve(openSettlementWindow))
 
       const retryStub = sandbox.stub().callsArg(0)
-      const SettlementWindowHandlerProxy = Proxyquire('../../../../src/handlers/settlementWindow/handler', {
+      const SettlementWindowHandlerProxy = Proxyquire('../../../../src/handlers/deferredSettlement/handler', {
         'async-retry': retryStub
       })
 

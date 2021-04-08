@@ -624,8 +624,8 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       // test.pass('database connection closed')
       await Producer.getProducer('topic-notification-event').disconnect()
       test.pass('producer to topic-notification-event disconnected')
-      await StreamProducer.getProducer('topic-settlementwindow-close').disconnect()
-      test.pass('producer to topic-settlementwindow-close disconnected')
+      await StreamProducer.getProducer('topic-deferredsettlement-close').disconnect()
+      test.pass('producer to topic-deferredsettlement-close disconnected')
       test.end()
     } catch (err) {
       Logger.error(`settlementTransferTest failed with error - ${err}`)
