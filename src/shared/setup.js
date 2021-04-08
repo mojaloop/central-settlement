@@ -147,7 +147,6 @@ const createHandlers = async (handlers) => {
     let error
     if (handler.enabled) {
       Logger.info(`Handler Setup - Registering ${JSON.stringify(handler)}!`)
-      console.log(`Handler Setup - Registering ${JSON.stringify(handler)}!`)
       switch (handler.type) {
         case 'deferredSettlement':
           await RegisterHandlers.deferredSettlement.registerSettlementWindowHandler()
@@ -190,7 +189,6 @@ const createHandlers = async (handlers) => {
  */
 const initialize = async function (options = { modules: [], runHandlers: false, handlers: [] }) {
   const { service, port, modules, runHandlers, handlers } = options
-  console.log(JSON.stringify(options))
   let server
   switch (service) {
     case 'api':
