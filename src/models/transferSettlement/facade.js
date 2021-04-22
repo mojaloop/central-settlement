@@ -307,7 +307,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
 async function getSettlementModelByTransferId (transferId, settlementGranularityName) {
   Logger.info(Utility.breadcrumb(location, { method: 'getSettlementModelByTransferId' }))
   const knex = await Db.getKnex()
-  return knex('settlementModel')
+  const settlementModelByTransferId = await knex('settlementModel')
     .join('participantCurrency AS pc', function () {
       this.on('pc.currencyId', 'settlementModel.currencyId')
         .andOn('pc.ledgerAccountTypeId', 'settlementModel.ledgerAccountTypeId')
@@ -318,7 +318,14 @@ async function getSettlementModelByTransferId (transferId, settlementGranularity
     .where('g.name', settlementGranularityName)
     .where('settlementModel.isActive', 1)
     .select('settlementModel.*')
+  if (settlementModelByTransferId.length === 0) {
+    const allSettlementModels = await Db.from('settlementModel').find()
+    const defaultGrossSettlementModel = allSettlementModels.filter(sm => (sm.currencyId === null && sm.settlementGranularityId === SettlementEnum.SettlementGranularity.GROSS))
+    return defaultGrossSettlementModel
+  }
+  return settlementModelByTransferId
 }
+
 const Facade = {
   insertLedgerEntry,
   insertLedgerEntries,
