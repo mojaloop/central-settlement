@@ -74,6 +74,10 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
 
   transferSettlementTest.beforeEach(t => {
     sandbox = Sinon.createSandbox()
+    Db.settlementModel = {
+      find: sandbox.stub()
+    }
+
     Db.from = (table) => {
       return Db[table]
     }
@@ -641,7 +645,7 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
               where: sandbox.stub().returns({
                 where: sandbox.stub().returns({
                   where: sandbox.stub().returns({
-                    select: sandbox.stub().returns(null)
+                    select: sandbox.stub().returns([])
                   })
                 })
               })
@@ -649,9 +653,9 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
           })
         })
       })
-      Db.from('settlementModel').find()
+      Db.settlementModel.find.returns([settlementModelResult])
       const result = await Model.getSettlementModelByTransferId(transferId, settlementGranularityName)
-      test.deepEqual(result, settlementModelResult, 'results match')
+      test.deepEqual(result, [settlementModelResult], 'results match')
       test.end()
     } catch (err) {
       Logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
