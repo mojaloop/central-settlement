@@ -4312,9 +4312,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                       where: sandbox.stub().returns({
                         where: sandbox.stub().returns({
                           whereIn: sandbox.stub().returns({
-                            whereIn: sandbox.stub().returns({
-                              distinct: sandbox.stub().returns(stubData.triggerSettlementEvent.swcIdList)
-                            })
+                            whereIn: sandbox.stub().returns(stubData.triggerSettlementEvent.swcIdList)
                           })
                         })
                       })

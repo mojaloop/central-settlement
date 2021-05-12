@@ -36,6 +36,7 @@ const Config = require('../../lib/config')
 const ParticipantFacade = require('@mojaloop/central-ledger/src/models/participant/facade')
 const Enums = require('../lib/enums')
 const Utility = require('../../lib/utility')
+const SettlementModelModel = require('./settlementModel')
 
 const groupByWindowsWithContent = (records) => {
   const settlementWindowsAssoc = {}
@@ -1392,7 +1393,7 @@ const Facade = {
         await knex.batchInsert('settlementSettlementWindow', settlementSettlementWindowList).transacting(trx)
 
         // retrieve affected settlementWindowContent
-        const swcIdList = await knex('settlementWindow AS sw').transacting(trx)
+        let swcList = await knex('settlementWindow AS sw').transacting(trx)
           .join('settlementWindowStateChange AS swsc', 'swsc.settlementWindowStateChangeId', 'sw.currentStateChangeId')
           .join('settlementWindowContent AS swc', 'swc.settlementWindowId', 'sw.settlementWindowId')
           .join('settlementWindowContentStateChange AS swcsc', 'swcsc.settlementWindowContentStateChangeId', 'swc.currentStateChangeId')
@@ -1401,8 +1402,14 @@ const Facade = {
           .where('swc.currencyId', knex.raw('COALESCE(?, swc.currencyId)', settlementModel.currencyId))
           .whereIn('swsc.settlementWindowStateId', [enums.settlementWindowStates.CLOSED, enums.settlementWindowStates.ABORTED, enums.settlementWindowStates.PENDING_SETTLEMENT])
           .whereIn('swcsc.settlementWindowStateId', [enums.settlementWindowStates.CLOSED, enums.settlementWindowStates.ABORTED])
-          .distinct('swc.settlementWindowContentId')
-        const swcIdArray = swcIdList.map(record => record.settlementWindowContentId)
+
+        if (settlementModel.currencyId === null) { // Default settlement model
+          const allSettlementModels = await SettlementModelModel.getAll()
+          const settlementModelCurrenciesList = allSettlementModels.filter(record => record.currencyId !== null).map(record => record.currencyId)
+          swcList = swcList.filter(swc => !settlementModelCurrenciesList.includes(swc.currencyId))
+        }
+
+        const swcIdArray = swcList.map(record => record.settlementWindowContentId)
 
         // bind requested settlementWindowContent and settlementContentAggregation records
         await knex('settlementWindowContent').transacting(trx)
