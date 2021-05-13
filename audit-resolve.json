@@ -131,8 +131,8 @@
     },
     "1500|@mojaloop/central-services-shared>widdershins>yargs>yargs-parser": {
       "decision": "ignore",
-      "madeAt": 1619463766888,
-      "expiresAt": 1620068553204
+      "madeAt": 1620906918112,
+      "expiresAt": 1621511647048
     },
     "1523|@mojaloop/central-ledger>@mojaloop/central-services-database>lodash": {
       "decision": "ignore",
@@ -327,8 +327,8 @@
     },
     "1500|@mojaloop/central-services-health>@mojaloop/central-services-shared>widdershins>yargs>yargs-parser": {
       "decision": "ignore",
-      "madeAt": 1619463766888,
-      "expiresAt": 1620068553204
+      "madeAt": 1620906918111,
+      "expiresAt": 1621511647048
     },
     "1594|@mojaloop/central-ledger>@mojaloop/central-services-health>@mojaloop/central-services-shared>axios": {
       "decision": "ignore",
@@ -342,18 +342,188 @@
     },
     "1500|@mojaloop/central-ledger>@mojaloop/central-services-health>@mojaloop/central-services-shared>widdershins>yargs>yargs-parser": {
       "decision": "ignore",
-      "madeAt": 1619463766888,
-      "expiresAt": 1620068553204
+      "madeAt": 1620906918111,
+      "expiresAt": 1621511647048
     },
     "1500|@mojaloop/central-ledger>@mojaloop/central-services-shared>widdershins>yargs>yargs-parser": {
       "decision": "ignore",
-      "madeAt": 1619463766888,
-      "expiresAt": 1620068553204
+      "madeAt": 1620906918111,
+      "expiresAt": 1621511647048
     },
     "1649|@mojaloop/central-ledger>@mojaloop/central-object-store>mongoose>mquery": {
       "decision": "ignore",
-      "madeAt": 1619463771475,
-      "expiresAt": 1620068553204
+      "madeAt": 1620906920319,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-services-database>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906885553,
+      "expiresAt": 1623498847049
+    },
+    "1673|@mojaloop/central-ledger>@mojaloop/central-services-database>knex>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906897973,
+      "expiresAt": 1623498847049
+    },
+    "1673|@mojaloop/central-services-database>knex>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906897973,
+      "expiresAt": 1623498847049
+    },
+    "1677|@mojaloop/central-ledger>npm-run-all>read-pkg>normalize-package-data>hosted-git-info": {
+      "decision": "ignore",
+      "madeAt": 1620906905129,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-ledger>@mojaloop/central-services-database>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-ledger>@mojaloop/central-services-error-handling>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-ledger>@mojaloop/central-services-shared>@mojaloop/central-services-error-handling>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-ledger>@mojaloop/central-services-shared>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-ledger>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-ledger>@mojaloop/central-services-health>@mojaloop/central-services-error-handling>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-services-health>@mojaloop/central-services-error-handling>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-ledger>@mojaloop/central-services-health>@mojaloop/central-services-shared>@mojaloop/central-services-error-handling>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-services-health>@mojaloop/central-services-shared>@mojaloop/central-services-error-handling>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-ledger>@mojaloop/central-services-health>@mojaloop/central-services-shared>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-services-health>@mojaloop/central-services-shared>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-ledger>@mojaloop/central-services-health>@mojaloop/central-services-shared>@mojaloop/event-sdk>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-services-health>@mojaloop/central-services-shared>@mojaloop/event-sdk>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-ledger>@mojaloop/central-services-shared>@mojaloop/event-sdk>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-ledger>@mojaloop/event-sdk>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-services-shared>@mojaloop/event-sdk>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-ledger>@mojaloop/central-services-stream>@mojaloop/central-services-error-handling>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1673|@mojaloop/central-services-stream>@mojaloop/central-services-error-handling>lodash": {
+      "decision": "ignore",
+      "madeAt": 1620906922274,
+      "expiresAt": 1621511647048
+    },
+    "1675|@mojaloop/central-ledger>@mojaloop/central-services-health>@mojaloop/central-services-shared>shins>sanitize-html": {
+      "decision": "ignore",
+      "madeAt": 1620906930600,
+      "expiresAt": 1621511647048
+    },
+    "1675|@mojaloop/central-services-health>@mojaloop/central-services-shared>shins>sanitize-html": {
+      "decision": "ignore",
+      "madeAt": 1620906930600,
+      "expiresAt": 1621511647048
+    },
+    "1675|@mojaloop/central-ledger>@mojaloop/central-services-shared>shins>sanitize-html": {
+      "decision": "ignore",
+      "madeAt": 1620906930600,
+      "expiresAt": 1621511647048
+    },
+    "1675|@mojaloop/central-services-shared>shins>sanitize-html": {
+      "decision": "ignore",
+      "madeAt": 1620906930600,
+      "expiresAt": 1621511647048
+    },
+    "1676|@mojaloop/central-ledger>@mojaloop/central-services-health>@mojaloop/central-services-shared>shins>sanitize-html": {
+      "decision": "ignore",
+      "madeAt": 1620906930600,
+      "expiresAt": 1621511647048
+    },
+    "1676|@mojaloop/central-services-health>@mojaloop/central-services-shared>shins>sanitize-html": {
+      "decision": "ignore",
+      "madeAt": 1620906930600,
+      "expiresAt": 1621511647048
+    },
+    "1676|@mojaloop/central-ledger>@mojaloop/central-services-shared>shins>sanitize-html": {
+      "decision": "ignore",
+      "madeAt": 1620906930600,
+      "expiresAt": 1621511647048
+    },
+    "1676|@mojaloop/central-services-shared>shins>sanitize-html": {
+      "decision": "ignore",
+      "madeAt": 1620906930600,
+      "expiresAt": 1621511647048
+    },
+    "1693|@mojaloop/central-ledger>@mojaloop/central-services-health>@mojaloop/central-services-shared>shins>sanitize-html>postcss": {
+      "decision": "ignore",
+      "madeAt": 1620906932263,
+      "expiresAt": 1621511647048
+    },
+    "1693|@mojaloop/central-services-health>@mojaloop/central-services-shared>shins>sanitize-html>postcss": {
+      "decision": "ignore",
+      "madeAt": 1620906932263,
+      "expiresAt": 1621511647048
+    },
+    "1693|@mojaloop/central-ledger>@mojaloop/central-services-shared>shins>sanitize-html>postcss": {
+      "decision": "ignore",
+      "madeAt": 1620906932263,
+      "expiresAt": 1621511647048
+    },
+    "1693|@mojaloop/central-services-shared>shins>sanitize-html>postcss": {
+      "decision": "ignore",
+      "madeAt": 1620906932263,
+      "expiresAt": 1621511647048
     }
   },
   "rules": {},
