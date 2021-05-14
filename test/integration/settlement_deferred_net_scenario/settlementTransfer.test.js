@@ -48,7 +48,7 @@ const TransferModel = require('@mojaloop/central-ledger/src/models/transfer/tran
 
 // require('leaked-handles').set({ fullStack: true, timeout: 5000, debugSockets: true })
 
-const currency = 'USD'
+const currency = 'EUR' // FOR THE SAKE OF PARTICIPANT FILTER ONLY TO BE ABLE TO RUN OUR TESTS
 let netSettlementSenderId
 let netSenderAccountId
 let netSettlementRecipientId
@@ -77,7 +77,7 @@ const settlementModels = [
     currencyId: 'USD'
   },
   {
-    name: 'DEFERREDNET',
+    name: 'DEFAULTDEFERREDNET',
     settlementGranularityId: 2, // NET
     settlementInterchangeId: 2, // MULTILATERAL
     settlementDelayId: 2, // DEFERRED
@@ -162,10 +162,10 @@ Test('SettlementTransfer should', async settlementTransferTest => {
     }
   })
 
-  await settlementTransferTest.test('create a settlement:', async test => {
+  await settlementTransferTest.test(`create a settlement using the ${settlementModels[2].name} Settlement Model:`, async test => {
     try {
       const params = {
-        settlementModel: settlementModels[1].name,
+        settlementModel: settlementModels[2].name,
         reason: 'reason',
         settlementWindows: [
           {
@@ -562,7 +562,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
     }
   })
 
-  await settlementTransferTest.test('#62 create a settlement with previous window remaining content and settle it:', async test => {
+  await settlementTransferTest.test(`#62 create a settlement using the ${settlementModels[0].name} Settlement Model and settle it:`, async test => {
     try {
       const settlementStates = [enums.settlementStates.PS_TRANSFERS_RECORDED, enums.settlementStates.PS_TRANSFERS_RESERVED, enums.settlementStates.PS_TRANSFERS_COMMITTED, enums.settlementStates.SETTLED]
 
@@ -622,12 +622,12 @@ Test('SettlementTransfer should', async settlementTransferTest => {
     }
   })
 
-  await settlementTransferTest.test('#66 create a settlement with previous window remaining content and settle it:', async test => {
+  await settlementTransferTest.test(`#66 create a settlement using the ${settlementModels[1].name} Settlement Model and settle it:`, async test => {
     try {
       const settlementStates = [enums.settlementStates.PS_TRANSFERS_RECORDED, enums.settlementStates.PS_TRANSFERS_RESERVED, enums.settlementStates.PS_TRANSFERS_COMMITTED, enums.settlementStates.SETTLED]
 
       let params = {
-        settlementModel: settlementModels[2].name,
+        settlementModel: settlementModels[1].name,
         reason: 'reason',
         settlementWindows: [
           {

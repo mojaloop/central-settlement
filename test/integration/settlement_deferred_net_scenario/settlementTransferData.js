@@ -60,7 +60,7 @@ const settlementModels = [
     requireLiquidityCheck: true
   },
   {
-    name: 'DEFERREDNET',
+    name: 'DEFAULTDEFERREDNET',
     settlementGranularity: 'NET',
     settlementInterchange: 'MULTILATERAL',
     settlementAccountType: 'SETTLEMENT',
