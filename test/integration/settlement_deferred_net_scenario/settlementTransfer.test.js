@@ -48,7 +48,7 @@ const TransferModel = require('@mojaloop/central-ledger/src/models/transfer/tran
 
 // require('leaked-handles').set({ fullStack: true, timeout: 5000, debugSockets: true })
 
-const currency = 'USD'
+const currency = 'EUR' // FOR THE SAKE OF PARTICIPANT FILTER ONLY TO BE ABLE TO RUN OUR TESTS
 let netSettlementSenderId
 let netSenderAccountId
 let netSettlementRecipientId
@@ -75,6 +75,14 @@ const settlementModels = [
     ledgerAccountTypeId: 1, // POSITION
     autoPositionReset: true,
     currencyId: 'USD'
+  },
+  {
+    name: 'DEFAULTDEFERREDNET',
+    settlementGranularityId: 2, // NET
+    settlementInterchangeId: 2, // MULTILATERAL
+    settlementDelayId: 2, // DEFERRED
+    ledgerAccountTypeId: 1, // POSITION
+    autoPositionReset: true
   }
 ]
 
@@ -154,10 +162,10 @@ Test('SettlementTransfer should', async settlementTransferTest => {
     }
   })
 
-  await settlementTransferTest.test('create a settlement:', async test => {
+  await settlementTransferTest.test(`create a settlement using the ${settlementModels[2].name} Settlement Model:`, async test => {
     try {
       const params = {
-        settlementModel: settlementModels[1].name,
+        settlementModel: settlementModels[2].name,
         reason: 'reason',
         settlementWindows: [
           {
@@ -430,7 +438,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       test.equal(payeeTransferStateChangeRecord.transferStateId, enums.transferStates.COMMITTED, '#48 settlement transfer for payee is COMMITTED')
 
       const currentPayerPosition = (await ParticipantPositionModel.getPositionByCurrencyId(netSenderAccountId)).value
-      test.equal(currentPayerPosition, initialPayerPosition - netSettlementAmount, '#49 position for NET_SETTLEMENT_SENDER is adjusted')
+      test.equal(currentPayerPosition, new MLNumber(initialPayerPosition).subtract(netSettlementAmount).toNumber(), '#49 position for NET_SETTLEMENT_SENDER is adjusted')
 
       const currentPayeePosition = (await ParticipantPositionModel.getPositionByCurrencyId(netRecipientAccountId)).value
       test.equal(currentPayeePosition, initialPayeePosition, '#50 position for NET_SETTLEMENT_RECIPIENT is unchanged')
@@ -554,7 +562,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
     }
   })
 
-  await settlementTransferTest.test('#62 create a settlement with previous window remaining content and settle it:', async test => {
+  await settlementTransferTest.test(`#62 create a settlement using the ${settlementModels[0].name} Settlement Model and settle it:`, async test => {
     try {
       const settlementStates = [enums.settlementStates.PS_TRANSFERS_RECORDED, enums.settlementStates.PS_TRANSFERS_RESERVED, enums.settlementStates.PS_TRANSFERS_COMMITTED, enums.settlementStates.SETTLED]
 
@@ -606,8 +614,68 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       const windowContentState = await Models.settlementWindowContentStateChange.getBySettlementWindowContentId(res.settlementWindows[0].content[0].id)
       test.equal(windowContentState.settlementWindowStateId, 'SETTLED', '#65 settlement window content state is SETTLED')
 
+      test.end()
+    } catch (err) {
+      Logger.error(`settlementTransferTest failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
+
+  await settlementTransferTest.test(`#66 create a settlement using the ${settlementModels[1].name} Settlement Model and settle it:`, async test => {
+    try {
+      const settlementStates = [enums.settlementStates.PS_TRANSFERS_RECORDED, enums.settlementStates.PS_TRANSFERS_RESERVED, enums.settlementStates.PS_TRANSFERS_COMMITTED, enums.settlementStates.SETTLED]
+
+      let params = {
+        settlementModel: settlementModels[1].name,
+        reason: 'reason',
+        settlementWindows: [
+          {
+            id: settlementWindowId
+          }
+        ]
+      }
+      settlementData = await SettlementService.settlementEventTrigger(params, enums)
+      test.ok(settlementData, '#67 settlementEventTrigger operation success')
+
+      let res
+      for (const state of settlementStates) {
+        params = {
+          participants: [
+            {
+              id: settlementData.participants[0].id,
+              accounts: [
+                {
+                  id: settlementData.participants[0].accounts[0].id,
+                  reason: `Settlement to ${state} state`,
+                  state
+                }
+              ]
+            },
+            {
+              id: settlementData.participants[1].id,
+              accounts: [
+                {
+                  id: settlementData.participants[1].accounts[0].id,
+                  reason: `Settlement to ${state} state`,
+                  state
+                }
+              ]
+            }
+          ]
+        }
+        res = await SettlementService.putById(settlementData.id, params, enums)
+        test.ok(res, `settlement putById operation success for ${state} state`)
+      }
+
+      const settlementState = await SettlementStateChangeModel.getBySettlementId(settlementData.id)
+      test.equal(settlementState.settlementStateId, enums.settlementStates.SETTLED, '#68 settlement state is SETTLED')
+
+      const windowContentState = await Models.settlementWindowContentStateChange.getBySettlementWindowContentId(res.settlementWindows[0].content[0].id)
+      test.equal(windowContentState.settlementWindowStateId, 'SETTLED', '#69 settlement window content state is SETTLED')
+
       const window = await SettlementWindowStateChangeModel.getBySettlementWindowId(res.settlementWindows[0].id)
-      test.equal(window.settlementWindowStateId, enums.settlementWindowStates.SETTLED, '#66 window is SETTLED because there is no more window content to settle')
+      test.equal(window.settlementWindowStateId, enums.settlementWindowStates.SETTLED, '#70 window is SETTLED because there is no more window content to settle')
 
       test.end()
     } catch (err) {

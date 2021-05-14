@@ -74,6 +74,10 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
 
   transferSettlementTest.beforeEach(t => {
     sandbox = Sinon.createSandbox()
+    Db.settlementModel = {
+      find: sandbox.stub()
+    }
+
     Db.from = (table) => {
       return Db[table]
     }
@@ -601,6 +605,57 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       })
       const result = await Model.getSettlementModelByTransferId(transferId, settlementGranularityName)
       test.deepEqual(result, settlementModelResult, 'results match')
+      test.end()
+    } catch (err) {
+      Logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('getSettlementModelByTransferId should return default settlement, if it is GROSS', async (test) => {
+    try {
+      const transferId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
+      const settlementGranularityName = 'GROSS'
+      const settlementModelResult = {
+        settlementModelId: 1,
+        name: 'CGS',
+        isActive: 1,
+        settlementGranularityId: 1,
+        settlementInterchangeId: 1,
+        settlementDelayId: 1,
+        currencyId: null,
+        ledgerAccountTypeId: 1
+      }
+
+      sandbox.stub(Db, 'getKnex')
+
+      const context = sandbox.stub()
+      context.on = sandbox.stub().returns({
+        andOn: sandbox.stub()
+      })
+      const join1Stub = sandbox.stub().callsArgOn(1, context)
+
+      const knexStub = sandbox.stub()
+      Db.getKnex.returns(knexStub)
+      knexStub.returns({
+        join: join1Stub.returns({
+          join: sandbox.stub().returns({
+            join: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  where: sandbox.stub().returns({
+                    select: sandbox.stub().returns([])
+                  })
+                })
+              })
+            })
+          })
+        })
+      })
+      Db.settlementModel.find.returns([settlementModelResult])
+      const result = await Model.getSettlementModelByTransferId(transferId, settlementGranularityName)
+      test.deepEqual(result, [settlementModelResult], 'results match')
       test.end()
     } catch (err) {
       Logger.error(`getSettlementModelByTransferId failed with error - ${err}`)

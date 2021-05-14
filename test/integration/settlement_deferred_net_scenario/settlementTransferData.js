@@ -34,7 +34,7 @@ const Api = require('../helpers/api')
 const Db = require('../../../src/lib/db')
 const Utils = require('../helpers/utils')
 
-const currencies = ['USD', 'TZS']
+const currencies = ['USD', 'TZS', 'EUR']
 
 const settlementModels = [
   {
@@ -57,6 +57,16 @@ const settlementModels = [
     ledgerAccountType: 'POSITION',
     autoPositionReset: true,
     currency: 'USD',
+    requireLiquidityCheck: true
+  },
+  {
+    name: 'DEFAULTDEFERREDNET',
+    settlementGranularity: 'NET',
+    settlementInterchange: 'MULTILATERAL',
+    settlementAccountType: 'SETTLEMENT',
+    settlementDelay: 'DEFERRED',
+    ledgerAccountType: 'POSITION',
+    autoPositionReset: true,
     requireLiquidityCheck: true
   }
 ]
@@ -125,6 +135,7 @@ async function initSettlementModels () {
   await knex.raw('SET FOREIGN_KEY_CHECKS = 1;')
   await Api.createSettlementModel(settlementModels[0])
   await Api.createSettlementModel(settlementModels[1])
+  await Api.createSettlementModel(settlementModels[2])
 }
 
 /**

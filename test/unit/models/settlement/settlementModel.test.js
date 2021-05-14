@@ -68,5 +68,26 @@ Test('SettlementModelModel', async (settlementModelModelTest) => {
       test.end()
     }
   })
+  settlementModelModelTest.test('getByName should return the settlementModel', async test => {
+    try {
+      const name = 'DEFERRED_NET'
+      const settlementModel = {
+        settlementModelId: 1,
+        name
+      }
+      Db.settlementModel = {
+        find: sandbox.stub()
+      }
+      Db.settlementModel.find.withArgs({ isActive: 1 }).returns([settlementModel])
+
+      const result = await Model.getAll()
+      test.deepEqual(result[0], settlementModel, 'Results Match')
+      test.end()
+    } catch (e) {
+      Logger.error(e)
+      test.fail('Error Thrown')
+      test.end()
+    }
+  })
   settlementModelModelTest.end()
 })

@@ -32,6 +32,10 @@ const payerFspId = transfer.payer.partyIdInfo.fspId
 const payeeFspId = transfer.payee.partyIdInfo.fspId
 
 if ((payeeFspId !== payerFspId) &&
+  (transfer.payee.partyIdInfo.extensionList && // WORKAROUND for issue #2149
+    transfer.payer.partyIdInfo.extensionList && // WORKAROUND for issue #2149
+    transfer.payee.partyIdInfo.extensionList.extension && // WORKAROUND for issue #2149
+    transfer.payer.partyIdInfo.extensionList.extension) && // WORKAROUND for issue #2149
   (getExtensionValue(transfer.payee.partyIdInfo.extensionList.extension, 'accountType') === 'Wallet' &&
     getExtensionValue(transfer.payer.partyIdInfo.extensionList.extension, 'accountType') === 'Wallet') &&
   (transfer.transactionType.scenario === 'TRANSFER' &&

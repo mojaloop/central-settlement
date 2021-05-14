@@ -30,6 +30,11 @@ const getByName = async (name) => {
   return Db.from('settlementModel').findOne({ name, isActive: 1 })
 }
 
+const getAll = async () => {
+  return await Db.from('settlementModel').find({ isActive: 1 })
+}
+
 module.exports = {
-  getByName
+  getByName,
+  getAll
 }
