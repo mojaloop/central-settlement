@@ -72,7 +72,8 @@
               "client.id": "cs-con-deferredsettlement-close",
               "group.id": "cs-group-deferredsettlement-close",
               "metadata.broker.list": "kafka:9092",
-              "socket.keepalive.enable": true
+              "socket.keepalive.enable": true,
+              "allow.auto.create.topics": true
             },
             "topicConf": {
               "auto.offset.reset": "earliest"
@@ -97,7 +98,8 @@
               "client.id": "cs-con-notification-event",
               "group.id": "cs-group-notification-event",
               "metadata.broker.list": "kafka:9092",
-              "socket.keepalive.enable": true
+              "socket.keepalive.enable": true,
+              "allow.auto.create.topics": true
             },
             "topicConf": {
               "auto.offset.reset": "earliest"
