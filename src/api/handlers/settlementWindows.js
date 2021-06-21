@@ -32,6 +32,7 @@
  ******/
 'use strict'
 
+const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const settlementWindows = require('../../domain/settlementWindow/index')
 
@@ -52,7 +53,7 @@ module.exports = {
       const settlementWindowResult = await settlementWindows.getByParams({ query: request.query }, Enums)
       return h.response(settlementWindowResult)
     } catch (err) {
-      request.server.log('error', err)
+      Logger.error(err)
       return ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }

@@ -35,8 +35,8 @@ module.exports = {
       await TransferSettlementModel.insertLedgerEntries(ledgerEntries, transferEventId, trx)
       return true
     } catch (err) {
+      Logger.error(err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
-
 }

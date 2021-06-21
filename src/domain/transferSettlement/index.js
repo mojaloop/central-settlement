@@ -46,7 +46,7 @@ module.exports = {
       Logger.debug('transferSettlement::processMsgFulfil - end')
       return true
     } catch (err) {
-      Logger.debug('transferSettlement::processMsgFulfil - error!', err)
+      Logger.error('transferSettlement::processMsgFulfil - error!', err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }

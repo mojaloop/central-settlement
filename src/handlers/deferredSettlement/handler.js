@@ -145,6 +145,7 @@ const registerAllHandlers = async () => {
     await registerSettlementWindowHandler()
     return true
   } catch (err) {
+    Logger.error(err)
     throw ErrorHandling.Factory.reformatFSPIOPError(err)
   }
 }

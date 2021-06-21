@@ -29,6 +29,7 @@
 const Db = require('../../lib/db')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Enum = require('@mojaloop/central-services-shared').Enum
+const Logger = require('@mojaloop/central-services-logger')
 
 const Facade = {
   getById: async function ({ settlementWindowId }) {
@@ -161,11 +162,13 @@ const Facade = {
           await trx.commit
           return newSettlementWindowId[0]
         } catch (err) {
+          Logger.error(err)
           await trx.rollback
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
       })
         .catch((err) => {
+          Logger.error(err)
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         })
     }
@@ -268,11 +271,13 @@ const Facade = {
           await trx.commit
           return true
         } catch (err) {
+          Logger.error(err)
           await trx.rollback
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
       })
         .catch((err) => {
+          Logger.error(err)
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         })
     }

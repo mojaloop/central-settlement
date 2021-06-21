@@ -48,7 +48,7 @@ const getSubServiceHealthBroker = async () => {
   try {
     await Promise.all(consumerTopics.map(t => Consumer.isConnected(t)))
   } catch (err) {
-    Logger.debug(`getSubServiceHealthBroker failed with error ${err.message}.`)
+    Logger.error(`getSubServiceHealthBroker failed with error ${err.message}.`)
     status = statusEnum.DOWN
   }
 
@@ -63,7 +63,7 @@ const getSubServiceHealthBroker = async () => {
  *
  * @description
  *   Gets the health of the Datastore by ensuring the table is currently locked
- *   in a migration state. This implicity checks the connection with the database.
+ *   in a migration state. This implicitly checks the connection with the database.
  *
  * @returns Promise<SubServiceHealth> The SubService health object for the broker
  */
@@ -76,7 +76,7 @@ const getSubServiceHealthDatastore = async () => {
       status = statusEnum.DOWN
     }
   } catch (err) {
-    Logger.debug(`getSubServiceHealthDatastore failed with error ${err.message}.`)
+    Logger.error(`getSubServiceHealthDatastore failed with error ${err.message}.`)
     status = statusEnum.DOWN
   }
 

@@ -57,6 +57,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           .transacting(trx)
 
         if (!Array.isArray(recordsToInsert) || recordsToInsert.length === 0) {
+          Logger.error(`No settlement model defined for transferId: ${transferId} and ledgerEntry: ${JSON.stringify(ledgerEntry)}`)
           throw new Error(`No settlement model defined for transferId: ${transferId} and ledgerEntry: ${JSON.stringify(ledgerEntry)}`)
         }
 
@@ -70,6 +71,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
             .increment('value', record.amount)
             .transacting(trx)
           if (queryResult === 0) {
+            Logger.error(`Unable to update participantPosition record for participantCurrencyId: ${record.participantCurrencyId}`)
             throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to update participantPosition record for participantCurrencyId: ${record.participantCurrencyId}`)
           }
         }))
@@ -80,6 +82,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           .andWhere('transferStateId', TransferStateEnum.COMMITTED)
           .transacting(trx)
         if (transferStateChangeId.length === 0 || !transferStateChangeId[0].transferStateChangeId || transferStateChangeId.length > 1) {
+          Logger.error(`Unable to find transfer with COMMITTED state for transferId : ${transferId}`)
           throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to find transfer with COMMITTED state for transferId : ${transferId}`)
         }
 
@@ -105,6 +108,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           await trx.commit
         }
       } catch (err) {
+        Logger.error(err)
         if (doCommit) {
           await trx.rollback
         }
@@ -117,6 +121,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
       return await knex.transaction(trxFunction)
     }
   } catch (err) {
+    Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -135,6 +140,7 @@ async function insertLedgerEntries (ledgerEntries, transferId, trx = null) {
           await trx.commit
         }
       } catch (err) {
+        Logger.error(err)
         if (doCommit) {
           await trx.rollback
         }
@@ -147,6 +153,7 @@ async function insertLedgerEntries (ledgerEntries, transferId, trx = null) {
       return await knex.transaction(trxFunction)
     }
   } catch (err) {
+    Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -300,6 +307,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
       return await knex.transaction(trxFunction)
     }
   } catch (err) {
+    Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }

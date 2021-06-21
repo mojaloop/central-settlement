@@ -33,6 +33,7 @@
 
 const settlementWindow = require('../../../domain/settlementWindow/index')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Logger = require('@mojaloop/central-services-logger')
 
 /**
  * Operations on /settlementWindows/{id}
@@ -52,7 +53,7 @@ module.exports = {
       const settlementWindowResult = await settlementWindow.getById({ settlementWindowId }, Enums, request.server.log)
       return h.response(settlementWindowResult)
     } catch (err) {
-      request.server.log('error', err)
+      Logger.error(err)
       return ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   },
@@ -70,7 +71,7 @@ module.exports = {
       const Enums = await request.server.methods.enums('settlementWindowStates')
       return await settlementWindow.process({ settlementWindowId, reason }, Enums)
     } catch (err) {
-      request.server.log('error', err)
+      Logger.error(err)
       return ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }

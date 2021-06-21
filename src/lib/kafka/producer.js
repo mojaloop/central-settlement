@@ -97,14 +97,17 @@ const disconnect = async (topicName = null) => {
       try {
         await getProducer(tpName).disconnect()
       } catch (e) {
+        Logger.error(err)
         isError = true
         errorTopicList.push({ topic: tpName, error: e.toString() })
       }
     }
     if (isError) {
+      Logger.error(`The following Producers could not be disconnected: ${JSON.stringify(errorTopicList)}`)
       throw ErrorHandler.Factory.createInternalServerFSPIOPError(`The following Producers could not be disconnected: ${JSON.stringify(errorTopicList)}`)
     }
   } else {
+    Logger.error(`Unable to disconnect Producer: ${topicName}`)
     throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to disconnect Producer: ${topicName}`)
   }
 }
@@ -123,6 +126,7 @@ const getProducer = (topicName) => {
   if (listOfProducers[topicName]) {
     return listOfProducers[topicName]
   } else {
+    Logger.error(`No producer found for topic ${topicName}`)
     throw ErrorHandler.Factory.createInternalServerFSPIOPError(`No producer found for topic ${topicName}`)
   }
 }

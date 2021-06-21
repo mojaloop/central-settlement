@@ -33,6 +33,7 @@
 'use strict'
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Logger = require('@mojaloop/central-services-logger')
 const Settlements = require('../../../domain/settlement/index')
 
 /**
@@ -54,7 +55,7 @@ module.exports = {
       const settlementResult = await Settlements.getById({ settlementId }, Enums)
       return h.response(settlementResult)
     } catch (err) {
-      request.server.log('error', err)
+      Logger.error(err)
       return ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   },
@@ -73,6 +74,7 @@ module.exports = {
       if (p.participants && (p.state || p.reason || p.externalReference)) {
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'No other properties are allowed when participants is provided')
       } else if ((p.state && !p.reason) || (!p.state && p.reason)) {
+        Logger.error('State and reason are mandatory')
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MISSING_ELEMENT, 'State and reason are mandatory')
       }
       const Enums = {
@@ -90,10 +92,11 @@ module.exports = {
       } else if (p.state && p.state === Enums.settlementStates.ABORTED) {
         return await Settlements.abortById(settlementId, request.payload, Enums)
       } else {
+        Logger.error('Invalid request payload input')
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid request payload input')
       }
     } catch (err) {
-      request.server.log('error', err)
+      Logger.error(err)
       return ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }

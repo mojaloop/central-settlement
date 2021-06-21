@@ -148,6 +148,7 @@ async function registerAllHandlers () {
     await registerTransferSettlement()
     return true
   } catch (err) {
+    Logger.error(err)
     throw ErrorHandling.Factory.reformatFSPIOPError(err)
   }
 }

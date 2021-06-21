@@ -37,6 +37,7 @@ const KafkaUtil = require('@mojaloop/central-services-shared').Util.Kafka
 const SettlementWindowModel = require('../../models/settlementWindow')
 const SettlementWindowContentModel = require('../../models/settlementWindowContent')
 const StreamingProtocol = require('@mojaloop/central-services-shared').Util.StreamingProtocol
+const Logger = require('@mojaloop/central-services-logger')
 const Uuid = require('uuid4')
 
 module.exports = {
@@ -50,9 +51,11 @@ module.exports = {
         settlementWindow.content = settlementWindowContent
         return settlementWindow
       } else {
+        Logger.error(`No records for settlementWidowContentId : ${params.settlementWindowId} found`)
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No records for settlementWidowContentId : ${params.settlementWindowId} found`)
       }
     } else {
+      Logger.error(`No record for settlementWindowId: ${params.settlementWindowId} found`)
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No record for settlementWindowId: ${params.settlementWindowId} found`)
     }
   },
@@ -67,14 +70,17 @@ module.exports = {
           if (settlementWindowContent) {
             settlementWindow.content = settlementWindowContent
           } else {
+            Logger.error(`No records for settlementWidowContentId : ${settlementWindow.settlementWindowId} found`)
             throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No records for settlementWidowContentId : ${settlementWindow.settlementWindowId} found`)
           }
         }
         return settlementWindows
       } else {
+        Logger.error(`No records for settlementWidowContentId : ${settlementWindow.settlementWindowId} found`)
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
       }
     } else {
+      Logger.error('Use at least one parameter: participantId, state, fromDateTime, toDateTime, currency')
       throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Use at least one parameter: participantId, state, fromDateTime, toDateTime, currency')
     }
   },
