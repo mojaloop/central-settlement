@@ -96,10 +96,10 @@ const disconnect = async (topicName = null) => {
     for (tpName in listOfProducers) {
       try {
         await getProducer(tpName).disconnect()
-      } catch (e) {
+      } catch (err) {
         Logger.error(err)
         isError = true
-        errorTopicList.push({ topic: tpName, error: e.toString() })
+        errorTopicList.push({ topic: tpName, error: err.toString() })
       }
     }
     if (isError) {

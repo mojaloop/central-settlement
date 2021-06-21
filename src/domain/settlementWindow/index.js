@@ -76,7 +76,7 @@ module.exports = {
         }
         return settlementWindows
       } else {
-        Logger.error(`No records for settlementWidowContentId : ${settlementWindow.settlementWindowId} found`)
+        Logger.error(`settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
       }
     } else {
