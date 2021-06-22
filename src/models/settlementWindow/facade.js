@@ -30,8 +30,6 @@ const Db = require('../../lib/db')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Enum = require('@mojaloop/central-services-shared').Enum
 const SettlementModelModel = require('../settlement/settlementModel')
-const db = require('../../lib/db')
-const { set } = require('lodash')
 
 const Facade = {
   getById: async function ({ settlementWindowId }) {
@@ -185,8 +183,7 @@ const Facade = {
       return knex.transaction(async (trx) => {
         try {
           const transactionTimestamp = new Date()
-          // Insert settlementWindowContent (change table migration scripts)
-          // For each currency we need to pick the correct model first (or default) and create record for it
+          // Insert settlementWindowContent
           const allSettlementModels = await SettlementModelModel.getAll()
           const smMap = {}
 
@@ -216,14 +213,12 @@ const Facade = {
 
           await Promise.all(promiseArray)
           // Insert settlementContentAggregation
-          let builder
-          builder = knex
+          let builder = knex
             .from(knex.raw('settlementContentAggregation (settlementWindowContentId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, currentStateId, createdDate, amount)'))
             .insert(function () {
               this.from('transferFulfilment AS tf')
                 .join('transferParticipant AS tp', 'tp.transferId', 'tf.transferId')
                 .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'tp.participantCurrencyId')
-                // .join('settlementModel AS m', 'm.ledgerAccountTypeId', 'pc.ledgerAccountTypeId')
                 .join('settlementWindowContent AS swc', function () {
                   this.on('swc.settlementWindowId', 'tf.settlementWindowId')
                     .on('swc.ledgerAccountTypeId', 'pc.ledgerAccountTypeId')
@@ -232,7 +227,7 @@ const Facade = {
                 .join('settlementModel AS m', 'm.settlementModelId', 'swc.settlementModelId')
                 .where('tf.settlementWindowId', settlementWindowId)
                 .andWhere('m.settlementGranularityId', Enum.Settlements.SettlementGranularity.NET)
-                .groupBy('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId') // add settlementmodelid
+                .groupBy('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId')
                 .select('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId',
                   knex.raw('? AS ??', [Enum.Settlements.SettlementWindowState.CLOSED, 'settlementWindowStateId']),
                   knex.raw('? AS ??', [transactionTimestamp, 'createdDate']))
