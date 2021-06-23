@@ -55,7 +55,7 @@ module.exports = {
       const settlementResult = await Settlements.getById({ settlementId }, Enums)
       return h.response(settlementResult)
     } catch (err) {
-      Logger.error(err)
+      request.server.log('error', err)
       return ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   },
@@ -96,7 +96,7 @@ module.exports = {
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid request payload input')
       }
     } catch (err) {
-      Logger.error(err)
+      request.server.log('error', err)
       return ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
