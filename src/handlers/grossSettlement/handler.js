@@ -116,7 +116,6 @@ async function processTransferSettlement (error, messages) {
     )
     await span.error(fspiopError, state)
     await span.finish(fspiopError.message, state)
-    console.log(fspiopError.message, state)
     return true
   } finally {
     if (!span.isFinished) {
