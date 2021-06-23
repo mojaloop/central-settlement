@@ -30,6 +30,7 @@ const Sinon = require('sinon')
 const Db = require('../../../../src/lib/db')
 const Logger = require('@mojaloop/central-services-logger')
 const SettlementWindowFacade = require('../../../../src/models/settlementWindow/facade')
+const SettlementModel = require('../../../../src/models/settlement/settlementModel')
 
 Logger.error('this is error')
 
@@ -678,6 +679,65 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
       await closeTest.test('close the specified open window should roll back on error.', async test => {
         try {
           const knexStub = sandbox.stub()
+          knexStub.raw = sandbox.stub()
+          knexStub.from = sandbox.stub()
+          Db.getKnex.returns(knexStub)
+          sandbox.stub(SettlementModel, 'getAll').resolves([
+            {
+              settlementModelId: 1,
+              name: 'DEFERREDNETUSD',
+              isActive: true,
+              settlementGranularity: 'NET',
+              settlementInterchange: 'MULTILATERAL',
+              settlementDelay: 'DEFERRED',
+              currency: 'USD',
+              requireLiquidityCheck: true,
+              ledgerAccountTypeId: 'POSITION',
+              autoPositionReset: true
+            },
+            {
+              settlementModelId: 2,
+              name: 'DEFAULTDEFERREDNETUSD',
+              isActive: true,
+              settlementGranularity: 'NET',
+              settlementInterchange: 'MULTILATERAL',
+              settlementDelay: 'DEFERRED',
+              currency: null,
+              requireLiquidityCheck: true,
+              ledgerAccountTypeId: 'POSITION',
+              autoPositionReset: true
+            }
+          ])
+
+          knexStub.from.withArgs('transferFulfilment AS tf').returns({
+            join: sandbox.stub().returns({
+              join: sandbox.stub().returns({
+                join: sandbox.stub().returns({
+                  where: sandbox.stub().returns({
+                    andWhere: sandbox.stub().returns({
+                      distinct: sandbox.stub().returns({
+                        transacting: sandbox.stub().resolves([
+                          {
+                            settlementWindowId: 31,
+                            ledgerAccountTypeId: 1,
+                            currencyId: 'USD',
+                            settlementModelId: 2
+                          },
+                          {
+                            settlementWindowId: 31,
+                            ledgerAccountTypeId: 1,
+                            currencyId: 'USD',
+                            settlementModelId: 1
+                          }
+                        ])
+                      })
+                    })
+                  })
+                })
+              })
+            })
+          })
+
           const trxStub = sandbox.stub()
           trxStub.commit = sandbox.stub()
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
@@ -698,12 +758,39 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
         try {
           const knexStub = sandbox.stub()
           knexStub.raw = sandbox.stub()
-          Db.getKnex.returns(knexStub)
+          knexStub.from = sandbox.stub()
           const trxStub = sandbox.stub()
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
           const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
           const context = sandbox.stub()
           const context2 = sandbox.stub()
+
+          sandbox.stub(SettlementModel, 'getAll').resolves([
+            {
+              settlementModelId: 1,
+              name: 'DEFERREDNETUSD',
+              isActive: true,
+              settlementGranularity: 'NET',
+              settlementInterchange: 'MULTILATERAL',
+              settlementDelay: 'DEFERRED',
+              currency: 'USD',
+              requireLiquidityCheck: true,
+              ledgerAccountTypeId: 'POSITION',
+              autoPositionReset: true
+            },
+            {
+              settlementModelId: 2,
+              name: 'DEFAULTDEFERREDNETUSD',
+              isActive: true,
+              settlementGranularity: 'NET',
+              settlementInterchange: 'MULTILATERAL',
+              settlementDelay: 'DEFERRED',
+              currency: null,
+              requireLiquidityCheck: true,
+              ledgerAccountTypeId: 'POSITION',
+              autoPositionReset: true
+            }
+          ])
 
           Db.transferParticipant = {
             join: sandbox.stub()
@@ -720,11 +807,14 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           Db.transferParticipant.join.callsArgWith(0, builderStub)
           Db.participantCurrency.join.callsArgWith(0, builderStub)
           Db.settlementWindowContent.join.callsArgWith(0, builderStub)
+          // Db.transferFulfilment.join.callsArgWith(0, builderStub)
 
           const infoDataStub = {
             settlementWindowContentId: 4,
             settlementWindowContentStateChangeId: 4
           }
+
+          Db.getKnex.returns(knexStub)
 
           // Insert settlementContentAggregation
           context2.on = sandbox.stub().returns({
@@ -735,16 +825,8 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           context.from = sandbox.stub().returns({
             join: sandbox.stub().returns({
               join: sandbox.stub().returns({
-                where: sandbox.stub().returns({
-                  distinct: sandbox.stub()
-                }),
-                join: sandbox.stub().returns({
-                  where: sandbox.stub().returns({
-                    andWhere: sandbox.stub().returns({
-                      distinct: sandbox.stub()
-                    })
-                  }),
-                  join: sandbox.stub().callsArgOn(1, context2).returns({
+                join: sandbox.stub().callsArgOn(1, context2).returns({
+                  join: sandbox.stub().returns({
                     where: sandbox.stub().returns({
                       andWhere: sandbox.stub().returns({
                         groupBy: sandbox.stub().returns({
@@ -755,6 +837,9 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
                       })
                     })
                   })
+                }),
+                where: sandbox.stub().returns({
+                  distinct: sandbox.stub()
                 })
               })
             }),
@@ -794,6 +879,35 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
             transacting: sandbox.stub().returns({
               where: sandbox.stub().returns({
                 update: sandbox.stub().returns(1)
+              })
+            })
+          })
+
+          knexStub.from.withArgs('transferFulfilment AS tf').returns({
+            join: sandbox.stub().returns({
+              join: sandbox.stub().returns({
+                join: sandbox.stub().returns({
+                  where: sandbox.stub().returns({
+                    andWhere: sandbox.stub().returns({
+                      distinct: sandbox.stub().returns({
+                        transacting: sandbox.stub().resolves([
+                          {
+                            settlementWindowId: 31,
+                            ledgerAccountTypeId: 1,
+                            currencyId: 'USD',
+                            settlementModelId: 2
+                          },
+                          {
+                            settlementWindowId: 31,
+                            ledgerAccountTypeId: 1,
+                            currencyId: 'USD',
+                            settlementModelId: 1
+                          }
+                        ])
+                      })
+                    })
+                  })
+                })
               })
             })
           })
