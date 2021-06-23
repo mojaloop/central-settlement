@@ -1,7 +1,7 @@
 {
     "name": "central-settlement",
     "description": "Central settlements hosted by a scheme to record and make settlements.",
-    "version": "13.1.1",
+    "version": "13.2.0",
     "license": "Apache-2.0",
     "private": false,
     "author": "ModusBox",
@@ -64,7 +64,7 @@
         "eslint": "7.29.0",
         "faucet": "0.0.1",
         "get-port": "5.1.1",
-        "jest": "27.0.4",
+        "jest": "27.0.5",
         "jest-junit": "12.2.0",
         "node-fetch": "2.6.1",
         "nodemon": "2.0.7",
