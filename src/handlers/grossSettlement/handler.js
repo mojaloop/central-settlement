@@ -67,9 +67,19 @@ async function processTransferSettlement (error, messages) {
 
   try {
     Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(LOG_LOCATION, { method: 'processTransferSettlement' }))
+    const payload = message.value.content.payload
+    const uriParams = message.value.content.uriParams
+    const headers = message.value.content.headers
+    const spanTags = Utility.EventFramework.getSpanTags(
+      Enum.Events.Event.Type.GROSS_SETTLEMENT,
+      Enum.Events.Event.Action.PROCESSING,
+      (payload && payload.settlementWindowId) || (uriParams && uriParams.id),
+      headers[Enum.Http.Headers.FSPIOP.SOURCE],
+      headers[Enum.Http.Headers.FSPIOP.DESTINATION]
+    )
+    span.setTags(spanTags)
     await span.audit(message, EventSdk.AuditEventAction.start)
 
-    const payload = message.value.content.payload
     const kafkaTopic = message.topic
     const params = { message, kafkaTopic, span, decodedPayload: payload, consumer: Consumer, producer: Producer }
 

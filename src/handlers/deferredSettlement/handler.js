@@ -68,9 +68,19 @@ const closeSettlementWindow = async (error, messages) => {
 
   try {
     Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(location, { method: 'closeSettlementWindow' }))
+    const payload = message.value.content.payload
+    const uriParams = message.value.content.uriParams
+    const headers = message.value.content.headers
+    const spanTags = Utility.EventFramework.getSpanTags(
+      Enum.Events.Event.Type.SETTLEMENT_WINDOW,
+      Enum.Events.Event.Action.CLOSE,
+      (payload && payload.settlementWindowId) || (uriParams && uriParams.id),
+      headers[Enum.Http.Headers.FSPIOP.SOURCE],
+      headers[Enum.Http.Headers.FSPIOP.DESTINATION]
+    )
+    span.setTags(spanTags)
     await span.audit(message, EventSdk.AuditEventAction.start)
 
-    const payload = message.value.content.payload
     const metadata = message.value.metadata
     const action = metadata.event.action
 
