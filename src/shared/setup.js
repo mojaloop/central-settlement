@@ -43,10 +43,10 @@ const getEnums = (id) => {
 }
 
 async function connectDatabase () {
-  Logger.isDebugEnabled && Logger.debuf(`Conneting to DB ${JSON.stringify(Config.DATABASE)}`)
+  Logger.isDebugEnabled && Logger.debug(`Conneting to DB ${JSON.stringify(Config.DATABASE)}`)
   await Db.connect(Config.DATABASE)
   const dbLoadedTables = Db._tables ? Db._tables.length : -1
-  Logger.isDebugEnabled && Logger.debuf(`DB.connect loaded '${dbLoadedTables}' tables!`)
+  Logger.isDebugEnabled && Logger.debug(`DB.connect loaded '${dbLoadedTables}' tables!`)
 }
 
 const createServer = async function (port, modules) {

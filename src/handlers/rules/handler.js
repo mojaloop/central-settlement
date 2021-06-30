@@ -91,7 +91,7 @@ async function processRules (error, messages) {
     // execute the rule
     Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(LOG_LOCATION, 'executing the scripts'))
     const scriptResults = await scriptsLoader.executeScripts(INJECTED_SCRIPTS, transferEventType, transferEventAction, transferEventStateStatus, message.value)
-    Logger.isDebugEnabled && Logger.debuf(`Rules Handler - scriptResults: ${JSON.stringify(scriptResults)}`)
+    Logger.isDebugEnabled && Logger.debug(`Rules Handler - scriptResults: ${JSON.stringify(scriptResults)}`)
 
     const ledgerEntries = scriptResults.ledgerEntries ? scriptResults.ledgerEntries : []
     if (ledgerEntries.length > 0) {

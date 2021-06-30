@@ -76,9 +76,9 @@ async function executeScripts (scriptsMap, scriptType, scriptAction, scriptStatu
       const now = new Date()
       for (const script of scriptsMap[scriptType][scriptAction][scriptStatus]) {
         if (now.getTime() >= script.startTime.getTime() && now.getTime() <= script.endTime.getTime()) {
-          Logger.isDebugEnabled && Logger.debuf(`Running script: ${JSON.stringify(script)}`)
+          Logger.isDebugEnabled && Logger.debug(`Running script: ${JSON.stringify(script)}`)
           const scriptResult = await executeScript(script.script, payload)
-          Logger.isDebugEnabled && Logger.debuf(`Merging script result: ${scriptResult}`)
+          Logger.isDebugEnabled && Logger.debug(`Merging script result: ${scriptResult}`)
           _.mergeWith(scriptResults, scriptResult, (objValue, srcValue) => {
             if (_.isArray(objValue)) {
               return objValue.concat(srcValue)
