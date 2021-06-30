@@ -57,7 +57,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           .transacting(trx)
 
         if (!Array.isArray(recordsToInsert) || recordsToInsert.length === 0) {
-          Logger.error(`No settlement model defined for transferId: ${transferId} and ledgerEntry: ${JSON.stringify(ledgerEntry)}`)
+          Logger.isErrorEnabled && Logger.error(`No settlement model defined for transferId: ${transferId} and ledgerEntry: ${JSON.stringify(ledgerEntry)}`)
           throw new Error(`No settlement model defined for transferId: ${transferId} and ledgerEntry: ${JSON.stringify(ledgerEntry)}`)
         }
 
@@ -71,7 +71,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
             .increment('value', record.amount)
             .transacting(trx)
           if (queryResult === 0) {
-            Logger.error(`Unable to update participantPosition record for participantCurrencyId: ${record.participantCurrencyId}`)
+            Logger.isErrorEnabled && Logger.error(`Unable to update participantPosition record for participantCurrencyId: ${record.participantCurrencyId}`)
             throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to update participantPosition record for participantCurrencyId: ${record.participantCurrencyId}`)
           }
         }))
@@ -82,7 +82,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           .andWhere('transferStateId', TransferStateEnum.COMMITTED)
           .transacting(trx)
         if (transferStateChangeId.length === 0 || !transferStateChangeId[0].transferStateChangeId || transferStateChangeId.length > 1) {
-          Logger.error(`Unable to find transfer with COMMITTED state for transferId : ${transferId}`)
+          Logger.isErrorEnabled && Logger.error(`Unable to find transfer with COMMITTED state for transferId : ${transferId}`)
           throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to find transfer with COMMITTED state for transferId : ${transferId}`)
         }
 
@@ -108,7 +108,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           await trx.commit
         }
       } catch (err) {
-        Logger.error(err)
+        Logger.isErrorEnabled && Logger.error(err)
         if (doCommit) {
           await trx.rollback
         }
@@ -121,26 +121,26 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
       return await knex.transaction(trxFunction)
     }
   } catch (err) {
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
 async function insertLedgerEntries (ledgerEntries, transferId, trx = null) {
-  Logger.info(`Ledger entries: ${JSON.stringify(ledgerEntries)}`)
+  Logger.isInfoEnabled && Logger.info(`Ledger entries: ${JSON.stringify(ledgerEntries)}`)
   try {
     const knex = await Db.getKnex()
     const trxFunction = async (trx, doCommit = true) => {
       try {
         for (const ledgerEntry of ledgerEntries) {
-          Logger.info(`Inserting ledger entry: ${JSON.stringify(ledgerEntry)}`)
+          Logger.isInfoEnabled && Logger.info(`Inserting ledger entry: ${JSON.stringify(ledgerEntry)}`)
           await insertLedgerEntry(ledgerEntry, transferId, trx)
         }
         if (doCommit) {
           await trx.commit
         }
       } catch (err) {
-        Logger.error(err)
+        Logger.isErrorEnabled && Logger.error(err)
         if (doCommit) {
           await trx.rollback
         }
@@ -153,13 +153,13 @@ async function insertLedgerEntries (ledgerEntries, transferId, trx = null) {
       return await knex.transaction(trxFunction)
     }
   } catch (err) {
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
 async function updateTransferSettlement (transferId, status, trx = null) {
-  Logger.info(Utility.breadcrumb(location, { method: 'updateTransferSettlement' }))
+  Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(location, { method: 'updateTransferSettlement' }))
   try {
     const knex = await Db.getKnex()
     const trxFunction = async (trx, doCommit = true) => {
@@ -307,13 +307,13 @@ async function updateTransferSettlement (transferId, status, trx = null) {
       return await knex.transaction(trxFunction)
     }
   } catch (err) {
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
 async function getSettlementModelByTransferId (transferId, settlementGranularityName) {
-  Logger.info(Utility.breadcrumb(location, { method: 'getSettlementModelByTransferId' }))
+  Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(location, { method: 'getSettlementModelByTransferId' }))
   const knex = await Db.getKnex()
   const settlementModelByTransferId = await knex('settlementModel')
     .join('participantCurrency AS pc', function () {

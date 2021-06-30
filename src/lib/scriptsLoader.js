@@ -49,7 +49,7 @@ function loadScripts (scriptDirectory) {
       return fs.statSync(path.join(scriptDirectoryPath, fileName)).isFile()
     })
   } catch (err) {
-    Logger.error(`Error loading scripts from : ${scriptDirectoryPath}, ${err}`)
+    Logger.isErrorEnabled && Logger.error(`Error loading scripts from : ${scriptDirectoryPath}, ${err}`)
     return scriptsMap
   }
   for (const scriptFile of scriptFiles) {
@@ -76,9 +76,9 @@ async function executeScripts (scriptsMap, scriptType, scriptAction, scriptStatu
       const now = new Date()
       for (const script of scriptsMap[scriptType][scriptAction][scriptStatus]) {
         if (now.getTime() >= script.startTime.getTime() && now.getTime() <= script.endTime.getTime()) {
-          Logger.debug(`Running script: ${JSON.stringify(script)}`)
+          Logger.isDebugEnabled && Logger.debuf(`Running script: ${JSON.stringify(script)}`)
           const scriptResult = await executeScript(script.script, payload)
-          Logger.debug(`Merging script result: ${scriptResult}`)
+          Logger.isDebugEnabled && Logger.debuf(`Merging script result: ${scriptResult}`)
           _.mergeWith(scriptResults, scriptResult, (objValue, srcValue) => {
             if (_.isArray(objValue)) {
               return objValue.concat(srcValue)
@@ -89,7 +89,7 @@ async function executeScripts (scriptsMap, scriptType, scriptAction, scriptStatu
     }
     return scriptResults
   } catch (err) {
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Script execution was unsuccessful')
   }
 }
@@ -110,31 +110,31 @@ function retrieveScriptConfiguration (scriptLines, scriptsMap, scriptFile, scrip
       const scriptStatus = scriptLines[i + 2].split(':').pop().trim()
       const scriptStart = scriptLines[i + 3].substring(scriptLines[i + 3].indexOf(':') + 1).trim()
       const scriptEnd = scriptLines[i + 4].substring(scriptLines[i + 4].indexOf(':') + 1).trim()
-      Logger.info(`Rules file: ${scriptFile}: Type: ${scriptType}, Action: ${scriptAction}, Status: ${scriptStatus}, Start: ${scriptStart}, End: ${scriptEnd}`)
+      Logger.isInfoEnabled && Logger.info(`Rules file: ${scriptFile}: Type: ${scriptType}, Action: ${scriptAction}, Status: ${scriptStatus}, Start: ${scriptStart}, End: ${scriptEnd}`)
 
       if (Object.values(Enum.Events.Event.Type).indexOf(scriptType) === -1) {
         const errorMessage = `Rules file: ${scriptFile}: has invalid or missing header 'Type'`
-        Logger.error(errorMessage)
+        Logger.isErrorEnabled && Logger.error(errorMessage)
         throw new Error(errorMessage)
       }
       if (Object.values(Enum.Events.Event.Action).indexOf(scriptAction) === -1) {
         const errorMessage = `Rules file: ${scriptFile}: has invalid or missing header 'Action'`
-        Logger.error(errorMessage)
+        Logger.isErrorEnabled && Logger.error(errorMessage)
         throw new Error(errorMessage)
       }
       if (Object.values(Enum.Events.EventState).indexOf(scriptStatus) === -1) {
         const errorMessage = `Rules file: ${scriptFile}: has invalid or missing header 'Status'`
-        Logger.error(errorMessage)
+        Logger.isErrorEnabled && Logger.error(errorMessage)
         throw new Error(errorMessage)
       }
       if (new Date(scriptStart).toString() === 'Invalid Date') {
         const errorMessage = `Rules file: ${scriptFile}: has invalid or missing header 'Start'`
-        Logger.error(errorMessage)
+        Logger.isErrorEnabled && Logger.error(errorMessage)
         throw new Error(errorMessage)
       }
       if (new Date(scriptEnd).toString() === 'Invalid Date') {
         const errorMessage = `Rules file: ${scriptFile}: has invalid or missing header 'End'`
-        Logger.error(errorMessage)
+        Logger.isErrorEnabled && Logger.error(errorMessage)
         throw new Error(errorMessage)
       }
 
@@ -143,7 +143,7 @@ function retrieveScriptConfiguration (scriptLines, scriptsMap, scriptFile, scrip
         compiledScript = new vm.Script(scriptSource)
       } catch (error) {
         const errorMessage = `Rules file: ${scriptFile}: is not a valid JavaScript file`
-        Logger.error(errorMessage)
+        Logger.isErrorEnabled && Logger.error(errorMessage)
         throw new Error(errorMessage)
       }
 
@@ -157,7 +157,7 @@ function retrieveScriptConfiguration (scriptLines, scriptsMap, scriptFile, scrip
       scriptMap[scriptType] = {}
       scriptMap[scriptType][scriptAction] = {}
       scriptMap[scriptType][scriptAction][scriptStatus] = [script]
-      Logger.info(`Loading script: ${scriptFile}: ${JSON.stringify(script)}`)
+      Logger.isInfoEnabled && Logger.info(`Loading script: ${scriptFile}: ${JSON.stringify(script)}`)
       _.mergeWith(scriptsMap, scriptMap, (objValue, srcValue) => {
         if (_.isArray(objValue)) {
           return objValue.concat(srcValue)

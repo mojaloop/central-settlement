@@ -43,10 +43,10 @@ const getEnums = (id) => {
 }
 
 async function connectDatabase () {
-  Logger.debug(`Conneting to DB ${JSON.stringify(Config.DATABASE)}`)
+  Logger.isDebugEnabled && Logger.debuf(`Conneting to DB ${JSON.stringify(Config.DATABASE)}`)
   await Db.connect(Config.DATABASE)
   const dbLoadedTables = Db._tables ? Db._tables.length : -1
-  Logger.debug(`DB.connect loaded '${dbLoadedTables}' tables!`)
+  Logger.isDebugEnabled && Logger.debuf(`DB.connect loaded '${dbLoadedTables}' tables!`)
 }
 
 const createServer = async function (port, modules) {
@@ -146,7 +146,7 @@ const createHandlers = async (handlers) => {
     const handler = handlers[handlerIndex]
     let error
     if (handler.enabled) {
-      Logger.info(`Handler Setup - Registering ${JSON.stringify(handler)}!`)
+      Logger.isInfoEnabled && Logger.info(`Handler Setup - Registering ${JSON.stringify(handler)}!`)
       switch (handler.type) {
         case 'deferredSettlement':
           await RegisterHandlers.deferredSettlement.registerSettlementWindowHandler()
@@ -159,7 +159,7 @@ const createHandlers = async (handlers) => {
           break
         default:
           error = `Handler Setup - ${JSON.stringify(handler)} is not a valid handler to register!`
-          Logger.error(error)
+          Logger.isErrorEnabled && Logger.error(error)
           throw ErrorHandling.Factory.reformatFSPIOPError(error)
       }
     }
@@ -200,7 +200,7 @@ const initialize = async function (options = { modules: [], runHandlers: false, 
       }
       break
     default:
-      Logger.error(`No valid service type ${service} found!`)
+      Logger.isErrorEnabled && Logger.error(`No valid service type ${service} found!`)
       throw ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `No valid service type ${service} found!`)
   }
   if (runHandlers) {

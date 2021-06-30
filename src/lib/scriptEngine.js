@@ -39,7 +39,7 @@ async function getTransferFromCentralLedger (transferId) {
     const transferObject = await Transaction.getTransactionObject(entity[0].value)
     return transferObject
   } else {
-    Logger.error(`No records for transferId ${transferId} was found`)
+    Logger.isErrorEnabled && Logger.error(`No records for transferId ${transferId} was found`)
     throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No records for transferId ${transferId} was found`)
   }
 }
@@ -56,7 +56,7 @@ function getExtensionValue (list, key) {
 }
 
 function log (message) {
-  Logger.info(message)
+  Logger.isInfoEnabled && Logger.info(message)
 }
 
 async function execute (script, payload) {
@@ -84,7 +84,7 @@ async function execute (script, payload) {
     script.runInNewContext(sandbox, { timeout: SCRIPT_TIMEOUT })
     return { ledgerEntries }
   } catch (err) {
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }

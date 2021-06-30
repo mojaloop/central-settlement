@@ -48,7 +48,7 @@ const getSubServiceHealthBroker = async () => {
   try {
     await Promise.all(consumerTopics.map(t => Consumer.isConnected(t)))
   } catch (err) {
-    Logger.error(`getSubServiceHealthBroker failed with error ${err.message}.`)
+    Logger.isErrorEnabled && Logger.error(`getSubServiceHealthBroker failed with error ${err.message}.`)
     status = statusEnum.DOWN
   }
 
@@ -76,7 +76,7 @@ const getSubServiceHealthDatastore = async () => {
       status = statusEnum.DOWN
     }
   } catch (err) {
-    Logger.error(`getSubServiceHealthDatastore failed with error ${err.message}.`)
+    Logger.isErrorEnabled && Logger.error(`getSubServiceHealthDatastore failed with error ${err.message}.`)
     status = statusEnum.DOWN
   }
 

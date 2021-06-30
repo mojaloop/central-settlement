@@ -29,13 +29,13 @@ const Logger = require('@mojaloop/central-services-logger')
 
 module.exports = {
   insertLedgerEntries: async function insertLedgerEntries (ledgerEntries, transferEventId, trx) {
-    Logger.debug(`rules::insertLedgerEntries - ledgerEntries=${JSON.stringify(ledgerEntries)}`)
+    Logger.isDebugEnabled && Logger.debuf(`rules::insertLedgerEntries - ledgerEntries=${JSON.stringify(ledgerEntries)}`)
 
     try {
       await TransferSettlementModel.insertLedgerEntries(ledgerEntries, transferEventId, trx)
       return true
     } catch (err) {
-      Logger.error(err)
+      Logger.isErrorEnabled && Logger.error(err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }

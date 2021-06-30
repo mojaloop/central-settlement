@@ -35,7 +35,7 @@ const getById = async (id) => {
   try {
     return await IlpPacket.getById(id)
   } catch (err) {
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -54,7 +54,7 @@ const getTransactionObject = async function (inputIlpPacket) {
     const decodedData = base64url.decode(jsonPacket.data.toString())
     return JSON.parse(decodedData)
   } catch (err) {
-    Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
