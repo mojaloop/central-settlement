@@ -39,6 +39,8 @@ Test('SettlementService', async (settlementServiceTest) => {
 
   settlementServiceTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
+    sandbox.stub(Logger, 'isErrorEnabled').value(true)
+    sandbox.stub(Logger, 'error')
     test.end()
   })
 
@@ -207,6 +209,29 @@ Test('SettlementService', async (settlementServiceTest) => {
       }
 
       SettlementModel.getById = sandbox.stub().returns({})
+      await SettlementService.abortById(settlementMock.settlementId, {}, enums)
+      abortByIdTest.fail()
+      abortByIdTest.end()
+    } catch (err) {
+      Logger.error(`settlementServiceTest failed with error - ${err}`)
+      abortByIdTest.ok(err, 'error thrown')
+      abortByIdTest.end()
+    }
+  })
+
+  await settlementServiceTest.test('abortById should throw an error when settlement data is falsy', async abortByIdTest => {
+    try {
+      let enums = {}
+
+      const settlementMock = {
+        settlementId: 1,
+        state: 'PS_TRANSFERS_COMMITTED'
+      }
+      enums = {
+        settlementStates: { PS_TRANSFERS_COMMITTED: 'PS_TRANSFERS_COMMITTED' }
+      }
+
+      SettlementModel.getById = sandbox.stub().returns(false)
       await SettlementService.abortById(settlementMock.settlementId, {}, enums)
       abortByIdTest.fail()
       abortByIdTest.end()
