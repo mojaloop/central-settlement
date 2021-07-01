@@ -28,6 +28,8 @@ const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Db = require('../../../../src/lib/db')
 const IlpPackets = require('../../../../src/models/ilpPackets/ilpPacket')
+const Logger = require('@mojaloop/central-services-logger')
+const base64url = require('base64url')
 
 const TransactionsService = require('../../../../src/domain/transactions/index')
 
@@ -36,6 +38,8 @@ Test('Transactions Service', async (transactionsTest) => {
 
   transactionsTest.beforeEach(t => {
     sandbox = Sinon.createSandbox()
+    sandbox.stub(Logger, 'isErrorEnabled').value(true)
+    sandbox.stub(Logger, 'error')
 
     Db.ilpPacket = {
       find: sandbox.stub()
@@ -125,6 +129,18 @@ Test('Transactions Service', async (transactionsTest) => {
       assert.end()
     } catch (err) {
       assert.assert(err instanceof Error, ` throws ${err} `)
+      assert.end()
+    }
+  })
+
+  await transactionsTest.test('get transaction object by transfer id should throw an error', async (assert) => {
+    try {
+      sandbox.stub(base64url, 'decode').throws(new Error())
+      await TransactionsService.getTransactionObject(base64Value)
+      assert.fail('Error not thrown')
+      assert.end()
+    } catch (err) {
+      assert.ok(err instanceof Error)
       assert.end()
     }
   })
