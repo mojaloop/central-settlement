@@ -49,6 +49,12 @@ Test('Server Setup', async setupTest => {
   setupTest.beforeEach(test => {
     try {
       sandbox = Sinon.createSandbox()
+      sandbox.stub(Logger, 'isDebugEnabled').value(true)
+      sandbox.stub(Logger, 'debug')
+      sandbox.stub(Logger, 'isErrorEnabled').value(true)
+      sandbox.stub(Logger, 'error')
+      sandbox.stub(Logger, 'isInfoEnabled').value(true)
+      sandbox.stub(Logger, 'info')
 
       RegisterHandlersStub = {
         registerAllHandlers: sandbox.stub().returns(Promise.resolve()),
