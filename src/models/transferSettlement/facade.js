@@ -57,8 +57,9 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           .transacting(trx)
 
         if (!Array.isArray(recordsToInsert) || recordsToInsert.length === 0) {
-          Logger.isErrorEnabled && Logger.error(`No settlement model defined for transferId: ${transferId} and ledgerEntry: ${JSON.stringify(ledgerEntry)}`)
-          throw new Error(`No settlement model defined for transferId: ${transferId} and ledgerEntry: ${JSON.stringify(ledgerEntry)}`)
+          const error = new Error(`No settlement model defined for transferId: ${transferId} and ledgerEntry: ${JSON.stringify(ledgerEntry)}`)
+          Logger.isErrorEnabled && Logger.error(error)
+          throw error
         }
 
         await knex('transferParticipant')
@@ -71,8 +72,9 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
             .increment('value', record.amount)
             .transacting(trx)
           if (queryResult === 0) {
-            Logger.isErrorEnabled && Logger.error(`Unable to update participantPosition record for participantCurrencyId: ${record.participantCurrencyId}`)
-            throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to update participantPosition record for participantCurrencyId: ${record.participantCurrencyId}`)
+            const error = ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to update participantPosition record for participantCurrencyId: ${record.participantCurrencyId}`)
+            Logger.isErrorEnabled && Logger.error(error)
+            throw error
           }
         }))
 
@@ -82,8 +84,9 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           .andWhere('transferStateId', TransferStateEnum.COMMITTED)
           .transacting(trx)
         if (transferStateChangeId.length === 0 || !transferStateChangeId[0].transferStateChangeId || transferStateChangeId.length > 1) {
-          Logger.isErrorEnabled && Logger.error(`Unable to find transfer with COMMITTED state for transferId : ${transferId}`)
-          throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to find transfer with COMMITTED state for transferId : ${transferId}`)
+          const error = ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to find transfer with COMMITTED state for transferId : ${transferId}`)
+          Logger.isErrorEnabled && Logger.error(error)
+          throw error
         }
 
         const participantPositionRecords = await knex('participantPosition')
@@ -93,7 +96,9 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           .transacting(trx)
 
         if (participantPositionRecords.length !== 2) {
-          throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to find all participantPosition records for ParticipantCurrency: {${recordsToInsert[0].participantCurrencyId},${recordsToInsert[1].participantCurrencyId}}`)
+          const error = ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to find all participantPosition records for ParticipantCurrency: {${recordsToInsert[0].participantCurrencyId},${recordsToInsert[1].participantCurrencyId}}`)
+          Logger.isErrorEnabled && Logger.error(error)
+          throw error
         }
         const participantPositionChangeRecords = participantPositionRecords.map(participantPositionRecord => {
           participantPositionRecord.transferStateChangeId = transferStateChangeId[0].transferStateChangeId

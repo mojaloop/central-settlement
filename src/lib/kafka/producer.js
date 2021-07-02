@@ -70,9 +70,10 @@ const produceMessage = async (messageProtocol, topicConf, config) => {
     Logger.isInfoEnabled && Logger.info('Producer::end')
     return true
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
     Logger.isInfoEnabled && Logger.info('Producer error has occurred')
-    throw ErrorHandler.Factory.createInternalServerFSPIOPError('Producer error has occurred', err)
+    const error = ErrorHandler.Factory.createInternalServerFSPIOPError('Producer error has occurred', err)
+    Logger.isErrorEnabled && Logger.error(err)
+    throw error
   }
 }
 
@@ -103,12 +104,14 @@ const disconnect = async (topicName = null) => {
       }
     }
     if (isError) {
-      Logger.isErrorEnabled && Logger.error(`The following Producers could not be disconnected: ${JSON.stringify(errorTopicList)}`)
-      throw ErrorHandler.Factory.createInternalServerFSPIOPError(`The following Producers could not be disconnected: ${JSON.stringify(errorTopicList)}`)
+      const error = ErrorHandler.Factory.createInternalServerFSPIOPError(`The following Producers could not be disconnected: ${JSON.stringify(errorTopicList)}`)
+      Logger.isErrorEnabled && Logger.error(error)
+      throw error
     }
   } else {
-    Logger.isErrorEnabled && Logger.error(`Unable to disconnect Producer: ${topicName}`)
-    throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to disconnect Producer: ${topicName}`)
+    const error = ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to disconnect Producer: ${topicName}`)
+    Logger.isErrorEnabled && Logger.error(error)
+    throw error
   }
 }
 
@@ -126,8 +129,9 @@ const getProducer = (topicName) => {
   if (listOfProducers[topicName]) {
     return listOfProducers[topicName]
   } else {
-    Logger.isErrorEnabled && Logger.error(`No producer found for topic ${topicName}`)
-    throw ErrorHandler.Factory.createInternalServerFSPIOPError(`No producer found for topic ${topicName}`)
+    const error = ErrorHandler.Factory.createInternalServerFSPIOPError(`No producer found for topic ${topicName}`)
+    Logger.isErrorEnabled && Logger.error(error)
+    throw error
   }
 }
 

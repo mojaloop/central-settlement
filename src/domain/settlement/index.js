@@ -115,8 +115,9 @@ module.exports = {
         participants
       }
     } else {
-      Logger.isErrorEnabled && Logger.error('Settlement not found')
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement not found')
+      const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement not found')
+      Logger.isErrorEnabled && Logger.error(error)
+      throw error
     }
   },
 
@@ -126,21 +127,24 @@ module.exports = {
     const settlementData = await SettlementModel.getById({ settlementId })
 
     if (!settlementData) {
-      Logger.isErrorEnabled && Logger.error('Settlement not found')
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement not found')
+      const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement not found')
+      Logger.isErrorEnabled && Logger.error(error)
+      throw error
     }
     if (settlementData.state === enums.settlementStates.PS_TRANSFERS_COMMITTED ||
       settlementData.state === enums.settlementStates.SETTLING ||
       settlementData.state === enums.settlementStates.SETTLED) {
-      Logger.isErrorEnabled && Logger.error('State change is not allowed')
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'State change is not allowed')
+      const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'State change is not allowed')
+      Logger.isErrorEnabled && Logger.error(error)
+      throw error
     } else if (settlementData.state === enums.settlementStates.ABORTED) {
       return SettlementModel.abortByIdStateAborted(settlementId, payload, enums)
     } else if (settlementData.state === enums.settlementStates.PS_TRANSFERS_RESERVED) {
       const transferCommittedAccount = await SettlementModel.getTransferCommitedAccount(settlementId, enums)
       if (transferCommittedAccount !== undefined) {
-        Logger.isErrorEnabled && Logger.error('At least one settlement transfer is committed')
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'At least one settlement transfer is committed')
+        const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'At least one settlement transfer is committed')
+        Logger.isErrorEnabled && Logger.error(error)
+        throw error
       }
     }
   },
@@ -217,12 +221,14 @@ module.exports = {
         })
         return result
       } else {
-        Logger.isErrorEnabled && Logger.error('Settlements not found')
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlements not found')
+        const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlements not found')
+        Logger.isErrorEnabled && Logger.error(error)
+        throw error
       }
     } else {
-      Logger.isErrorEnabled && Logger.error('Use at least one parameter: state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId')
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Use at least one parameter: state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId')
+      const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Use at least one parameter: state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId')
+      Logger.isErrorEnabled && Logger.error(error)
+      throw error
     }
   },
 
@@ -231,11 +237,14 @@ module.exports = {
     const { settlementModel, reason, settlementWindows } = params
     const settlementModelData = await SettlementModelModel.getByName(settlementModel)
     if (!settlementModelData) {
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement model not found')
+      const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement model not found')
+      Logger.isErrorEnabled && Logger.error(error)
+      throw error
     } else if (settlementModelData.settlementGranularityId === enums.settlementGranularity.GROSS ||
       settlementModelData.settlementDelayId === enums.settlementDelay.IMMEDIATE) {
-      Logger.isErrorEnabled && Logger.error('Settlement can not be created for GROSS or IMMEDIATE models')
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement can not be created for GROSS or IMMEDIATE models')
+      const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement can not be created for GROSS or IMMEDIATE models')
+      Logger.isErrorEnabled && Logger.error(error)
+      throw error
     }
 
     // validate windows content
@@ -244,8 +253,9 @@ module.exports = {
     const applicableIdList = applicableWindows.map(v => v.settlementWindowId)
     const nonApplicableIdList = arrayDiff(idList, applicableIdList)
     if (nonApplicableIdList.length) {
-      Logger.isErrorEnabled && Logger.error(`Inapplicable windows ${nonApplicableIdList.join(', ')}`)
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Inapplicable windows ${nonApplicableIdList.join(', ')}`)
+      const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Inapplicable windows ${nonApplicableIdList.join(', ')}`)
+      Logger.isErrorEnabled && Logger.error(error)
+      throw error
     }
 
     // settlement event trigger
@@ -331,17 +341,21 @@ module.exports = {
       }
     } else {
       if (!settlementFound) {
-        Logger.isErrorEnabled && Logger.error('Settlements not found')
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement not found')
+        const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Settlement not found')
+        Logger.isErrorEnabled && Logger.error(error)
+        throw error
       } else if (!participantFoundInSettlement) {
-        Logger.isErrorEnabled && Logger.error('Participant not in settlement')
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Participant not in settlement')
+        const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Participant not in settlement')
+        Logger.isErrorEnabled && Logger.error(error)
+        throw error
       } else if (!participantAndAccountMatched) {
-        Logger.isErrorEnabled && Logger.error('Provided account does not match any participant position account')
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Provided account does not match any participant position account')
+        const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Provided account does not match any participant position account')
+        Logger.isErrorEnabled && Logger.error(error)
+        throw error
       } else { // else if (!accountFoundInSettlement) { // else if changed to else for achieving 100% branch coverage (else path not taken)
-        Logger.isErrorEnabled && Logger.error('Account not in settlement')
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Account not in settlement')
+        const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Account not in settlement')
+        Logger.isErrorEnabled && Logger.error(error)
+        throw error
       }
     }
 

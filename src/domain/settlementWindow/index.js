@@ -51,12 +51,14 @@ module.exports = {
         settlementWindow.content = settlementWindowContent
         return settlementWindow
       } else {
-        Logger.isErrorEnabled && Logger.error(`No records for settlementWidowContentId : ${params.settlementWindowId} found`)
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No records for settlementWidowContentId : ${params.settlementWindowId} found`)
+        const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No records for settlementWidowContentId : ${params.settlementWindowId} found`)
+        Logger.isErrorEnabled && Logger.error(error)
+        throw error
       }
     } else {
-      Logger.isErrorEnabled && Logger.error(`No record for settlementWindowId: ${params.settlementWindowId} found`)
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No record for settlementWindowId: ${params.settlementWindowId} found`)
+      const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No record for settlementWindowId: ${params.settlementWindowId} found`)
+      Logger.isErrorEnabled && Logger.error(error)
+      throw error
     }
   },
 
@@ -70,18 +72,21 @@ module.exports = {
           if (settlementWindowContent) {
             settlementWindow.content = settlementWindowContent
           } else {
-            Logger.isErrorEnabled && Logger.error(`No records for settlementWidowContentId : ${settlementWindow.settlementWindowId} found`)
-            throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No records for settlementWidowContentId : ${settlementWindow.settlementWindowId} found`)
+            const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No records for settlementWidowContentId : ${settlementWindow.settlementWindowId} found`)
+            Logger.isErrorEnabled && Logger.error(error)
+            throw error
           }
         }
         return settlementWindows
       } else {
-        Logger.isErrorEnabled && Logger.error(`settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
-        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
+        const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
+        Logger.isErrorEnabled && Logger.error(error)
+        throw error
       }
     } else {
-      Logger.isErrorEnabled && Logger.error('Use at least one parameter: participantId, state, fromDateTime, toDateTime, currency')
-      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Use at least one parameter: participantId, state, fromDateTime, toDateTime, currency')
+      const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Use at least one parameter: participantId, state, fromDateTime, toDateTime, currency')
+      Logger.isErrorEnabled && Logger.error(error)
+      throw error
     }
   },
 

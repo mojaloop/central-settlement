@@ -144,7 +144,7 @@ const createHandlers = async (handlers) => {
 
   for (handlerIndex in handlers) {
     const handler = handlers[handlerIndex]
-    let error
+    let errorMessage
     if (handler.enabled) {
       Logger.isInfoEnabled && Logger.info(`Handler Setup - Registering ${JSON.stringify(handler)}!`)
       switch (handler.type) {
@@ -158,9 +158,9 @@ const createHandlers = async (handlers) => {
           await RegisterHandlers.rules.registerRulesHandler()
           break
         default:
-          error = `Handler Setup - ${JSON.stringify(handler)} is not a valid handler to register!`
-          Logger.isErrorEnabled && Logger.error(error)
-          throw ErrorHandling.Factory.reformatFSPIOPError(error)
+          errorMessage = `Handler Setup - ${JSON.stringify(handler)} is not a valid handler to register!`
+          Logger.isErrorEnabled && Logger.error(errorMessage)
+          throw ErrorHandling.Factory.reformatFSPIOPError(errorMessage)
       }
     }
   }
@@ -190,6 +190,7 @@ const createHandlers = async (handlers) => {
 const initialize = async function (options = { modules: [], runHandlers: false, handlers: [] }) {
   const { service, port, modules, runHandlers, handlers } = options
   let server
+  let error
   switch (service) {
     case 'api':
       server = await createServer(port, modules)
@@ -200,8 +201,9 @@ const initialize = async function (options = { modules: [], runHandlers: false, 
       }
       break
     default:
-      Logger.isErrorEnabled && Logger.error(`No valid service type ${service} found!`)
-      throw ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `No valid service type ${service} found!`)
+      error = ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `No valid service type ${service} found!`)
+      Logger.isErrorEnabled && Logger.error(error)
+      throw error
   }
   if (runHandlers) {
     if (Array.isArray(handlers) && handlers.length > 0) {

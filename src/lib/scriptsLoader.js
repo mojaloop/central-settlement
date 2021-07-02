@@ -89,8 +89,9 @@ async function executeScripts (scriptsMap, scriptType, scriptAction, scriptStatu
     }
     return scriptResults
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
-    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Script execution was unsuccessful')
+    const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Script execution was unsuccessful')
+    Logger.isErrorEnabled && Logger.error(error)
+    throw error
   }
 }
 
