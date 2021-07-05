@@ -1,7 +1,7 @@
 {
     "name": "central-settlement",
     "description": "Central settlements hosted by a scheme to record and make settlements.",
-    "version": "13.2.0",
+    "version": "13.3.0",
     "license": "Apache-2.0",
     "private": false,
     "author": "ModusBox",
@@ -30,6 +30,7 @@
         "@hapi/hapi": "20.1.4",
         "@hapi/inert": "6.0.3",
         "@hapi/vision": "6.1.0",
+        "@mojaloop/event-sdk": "10.7.1",
         "@mojaloop/central-ledger": "13.10.0",
         "@mojaloop/central-services-database": "10.7.0",
         "@mojaloop/central-services-error-handling": "11.3.0",
@@ -56,6 +57,9 @@
     "devDependencies": {
         "@hapi/joi": "17.1.1",
         "@types/lodash": "4.14.170",
+        "@mojaloop/central-services-metrics": "11.0.0",
+        "ajv": "8.6.0",
+        "ajv-keywords": "5.0.0",
         "axios": "0.21.1",
         "bluebird": "3.7.2",
         "chai": "4.3.4",
@@ -81,6 +85,34 @@
         "tap-xunit": "2.4.1",
         "tape": "5.2.2",
         "tapes": "4.1.0"
+    },
+    "peerDependencies": {
+        "@mojaloop/central-services-error-handling": "11.3.0",
+        "@mojaloop/central-services-logger": "10.6.1",
+        "@mojaloop/central-services-metrics": "11.0.0",
+        "@mojaloop/event-sdk": "10.7.1",
+        "ajv": "8.6.0",
+        "ajv-keywords": "5.0.0"
+    },
+    "peerDependenciesMeta": {
+        "@mojaloop/central-services-error-handling": {
+            "optional": false
+        },
+        "@mojaloop/central-services-logger": {
+            "optional": false
+        },
+        "@mojaloop/central-services-metrics": {
+            "optional": false
+        },
+        "@mojaloop/event-sdk": {
+            "optional": false
+        },
+        "ajv": {
+            "optional": false
+        },
+        "ajv-keyboards": {
+            "optional": false
+        }
     },
     "pre-commit": [
         "lint",

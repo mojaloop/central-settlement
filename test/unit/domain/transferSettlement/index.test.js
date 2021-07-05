@@ -35,6 +35,8 @@ Test('TransferSettlementService', async (transferSettlementServiceTest) => {
 
   transferSettlementServiceTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
+    sandbox.stub(Logger, 'isDebugEnabled').value(true)
+    sandbox.stub(Logger, 'debug')
     test.end()
   })
 

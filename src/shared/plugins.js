@@ -31,6 +31,7 @@ const Blipp = require('blipp')
 const ErrorHandling = require('@mojaloop/central-services-error-handling')
 const RawPayloadToDataUri = require('@mojaloop/central-services-shared').Util.Hapi.HapiRawPayload
 const APIDocumentation = require('@mojaloop/central-services-shared').Util.Hapi.APIDocumentation
+const HapiEventPlugin = require('@mojaloop/central-services-shared').Util.Hapi.HapiEventPlugin
 const Config = require('../lib/config')
 
 /**
@@ -68,7 +69,14 @@ const registerPlugins = async (server) => {
     plugin: require('hapi-auth-bearer-token')
   })
 
-  await server.register([Inert, Vision, Blipp, ErrorHandling, RawPayloadToDataUri])
+  await server.register([
+    Inert,
+    Vision,
+    Blipp,
+    ErrorHandling,
+    RawPayloadToDataUri,
+    HapiEventPlugin
+  ])
 }
 
 module.exports = {

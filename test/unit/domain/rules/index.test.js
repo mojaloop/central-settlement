@@ -32,9 +32,14 @@ const TransferSettlementModel = require('../../../../src/models/transferSettleme
 
 Test('RulesService', async (rulesServiceTest) => {
   let sandbox
+  sandbox = Sinon.createSandbox()
 
   rulesServiceTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
+    sandbox.stub(Logger, 'isDebugEnabled').value(true)
+    sandbox.stub(Logger, 'isErrorEnabled').value(true)
+    sandbox.stub(Logger, 'error')
+    sandbox.stub(Logger, 'debug')
     test.end()
   })
 
@@ -61,8 +66,9 @@ Test('RulesService', async (rulesServiceTest) => {
     })
 
     await ledgerEntriesTest.test('throw an exception', async test => {
+      const error = new Error('Error occurred')
       try {
-        TransferSettlementModel.insertLedgerEntries = sandbox.stub().throws(new Error('Error occurred'))
+        TransferSettlementModel.insertLedgerEntries = sandbox.stub().throws(error)
         await RulesService.insertLedgerEntries(ledgerEntries, transferEventId)
         test.fail()
         test.end()

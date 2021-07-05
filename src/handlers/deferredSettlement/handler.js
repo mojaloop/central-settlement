@@ -35,7 +35,8 @@
 const Config = require('../../lib/config')
 const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 const Enum = require('@mojaloop/central-services-shared').Enum
-const ErrorHandling = require('@mojaloop/central-services-error-handling')
+const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const EventSdk = require('@mojaloop/event-sdk')
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Logger = require('@mojaloop/central-services-logger')
 const Producer = require('@mojaloop/central-services-stream').Util.Producer
@@ -58,54 +59,76 @@ const retryOpts = {
 
 const closeSettlementWindow = async (error, messages) => {
   if (error) {
-    Logger.error(error)
-    throw ErrorHandling.Factory.reformatFSPIOPError(error)
+    Logger.isErrorEnabled && Logger.error(error)
+    throw ErrorHandler.Factory.reformatFSPIOPError(error)
   }
-  let message = {}
+  const message = Array.isArray(messages) ? messages[0] : messages
+  const contextFromMessage = EventSdk.Tracer.extractContextFromMessage(message.value)
+  const span = EventSdk.Tracer.createChildSpanFromContext('cs_close_settlement_window', contextFromMessage)
+
   try {
-    Logger.info(Utility.breadcrumb(location, { method: 'closeSettlementWindow' }))
-    if (Array.isArray(messages)) {
-      message = messages[0]
-    } else {
-      message = messages
-    }
+    Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(location, { method: 'closeSettlementWindow' }))
     const payload = message.value.content.payload
+    const uriParams = message.value.content.uriParams
+    const headers = message.value.content.headers
+    const spanTags = Utility.EventFramework.getSpanTags(
+      Enum.Events.Event.Type.SETTLEMENT_WINDOW,
+      Enum.Events.Event.Action.CLOSE,
+      (payload && payload.settlementWindowId) || (uriParams && uriParams.id),
+      headers[Enum.Http.Headers.FSPIOP.SOURCE],
+      headers[Enum.Http.Headers.FSPIOP.DESTINATION]
+    )
+    span.setTags(spanTags)
+    await span.audit(message, EventSdk.AuditEventAction.start)
+
     const metadata = message.value.metadata
     const action = metadata.event.action
 
     const kafkaTopic = message.topic
-    const params = { message, kafkaTopic, decodedPayload: payload, consumer: Consumer, producer: Producer }
+    const params = { message, kafkaTopic, span, decodedPayload: payload, consumer: Consumer, producer: Producer }
 
     const actionLetter = action === Enum.Events.Event.Action.CLOSE
       ? Enum.Events.ActionLetter.close
       : Enum.Events.ActionLetter.unknown
 
     if (!payload) {
-      Logger.info(Utility.breadcrumb(location, `missingPayload--${actionLetter}1`))
-      const fspiopError = ErrorHandling.Factory.createInternalServerFSPIOPError('Settlement window handler missing payload')
+      Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(location, `missingPayload--${actionLetter}1`))
+      const fspiopError = ErrorHandler.Factory.createInternalServerFSPIOPError('Settlement window handler missing payload')
       const eventDetail = { functionality: Enum.Events.Event.Type.NOTIFICATION, action: Enum.Events.Event.Action.SETTLEMENT_WINDOW }
       await Kafka.proceed(Config.KAFKA_CONFIG, params, { consumerCommit, fspiopError: fspiopError.toApiErrorObject(Config.ERROR_HANDLING), eventDetail, fromSwitch })
       throw fspiopError
     }
     const settlementWindowId = payload.settlementWindowId
     const reason = payload.reason
-    Logger.info(Utility.breadcrumb(location, 'validationPassed'))
+    Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(location, 'validationPassed'))
     await Kafka.commitMessageSync(Consumer, kafkaTopic, message)
 
     await retry(async () => { // use bail(new Error('to break before max retries'))
       const settlementWindow = await SettlementWindowService.close(settlementWindowId, reason)
       if (!settlementWindow || settlementWindow.state !== Enum.Settlements.SettlementWindowState.CLOSED) {
-        Logger.info(Utility.breadcrumb(location, { path: 'windowCloseRetry' }))
+        Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(location, { path: 'windowCloseRetry' }))
         const errorDescription = `Settlement window close failed after max retry count ${retryCount} has been exhausted in ${retryCount * retryDelay / 1000}s`
-        throw ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, errorDescription)
+        throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, errorDescription)
       }
-      Logger.info(Utility.breadcrumb(location, `done--${actionLetter}2`))
+      Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(location, `done--${actionLetter}2`))
       return true
     }, retryOpts)
     return true
   } catch (err) {
-    Logger.error(`${Utility.breadcrumb(location)}::${err.message}--0`)
+    Logger.isErrorEnabled && Logger.error(`${Utility.breadcrumb(location)}::${err.message}--0`)
+    const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
+    const state = new EventSdk.EventStateMetadata(
+      EventSdk.EventStatusType.failed,
+      fspiopError.apiErrorCode.code,
+      fspiopError.apiErrorCode.message
+    )
+    await span.error(fspiopError, state)
+    await span.finish(fspiopError.message, state)
     return true
+  } finally {
+    if (!span.isFinished) {
+      await span.finish()
+    }
   }
 }
 
@@ -127,8 +150,8 @@ const registerSettlementWindowHandler = async () => {
     await Consumer.createHandler(settlementWindowHandler.topicName, settlementWindowHandler.config, settlementWindowHandler.command)
     return true
   } catch (err) {
-    Logger.error(err)
-    throw ErrorHandling.Factory.reformatFSPIOPError(err)
+    Logger.isErrorEnabled && Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
@@ -145,7 +168,8 @@ const registerAllHandlers = async () => {
     await registerSettlementWindowHandler()
     return true
   } catch (err) {
-    throw ErrorHandling.Factory.reformatFSPIOPError(err)
+    Logger.isErrorEnabled && Logger.error(err)
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 

@@ -27,6 +27,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
+const EventSdk = require('@mojaloop/event-sdk')
 const Util = require('@mojaloop/central-services-shared').Util
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
@@ -34,7 +35,6 @@ const KafkaConsumer = require('@mojaloop/central-services-stream').Kafka.Consume
 const Uuid = require('uuid4')
 const Enum = require('@mojaloop/central-services-shared').Enum
 const SettlementWindowService = require('../../../../src/domain/settlementWindow/index')
-const SettlementWindowHandler = require('../../../../src/handlers/deferredSettlement/handler')
 const Proxyquire = require('proxyquire')
 
 const payload = {
@@ -190,6 +190,8 @@ const command = () => {}
 
 Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
   let sandbox
+  let SpanStub
+  let SettlementWindowHandler
 
   settlementWindowHandlerTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
@@ -207,6 +209,29 @@ Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
     sandbox.stub(Util.StreamingProtocol)
     sandbox.stub(SettlementWindowService)
     Kafka.produceGeneralMessage.returns(Promise.resolve())
+    SpanStub = {
+      audit: sandbox.stub().callsFake(),
+      error: sandbox.stub().callsFake(),
+      finish: sandbox.stub().callsFake(),
+      setTags: sandbox.stub().callsFake()
+    }
+
+    const TracerStub = {
+      extractContextFromMessage: sandbox.stub().callsFake(() => {
+        return {}
+      }),
+      createChildSpanFromContext: sandbox.stub().callsFake(() => {
+        return SpanStub
+      })
+    }
+
+    const EventSdkStub = {
+      Tracer: TracerStub
+    }
+
+    SettlementWindowHandler = Proxyquire('../../../../src/handlers/deferredSettlement/handler', {
+      '@mojaloop/event-sdk': EventSdkStub
+    })
     test.end()
   })
 
@@ -287,7 +312,6 @@ Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
         test.end()
       }
     })
-
     closeSettlementWindowTest.test('throw -Settlement window handler missing payload- when the payload is missing', async (test) => {
       const localMessages = Util.clone(messagesMissingPayload)
       await Consumer.createHandler(topicName, config, command)
@@ -296,9 +320,10 @@ Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
       SettlementWindowService.close.returns(Promise.resolve(settlementWindow))
       const result = await SettlementWindowHandler.closeSettlementWindow(null, localMessages)
       test.equal(result, true)
+      const expectedState = new EventSdk.EventStateMetadata(EventSdk.EventStatusType.failed, '2001', 'Internal server error')
+      test.ok(SpanStub.finish.calledWith('Settlement window handler missing payload', expectedState))
       test.end()
     })
-
     closeSettlementWindowTest.end()
   })
   settlementWindowHandlerTest.test('registerAllHandlers should', registerAllHandlersTest => {

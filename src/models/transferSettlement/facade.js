@@ -57,7 +57,9 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           .transacting(trx)
 
         if (!Array.isArray(recordsToInsert) || recordsToInsert.length === 0) {
-          throw new Error(`No settlement model defined for transferId: ${transferId} and ledgerEntry: ${JSON.stringify(ledgerEntry)}`)
+          const error = new Error(`No settlement model defined for transferId: ${transferId} and ledgerEntry: ${JSON.stringify(ledgerEntry)}`)
+          Logger.isErrorEnabled && Logger.error(error)
+          throw error
         }
 
         await knex('transferParticipant')
@@ -70,7 +72,9 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
             .increment('value', record.amount)
             .transacting(trx)
           if (queryResult === 0) {
-            throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to update participantPosition record for participantCurrencyId: ${record.participantCurrencyId}`)
+            const error = ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to update participantPosition record for participantCurrencyId: ${record.participantCurrencyId}`)
+            Logger.isErrorEnabled && Logger.error(error)
+            throw error
           }
         }))
 
@@ -80,7 +84,9 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           .andWhere('transferStateId', TransferStateEnum.COMMITTED)
           .transacting(trx)
         if (transferStateChangeId.length === 0 || !transferStateChangeId[0].transferStateChangeId || transferStateChangeId.length > 1) {
-          throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to find transfer with COMMITTED state for transferId : ${transferId}`)
+          const error = ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to find transfer with COMMITTED state for transferId : ${transferId}`)
+          Logger.isErrorEnabled && Logger.error(error)
+          throw error
         }
 
         const participantPositionRecords = await knex('participantPosition')
@@ -90,7 +96,9 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           .transacting(trx)
 
         if (participantPositionRecords.length !== 2) {
-          throw ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to find all participantPosition records for ParticipantCurrency: {${recordsToInsert[0].participantCurrencyId},${recordsToInsert[1].participantCurrencyId}}`)
+          const error = ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to find all participantPosition records for ParticipantCurrency: {${recordsToInsert[0].participantCurrencyId},${recordsToInsert[1].participantCurrencyId}}`)
+          Logger.isErrorEnabled && Logger.error(error)
+          throw error
         }
         const participantPositionChangeRecords = participantPositionRecords.map(participantPositionRecord => {
           participantPositionRecord.transferStateChangeId = transferStateChangeId[0].transferStateChangeId
@@ -105,6 +113,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           await trx.commit
         }
       } catch (err) {
+        Logger.isErrorEnabled && Logger.error(err)
         if (doCommit) {
           await trx.rollback
         }
@@ -117,24 +126,26 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
       return await knex.transaction(trxFunction)
     }
   } catch (err) {
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
 async function insertLedgerEntries (ledgerEntries, transferId, trx = null) {
-  Logger.info(`Ledger entries: ${JSON.stringify(ledgerEntries)}`)
+  Logger.isInfoEnabled && Logger.info(`Ledger entries: ${JSON.stringify(ledgerEntries)}`)
   try {
     const knex = await Db.getKnex()
     const trxFunction = async (trx, doCommit = true) => {
       try {
         for (const ledgerEntry of ledgerEntries) {
-          Logger.info(`Inserting ledger entry: ${JSON.stringify(ledgerEntry)}`)
+          Logger.isInfoEnabled && Logger.info(`Inserting ledger entry: ${JSON.stringify(ledgerEntry)}`)
           await insertLedgerEntry(ledgerEntry, transferId, trx)
         }
         if (doCommit) {
           await trx.commit
         }
       } catch (err) {
+        Logger.isErrorEnabled && Logger.error(err)
         if (doCommit) {
           await trx.rollback
         }
@@ -147,12 +158,13 @@ async function insertLedgerEntries (ledgerEntries, transferId, trx = null) {
       return await knex.transaction(trxFunction)
     }
   } catch (err) {
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
 async function updateTransferSettlement (transferId, status, trx = null) {
-  Logger.info(Utility.breadcrumb(location, { method: 'updateTransferSettlement' }))
+  Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(location, { method: 'updateTransferSettlement' }))
   try {
     const knex = await Db.getKnex()
     const trxFunction = async (trx, doCommit = true) => {
@@ -300,12 +312,13 @@ async function updateTransferSettlement (transferId, status, trx = null) {
       return await knex.transaction(trxFunction)
     }
   } catch (err) {
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
 
 async function getSettlementModelByTransferId (transferId, settlementGranularityName) {
-  Logger.info(Utility.breadcrumb(location, { method: 'getSettlementModelByTransferId' }))
+  Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(location, { method: 'getSettlementModelByTransferId' }))
   const knex = await Db.getKnex()
   const settlementModelByTransferId = await knex('settlementModel')
     .join('participantCurrency AS pc', function () {

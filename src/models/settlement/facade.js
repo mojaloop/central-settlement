@@ -37,6 +37,7 @@ const ParticipantFacade = require('@mojaloop/central-ledger/src/models/participa
 const Enums = require('../lib/enums')
 const Utility = require('../../lib/utility')
 const SettlementModelModel = require('./settlementModel')
+const Logger = require('@mojaloop/central-services-logger')
 
 const groupByWindowsWithContent = (records) => {
   const settlementWindowsAssoc = {}
@@ -211,6 +212,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
         await trx.commit
       }
     } catch (err) {
+      Logger.isErrorEnabled && Logger.error(err)
       if (doCommit) {
         await trx.rollback
       }
@@ -388,6 +390,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
         }
       }
     } catch (err) {
+      Logger.isErrorEnabled && Logger.error(err)
       if (doCommit) {
         await trx.rollback
       }
@@ -544,6 +547,7 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
         }
       }
     } catch (err) {
+      Logger.isErrorEnabled && Logger.error(err)
       if (doCommit) {
         await trx.rollback
       }
@@ -716,6 +720,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
         }
       }
     } catch (err) {
+      Logger.isErrorEnabled && Logger.error(err)
       if (doCommit) {
         await trx.rollback
       }
@@ -1205,6 +1210,7 @@ const Facade = {
           }
         }
       } catch (err) {
+        Logger.isErrorEnabled && Logger.error(err)
         await trx.rollback
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
@@ -1317,6 +1323,7 @@ const Facade = {
           reason: payload.reason
         }
       } catch (err) {
+        Logger.isErrorEnabled && Logger.error(err)
         await trx.rollback
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
@@ -1529,6 +1536,7 @@ const Facade = {
         await trx.commit
         return settlementId
       } catch (err) {
+        Logger.isErrorEnabled && Logger.error(err)
         await trx.rollback
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }

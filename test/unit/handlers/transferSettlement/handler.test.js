@@ -28,6 +28,7 @@ const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Uuid = require('uuid4')
 const Proxyquire = require('proxyquire')
+const EventSdk = require('@mojaloop/event-sdk')
 const Util = require('@mojaloop/central-services-shared').Util
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Logger = require('@mojaloop/central-services-logger')
@@ -35,7 +36,6 @@ const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 const KafkaConsumer = require('@mojaloop/central-services-stream').Kafka.Consumer
 const Db = require('../../../../src/lib/db')
 const TransferFulfilService = require('../../../../src/domain/transferSettlement/index')
-const TransferFulfilHandler = require('../../../../src/handlers/grossSettlement/handler')
 
 const payload = {
   settlementWindowId: '3',
@@ -123,6 +123,9 @@ const command = () => {}
 
 Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
   let sandbox
+  let SpanStub
+  let TransferFulfilHandler
+
   transferSettlementHandlerTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(KafkaConsumer.prototype, 'constructor').returns(Promise.resolve())
@@ -143,6 +146,29 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
     sandbox.stub(Db, 'getKnex').returns(knexStub)
     const trxStub = sandbox.stub()
     knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+    SpanStub = {
+      audit: sandbox.stub().callsFake(),
+      error: sandbox.stub().callsFake(),
+      finish: sandbox.stub().callsFake(),
+      setTags: sandbox.stub().callsFake()
+    }
+
+    const TracerStub = {
+      extractContextFromMessage: sandbox.stub().callsFake(() => {
+        return {}
+      }),
+      createChildSpanFromContext: sandbox.stub().callsFake(() => {
+        return SpanStub
+      })
+    }
+
+    const EventSdkStub = {
+      Tracer: TracerStub
+    }
+
+    TransferFulfilHandler = Proxyquire('../../../../src/handlers/grossSettlement/handler', {
+      '@mojaloop/event-sdk': EventSdkStub
+    })
     test.end()
   })
 
@@ -241,6 +267,8 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
       Kafka.proceed.returns(true)
       try {
         await TransferFulfilHandler.processTransferSettlement(true, localMessages[0])
+        const expectedState = new EventSdk.EventStateMetadata(EventSdk.EventStatusType.failed, '2001', 'Internal server error')
+        test.ok(SpanStub.finish.calledWith('Error occurred', expectedState))
         test.fail('should throw error')
         test.end()
       } catch (err) {
@@ -257,6 +285,8 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
       Kafka.proceed.returns(true)
       try {
         await TransferFulfilHandler.processTransferSettlement(null, localMessages[0])
+        const expectedState = new EventSdk.EventStateMetadata(EventSdk.EventStatusType.failed, '2001', 'Internal server error')
+        test.ok(SpanStub.finish.calledWith('TransferSettlement handler missing payload', expectedState))
         test.pass('Update terminated due to missing payload')
         test.end()
       } catch (err) {

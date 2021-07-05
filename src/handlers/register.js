@@ -52,23 +52,24 @@ const RulesHandler = require('./rules/handler')
 const registerAllHandlers = async () => {
   try {
     const modules = await requireGlob(['./**/handler.js'])
-    Logger.info(JSON.stringify(modules))
+    Logger.isInfoEnabled && Logger.info(JSON.stringify(modules))
     for (const key in modules) {
-      Logger.info(`Registering handler module[${key}]: ${JSON.stringify(modules[key])}`)
+      Logger.isInfoEnabled && Logger.info(`Registering handler module[${key}]: ${JSON.stringify(modules[key])}`)
       if (Object.prototype.hasOwnProperty.call(modules[key], 'handler')) {
         const handlerObject = modules[key]
-        Logger.info(JSON.stringify(handlerObject.handler))
+        Logger.isInfoEnabled && Logger.info(JSON.stringify(handlerObject.handler))
         await handlerObject.handler.registerAllHandlers()
       } else {
         for (const i in modules[key]) {
           const handlerObject = modules[key][i]
-          Logger.info(JSON.stringify(handlerObject.handler))
+          Logger.isInfoEnabled && Logger.info(JSON.stringify(handlerObject.handler))
           await handlerObject.handler.registerAllHandlers()
         }
       }
     }
     return true
   } catch (err) {
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandling.Factory.reformatFSPIOPError(err)
   }
 }

@@ -57,7 +57,7 @@ Program.command('handler') // sub-command name, coffeeType = type, required
   .action(async (args) => {
     const handlerList = []
     if (args.deferredSettlement === true) {
-      Logger.debug('CLI: Executing --deferredSettlement')
+      Logger.isDebugEnabled && Logger.debug('CLI: Executing --deferredSettlement')
       const handler = {
         type: 'deferredSettlement',
         enabled: true
@@ -66,7 +66,7 @@ Program.command('handler') // sub-command name, coffeeType = type, required
     }
 
     if (args.grossSettlement === true) {
-      Logger.debug('CLI: Executing --grossSettlement')
+      Logger.isDebugEnabled && Logger.debug('CLI: Executing --grossSettlement')
       const handler = {
         type: 'grossSettlement',
         enabled: true
@@ -75,7 +75,7 @@ Program.command('handler') // sub-command name, coffeeType = type, required
     }
 
     if (args.rules === true) {
-      Logger.debug('CLI: Executing --rules')
+      Logger.isDebugEnabled && Logger.debug('CLI: Executing --rules')
       const handler = {
         type: 'rules',
         enabled: true
