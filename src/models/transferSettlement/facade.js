@@ -36,6 +36,7 @@ const location = { module: 'TransferFulfilHandler', method: '', path: '' }
 // const Config = require('../../lib/config')
 const SettlementEnum = require('@mojaloop/central-services-shared').Enum.Settlements
 const TransferStateEnum = require('@mojaloop/central-services-shared').Enum.Transfers.TransferState
+const TransferFacade = require('@mojaloop/central-ledger/src/models/transfer/facade')
 
 async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
   try {
@@ -333,8 +334,25 @@ async function getSettlementModelByTransferId (transferId, settlementGranularity
     .select('settlementModel.*')
   if (settlementModelByTransferId.length === 0) {
     const allSettlementModels = await Db.from('settlementModel').find()
-    const defaultGrossSettlementModel = allSettlementModels.filter(sm => (sm.currencyId === null && sm.settlementGranularityId === SettlementEnum.SettlementGranularity.GROSS))
-    return defaultGrossSettlementModel
+    const transferCurrency = (await TransferFacade.getByIdLight(transferId)).currencyId
+    switch (settlementGranularityName) {
+      case SettlementEnum.settlementGranularityName.GROSS: {
+        const netModelWithCurrency = allSettlementModels.filter(sm => (sm.currencyId === transferCurrency && sm.settlementGranularityId === SettlementEnum.SettlementGranularity.NET))
+        if (netModelWithCurrency.length === 0) {
+          const defaultGrossSettlementModel = allSettlementModels.filter(sm => (sm.currencyId === null && sm.settlementGranularityId === SettlementEnum.SettlementGranularity.GROSS))
+          return defaultGrossSettlementModel
+        }
+        break
+      }
+      case SettlementEnum.settlementGranularityName.NET: {
+        const grossModelWithCurrency = allSettlementModels.filter(sm => (sm.currencyId === transferCurrency && sm.settlementGranularityId === SettlementEnum.SettlementGranularity.GROSS))
+        if (grossModelWithCurrency.length === 0) {
+          const defaultNetSettlementModel = allSettlementModels.filter(sm => (sm.currencyId === null && sm.settlementGranularityId === SettlementEnum.SettlementGranularity.NET))
+          return defaultNetSettlementModel
+        }
+        break
+      }
+    }
   }
   return settlementModelByTransferId
 }

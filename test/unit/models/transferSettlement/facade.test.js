@@ -27,6 +27,7 @@ const Sinon = require('sinon')
 const Logger = require('@mojaloop/central-services-logger')
 const Model = require('../../../../src/models/transferSettlement/facade')
 const Db = require('../../../../src/lib/db')
+const TransferFacade = require('@mojaloop/central-ledger/src/models/transfer/facade')
 
 const recordsToInsert = [{
   transferId: '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93',
@@ -628,6 +629,8 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
         ledgerAccountTypeId: 1
       }
 
+      const transferCurrency = { currencyId: 'USD' }
+
       sandbox.stub(Db, 'getKnex')
 
       const context = sandbox.stub()
@@ -635,7 +638,7 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
         andOn: sandbox.stub()
       })
       const join1Stub = sandbox.stub().callsArgOn(1, context)
-
+      sandbox.stub(TransferFacade, 'getByIdLight').resolves(transferCurrency)
       const knexStub = sandbox.stub()
       Db.getKnex.returns(knexStub)
       knexStub.returns({
@@ -656,6 +659,181 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       Db.settlementModel.find.returns([settlementModelResult])
       const result = await Model.getSettlementModelByTransferId(transferId, settlementGranularityName)
       test.deepEqual(result, [settlementModelResult], 'results match')
+      test.end()
+    } catch (err) {
+      Logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('getSettlementModelByTransferId for GROSS settlement should return empty if deferred exist', async (test) => {
+    try {
+      const transferId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
+      const settlementGranularityName = 'GROSS'
+      const settlementModelResults = [{
+        settlementModelId: 1,
+        name: 'CGS',
+        isActive: 1,
+        settlementGranularityId: 1,
+        settlementInterchangeId: 1,
+        settlementDelayId: 1,
+        currencyId: null,
+        ledgerAccountTypeId: 1
+      }, {
+        settlementModelId: 1,
+        name: 'DEFERRED',
+        isActive: 1,
+        settlementGranularityId: 2,
+        settlementInterchangeId: 2,
+        settlementDelayId: 2,
+        currencyId: 'USD',
+        ledgerAccountTypeId: 1
+      }]
+      const transferCurrency = { currencyId: 'USD' }
+
+      sandbox.stub(Db, 'getKnex')
+
+      const context = sandbox.stub()
+      context.on = sandbox.stub().returns({
+        andOn: sandbox.stub()
+      })
+      const join1Stub = sandbox.stub().callsArgOn(1, context)
+      sandbox.stub(TransferFacade, 'getByIdLight').resolves(transferCurrency)
+      const knexStub = sandbox.stub()
+      Db.getKnex.returns(knexStub)
+      knexStub.returns({
+        join: join1Stub.returns({
+          join: sandbox.stub().returns({
+            join: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  where: sandbox.stub().returns({
+                    select: sandbox.stub().returns([])
+                  })
+                })
+              })
+            })
+          })
+        })
+      })
+      Db.settlementModel.find.resolves(settlementModelResults)
+      const result = await Model.getSettlementModelByTransferId(transferId, settlementGranularityName)
+      test.deepEqual(result, [], 'results match')
+      test.end()
+    } catch (err) {
+      Logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('getSettlementModelByTransferId should return default settlement, if it is NET', async (test) => {
+    try {
+      const transferId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
+      const settlementGranularityName = 'NET'
+      const settlementModelResult = {
+        settlementModelId: 1,
+        name: 'DEFERRED',
+        isActive: 1,
+        settlementGranularityId: 2,
+        settlementInterchangeId: 1,
+        settlementDelayId: 1,
+        currencyId: null,
+        ledgerAccountTypeId: 1
+      }
+
+      const transferCurrency = { currencyId: 'USD' }
+
+      sandbox.stub(Db, 'getKnex')
+
+      const context = sandbox.stub()
+      context.on = sandbox.stub().returns({
+        andOn: sandbox.stub()
+      })
+      const join1Stub = sandbox.stub().callsArgOn(1, context)
+      sandbox.stub(TransferFacade, 'getByIdLight').resolves(transferCurrency)
+      const knexStub = sandbox.stub()
+      Db.getKnex.returns(knexStub)
+      knexStub.returns({
+        join: join1Stub.returns({
+          join: sandbox.stub().returns({
+            join: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  where: sandbox.stub().returns({
+                    select: sandbox.stub().returns([])
+                  })
+                })
+              })
+            })
+          })
+        })
+      })
+      Db.settlementModel.find.returns([settlementModelResult])
+      const result = await Model.getSettlementModelByTransferId(transferId, settlementGranularityName)
+      test.deepEqual(result, [settlementModelResult], 'results match')
+      test.end()
+    } catch (err) {
+      Logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
+      test.fail()
+      test.end()
+    }
+  })
+
+  await transferSettlementTest.test('getSettlementModelByTransferId for NET settlement should return empty if deferred exist', async (test) => {
+    try {
+      const transferId = '154cbf04-bac7-444d-aa66-76f66126d7f5'
+      const settlementGranularityName = 'NET'
+      const settlementModelResults = [{
+        settlementModelId: 1,
+        name: 'DEFERRED',
+        isActive: 1,
+        settlementGranularityId: 1,
+        settlementInterchangeId: 1,
+        settlementDelayId: 1,
+        currencyId: null,
+        ledgerAccountTypeId: 1
+      }, {
+        settlementModelId: 1,
+        name: 'CGS',
+        isActive: 1,
+        settlementGranularityId: 2,
+        settlementInterchangeId: 2,
+        settlementDelayId: 2,
+        currencyId: 'USD',
+        ledgerAccountTypeId: 1
+      }]
+      const transferCurrency = { currencyId: 'USD' }
+
+      sandbox.stub(Db, 'getKnex')
+
+      const context = sandbox.stub()
+      context.on = sandbox.stub().returns({
+        andOn: sandbox.stub()
+      })
+      const join1Stub = sandbox.stub().callsArgOn(1, context)
+      sandbox.stub(TransferFacade, 'getByIdLight').resolves(transferCurrency)
+      const knexStub = sandbox.stub()
+      Db.getKnex.returns(knexStub)
+      knexStub.returns({
+        join: join1Stub.returns({
+          join: sandbox.stub().returns({
+            join: sandbox.stub().returns({
+              where: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  where: sandbox.stub().returns({
+                    select: sandbox.stub().returns([])
+                  })
+                })
+              })
+            })
+          })
+        })
+      })
+      Db.settlementModel.find.resolves(settlementModelResults)
+      const result = await Model.getSettlementModelByTransferId(transferId, settlementGranularityName)
+      test.deepEqual(result, [], 'results match')
       test.end()
     } catch (err) {
       Logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
