@@ -126,7 +126,17 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       settlementWindowId = res1[0].settlementWindowId
       test.ok(settlementWindowId > 0, '#1 retrieve the OPEN window')
 
-      params = { settlementWindowId: settlementWindowId, state: enums.settlementWindowStates.CLOSED, reason: 'text' }
+      params = {
+        settlementWindowId: settlementWindowId,
+        state: enums.settlementWindowStates.CLOSED,
+        reason: 'text',
+        request: {
+          headers: {
+            'FSPIOP-Source': 'test',
+            'FSPIOP-Destination': 'test'
+          }
+        }
+      }
       const res2 = await SettlementWindowService.process(params, enums.settlementWindowStates)
       const res3 = await SettlementWindowService.close(params.settlementWindowId, params.reason)
       test.ok(res3, '#2 close settlement window operation success')

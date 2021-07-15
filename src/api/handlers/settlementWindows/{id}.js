@@ -68,7 +68,7 @@ module.exports = {
     const settlementWindowId = request.params.id
     try {
       const Enums = await request.server.methods.enums('settlementWindowStates')
-      return await settlementWindow.process({ settlementWindowId, reason }, Enums)
+      return await settlementWindow.process({ settlementWindowId, reason, request }, Enums)
     } catch (err) {
       request.server.log('error', err)
       return ErrorHandler.Factory.reformatFSPIOPError(err)
