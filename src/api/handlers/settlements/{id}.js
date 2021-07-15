@@ -35,6 +35,9 @@
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const Settlements = require('../../../domain/settlement/index')
+const Utility = require('@mojaloop/central-services-shared').Util
+const Enum = require('@mojaloop/central-services-shared').Enum
+const EventSdk = require('@mojaloop/event-sdk')
 
 /**
  * Operations on /settlements/{id}
@@ -50,6 +53,17 @@ module.exports = {
   get: async function getSettlementById (request, h) {
     const settlementId = request.params.id
     try {
+      const { span, headers } = request
+      const spanTags = Utility.EventFramework.getSpanTags(
+        Enum.Events.Event.Type.SETTLEMENT,
+        Enum.Events.Event.Action.GET,
+        `sid=${settlementId}`,
+        headers[Enum.Http.Headers.FSPIOP.SOURCE],
+        headers[Enum.Http.Headers.FSPIOP.DESTINATION]
+      )
+      span.setTags(spanTags)
+      await span.audit(request.payload, EventSdk.AuditEventAction.ingress)
+
       const Enums = await request.server.methods.enums('settlementStates')
       request.server.log('info', `get settlement by Id requested with id ${settlementId}`)
       const settlementResult = await Settlements.getById({ settlementId }, Enums)
@@ -70,6 +84,17 @@ module.exports = {
   put: async function updateSettlementById (request) {
     const settlementId = request.params.id
     try {
+      const { span, headers } = request
+      const spanTags = Utility.EventFramework.getSpanTags(
+        Enum.Events.Event.Type.SETTLEMENT,
+        Enum.Events.Event.Action.PUT,
+        `sid=${settlementId}`,
+        headers[Enum.Http.Headers.FSPIOP.SOURCE],
+        headers[Enum.Http.Headers.FSPIOP.DESTINATION]
+      )
+      span.setTags(spanTags)
+      await span.audit(request.payload, EventSdk.AuditEventAction.ingress)
+
       const p = request.payload
       if (p.participants && (p.state || p.reason || p.externalReference)) {
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'No other properties are allowed when participants is provided')

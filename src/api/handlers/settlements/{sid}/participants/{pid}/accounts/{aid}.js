@@ -28,6 +28,9 @@
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Settlements = require('../../../../../../../domain/settlement/index')
+const Utility = require('@mojaloop/central-services-shared').Util
+const Enum = require('@mojaloop/central-services-shared').Enum
+const EventSdk = require('@mojaloop/event-sdk')
 
 /**
  * Operations on /settlements/{settlementId}/participants/{participantId}/accounts/{accountId}
@@ -43,13 +46,23 @@ module.exports = {
 
   get: async function getSettlementBySettlementParticipantAccount (request, h) {
     try {
+      const settlementId = request.params.sid
+      const participantId = request.params.pid
+      const accountId = request.params.aid
+      const { span, headers } = request
+      const spanTags = Utility.EventFramework.getSpanTags(
+        Enum.Events.Event.Type.SETTLEMENT,
+        Enum.Events.Event.Action.GET,
+        `sid=${settlementId};pid=${participantId};aid=${accountId}`,
+        headers[Enum.Http.Headers.FSPIOP.SOURCE],
+        headers[Enum.Http.Headers.FSPIOP.DESTINATION]
+      )
+      span.setTags(spanTags)
+      await span.audit(request.payload, EventSdk.AuditEventAction.ingress)
       const Enums = {
         settlementWindowStates: await request.server.methods.enums('settlementWindowStates'),
         ledgerAccountTypes: await request.server.methods.enums('ledgerAccountTypes')
       }
-      const settlementId = request.params.sid
-      const participantId = request.params.pid
-      const accountId = request.params.aid
       const result = await Settlements.getByIdParticipantAccount({ settlementId, participantId, accountId }, Enums)
       return h.response(result)
     } catch (err) {
@@ -70,6 +83,16 @@ module.exports = {
     const participantId = request.params.pid
     const accountId = request.params.aid
     try {
+      const { span, headers } = request
+      const spanTags = Utility.EventFramework.getSpanTags(
+        Enum.Events.Event.Type.SETTLEMENT,
+        Enum.Events.Event.Action.PUT,
+        `sid=${settlementId};pid=${participantId};aid=${accountId}`,
+        headers[Enum.Http.Headers.FSPIOP.SOURCE],
+        headers[Enum.Http.Headers.FSPIOP.DESTINATION]
+      )
+      span.setTags(spanTags)
+      await span.audit(request.payload, EventSdk.AuditEventAction.ingress)
       const accounts = [Object.assign({}, request.payload, { id: accountId })]
       const universalPayload = {
         participants: [

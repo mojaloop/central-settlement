@@ -33,6 +33,9 @@
 
 const settlementWindow = require('../../../domain/settlementWindow/index')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Utility = require('@mojaloop/central-services-shared').Util
+const Enum = require('@mojaloop/central-services-shared').Enum
+const EventSdk = require('@mojaloop/event-sdk')
 
 /**
  * Operations on /settlementWindows/{id}
@@ -48,6 +51,16 @@ module.exports = {
   get: async function getSettlementWindowById (request, h) {
     const settlementWindowId = request.params.id
     try {
+      const { span, headers } = request
+      const spanTags = Utility.EventFramework.getSpanTags(
+        Enum.Events.Event.Type.SETTLEMENT_WINDOW,
+        Enum.Events.Event.Action.GET,
+        `settlementWindowId=${settlementWindowId}`,
+        headers[Enum.Http.Headers.FSPIOP.SOURCE],
+        headers[Enum.Http.Headers.FSPIOP.DESTINATION]
+      )
+      span.setTags(spanTags)
+      await span.audit(request.payload, EventSdk.AuditEventAction.ingress)
       const Enums = await request.server.methods.enums('settlementWindowStates')
       const settlementWindowResult = await settlementWindow.getById({ settlementWindowId }, Enums, request.server.log)
       return h.response(settlementWindowResult)
@@ -67,8 +80,18 @@ module.exports = {
     const { reason } = request.payload
     const settlementWindowId = request.params.id
     try {
+      const { span, headers } = request
+      const spanTags = Utility.EventFramework.getSpanTags(
+        Enum.Events.Event.Type.SETTLEMENT_WINDOW,
+        Enum.Events.Event.Action.POST,
+        `settlementWindowId=${settlementWindowId}`,
+        headers[Enum.Http.Headers.FSPIOP.SOURCE],
+        headers[Enum.Http.Headers.FSPIOP.DESTINATION]
+      )
+      span.setTags(spanTags)
+      await span.audit(request.payload, EventSdk.AuditEventAction.ingress)
       const Enums = await request.server.methods.enums('settlementWindowStates')
-      return await settlementWindow.process({ settlementWindowId, reason, request }, Enums)
+      return await settlementWindow.process({ settlementWindowId, reason, headers: request.raw.req.headers }, Enums)
     } catch (err) {
       request.server.log('error', err)
       return ErrorHandler.Factory.reformatFSPIOPError(err)

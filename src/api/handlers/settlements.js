@@ -34,6 +34,9 @@
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Settlements = require('../../domain/settlement/index')
+const Utility = require('@mojaloop/central-services-shared').Util
+const Enum = require('@mojaloop/central-services-shared').Enum
+const EventSdk = require('@mojaloop/event-sdk')
 
 /**
  * Operations on /settlements
@@ -48,6 +51,17 @@ module.exports = {
      */
   get: async function getSettlementsByParams (request, h) {
     try {
+      const { span, headers } = request
+      const spanTags = Utility.EventFramework.getSpanTags(
+        Enum.Events.Event.Type.SETTLEMENT,
+        Enum.Events.Event.Action.GET,
+        undefined,
+        headers[Enum.Http.Headers.FSPIOP.SOURCE],
+        headers[Enum.Http.Headers.FSPIOP.DESTINATION]
+      )
+      span.setTags(spanTags)
+      await span.audit(request.payload, EventSdk.AuditEventAction.ingress)
+
       const Enums = await request.server.methods.enums('settlementStates')
       const settlementResult = await Settlements.getSettlementsByParams({ query: request.query }, Enums)
       return h.response(settlementResult)
@@ -63,8 +77,20 @@ module.exports = {
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
+
   post: async function createSettlementEvent (request, h) {
     try {
+      const { span, payload, headers } = request
+      const spanTags = Utility.EventFramework.getSpanTags(
+        Enum.Events.Event.Type.SETTLEMENT,
+        Enum.Events.Event.Action.POST,
+        payload.settlementWindows.map(id => id.id).join(''),
+        headers[Enum.Http.Headers.FSPIOP.SOURCE],
+        headers[Enum.Http.Headers.FSPIOP.DESTINATION]
+      )
+      span.setTags(spanTags)
+      await span.audit(request.payload, EventSdk.AuditEventAction.ingress)
+
       const Enums = {
         ledgerEntryTypes: await request.server.methods.enums('ledgerEntryTypes'),
         settlementDelay: await request.server.methods.enums('settlementDelay'),

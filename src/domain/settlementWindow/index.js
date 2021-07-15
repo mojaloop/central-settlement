@@ -92,13 +92,12 @@ module.exports = {
 
   process: async function (params, enums) {
     const settlementWindowId = await SettlementWindowModel.process(params, enums)
-
     const messageId = Uuid()
     const eventId = Uuid()
     const state = StreamingProtocol.createEventState(Enum.Events.EventStatus.SUCCESS.status, Enum.Events.EventStatus.SUCCESS.code, Enum.Events.EventStatus.SUCCESS.description)
     const event = StreamingProtocol.createEventMetadata(Enum.Events.Event.Type.DEFERRED_SETTLEMENT, Enum.Events.Event.Action.CLOSE, state)
     const metadata = StreamingProtocol.createMetadata(eventId, event)
-    const messageProtocol = StreamingProtocol.createMessage(messageId, Enum.Http.Headers.FSPIOP.SWITCH.value, Enum.Http.Headers.FSPIOP.SWITCH.value, metadata, params.request.headers, params)
+    const messageProtocol = StreamingProtocol.createMessage(messageId, Enum.Http.Headers.FSPIOP.SWITCH.value, Enum.Http.Headers.FSPIOP.SWITCH.value, metadata, params.headers, params)
     const topicConfig = KafkaUtil.createGeneralTopicConf(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, Enum.Events.Event.Type.DEFERRED_SETTLEMENT, Enum.Events.Event.Action.CLOSE)
     const kafkaConfig = KafkaUtil.getKafkaConfig(Config.KAFKA_CONFIG, Enum.Kafka.Config.PRODUCER, Enum.Events.Event.Type.DEFERRED_SETTLEMENT.toUpperCase(), Enum.Events.Event.Action.CLOSE.toUpperCase())
     await Producer.produceMessage(messageProtocol, topicConfig, kafkaConfig)
