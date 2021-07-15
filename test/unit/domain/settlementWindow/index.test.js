@@ -258,7 +258,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
   await settlementWindowServiceTest.test('process should', async processTest => {
     try {
-      const params = { id: 1 }
+      const params = { id: 1, request: { headers: { testHeader: 'testHeader' } } }
       const enums = {}
       const options = { logger: Logger }
       const settlementWindowIdMock = 1
