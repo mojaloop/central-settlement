@@ -34,6 +34,9 @@
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const settlementWindows = require('../../domain/settlementWindow/index')
+const Utility = require('@mojaloop/central-services-shared').Util
+const Enum = require('@mojaloop/central-services-shared').Enum
+const EventSdk = require('@mojaloop/event-sdk')
 
 /**
  * Operations on /settlementWindows
@@ -48,6 +51,17 @@ module.exports = {
      */
   get: async function getSettlementWindowsByParams (request, h) {
     try {
+      const { span, headers } = request
+      const spanTags = Utility.EventFramework.getSpanTags(
+        Enum.Events.Event.Type.SETTLEMENT_WINDOW,
+        Enum.Events.Event.Action.GET,
+        undefined,
+        headers[Enum.Http.Headers.FSPIOP.SOURCE],
+        headers[Enum.Http.Headers.FSPIOP.DESTINATION]
+      )
+      span.setTags(spanTags)
+      await span.audit(request.payload, EventSdk.AuditEventAction.ingress)
+
       const Enums = await request.server.methods.enums('settlementWindowStates')
       const settlementWindowResult = await settlementWindows.getByParams({ query: request.query }, Enums)
       return h.response(settlementWindowResult)

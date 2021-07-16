@@ -52,7 +52,8 @@
                     }
                 ],
                 "tags": [
-                    "getSettlementWindowById"
+                    "getSettlementWindowById",
+                    "sampled"
                 ],
                 "responses": {
                     "200": {
@@ -122,6 +123,7 @@
                     }
                 ],
                 "tags": [
+  "sampled",
                     "closeSettlementWindow"
                 ],
                 "responses": {
@@ -221,6 +223,7 @@
 
                 ],
                 "tags": [
+                    "sampled",
                     "getSettlementWindowsByParams"
                 ],
                 "responses": {
@@ -351,6 +354,7 @@
                     }
                 ],
                 "tags": [
+                    "sampled",
                     "getSettlementsByParams"
                 ],
                 "responses": {
@@ -415,6 +419,7 @@
                     }
                 ],
                 "tags": [
+                    "sampled",
                     "createSettlement"
                 ],
                 "responses": {
@@ -476,6 +481,7 @@
                     }
                 ],
                 "tags": [
+                    "sampled",
                     "getSettlementById"
                 ],
                 "responses": {
@@ -547,6 +553,7 @@
                     }
                 ],
                 "tags": [
+                    "sampled",
                     "updateSettlementById"
                 ],
                 "responses": {
@@ -615,6 +622,7 @@
                     }
                 ],
                 "tags": [
+                    "sampled",
                     "getSettlementBySettlementParticipant"
                 ],
                 "responses": {
@@ -693,6 +701,7 @@
                     }
                 ],
                 "tags": [
+                    "sampled",
                     "updateSettlementBySettlementParticipant"
                 ],
                 "responses": {
@@ -768,6 +777,7 @@
                     }
                 ],
                 "tags": [
+                    "sampled",
                     "getSettlementBySettlementParticipantAccount"
                 ],
                 "responses": {
@@ -853,6 +863,7 @@
                     }
                 ],
                 "tags": [
+                    "sampled",
                     "updateSettlementBySettlementParticipantAccount"
                 ],
                 "responses": {
