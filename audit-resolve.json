@@ -1,9 +1,5 @@
 {
   "decisions": {
-    "1677|@mojaloop/central-ledger>npm-run-all>read-pkg>normalize-package-data>hosted-git-info": {
-      "decision": "fix",
-      "madeAt": 1628082181624
-    },
     "1500|@mojaloop/central-ledger>@mojaloop/central-services-shared>widdershins>yargs>yargs-parser": {
       "decision": "ignore",
       "madeAt": 1628081562434,
@@ -80,6 +76,10 @@
     "1771|@mojaloop/central-ledger>@mojaloop/event-sdk>grpc>@mapbox/node-pre-gyp>tar": {
       "decision": "fix",
       "madeAt": 1628081525409
+    },
+    "1677|@mojaloop/central-ledger>npm-run-all>read-pkg>normalize-package-data>hosted-git-info": {
+      "decision": "fix",
+      "madeAt": 1628083974175
     }
   },
   "rules": {},
