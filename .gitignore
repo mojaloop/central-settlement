@@ -62,3 +62,7 @@ junit.xml
 # Add ignores
 *IGNORE*
 *ignore*
+
+# Ignore DevSpace configs, cache and log folder
+.devspace/
+devspace*

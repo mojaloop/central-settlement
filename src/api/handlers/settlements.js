@@ -60,7 +60,10 @@ module.exports = {
         headers[Enum.Http.Headers.FSPIOP.DESTINATION]
       )
       span.setTags(spanTags)
-      await span.audit(request.payload, EventSdk.AuditEventAction.ingress)
+      await span.audit({
+        headers: request.headers,
+        params: request.params
+      }, EventSdk.AuditEventAction.start)
 
       const Enums = await request.server.methods.enums('settlementStates')
       const settlementResult = await Settlements.getSettlementsByParams({ query: request.query }, Enums)
@@ -89,7 +92,7 @@ module.exports = {
         headers[Enum.Http.Headers.FSPIOP.DESTINATION]
       )
       span.setTags(spanTags)
-      await span.audit(request.payload, EventSdk.AuditEventAction.ingress)
+      await span.audit(request.payload, EventSdk.AuditEventAction.start)
 
       const Enums = {
         ledgerEntryTypes: await request.server.methods.enums('ledgerEntryTypes'),
