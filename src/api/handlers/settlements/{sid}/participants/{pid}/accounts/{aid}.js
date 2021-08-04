@@ -58,7 +58,10 @@ module.exports = {
         headers[Enum.Http.Headers.FSPIOP.DESTINATION]
       )
       span.setTags(spanTags)
-      await span.audit(request.payload, EventSdk.AuditEventAction.ingress)
+      await span.audit({
+        headers: request.headers,
+        params: request.params
+      }, EventSdk.AuditEventAction.start)
       const Enums = {
         settlementWindowStates: await request.server.methods.enums('settlementWindowStates'),
         ledgerAccountTypes: await request.server.methods.enums('ledgerAccountTypes')
@@ -92,7 +95,7 @@ module.exports = {
         headers[Enum.Http.Headers.FSPIOP.DESTINATION]
       )
       span.setTags(spanTags)
-      await span.audit(request.payload, EventSdk.AuditEventAction.ingress)
+      await span.audit(request.payload, EventSdk.AuditEventAction.start)
       const accounts = [Object.assign({}, request.payload, { id: accountId })]
       const universalPayload = {
         participants: [

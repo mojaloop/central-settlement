@@ -60,7 +60,10 @@ module.exports = {
         headers[Enum.Http.Headers.FSPIOP.DESTINATION]
       )
       span.setTags(spanTags)
-      await span.audit(request.payload, EventSdk.AuditEventAction.ingress)
+      await span.audit({
+        headers: request.headers,
+        params: request.params
+      }, EventSdk.AuditEventAction.start)
       const Enums = await request.server.methods.enums('settlementWindowStates')
       const settlementWindowResult = await settlementWindow.getById({ settlementWindowId }, Enums, request.server.log)
       return h.response(settlementWindowResult)
@@ -89,7 +92,7 @@ module.exports = {
         headers[Enum.Http.Headers.FSPIOP.DESTINATION]
       )
       span.setTags(spanTags)
-      await span.audit(request.payload, EventSdk.AuditEventAction.ingress)
+      await span.audit(request.payload, EventSdk.AuditEventAction.start)
       const Enums = await request.server.methods.enums('settlementWindowStates')
       return await settlementWindow.process({ settlementWindowId, reason, headers: request.raw.req.headers }, Enums)
     } catch (err) {

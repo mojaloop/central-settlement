@@ -59,8 +59,12 @@ module.exports = {
         headers[Enum.Http.Headers.FSPIOP.SOURCE],
         headers[Enum.Http.Headers.FSPIOP.DESTINATION]
       )
+
       span.setTags(spanTags)
-      await span.audit(request.payload, EventSdk.AuditEventAction.ingress)
+      await span.audit({
+        headers: request.headers,
+        params: request.params
+      }, EventSdk.AuditEventAction.start)
 
       const Enums = await request.server.methods.enums('settlementWindowStates')
       const settlementWindowResult = await settlementWindows.getByParams({ query: request.query }, Enums)
