@@ -2,7 +2,7 @@
   "decisions": {
     "1677|@mojaloop/central-ledger>npm-run-all>read-pkg>normalize-package-data>hosted-git-info": {
       "decision": "fix",
-      "madeAt": 1628081467897
+      "madeAt": 1628082181624
     },
     "1500|@mojaloop/central-ledger>@mojaloop/central-services-shared>widdershins>yargs>yargs-parser": {
       "decision": "ignore",
