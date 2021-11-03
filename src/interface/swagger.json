@@ -10,7 +10,7 @@
         "http",
         "https"
     ],
-    "paths": {  
+    "paths": {
         "/health": {
             "get": {
                 "produces": [
@@ -123,7 +123,7 @@
                     }
                 ],
                 "tags": [
-  "sampled",
+                    "sampled",
                     "closeSettlementWindow"
                 ],
                 "responses": {
@@ -280,50 +280,47 @@
                         "in": "query",
                         "name": "currency",
                         "type": "string",
-                        "description": "A valid currency to filter on.\n",
+                        "pattern": "^(AED|AFN|ALL|AMD|ANG|AOA|ARS|AUD|AWG|AZN|BAM|BBD|BDT|BGN|BHD|BIF|BMD|BND|BOB|BRL|BSD|BTN|BWP|BYN|BZD|CAD|CDF|CHF|CLP|CNY|COP|CRC|CUC|CUP|CVE|CZK|DJF|DKK|DOP|DZD|EGP|ERN|ETB|EUR|FJD|FKP|GBP|GEL|GGP|GHS|GIP|GMD|GNF|GTQ|GYD|HKD|HNL|HRK|HTG|HUF|IDR|ILS|IMP|INR|IQD|IRR|ISK|JEP|JMD|JOD|JPY|KES|KGS|KHR|KMF|KPW|KRW|KWD|KYD|KZT|LAK|LBP|LKR|LRD|LSL|LYD|MAD|MDL|MGA|MKD|MMK|MNT|MOP|MRO|MUR|MVR|MWK|MXN|MYR|MZN|NAD|NGN|NIO|NOK|NPR|NZD|OMR|PAB|PEN|PGK|PHP|PKR|PLN|PYG|QAR|RON|RSD|RUB|RWF|SAR|SBD|SCR|SDG|SEK|SGD|SHP|SLL|SOS|SPL|SRD|STD|SVC|SYP|SZL|THB|TJS|TMT|TND|TOP|TRY|TTD|TVD|TWD|TZS|UAH|UGX|USD|UYU|UZS|VEF|VND|VUV|WST|XAF|XCD|XDR|XOF|XPF|YER|ZAR|ZMW|ZWD)(,(AED|AFN|ALL|AMD|ANG|AOA|ARS|AUD|AWG|AZN|BAM|BBD|BDT|BGN|BHD|BIF|BMD|BND|BOB|BRL|BSD|BTN|BWP|BYN|BZD|CAD|CDF|CHF|CLP|CNY|COP|CRC|CUC|CUP|CVE|CZK|DJF|DKK|DOP|DZD|EGP|ERN|ETB|EUR|FJD|FKP|GBP|GEL|GGP|GHS|GIP|GMD|GNF|GTQ|GYD|HKD|HNL|HRK|HTG|HUF|IDR|ILS|IMP|INR|IQD|IRR|ISK|JEP|JMD|JOD|JPY|KES|KGS|KHR|KMF|KPW|KRW|KWD|KYD|KZT|LAK|LBP|LKR|LRD|LSL|LYD|MAD|MDL|MGA|MKD|MMK|MNT|MOP|MRO|MUR|MVR|MWK|MXN|MYR|MZN|NAD|NGN|NIO|NOK|NPR|NZD|OMR|PAB|PEN|PGK|PHP|PKR|PLN|PYG|QAR|RON|RSD|RUB|RWF|SAR|SBD|SCR|SDG|SEK|SGD|SHP|SLL|SOS|SPL|SRD|STD|SVC|SYP|SZL|THB|TJS|TMT|TND|TOP|TRY|TTD|TVD|TWD|TZS|UAH|UGX|USD|UYU|UZS|VEF|VND|VUV|WST|XAF|XCD|XDR|XOF|XPF|YER|ZAR|ZMW|ZWD))*$",
+                        "description": "A comma-separated list of currencies to filter on.\n",
                         "required": false
                     },
                     {
                         "in": "query",
                         "name": "participantId",
-                        "type": "integer",
-                        "description": "A valid participant Id to filter on.\n",
+                        "type": "string",
+                        "pattern": "^([1-9][0-9]*)(,([1-9][0-9]*))*$",
+                        "description": "A comma-separated list of participant IDs to filter on.\n",
                         "required": false
                     },
                     {
                         "in": "query",
                         "name": "settlementWindowId",
-                        "type": "number",
-                        "description": "A valid Settlement Window Id to filter on.\n",
+                        "type": "string",
+                        "pattern": "^([1-9][0-9]*)(,([1-9][0-9]*))*$",
+                        "description": "A comma-separated list of Settlement Window IDs to filter on.\n",
                         "required": false
                     },
                     {
                         "in": "query",
                         "name": "accountId",
-                        "type": "number",
-                        "description": "A valid Account Id to filter on.\n",
+                        "type": "string",
+                        "pattern": "^([1-9][0-9]*)(,([1-9][0-9]*))*$",
+                        "description": "A comma-separated list of Account IDs to filter on.\n",
                         "required": false
                     },
                     {
                         "in": "query",
                         "name": "state",
                         "type": "string",
-                        "enum": [
-                            "PENDING_SETTLEMENT",
-                            "PS_TRANSFERS_RECORDED",
-                            "PS_TRANSFERS_RESERVED",
-                            "PS_TRANSFERS_COMMITTED",
-                            "SETTLING",
-                            "SETTLED",
-                            "ABORTED"
-                        ],
-                        "description": "A settlement state to filter on.  \n",
+                        "pattern": "^(PENDING_SETTLEMENT|PS_TRANSFERS_RECORDED|PS_TRANSFERS_RESERVED|PS_TRANSFERS_COMMITTED|SETTLING|SETTLED|ABORTED)(,(PENDING_SETTLEMENT|PS_TRANSFERS_RECORDED|PS_TRANSFERS_RESERVED|PS_TRANSFERS_COMMITTED|SETTLING|SETTLED|ABORTED))*$",
+                        "description": "A comma-separated list of settlement states to filter on.\n",
                         "required": false
                     },
                     {
                         "in": "query",
                         "name": "fromDateTime",
                         "type": "string",
+                        "default": "1000-01-01T00:00:00Z",
                         "format": "date-time",
                         "description": "The start date for query (relates to central-ledger.settlement.createdDate). Can be used together with `toDateTime'. eg 2017-07-20T17:32:28Z\n",
                         "required": false
@@ -332,6 +329,7 @@
                         "in": "query",
                         "name": "toDateTime",
                         "type": "string",
+                        "default": "9999-12-31T23:59:59Z",
                         "format": "date-time",
                         "description": "The end date for query (relates to central-ledger.settlement.createdDate). Can be used together with `fromDateTime'. eg 2017-07-21T17:32:28Z\n",
                         "required": false
@@ -340,6 +338,7 @@
                         "in": "query",
                         "name": "fromSettlementWindowDateTime",
                         "type": "string",
+                        "default": "1000-01-01T00:00:00Z",
                         "format": "date-time",
                         "description": "The start date for query (relates to central-ledger.settlementWindow.createdDate). Can be used together with `toDateTime'. eg 2017-07-20T17:32:28Z\n",
                         "required": false
@@ -349,6 +348,7 @@
                         "name": "toSettlementWindowDateTime",
                         "type": "string",
                         "format": "date-time",
+                        "default": "9999-12-31T23:59:59Z",
                         "description": "The end date for query (relates to central-ledger.settlementWindow.createdDate). Can be used together with `fromDateTime'. eg 2017-07-21T17:32:28Z\n",
                         "required": false
                     }

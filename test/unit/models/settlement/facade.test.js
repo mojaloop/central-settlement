@@ -4187,11 +4187,11 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           const fromDateTime = new Date() - 3600
           const toDateTime = new Date()
           const currency = 'USD'
-          const settlementWindowId = 1
+          const settlementWindowId = '1'
           const fromSettlementWindowDateTime = new Date() - 3600
           const toSettlementWindowDateTime = new Date()
-          const participantId = 1
-          const accountId = 1
+          const participantId = '1'
+          const accountId = '1'
           const query = { state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId }
 
           Db.settlement = { query: sandbox.stub() }
@@ -4214,6 +4214,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                         innerJoin: sandbox.stub().returns({
                           distinct: sandbox.stub().returns({
                             select: sandbox.stub().returns({
+                              whereIn: sandbox.stub(),
                               where: sandbox.stub()
                             })
                           })

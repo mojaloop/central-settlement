@@ -1362,15 +1362,15 @@ const Facade = {
           'spcsc.reason AS accountReason', 'spcsc.settlementStateId AS accountState',
           'spc.netAmount AS accountAmount', 'pc.currencyId AS accountCurrency')
         .select()
-      if (state) { b.where('ssc.settlementStateId', state) }
+      if (state) { b.whereIn('ssc.settlementStateId', state.split(',')) }
       if (fromDateTime) { b.where('settlement.createdDate', '>=', fromDateTime) }
       if (toDateTime) { b.where('settlement.createdDate', '<=', toDateTime) }
-      if (currency) { b.where('pc.currencyId', currency) }
-      if (settlementWindowId) { b.where('ssw.settlementWindowId', settlementWindowId) }
+      if (currency) { b.whereIn('pc.currencyId', currency.split(',')) }
+      if (settlementWindowId) { b.whereIn('ssw.settlementWindowId', settlementWindowId.split(',').map(Number)) }
       if (fromSettlementWindowDateTime) { b.where('sw.createdDate', '>=', fromSettlementWindowDateTime) }
       if (toSettlementWindowDateTime) { b.where('sw.createdDate', '<=', toSettlementWindowDateTime) }
-      if (participantId) { b.where('pc.participantId', participantId) }
-      if (accountId) { b.where('spc.participantCurrencyId', accountId) }
+      if (participantId) { b.whereIn('pc.participantId', participantId.split(',').map(Number)) }
+      if (accountId) { b.whereIn('spc.participantCurrencyId', accountId.split(',').map(Number)) }
       return b
     })
   },
