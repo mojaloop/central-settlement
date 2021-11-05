@@ -320,7 +320,6 @@
                         "in": "query",
                         "name": "fromDateTime",
                         "type": "string",
-                        "default": "1000-01-01T00:00:00Z",
                         "format": "date-time",
                         "description": "The start date for query (relates to central-ledger.settlement.createdDate). Can be used together with `toDateTime'. eg 2017-07-20T17:32:28Z\n",
                         "required": false
@@ -329,7 +328,6 @@
                         "in": "query",
                         "name": "toDateTime",
                         "type": "string",
-                        "default": "9999-12-31T23:59:59Z",
                         "format": "date-time",
                         "description": "The end date for query (relates to central-ledger.settlement.createdDate). Can be used together with `fromDateTime'. eg 2017-07-21T17:32:28Z\n",
                         "required": false
@@ -338,7 +336,6 @@
                         "in": "query",
                         "name": "fromSettlementWindowDateTime",
                         "type": "string",
-                        "default": "1000-01-01T00:00:00Z",
                         "format": "date-time",
                         "description": "The start date for query (relates to central-ledger.settlementWindow.createdDate). Can be used together with `toDateTime'. eg 2017-07-20T17:32:28Z\n",
                         "required": false
@@ -348,7 +345,6 @@
                         "name": "toSettlementWindowDateTime",
                         "type": "string",
                         "format": "date-time",
-                        "default": "9999-12-31T23:59:59Z",
                         "description": "The end date for query (relates to central-ledger.settlementWindow.createdDate). Can be used together with `fromDateTime'. eg 2017-07-21T17:32:28Z\n",
                         "required": false
                     }
