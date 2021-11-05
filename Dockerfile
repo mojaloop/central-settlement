@@ -8,7 +8,7 @@ RUN apk add --no-cache -t build-dependencies git make gcc g++ python libtool aut
 
 COPY package.json package-lock.json* /opt/central-settlement/
 
-RUN npm install
+RUN npm ci
 
 COPY config /opt/central-settlement/config
 COPY scripts /opt/central-settlement/scripts

@@ -81,6 +81,66 @@
       "decision": "ignore",
       "madeAt": 1628084074530,
       "expiresAt": 1628688867371
+    },
+    "1002401|@mojaloop/central-services-shared>widdershins>yargs>string-width>strip-ansi>ansi-regex": {
+      "decision": "postpone",
+      "madeAt": 1636124462102
+    },
+    "1002401|@mojaloop/central-services-shared>widdershins>yargs>cliui>string-width>strip-ansi>ansi-regex": {
+      "decision": "postpone",
+      "madeAt": 1636124462102
+    },
+    "1002401|@mojaloop/central-ledger>@mojaloop/central-services-shared>widdershins>yargs>cliui>string-width>strip-ansi>ansi-regex": {
+      "decision": "postpone",
+      "madeAt": 1636124462102
+    },
+    "1002477|@mojaloop/central-ledger>@mojaloop/central-services-shared>axios": {
+      "decision": "postpone",
+      "madeAt": 1636124476248
+    },
+    "1002490|@mojaloop/central-ledger>mongoose>mpath": {
+      "decision": "postpone",
+      "madeAt": 1636124483713
+    },
+    "1002490|@mojaloop/central-ledger>@mojaloop/central-object-store>mongoose>mpath": {
+      "decision": "postpone",
+      "madeAt": 1636124483713
+    },
+    "1002627|@mojaloop/central-ledger>require-glob>glob-parent": {
+      "decision": "postpone",
+      "madeAt": 1636124495810
+    },
+    "1002865|@mojaloop/central-services-shared>shins>sanitize-html": {
+      "decision": "postpone",
+      "madeAt": 1636124499987
+    },
+    "1002865|@mojaloop/central-ledger>@mojaloop/central-services-shared>shins>sanitize-html": {
+      "decision": "postpone",
+      "madeAt": 1636124499987
+    },
+    "1002866|@mojaloop/central-services-shared>shins>sanitize-html": {
+      "decision": "postpone",
+      "madeAt": 1636124499987
+    },
+    "1002866|@mojaloop/central-ledger>@mojaloop/central-services-shared>shins>sanitize-html": {
+      "decision": "postpone",
+      "madeAt": 1636124499987
+    },
+    "1003019|@mojaloop/central-services-shared>widdershins>yargs>yargs-parser": {
+      "decision": "postpone",
+      "madeAt": 1636124506228
+    },
+    "1003019|@mojaloop/central-ledger>@mojaloop/central-services-shared>widdershins>yargs>yargs-parser": {
+      "decision": "postpone",
+      "madeAt": 1636124506228
+    },
+    "1004784|@mojaloop/central-ledger>hapi-swagger>swagger-parser>z-schema>validator": {
+      "decision": "postpone",
+      "madeAt": 1636124506660
+    },
+    "1004784|hapi-swagger>swagger-parser>z-schema>validator": {
+      "decision": "postpone",
+      "madeAt": 1636124506660
     }
   },
   "rules": {},
