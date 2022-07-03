@@ -52,7 +52,8 @@
         "parse-strings-in-object": "2.0.0",
         "rc": "1.2.8",
         "uuid4": "2.0.2",
-        "vm": "0.1.0"
+        "vm": "0.1.0",
+        "tigerbeetle-node": "0.8.1"
     },
     "devDependencies": {
         "@hapi/joi": "17.1.1",

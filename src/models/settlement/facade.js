@@ -1452,6 +1452,7 @@ const Facade = {
         await Promise.all(updatePromises)
 
         // aggregate and insert settlement net amounts
+          //TODO create settlement account in TigerBeetle
         const builder = knex
           .from(knex.raw('settlementParticipantCurrency (settlementId, participantCurrencyId, createdDate, netAmount)'))
           .insert(function () {

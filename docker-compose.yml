@@ -22,6 +22,7 @@ services:
       - "3007:3007"
     volumes:
       - ./docker/central-settlement/default.json:/opt/central-settlement/config/default.json
+      - ./docker/central-settlement/default.json:/opt/app/config/default.json
       - ./docker/wait-for:/opt/wait-for
 
   central-ledger:

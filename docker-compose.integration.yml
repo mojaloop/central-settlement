@@ -18,6 +18,7 @@ services:
       - "3007:3007"
     volumes:
       - ./docker/central-settlement/default.json:/opt/central-settlement/config/default.json
+      - ./docker/central-settlement/default.json:/opt/app/config/default.json
       - ./test:/opt/central-settlement/test
       - ./src:/opt/central-settlement/src
     environment:
@@ -39,7 +40,7 @@ services:
     command:
       - "sh"
       - "-c"
-      - "sh /opt/wait-for/wait-for-central-ledger.sh && node src/api/index.js"
+      - "sh /opt/wait-for/wait-for-central-ledger.sh && cat src/shared/setup.js && node src/api/index.js"
     links:
       - mysql
       - kafka
@@ -50,7 +51,14 @@ services:
       - "3001:3001"
     volumes:
        - ./docker/central-ledger/default.json:/opt/central-ledger/config/default.json
+       - ./docker/central-ledger/default.json:/opt/app/config/default.json
        - ./docker/wait-for:/opt/wait-for
+    environment:
+      - CLEDG_MONGODB__DISABLED=true
+      # Disable audit logs - makes it too verbose
+      - EVENT_SDK_LOG_FILTER="log:info, log:warning, log:error"
+      - CSL_LOG_TRANSPORT=console
+      - LOG_LEVEL=debug
 
   ml-api-adapter:
     image: mojaloop/ml-api-adapter:latest
@@ -84,6 +92,12 @@ services:
       - MYSQL_PASSWORD=${DBPASS:-password}
       - MYSQL_DATABASE=${DBUSER:-central_ledger}
       - MYSQL_ALLOW_EMPTY_PASSWORD=true
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "mysql"]
+      timeout: 20s
+      retries: 10
+      start_period: 40s
+      interval: 30s
 
   simulator:
     image: mojaloop/simulator:latest

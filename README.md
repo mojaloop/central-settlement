@@ -30,11 +30,11 @@ TBA
 
 ## Configuration
 
-Currently the only configuration, necessary is kept [here](./config/default.json)
+Currently, the only configuration necessary is kept [here](./config/default.json)
 
 ## Environmental variables
 
-Currently all is set into the config.
+Currently, all is set into the config.
 
 ## API
 
@@ -51,29 +51,41 @@ Includes unit tests at the moment. Functional and integration are outstanding.
 
 Running the tests:
 
+```bash
     npm run test:all
+```
 
 Tests include code coverage via istanbul. See the test/ folder for testing scripts.
 
 Running integration tests (narrow)
 
+```bash
     npm run test:int:narrow
+```
 
 ### Running Integration Tests interactively
 
-If you want to run integration tests in a repetitive manner, you can startup the test containers using `docker-compose`, login to running `central-settlement` container like so:
+If you want to run integration tests in a repetitive manner, you can start-up the test containers using `docker-compose`, login to running `central-settlement` container like so:
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.integration.yml up
+docker-compose -f docker-compose.yml -f docker-compose.integration.yml up -d
+docker-compose -f docker-compose.yml -f docker-compose.integration.yml up -d mysql kafka central-ledger
+docker-compose -f docker-compose.yml -f docker-compose.integration.yml up mysql kafka central-ledger
 
 #first time only:
-docker exec -it cs_central-ledger sh
+docker exec -it central-ledger-int sh
+export CL_DATABASE_HOST=localhost
 npm run migrate
+exit #exit running container
 
 #in a new shell
 docker exec -it cs_central-settlement sh
 npm run test:int
 ```
+
+#remove
+docker rmi mojaloop/central-ledger:latest
+docker rm central-ledger-int
 
 ## Auditing Dependencies
 

@@ -84,7 +84,7 @@ fcmd_centralledger() {
     --link $DB_HOST \
     --network $DOCKER_NETWORK \
     --env HOST_IP="$APP_HOST" \
-    --volume ${PWD}/test/integration-config-centralledger.json:/opt/central-ledger/config/default.json \
+    --volume ${PWD}/test/integration-config-centralledger.json:/opt/app/config/default.json \
     $CENTRAL_LEDGER_IMAGE:$CENTRAL_LEDGER_TAG \
     /bin/sh \
     -c "$@"
@@ -215,7 +215,7 @@ start_central_ledger () {
     -p 3001:3001 \
     --network $DOCKER_NETWORK \
     --name=$CENTRAL_LEDGER_HOST \
-    --volume ${PWD}/test/integration-config-centralledger.json:/opt/central-ledger/config/default.json \
+    --volume ${PWD}/test/integration-config-centralledger.json:/opt/app/config/default.json \
     $CENTRAL_LEDGER_IMAGE:$CENTRAL_LEDGER_TAG
 }
 
