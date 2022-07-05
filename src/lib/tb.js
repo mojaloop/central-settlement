@@ -65,207 +65,6 @@ const getTBClient = async () => {
 }
 
 /**
- * Settlement obligation has been created via `createSettlementEvent`.
- * After this is called, we should be in a settlement state of
- * `PENDING_SETTLEMENT` -> `PS_TRANSFERS_RECORDED`
- *
- * @param settlementTransferId
- * @param orgTransferId
- * @param settlementId
- * @param drParticipantCurrencyIdHub
- * @param drParticipantCurrencyIdHubRecon
- * @param crParticipantCurrencyIdDFSP
- * @param currencyTxt
- * @param amount
- * @returns {Promise<{}|*>}
- */
-const tbSettlementPreparationTransfer = async (
-    settlementTransferId,
-    orgTransferId,
-    settlementId,
-    drParticipantCurrencyIdHub,
-    drParticipantCurrencyIdHubRecon,
-    crParticipantCurrencyIdDFSP,
-    currencyTxt,
-    amount
-) => {
-  try {
-    const client = await getTBClient()
-    if (client == null) return {}
-
-    const currencyU16 = obtainLedgerFromCurrency(currencyTxt)
-
-    //TODO org transfer is [POSITION]
-
-    const accTypeHubToRecon = 1001//TODO @jason, config [HUB_RECONCILIATION]
-    const transferRecon = {
-      id: uuidToBigInt(settlementTransferId), // u128
-      debit_account_id: BigInt(drParticipantCurrencyIdHub),  // u128
-      credit_account_id: BigInt(drParticipantCurrencyIdHubRecon), // u128
-      user_data: BigInt(settlementId),
-      reserved: BigInt(0),
-      pending_id: 0,
-      timeout: 0n, // u64, in nano-seconds.
-      ledger: currencyU16,
-      code: accTypeHubToRecon,
-      flags: TbNode.TransferFlags.linked, // linked
-      amount: BigInt(amount), // u64
-      timestamp: 0n, //u64, Reserved: This will be set by the server.
-    }
-
-    const accTypeReconToDFSP = 1002//TODO @jason, config [HUB_MULTILATERAL_SETTLEMENT]
-    const transferDFSPToHub = {
-      id: uuidToBigInt(`${uuidv4Gen()}`),
-      debit_account_id: BigInt(drParticipantCurrencyIdHubRecon),  // u128
-      credit_account_id: BigInt(crParticipantCurrencyIdDFSP), // u128
-      user_data: BigInt(orgTransferId),
-      reserved: BigInt(0), // two-phase condition can go in here / Buffer.alloc(32, 0)
-      pending_id: 0,
-      timeout: 0n, // u64, in nano-seconds.
-      ledger: currencyU16,
-      code: accTypeReconToDFSP,  // u32
-      flags: 0, // u32 (last txn in the chain of lined events)
-      amount: BigInt(amount), // u64
-      timestamp: 0n, //u64, Reserved: This will be set by the server.
-    }
-
-    const errors = await client.createTransfers([transferRecon, transferDFSPToHub])
-    if (errors.length > 0) {
-      const errorTxt = errorsToString(TbNode.CreateTransferError, errors);
-
-      Logger.error('Transfer-ERROR: '+errorTxt)
-      const fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
-          'TB-Transfer-Preparation entry failed for [' + txnId + ':' + errorTxt + '] : '+ util.inspect(errors));
-      throw fspiopError
-    }
-    return errors
-  } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
-  }
-}
-
-const tbSettlementTransferReserve = async (
-    settlementTransferId,
-    settlementId,
-    drParticipantCurrencyIdHub,
-    crParticipantCurrencyIdDFSP,
-    currencyTxt,
-    amount
-) => {
-  try {
-    const client = await getTBClient()
-    if (client == null) return {}
-
-    const currencyU16 = obtainLedgerFromCurrency(currencyTxt)
-
-    const accTypeHubToRecon = 1001//TODO @jason, config [HUB_MULTILATERAL_SETTLEMENT]
-    const transferReservation = {
-      id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId),
-      debit_account_id: BigInt(crParticipantCurrencyIdDFSP),  // u128
-      credit_account_id: BigInt(drParticipantCurrencyIdHub), // u128
-      user_data: BigInt(settlementId),
-      reserved: BigInt(0),
-      pending_id: 0,
-      timeout: 0n, // u64, in nano-seconds.
-      ledger: currencyU16,
-      code: accTypeHubToRecon,
-      flags: TbNode.TransferFlags.pending, // pending
-      amount: BigInt(amount), // u64
-      timestamp: 0n, //u64, Reserved: This will be set by the server.
-    }
-
-    const errors = await client.createTransfers([transferReservation])
-    if (errors.length > 0) {
-      const errorTxt = errorsToString(TbNode.CreateTransferError, errors);
-
-      Logger.error('Transfer-ERROR: '+errorTxt)
-      const fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
-          'TB-Transfer-Preparation entry failed for [' + txnId + ':' + errorTxt + '] : '+ util.inspect(errors));
-      throw fspiopError
-    }
-    return errors
-  } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
-  }
-}
-
-const tbSettlementTransferCommit = async (
-    settlementTransferId,
-    settlementId,
-) => {
-  try {
-    const client = await getTBClient()
-    if (client == null) return {}
-
-    const transferCommit = {
-      id: uuidToBigInt(`${uuidv4Gen()}`),
-      debit_account_id: 0n,  // u128
-      credit_account_id: 0n, // u128
-      user_data: 0n,
-      reserved: BigInt(0),
-      pending_id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId),
-      timeout: 0n, // u64, in nano-seconds.
-      ledger: 0n,
-      code: 0n,
-      flags: TbNode.TransferFlags.post_pending_transfer, // post
-      amount: 0n, // u64
-      timestamp: 0n, //u64, Reserved: This will be set by the server.
-    }
-
-    const errors = await client.createTransfers([transferCommit])
-    if (errors.length > 0) {
-      const errorTxt = errorsToString(TbNode.CreateTransferError, errors);
-
-      Logger.error('Transfer-ERROR: '+errorTxt)
-      const fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
-          'TB-Transfer-Preparation entry failed for [' + txnId + ':' + errorTxt + '] : '+ util.inspect(errors));
-      throw fspiopError
-    }
-    return errors
-  } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
-  }
-}
-
-const tbSettlementTransferAbort = async (
-    settlementTransferId,
-    settlementId,
-) => {
-  try {
-    const client = await getTBClient()
-    if (client == null) return {}
-
-    const transferAbort = {
-      id: uuidToBigInt(`${uuidv4Gen()}`),
-      debit_account_id: 0n,  // u128
-      credit_account_id: 0n, // u128
-      user_data: 0n,
-      reserved: BigInt(0),
-      pending_id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId),
-      timeout: 0n, // u64, in nano-seconds.
-      ledger: 0n,
-      code: 0n,
-      flags: TbNode.TransferFlags.void_pending_transfer, // void
-      amount: 0n, // u64
-      timestamp: 0n, //u64, Reserved: This will be set by the server.
-    }
-
-    const errors = await client.createTransfers([transferAbort])
-    if (errors.length > 0) {
-      const errorTxt = errorsToString(TbNode.CreateTransferError, errors);
-
-      Logger.error('Transfer-ERROR: '+errorTxt)
-      const fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
-          'TB-Transfer-Preparation entry failed for [' + txnId + ':' + errorTxt + '] : '+ util.inspect(errors));
-      throw fspiopError
-    }
-    return errors
-  } catch (err) {
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
-  }
-}
-
-/**
  * Create all the settlement accounts.
  *
  * @param id Hub/Hub Recon/DFSPS id
@@ -328,11 +127,17 @@ const tbCreateSettlementAccounts = async (
  *
  * @param id Hub/Hub Recon id
  * @param accountType Numeric account type for Hub or Hub Recon
+ *    1->POSITION
+ *    2->SETTLEMENT
+ *    3->HUB_RECONCILIATION
+ *    4->HUB_MULTILATERAL_SETTLEMENT
+ *    5->INTERCHANGE_FEE
+ *    6->INTERCHANGE_FEE_SETTLEMENT
  * @param currencyTxt ISO-4217 alphabetic code
  */
 const tbCreateSettlementHubAccount = async (
     id,
-    accountType = 1,
+    accountType = 2,
     currencyTxt = 'USD'
 ) => {
   try {
@@ -377,6 +182,275 @@ const tbCreateSettlementHubAccount = async (
   }
 }
 
+const tbLookupHubAccount = async (
+    id,
+    accountType = 2,
+    currencyTxt = 'USD'
+) => {
+  try {
+    const client = await getTBClient()
+    if (client == null) return {}
+
+    const userData = BigInt(id)
+    const currencyU16 = obtainLedgerFromCurrency(currencyTxt)
+    const tbId = tbAccountIdFrom(userData, currencyU16, accountType)
+
+    const accounts = await client.lookupAccounts([tbId])
+    if (accounts.length > 0) return accounts[0]
+    return {}
+  } catch (err) {
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+}
+
+/**
+ * Settlement obligation has been created via `createSettlementEvent`.
+ * After this is called, we should be in a settlement state of
+ * `PENDING_SETTLEMENT` -> `PS_TRANSFERS_RECORDED`
+ *
+ * @param settlementTransferId
+ * @param orgTransferId
+ * @param settlementId
+ * @param drParticipantCurrencyIdHub
+ * @param drParticipantCurrencyIdHubRecon
+ * @param crParticipantCurrencyIdDFSP
+ * @param currencyTxt
+ * @param amount
+ * @returns {Promise<{}|*>}
+ */
+const tbSettlementPreparationTransfer = async (
+    enums,
+    settlementTransferId,
+    orgTransferId,
+    settlementId,
+    drParticipantCurrencyIdHubRecon,
+    crDrParticipantCurrencyIdHubMultilateral,
+    crParticipantCurrencyIdDFSP,
+    currencyTxt,
+    amount
+) => {
+  try {
+    const client = await getTBClient()
+    if (client == null) return {}
+
+    const currencyU16 = obtainLedgerFromCurrency(currencyTxt)
+
+    //TODO We need a general [participant] account
+
+    //TODO org transfer is [POSITION] -> 1
+    const transferRecon = {
+      id: uuidToBigInt(settlementTransferId), // u128
+      debit_account_id: BigInt(drParticipantCurrencyIdHubRecon),  // u128
+      credit_account_id: BigInt(crDrParticipantCurrencyIdHubMultilateral), // u128
+      user_data: BigInt(settlementId),
+      reserved: BigInt(0),
+      pending_id: 0,
+      timeout: 0n, // u64, in nano-seconds.
+      ledger: currencyU16,
+      code: enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
+      flags: TbNode.TransferFlags.linked, // linked
+      amount: BigInt(amount), // u64
+      timestamp: 0n, //u64, Reserved: This will be set by the server.
+    }
+
+    const partCurrencyId = tbSettlementAccountIdFrom(crParticipantCurrencyIdDFSP, settlementId)
+    const transferDFSPToHub = {
+      id: uuidToBigInt(`${uuidv4Gen()}`),
+      debit_account_id: BigInt(crDrParticipantCurrencyIdHubMultilateral), // u128
+      credit_account_id: BigInt(partCurrencyId), // u128
+      user_data: BigInt(orgTransferId),
+      reserved: BigInt(0), // two-phase condition can go in here / Buffer.alloc(32, 0)
+      pending_id: 0,
+      timeout: 0n, // u64, in nano-seconds.
+      ledger: currencyU16,
+      code: enums.ledgerAccountTypes.SETTLEMENT,  // u32
+      flags: 0, // u32 (last txn in the chain of lined events)
+      amount: BigInt(amount), // u64
+      timestamp: 0n, //u64, Reserved: This will be set by the server.
+    }
+
+    const errors = await client.createTransfers([transferRecon, transferDFSPToHub])
+    if (errors.length > 0) {
+      const errorTxt = errorsToString(TbNode.CreateTransferError, errors);
+
+      Logger.error('Transfer-ERROR: '+errorTxt)
+      const fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
+          'TB-Transfer-Preparation entry failed for [' + txnId + ':' + errorTxt + '] : '+ util.inspect(errors));
+      throw fspiopError
+    }
+    return errors
+  } catch (err) {
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+}
+
+const tbSettlementTransferReserve = async (
+    enums,
+    settlementTransferId,
+    settlementId,
+    drParticipantCurrencyIdDFSP,
+    crDrParticipantCurrencyIdHubMultilateral,
+    crParticipantCurrencyIdHubRecon,
+    currencyTxt,
+    amount
+) => {
+  try {
+    const client = await getTBClient()
+    if (client == null) return {}
+
+    const currencyU16 = obtainLedgerFromCurrency(currencyTxt)
+
+    const transferHubToDFSPReserve = {
+      id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId, 1),
+      debit_account_id: BigInt(drParticipantCurrencyIdDFSP), // u128
+      credit_account_id: BigInt(crDrParticipantCurrencyIdHubMultilateral), // u128
+      user_data: BigInt(settlementId),
+      reserved: BigInt(0),
+      pending_id: 0,
+      timeout: 0n, // u64, in nano-seconds.
+      ledger: currencyU16,
+      code: enums.ledgerAccountTypes.SETTLEMENT,
+      flags: TbNode.TransferFlags.linked | TbNode.TransferFlags.pending, // pending+linked
+      amount: BigInt(amount), // u64
+      timestamp: 0n, //u64, Reserved: This will be set by the server.
+    }
+
+    const transferMultiToRecon = {
+      id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId, 2),
+      debit_account_id: BigInt(crDrParticipantCurrencyIdHubMultilateral), // u128
+      credit_account_id: BigInt(crParticipantCurrencyIdHubRecon), // u128
+      user_data: BigInt(orgTransferId),
+      reserved: BigInt(0),
+      pending_id: 0,
+      timeout: 0n, // u64, in nano-seconds.
+      ledger: currencyU16,
+      code: enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
+      flags: TbNode.TransferFlags.pending, // linked+pending
+      amount: BigInt(amount), // u64
+      timestamp: 0n, //u64, Reserved: This will be set by the server.
+    }
+
+    const errors = await client.createTransfers([transferHubToDFSPReserve, transferMultiToRecon])
+    if (errors.length > 0) {
+      const errorTxt = errorsToString(TbNode.CreateTransferError, errors);
+
+      Logger.error('Transfer-ERROR: '+errorTxt)
+      const fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
+          'TB-Transfer-Preparation entry failed for [' + txnId + ':' + errorTxt + '] : '+ util.inspect(errors));
+      throw fspiopError
+    }
+    return errors
+  } catch (err) {
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+}
+
+const tbSettlementTransferCommit = async (
+    settlementTransferId,
+    settlementId,
+) => {
+  try {
+    const client = await getTBClient()
+    if (client == null) return {}
+
+    const commits = [
+      {
+        id: uuidToBigInt(`${uuidv4Gen()}`),
+        debit_account_id: 0n,  // u128
+        credit_account_id: 0n, // u128
+        user_data: 0n,
+        reserved: BigInt(0),
+        pending_id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId, 1),
+        timeout: 0n, // u64, in nano-seconds.
+        ledger: 0n,
+        code: 0n,
+        flags: TbNode.TransferFlags.linked | TbNode.TransferFlags.post_pending_transfer, // post
+        amount: 0n, // u64
+        timestamp: 0n, //u64, Reserved: This will be set by the server.
+      }, {
+        id: uuidToBigInt(`${uuidv4Gen()}`),
+        debit_account_id: 0n,  // u128
+        credit_account_id: 0n, // u128
+        user_data: 0n,
+        reserved: BigInt(0),
+        pending_id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId, 2),
+        timeout: 0n, // u64, in nano-seconds.
+        ledger: 0n,
+        code: 0n,
+        flags: TbNode.TransferFlags.post_pending_transfer, // post
+        amount: 0n, // u64
+        timestamp: 0n, //u64, Reserved: This will be set by the server.
+      },
+    ];
+
+    const errors = await client.createTransfers(commits)
+    if (errors.length > 0) {
+      const errorTxt = errorsToString(TbNode.CreateTransferError, errors);
+
+      Logger.error('Transfer-ERROR: '+errorTxt)
+      const fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
+          'TB-Transfer-Preparation entry failed for [' + txnId + ':' + errorTxt + '] : '+ util.inspect(errors));
+      throw fspiopError
+    }
+    return errors
+  } catch (err) {
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+}
+
+const tbSettlementTransferAbort = async (
+    settlementTransferId,
+    settlementId,
+) => {
+  try {
+    const client = await getTBClient()
+    if (client == null) return {}
+
+    const aborts = [
+      {
+        id: uuidToBigInt(`${uuidv4Gen()}`),
+        debit_account_id: 0n,  // u128
+        credit_account_id: 0n, // u128
+        user_data: 0n,
+        reserved: BigInt(0),
+        pending_id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId, 1),
+        timeout: 0n, // u64, in nano-seconds.
+        ledger: 0n,
+        code: 0n,
+        flags: TbNode.TransferFlags.linked | TbNode.TransferFlags.void_pending_transfer, // void
+        amount: 0n, // u64
+        timestamp: 0n, //u64, Reserved: This will be set by the server.
+      }, {
+        id: uuidToBigInt(`${uuidv4Gen()}`),
+        debit_account_id: 0n,  // u128
+        credit_account_id: 0n, // u128
+        user_data: 0n,
+        reserved: BigInt(0),
+        pending_id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId, 2),
+        timeout: 0n, // u64, in nano-seconds.
+        ledger: 0n,
+        code: 0n,
+        flags: TbNode.TransferFlags.void_pending_transfer, // void
+        amount: 0n, // u64
+        timestamp: 0n, //u64, Reserved: This will be set by the server.
+      },
+    ];
+
+    const errors = await client.createTransfers(aborts)
+    if (errors.length > 0) {
+      const errorTxt = errorsToString(TbNode.CreateTransferError, errors);
+
+      Logger.error('Transfer-ERROR: '+errorTxt)
+      const fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
+          'TB-Transfer-Preparation entry failed for [' + txnId + ':' + errorTxt + '] : '+ util.inspect(errors));
+      throw fspiopError
+    }
+    return errors
+  } catch (err) {
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+}
+
 const tbDestroy = async () => {
   try {
     const client = await getTBClient()
@@ -416,8 +490,8 @@ const tbSettlementAccountIdFrom = (partCurrencyId, settlementId) => {
   return BigInt(`0x${hash}`)
 }
 
-const tbMultilateralTransferSettlementId = (settlementId, settlementTransferId) => {
-  const hash = sha256(`${settlementId}-${settlementTransferId}`)
+const tbMultilateralTransferSettlementId = (settlementId, settlementTransferId, qualifier) => {
+  const hash = sha256(`${settlementId}-${settlementTransferId}-${qualifier}`)
   return BigInt(`0x${hash}`)
 }
 
@@ -438,7 +512,17 @@ const enumLabelFromCode = (resultEnum, errCode) => {
 }
 
 module.exports = {
-  tbCreateAccount,
+  // Accounts:
+  tbCreateSettlementAccounts,
+  tbCreateSettlementHubAccount,
+  tbLookupHubAccount,
+  // Transfers:
+  tbSettlementPreparationTransfer,
+  tbSettlementTransferReserve,
+  tbSettlementTransferCommit,
+  tbSettlementTransferAbort,
+  // Cleanup:
   tbDestroy
 }
+
 
