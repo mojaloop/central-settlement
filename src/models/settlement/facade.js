@@ -178,14 +178,14 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
       }
 
       if (Config.TIGERBEETLE.enabled) {
-          //TODO lookup once...
-          await hubReconAcc = Tb.tbLookupHubAccount(
+          //TODO @jason lookup once...
+          //TODO @jason amounts need to be converted...
+          const hubReconAcc = await Tb.tbLookupHubAccount(
               Config.HUB_ID.id,
               enums.ledgerAccountTypes.HUB_RECONCILIATION,
               t.currency
           );
-          //TODO lookup once...
-          await hubMultilateral = Tb.tbLookupHubAccount(
+          const hubMultilateral = await Tb.tbLookupHubAccount(
               Config.HUB_ID.id,
               enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
               t.currency
@@ -199,7 +199,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
               hubMultilateral.id,
               t.participantCurrencyId,
               t.currency,
-              t.amount//TODO need to likely convert...
+              t.amount
           );
       }
 
@@ -377,13 +377,13 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
 
           if (Config.TIGERBEETLE.enabled) {
             //TODO lookup once...
-            await hubReconAcc = Tb.tbLookupHubAccount(
+            const hubReconAcc = await Tb.tbLookupHubAccount(
                 Config.HUB_ID.id,
                 enums.ledgerAccountTypes.HUB_RECONCILIATION,
                 currencyId
             );
             //TODO lookup once...
-            await hubMultilateral = Tb.tbLookupHubAccount(
+            const hubMultilateral = await Tb.tbLookupHubAccount(
                 Config.HUB_ID.id,
                 enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
                 currencyId
@@ -595,13 +595,13 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
 
           if (Config.TIGERBEETLE.enabled) {
             //TODO lookup once...
-            await hubReconAcc = Tb.tbLookupHubAccount(
+            const hubReconAcc = await Tb.tbLookupHubAccount(
                 Config.HUB_ID.id,
                 enums.ledgerAccountTypes.HUB_RECONCILIATION,
                 currencyId
             );
             //TODO lookup once...
-            await hubMultilateral = Tb.tbLookupHubAccount(
+            const hubMultilateral = await Tb.tbLookupHubAccount(
                 Config.HUB_ID.id,
                 enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
                 currencyId
@@ -784,13 +784,13 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
 
           if (Config.TIGERBEETLE.enabled) {
             //TODO lookup once...
-            await hubReconAcc = Tb.tbLookupHubAccount(
+            const hubReconAcc = await Tb.tbLookupHubAccount(
                 Config.HUB_ID.id,
                 enums.ledgerAccountTypes.HUB_RECONCILIATION,
                 currencyId
             );
             //TODO lookup once...
-            await hubMultilateral = Tb.tbLookupHubAccount(
+            const hubMultilateral = await Tb.tbLookupHubAccount(
                 Config.HUB_ID.id,
                 enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
                 currencyId
@@ -1596,15 +1596,12 @@ const Facade = {
                 enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
                 settlementModel.currency
             )
-
-            //TODO 2. HUB_MULTILATERAL_SETTLEMENT   -> Config.HUB_ID (participant-id)
-            //TODO 3. The SETTLEMENT account will be created now
-            await tbSettlementCreateAccs = Tb.tbCreateSettlementAccounts(
-                tbSettlementAccounts,
-                settlementId,
-                enums.ledgerAccountTypes.SETTLEMENT,
-                settlementModel.currency,
-                true
+            const tbSettlementCreateAccs = await Tb.tbCreateSettlementAccounts(
+               tbSettlementAccounts,
+               settlementId,
+               enums.ledgerAccountTypes.SETTLEMENT,
+               settlementModel.currency,
+               true
             );
         }
 

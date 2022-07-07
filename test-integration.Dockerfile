@@ -1,9 +1,11 @@
-FROM node:12.16.0-alpine
+#JASON: FROM node:12.16.0-alpine
+FROM node:14.15.0-alpine as builder
+
 USER root
 
 WORKDIR /opt/central-settlement
 
-RUN apk add --no-cache -t build-dependencies git make gcc g++ python libtool autoconf automake \
+RUN apk add --no-cache -t build-dependencies git make gcc g++ python libtool autoconf automake wget \
     && cd $(npm root -g)/npm \
     && npm config set unsafe-perm true \
     && npm install -g tape tap-xunit

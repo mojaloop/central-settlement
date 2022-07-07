@@ -1,8 +1,9 @@
-FROM node:12.16.1-alpine as builder
+#JASON: FROM node:12.16.1-alpine as builder
+FROM node:14.15.0-alpine as builder
 
 WORKDIR /opt/central-settlement
 
-RUN apk add --no-cache -t build-dependencies git make gcc g++ python libtool autoconf automake \
+RUN apk add --no-cache -t build-dependencies git make gcc g++ python libtool autoconf automake wget \
     && cd $(npm root -g)/npm \
     && npm config set unsafe-perm true
 

@@ -52,7 +52,7 @@ Includes unit tests at the moment. Functional and integration are outstanding.
 Running the tests:
 
 ```bash
-    npm run test:all
+npm run test:all
 ```
 
 Tests include code coverage via istanbul. See the test/ folder for testing scripts.
@@ -60,7 +60,7 @@ Tests include code coverage via istanbul. See the test/ folder for testing scrip
 Running integration tests (narrow)
 
 ```bash
-    npm run test:int:narrow
+npm run test:int:narrow
 ```
 
 ### Running Integration Tests interactively
@@ -84,8 +84,16 @@ npm run test:int
 ```
 
 #remove
-docker rmi mojaloop/central-ledger:latest
+docker pull mojaloop/central-settlement:latest
+docker pull mojaloop/central-ledger:latest
+docker rm cs_central-settlement
 docker rm central-ledger-int
+
+TODO @jason remove the below:
+```shell
+apk add python
+npm install tigerbeetle-node
+```
 
 ## Auditing Dependencies
 
@@ -100,7 +108,6 @@ You can then check to see if the CI will pass based on the current dependencies 
 ```bash
 npm run audit:check
 ```
-
 And commit the changed `audit-resolv.json` to ensure that CircleCI will build correctly.
 
 ## Container Scans
