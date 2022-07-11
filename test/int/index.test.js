@@ -87,7 +87,7 @@ describe('when a transfer notification with COMMITTED status is received  ', () 
     }
 
     const TRANSACTION = {
-      transactionId: transactionId,
+      transactionId,
       quoteId: '61b095e0-530e-46f5-9795-1bf1a19d4fd2',
       payee: {
         partyIdInfo: {

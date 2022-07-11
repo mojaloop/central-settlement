@@ -94,7 +94,7 @@ const getNotificationMessage = function (action, destination, payload) {
     },
     metadata: {
       event: {
-        action: action
+        action
       }
     }
   }
@@ -182,7 +182,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           transferId: t.settlementTransferId,
           participantCurrencyId: mlnsAccountId,
           transferParticipantRoleTypeId: enums.transferParticipantRoleTypes.HUB,
-          ledgerEntryTypeId: ledgerEntryTypeId,
+          ledgerEntryTypeId,
           amount: t.netAmount,
           createdDate: transactionTimestamp
         })
@@ -192,7 +192,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           transferId: t.settlementTransferId,
           participantCurrencyId: t.participantCurrencyId,
           transferParticipantRoleTypeId: enums.transferParticipantRoleTypes.DFSP_POSITION,
-          ledgerEntryTypeId: ledgerEntryTypeId,
+          ledgerEntryTypeId,
           amount: -t.netAmount,
           createdDate: transactionTimestamp
         })
@@ -341,7 +341,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
           await knex('participantPositionChange')
             .insert({
               participantPositionId: dfspPositionId,
-              transferStateChangeId: transferStateChangeId,
+              transferStateChangeId,
               value: new MLNumber(dfspPositionValue).add(dfspAmount).toNumber(),
               reservedValue: dfspReservedValue,
               createdDate: transactionTimestamp
@@ -377,7 +377,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
           await knex('participantPositionChange')
             .insert({
               participantPositionId: hubPositionId,
-              transferStateChangeId: transferStateChangeId,
+              transferStateChangeId,
               value: new MLNumber(hubPositionValue).add(hubAmount).toNumber(),
               reservedValue: 0,
               createdDate: transactionTimestamp
@@ -498,7 +498,7 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
           await knex('participantPositionChange')
             .insert({
               participantPositionId: dfspPositionId,
-              transferStateChangeId: transferStateChangeId,
+              transferStateChangeId,
               value: dfspPositionValue - dfspAmount,
               reservedValue: dfspReservedValue,
               createdDate: transactionTimestamp
@@ -534,7 +534,7 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
           await knex('participantPositionChange')
             .insert({
               participantPositionId: hubPositionId,
-              transferStateChangeId: transferStateChangeId,
+              transferStateChangeId,
               value: hubPositionValue - hubAmount,
               reservedValue: 0,
               createdDate: transactionTimestamp
@@ -671,7 +671,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
           await knex('participantPositionChange')
             .insert({
               participantPositionId: dfspPositionId,
-              transferStateChangeId: transferStateChangeId,
+              transferStateChangeId,
               value: new MLNumber(dfspPositionValue).add(dfspAmount).toNumber(),
               reservedValue: dfspReservedValue,
               createdDate: transactionTimestamp
@@ -696,7 +696,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
           await knex('participantPositionChange')
             .insert({
               participantPositionId: hubPositionId,
-              transferStateChangeId: transferStateChangeId,
+              transferStateChangeId,
               value: new MLNumber(hubPositionValue).add(hubAmount).toNumber(),
               reservedValue: 0,
               createdDate: transactionTimestamp

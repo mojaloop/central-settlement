@@ -127,7 +127,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       test.ok(settlementWindowId > 0, '#1 retrieve the OPEN window')
 
       params = {
-        settlementWindowId: settlementWindowId,
+        settlementWindowId,
         state: enums.settlementWindowStates.CLOSED,
         reason: 'text',
         request: {

@@ -78,7 +78,7 @@ async function createNetDebitCapInitialPositionAndLimit (participant, initialPos
       type: 'NET_DEBIT_CAP',
       value: limitValue
     },
-    initialPosition: initialPosition
+    initialPosition
   })
 }
 
@@ -110,7 +110,7 @@ async function sendTransfer (payerFsp, payeeFsp, transfer) {
     }
   }
   return axios.post(url, body, {
-    headers: headers
+    headers
   })
 }
 
