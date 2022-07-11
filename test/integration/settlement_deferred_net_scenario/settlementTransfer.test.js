@@ -124,7 +124,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       let params = { query: { state: enums.settlementWindowStates.OPEN } }
       const res1 = await SettlementWindowService.getByParams(params) // method to be verified
       settlementWindowId = res1[0].settlementWindowId
-      test.ok(settlementWindowId > 0, '#1 retrieve the OPEN window')
+      test.ok(settlementWindowId > 0, `#1 retrieve the OPEN window [${settlementWindowId}]`)
 
       params = {
         settlementWindowId: settlementWindowId,
@@ -138,8 +138,9 @@ Test('SettlementTransfer should', async settlementTransferTest => {
         }
       }
       const res2 = await SettlementWindowService.process(params, enums.settlementWindowStates)
+      test.ok(res2, '#2.1 process settlement window operation success')
       const res3 = await SettlementWindowService.close(params.settlementWindowId, params.reason)
-      test.ok(res3, '#2 close settlement window operation success')
+      test.ok(res3, '#2.2 close settlement window operation success')
 
       const closedWindow = await SettlementWindowStateChangeModel.getBySettlementWindowId(settlementWindowId)
       const openWindow = await SettlementWindowStateChangeModel.getBySettlementWindowId(res2.settlementWindowId)

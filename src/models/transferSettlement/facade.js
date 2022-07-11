@@ -334,7 +334,9 @@ async function getSettlementModelByTransferId (transferId, settlementGranularity
     .select('settlementModel.*')
   if (settlementModelByTransferId.length === 0) {
     const allSettlementModels = await Db.from('settlementModel').find()
-    const transferCurrency = (await TransferFacade.getByIdLight(transferId)).currencyId
+    const transferById = (await TransferFacade.getByIdLight(transferId));
+    if (transferById == null) return settlementModelByTransferId
+    const transferCurrency = transferById.currencyId
     switch (settlementGranularityName) {
       case SettlementEnum.settlementGranularityName.GROSS: {
         const netModelWithCurrency = allSettlementModels.filter(sm => (sm.currencyId === transferCurrency && sm.settlementGranularityId === SettlementEnum.SettlementGranularity.NET))

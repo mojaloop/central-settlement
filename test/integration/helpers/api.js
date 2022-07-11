@@ -114,6 +114,32 @@ async function sendTransfer (payerFsp, payeeFsp, transfer) {
   })
 }
 
+async function sendTransferFulfill (payerFsp, payeeFsp, transfer) {
+  const url = `${Config.ML_API_ADAPTER_URL}/transfers/${transfer.transferId}`
+  const currentDateGMT = new Date().toGMTString()
+
+  const headers = {
+    Accept: 'application/vnd.interoperability.transfers+json;version=1.0',
+    'Content-Type': 'application/vnd.interoperability.transfers+json;version=1.0',
+    Date: currentDateGMT,
+    'FSPIOP-Source': payerFsp,
+    'FSPIOP-Destination': payeeFsp
+  }
+  const body = {
+    transferState : 'COMMITTED',
+    //transferState : 'RESERVED',
+    extensionList: {
+      extension: [{
+        key: 'prepare-fulfill',
+        value: `txn-${transfer.transferId}`
+      }]
+    }
+  }
+  return axios.put(url, body, {
+    headers: headers
+  })
+}
+
 async function waitForTransferToBeCommited (transferId, sleepMs, iterations) {
   const localEnum = {
     transferStates: {
@@ -149,5 +175,6 @@ module.exports = {
   createSettlementModel,
   getParticipantAccount,
   sendTransfer,
+  sendTransferFulfill,
   waitForTransferToBeCommited
 }
