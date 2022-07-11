@@ -6,7 +6,8 @@ module.exports = {
   DATABASE: {
     client: RC.DATABASE.DIALECT,
     connection: {
-      host: RC.DATABASE.HOST.replace(/\/$/, ''),
+      //host: RC.DATABASE.HOST.replace(/\/$/, ''),
+      host: 'mysql-int',
       port: RC.DATABASE.PORT,
       user: RC.DATABASE.USER,
       password: RC.DATABASE.PASSWORD,
