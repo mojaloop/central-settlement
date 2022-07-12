@@ -208,27 +208,6 @@ jobs:
           path: ./audit/results
           prefix: audit
 
-  test-integration:
-    executor: default-machine
-    steps:
-      - run:
-          name: Install general dependencies
-          command: *defaults_Dependencies
-      - checkout
-      - run:
-          <<: *defaults_configure_nvm
-      - run:
-          name: Create dir for test results
-          command: mkdir -p ./test/results
-      - run:
-          name: Execute integration tests
-          command: npm -s run test:integration
-      - store_artifacts:
-          path: ./test/results
-          prefix: test
-      - store_test_results:
-          path: ./test/results
-
   audit-licenses:
     executor: default-docker
     steps:
