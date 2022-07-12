@@ -201,6 +201,61 @@
       "decision": "ignore",
       "madeAt": 1657629700477,
       "expiresAt": 1660221683913
+    },
+    "1070030|@mojaloop/central-ledger>@mojaloop/central-services-shared>@mojaloop/event-sdk>grpc>protobufjs>moment>widdershins>markdown-it": {
+      "decision": "ignore",
+      "madeAt": 1657636901888,
+      "expiresAt": 1660228897171
+    },
+    "1070030|@mojaloop/central-services-shared>@mojaloop/event-sdk>grpc>protobufjs>moment>widdershins>markdown-it": {
+      "decision": "ignore",
+      "madeAt": 1657636901888,
+      "expiresAt": 1660228897171
+    },
+    "1070030|shins>markdown-it": {
+      "decision": "ignore",
+      "madeAt": 1657636901888,
+      "expiresAt": 1660228897171
+    },
+    "1068310|@mojaloop/central-ledger>@mojaloop/central-services-shared>@mojaloop/event-sdk>grpc>protobufjs>moment>widdershins>markdown-it>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1657636902724,
+      "expiresAt": 1660228897171
+    },
+    "1068310|@mojaloop/central-services-shared>@mojaloop/event-sdk>grpc>protobufjs>moment>widdershins>markdown-it>yargs>yargs-parser": {
+      "decision": "ignore",
+      "madeAt": 1657636902724,
+      "expiresAt": 1660228897171
+    },
+    "1068386|@mojaloop/central-ledger>@mojaloop/central-services-shared>@mojaloop/event-sdk>grpc>protobufjs>moment>widdershins>markdown-it>yargs>yargs-parser>hapi-auth-basic>hapi": {
+      "decision": "ignore",
+      "madeAt": 1657636903526,
+      "expiresAt": 1660228897171
+    },
+    "1068399|@mojaloop/central-ledger>@mojaloop/central-services-shared>@mojaloop/event-sdk>grpc>protobufjs>moment>widdershins>markdown-it>yargs>yargs-parser>hapi-auth-basic>hapi>ammo": {
+      "decision": "ignore",
+      "madeAt": 1657636904398,
+      "expiresAt": 1660228897171
+    },
+    "1068389|@mojaloop/central-ledger>@mojaloop/central-services-shared>@mojaloop/event-sdk>grpc>protobufjs>moment>widdershins>markdown-it>yargs>yargs-parser>hapi-auth-basic>hapi>ammo>subtext": {
+      "decision": "ignore",
+      "madeAt": 1657636905230,
+      "expiresAt": 1660228897171
+    },
+    "1068390|@mojaloop/central-ledger>@mojaloop/central-services-shared>@mojaloop/event-sdk>grpc>protobufjs>moment>widdershins>markdown-it>yargs>yargs-parser>hapi-auth-basic>hapi>ammo>subtext": {
+      "decision": "ignore",
+      "madeAt": 1657636906169,
+      "expiresAt": 1660228897171
+    },
+    "1068155|shins>markdown-it>sanitize-html": {
+      "decision": "ignore",
+      "madeAt": 1657636907134,
+      "expiresAt": 1660228897171
+    },
+    "1070260|shins>markdown-it>sanitize-html": {
+      "decision": "ignore",
+      "madeAt": 1657636908087,
+      "expiresAt": 1660228897171
     }
   },
   "rules": {},
