@@ -15,6 +15,7 @@ COPY config /opt/app/config
 COPY scripts /opt/app/scripts
 COPY src /opt/app/src
 COPY README.md /opt/app
+
 FROM node:16.15.0-alpine
 WORKDIR /opt/app/
 

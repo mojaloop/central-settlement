@@ -84,7 +84,7 @@ fcmd_centralledger() {
     --link $DB_HOST \
     --network $DOCKER_NETWORK \
     --env HOST_IP="$APP_HOST" \
-    --volume ${PWD}/test/integration-config-centralledger.json:/opt/central-ledger/config/default.json \
+    --volume ${PWD}/test/integration-config-centralledger.json:/opt/app/config/default.json \
     $CENTRAL_LEDGER_IMAGE:$CENTRAL_LEDGER_TAG \
     /bin/sh \
     -c "$@"
@@ -215,7 +215,7 @@ start_central_ledger () {
     -p 3001:3001 \
     --network $DOCKER_NETWORK \
     --name=$CENTRAL_LEDGER_HOST \
-    --volume ${PWD}/test/integration-config-centralledger.json:/opt/central-ledger/config/default.json \
+    --volume ${PWD}/test/integration-config-centralledger.json:/opt/app/config/default.json \
     $CENTRAL_LEDGER_IMAGE:$CENTRAL_LEDGER_TAG
 }
 
@@ -228,7 +228,7 @@ start_ml_api_adapter () {
     -p 3000:3000 \
     --network $DOCKER_NETWORK \
     --name=$ML_API_ADAPTER_HOST \
-    --volume ${PWD}/test/integration-config-mlapiadapter.json:/opt/ml-api-adapter/config/default.json \
+    --volume ${PWD}/test/integration-config-mlapiadapter.json:/opt/app/config/default.json \
     --env MLAPI_ENDPOINT_HEALTH_URL="http://${CENTRAL_LEDGER_HOST}:3001/health" \
     $ML_API_ADAPTER_IMAGE:$ML_API_ADAPTER_TAG \
     sh -c "node src/api/index.js"
