@@ -157,7 +157,7 @@ jobs:
           command: mkdir -p ./test/results
       - run:
           name: Execute unit tests
-          command: npm -s run test:xunit
+          command: npm -s run test:xunit > ./test/results/tape.xml
       - store_artifacts:
           path: ./test/results
           prefix: test
