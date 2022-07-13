@@ -187,6 +187,26 @@ jobs:
       - store_test_results:
           path: coverage
 
+  test-integration:
+    executor: default-machine
+    steps:
+      - checkout
+      - run:
+          <<: *defaults_configure_nvm
+      - restore_cache:
+          key: dependency-cache-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Create dir for test results
+          command: mkdir -p ./test/results
+      - run:
+          name: Execute integration tests
+          command: npm -s run test:integration
+      - store_artifacts:
+          path: ./test/results
+          prefix: test
+      - store_test_results:
+          path: ./test/results
+
   vulnerability-check:
     executor: default-docker
     steps:
@@ -605,6 +625,17 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
+      - test-integration:
+          context: org-global
+          requires:
+            - setup
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore:
+                - /feature*/
+                - /bugfix*/
       - vulnerability-check:
           context: org-global
           requires:
@@ -646,6 +677,7 @@ workflows:
             - test-lint
             - test-unit
             - test-coverage
+            - test-integration
             - vulnerability-check
             - audit-licenses
             - build-local
