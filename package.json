@@ -129,5 +129,10 @@
         "ignore": [
             "test/unit/data/invalidFile/dummyFeeCalculationTestScriptInvalidFile.js"
         ]
+    },
+    "standard-version": {
+        "scripts": {
+          "postchangelog": "replace '\\[mojaloop/#(\\d+)\\]\\(https://github.com/mojaloop/(.*)/issues/(\\d+)\\)' '[mojaloop/#$1](https://github.com/mojaloop/project/issues/$1)' CHANGELOG.md"
+        }
     }
 }
