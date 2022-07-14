@@ -55,7 +55,7 @@ executors:
 
   default-machine:
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:current
 
 ##
 # Jobs
@@ -156,6 +156,9 @@ jobs:
       - run:
           name: Create dir for test results
           command: mkdir -p ./test/results
+      #- run:
+      #    name: Investigate Config on CentralSettlement
+      #    command: cat /opt/central-settlement/config/default.json
       - run:
           name: Execute integration tests
           command: npm -s run test:integration
