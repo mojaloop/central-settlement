@@ -35,7 +35,6 @@ const Db = require('../../../src/lib/db')
 const Utils = require('../helpers/utils')
 const axios = require('axios')
 const currencies = ['USD', 'TZS', 'EUR']
-const Enum = require('@mojaloop/central-services-shared').Enum
 
 const settlementModels = [
   {
@@ -200,7 +199,7 @@ async function initPayerFundsIn () {
     const url = `${Config.CENTRAL_LEDGER_URL}/participants/${payerFsp}/accounts?currency=${currency}`
     const res = await axios.get(url)
     for (const account of res.data) {
-      if (account.ledgerAccountType === Enum.Events.Event.Type.SETTLEMENT) {
+      if (account.ledgerAccountType === 'SETTLEMENT') {
         await Api.fundsIn(payerFsp, account.id, 100000, currency)
       }
     }
