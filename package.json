@@ -1,7 +1,7 @@
 {
     "name": "central-settlement",
     "description": "Central settlements hosted by a scheme to record and make settlements.",
-    "version": "14.0.0-snapshot.1",
+    "version": "14.0.0-snapshot.2",
     "license": "Apache-2.0",
     "private": false,
     "author": "ModusBox",
@@ -132,7 +132,7 @@
     },
     "standard-version": {
         "scripts": {
-          "postchangelog": "replace '\\[mojaloop/#(\\d+)\\]\\(https://github.com/mojaloop/(.*)/issues/(\\d+)\\)' '[mojaloop/#$1](https://github.com/mojaloop/project/issues/$1)' CHANGELOG.md"
+            "postchangelog": "replace '\\[mojaloop/#(\\d+)\\]\\(https://github.com/mojaloop/(.*)/issues/(\\d+)\\)' '[mojaloop/#$1](https://github.com/mojaloop/project/issues/$1)' CHANGELOG.md"
         }
     }
 }
