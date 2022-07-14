@@ -228,7 +228,7 @@ start_ml_api_adapter () {
     -p 3000:3000 \
     --network $DOCKER_NETWORK \
     --name=$ML_API_ADAPTER_HOST \
-    --volume ${PWD}/test/integration-config-mlapiadapter.json:/opt/ml-api-adapter/config/default.json \
+    --volume ${PWD}/test/integration-config-mlapiadapter.json:/opt/app/config/default.json \
     --env MLAPI_ENDPOINT_HEALTH_URL="http://${CENTRAL_LEDGER_HOST}:3001/health" \
     $ML_API_ADAPTER_IMAGE:$ML_API_ADAPTER_TAG \
     sh -c "node src/api/index.js"
