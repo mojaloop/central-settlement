@@ -208,7 +208,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
         // Insert a new status for the transfer.
         const transferStateChange = [
           {
-            transferId: transferId,
+            transferId,
             transferStateId: TransferStateEnum.SETTLED,
             reason: 'Gross settlement process'
           }

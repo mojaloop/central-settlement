@@ -4,7 +4,7 @@ services:
     build:
       dockerfile: test-integration.Dockerfile
       context: .
-      cache_from: 
+      cache_from:
         - mojaloop/central-settlement
         - central-settlement:test
     container_name: cs_central-settlement
@@ -17,9 +17,9 @@ services:
     ports:
       - "3007:3007"
     volumes:
-      - ./docker/central-settlement/default.json:/opt/central-settlement/config/default.json
-      - ./test:/opt/central-settlement/test
-      - ./src:/opt/central-settlement/src
+      - ./docker/central-settlement/default.json:/opt/app/config/default.json
+      - ./test:/opt/app/test
+      - ./src:/opt/app/src
     environment:
       - CENTRAL_LEDGER_HOST=central-ledger
       - ML_API_ADAPTER_HOST=ml-api-adapter
@@ -29,12 +29,12 @@ services:
       - TRANSFERS_FULFILMENT=XoSz1cL0tljJSCp_VtIYmPNw-zFUgGfbUqf69AagUzY
       - TRANSFERS_CONDITION=HOr22-H3AfTDHrSkPjJtVPRdKouuMkDXTR4ejlQa8Ks
     command:
-      - tail 
-      - -f 
+      - tail
+      - -f
       - /dev/null
 
   central-ledger:
-    image: mojaloop/central-ledger:latest # mojaloop/central-ledger:latest # 
+    image: mojaloop/central-ledger:latest # mojaloop/central-ledger:latest #
     container_name: central-ledger-int
     command:
       - "sh"
@@ -49,7 +49,7 @@ services:
     ports:
       - "3001:3001"
     volumes:
-       - ./docker/central-ledger/default.json:/opt/central-ledger/config/default.json
+       - ./docker/central-ledger/default.json:/opt/app/config/default.json
        - ./docker/wait-for:/opt/wait-for
 
   ml-api-adapter:
@@ -68,7 +68,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./docker/ml-api-adapter/default.json:/opt/ml-api-adapter/config/default.json
+      - ./docker/ml-api-adapter/default.json:/opt/app/config/default.json
       - ./docker/wait-for:/opt/wait-for
 
   mysql:

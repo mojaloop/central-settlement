@@ -1,25 +1,25 @@
-FROM node:12.16.0-alpine
+FROM node:16.15.0-alpine
 USER root
 
-WORKDIR /opt/central-settlement
+WORKDIR /opt/app
 
-RUN apk add --no-cache -t build-dependencies git make gcc g++ python libtool autoconf automake \
+RUN apk add --no-cache -t build-dependencies git make gcc g++ python3 libtool autoconf automake \
     && cd $(npm root -g)/npm \
     && npm config set unsafe-perm true \
     && npm install -g tape tap-xunit
 
-COPY package.json package-lock.json* /opt/central-settlement/
+COPY package.json package-lock.json* /opt/app/
 RUN npm install
 
 RUN apk del build-dependencies
 
-COPY config /opt/central-settlement/config
-COPY src /opt/central-settlement/src
-COPY test /opt/central-settlement/test
-COPY README.md /opt/central-settlement
+COPY config /opt/app/config
+COPY src /opt/app/src
+COPY test /opt/app/test
+COPY README.md /opt/app
 
 # overwrite default.json with integration environment specific config
-RUN cp -f /opt/central-settlement/test/integration-config-centralsettlement.json /opt/central-settlement/config/default.json
+RUN cp -f /opt/app/test/integration-config-centralsettlement.json /opt/app/config/default.json
 
 EXPOSE 3007
 CMD node src/api/index.js

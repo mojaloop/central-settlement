@@ -33,7 +33,7 @@ const transferParticipantStateChangeService = require('../../../src/domain/trans
 const Api = require('../helpers/api')
 const Db = require('../../../src/lib/db')
 const Utils = require('../helpers/utils')
-
+const axios = require('axios')
 const currencies = ['USD', 'TZS', 'EUR']
 
 const settlementModels = [
@@ -111,11 +111,16 @@ async function init () {
 
     Logger.info('Initializing participants')
     await initParticipants()
-    Logger.info('Initializing participants endpoints')
 
+    Logger.info('Initializing participants endpoints')
     await initParticipantEndpoints()
+
     Logger.info('Initializing participants net debit cap')
     await initNetDebitCapPositionAndLimits()
+
+    Logger.info('Initializing participants payerFundsIn')
+    await initPayerFundsIn()
+
     Logger.info('Initializing transfers')
     await initTransfers()
   } catch (err) {
@@ -189,6 +194,18 @@ async function initNetDebitCapPositionAndLimits () {
   }
 }
 
+async function initPayerFundsIn () {
+  for (const currency of currencies) {
+    const url = `${Config.CENTRAL_LEDGER_URL}/participants/${payerFsp}/accounts?currency=${currency}`
+    const res = await axios.get(url)
+    for (const account of res.data) {
+      if (account.ledgerAccountType === 'SETTLEMENT') {
+        await Api.fundsIn(payerFsp, account.id, 100000, currency)
+      }
+    }
+  }
+}
+
 /**
  * [initParticipantEndpoints Sets up participant endpoints]
  * @return {[Promise<void>]} [description]
@@ -211,7 +228,7 @@ async function initTransfers () {
   for (const transfer of transfers) {
     try {
       await Api.sendTransfer(payerFsp, payeeFsp, transfer)
-      await Api.waitForTransferToBeCommited(transfer.transferId, SLEEP_MS, 10)
+      await Api.waitForTransferToBeCommitted(transfer.transferId, SLEEP_MS, 10)
       await transferParticipantStateChangeService.processMsgFulfil(transfer.transferId, 'success')
     } catch (err) {
       Logger.error(`prepareTransferDataTest failed with error - ${err}`)
