@@ -52,12 +52,12 @@ const prepareParticipantsResult = (participantCurrenciesList) => {
       const accountList = participantAccounts[id].accounts
       accountList.push(formattedAccount)
       participantAccounts[id] = {
-        id: id,
+        id,
         accounts: accountList
       }
     } else {
       participantAccounts[id] = {
-        id: id,
+        id,
         accounts: [formattedAccount]
       }
     }

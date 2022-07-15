@@ -28,6 +28,7 @@ const Config = require('../config')
 const axios = require('axios')
 const Utils = require('./utils')
 const Logger = require('@mojaloop/central-services-logger')
+const uuid4 = require('uuid4')
 
 async function createSettlementModel (settlementModel) {
   const url = `${Config.CENTRAL_LEDGER_URL}/settlementModels`
@@ -78,8 +79,24 @@ async function createNetDebitCapInitialPositionAndLimit (participant, initialPos
       type: 'NET_DEBIT_CAP',
       value: limitValue
     },
-    initialPosition: initialPosition
+    initialPosition
   })
+}
+
+async function fundsIn (participant, accountId, amount, currency) {
+  const url = `${Config.CENTRAL_LEDGER_URL}/participants/${participant}/accounts/${accountId}`
+  const payload = {
+    transferId: uuid4(),
+    externalReference: 'populateTestData',
+    action: 'recordFundsIn',
+    reason: 'populateTestData',
+    amount: {
+      amount,
+      currency
+    }
+  }
+
+  return axios.post(url, payload)
 }
 
 async function sendTransfer (payerFsp, payeeFsp, transfer) {
@@ -110,37 +127,11 @@ async function sendTransfer (payerFsp, payeeFsp, transfer) {
     }
   }
   return axios.post(url, body, {
-    headers: headers
+    headers
   })
 }
 
-async function sendTransferFulfill (payerFsp, payeeFsp, transfer) {
-  const url = `${Config.ML_API_ADAPTER_URL}/transfers/${transfer.transferId}`
-  const currentDateGMT = new Date().toGMTString()
-
-  const headers = {
-    Accept: 'application/vnd.interoperability.transfers+json;version=1.0',
-    'Content-Type': 'application/vnd.interoperability.transfers+json;version=1.0',
-    Date: currentDateGMT,
-    'FSPIOP-Source': payerFsp,
-    'FSPIOP-Destination': payeeFsp
-  }
-  const body = {
-    transferState : 'COMMITTED',
-    //transferState : 'RESERVED',
-    extensionList: {
-      extension: [{
-        key: 'prepare-fulfill',
-        value: `txn-${transfer.transferId}`
-      }]
-    }
-  }
-  return axios.put(url, body, {
-    headers: headers
-  })
-}
-
-async function waitForTransferToBeCommited (transferId, sleepMs, iterations) {
+async function waitForTransferToBeCommitted (transferId, sleepMs, iterations) {
   const localEnum = {
     transferStates: {
       COMMITTED: 'COMMITTED'
@@ -173,8 +164,8 @@ module.exports = {
   createNetDebitCapInitialPositionAndLimit,
   createParticipantAccount,
   createSettlementModel,
+  fundsIn,
   getParticipantAccount,
   sendTransfer,
-  sendTransferFulfill,
-  waitForTransferToBeCommited
+  waitForTransferToBeCommitted
 }
