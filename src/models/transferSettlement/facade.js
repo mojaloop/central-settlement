@@ -33,7 +33,6 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Logger = require('@mojaloop/central-services-logger')
 const Utility = require('@mojaloop/central-services-shared').Util
 const location = { module: 'TransferFulfilHandler', method: '', path: '' }
-// const Config = require('../../lib/config')
 const SettlementEnum = require('@mojaloop/central-services-shared').Enum.Settlements
 const TransferStateEnum = require('@mojaloop/central-services-shared').Enum.Transfers.TransferState
 const TransferFacade = require('@mojaloop/central-ledger/src/models/transfer/facade')
@@ -172,9 +171,11 @@ async function updateTransferSettlement (transferId, status, trx = null) {
       try {
         // Insert TransferParticipant ledger entry type.
         await knex.from(knex.raw('transferParticipant (transferID, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, amount)'))
+          // insert debit/credit ledger entries for matching ledger entries for both Settlement and Position accounts
           .insert(function () {
             this.from('transferParticipant AS TP')
-              .select('TP.transferId', 'TP.participantCurrencyId', 'TP.transferParticipantRoleTypeId', 'TP.ledgerEntryTypeId', knex.raw('?? * -1', ['TP.amount']))
+              // Select ledger entries for POSITION accounts that match the Settlement Model based on the Granularity type with REVERSED amounts
+              .select('TP.transferId', 'TP.participantCurrencyId', 'TP.transferParticipantRoleTypeId', 'TP.ledgerEntryTypeId', knex.raw('?? * -1', ['TP.amount']))  // MIG: correct
               .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
               .innerJoin('settlementModel AS M', 'PC.ledgerAccountTypeId', 'M.ledgerAccountTypeId')
               .innerJoin('settlementGranularity AS G', 'M.settlementGranularityId', 'G.settlementGranularityId')
@@ -185,7 +186,9 @@ async function updateTransferSettlement (transferId, status, trx = null) {
                 })
               })
               .union(function () {
-                this.select('TP.transferId', 'PC1.participantCurrencyId', 'TP.transferParticipantRoleTypeId', 'TP.ledgerEntryTypeId', 'TP.amount')
+                // Select ledger entries for SETTLEMENT accounts that match the Settlement Model based on the Granularity type with NORMAL amounts
+                this.select('TP.transferId', 'PC1.participantCurrencyId', 'TP.transferParticipantRoleTypeId', 'TP.ledgerEntryTypeId', 'TP.amount') // MIG: correct
+                // this.select('TP.transferId', 'PC1.participantCurrencyId', 'TP.transferParticipantRoleTypeId', 'TP.ledgerEntryTypeId', knex.raw('?? * -1', ['TP.amount'])) // MIG: Incorrect
                   .from('transferParticipant AS TP')
                   .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
                   .innerJoin('settlementModel AS M', 'PC.ledgerAccountTypeId', 'M.ledgerAccountTypeId')
@@ -222,7 +225,8 @@ async function updateTransferSettlement (transferId, status, trx = null) {
           .update({ value: knex.raw('?? - ??', ['PP.value', 'TR.amount']) })
           .innerJoin(function () {
             this.from('transferParticipant AS TP')
-              .select('PC.participantCurrencyId', 'TP.Amount')
+            // Select ledger entries for POSITION accounts that match the Settlement Model based on the Granularity type with NORMAL amounts
+              .select('PC.participantCurrencyId', 'TP.Amount')  // MIG: correct
               .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
               .innerJoin('settlementModel AS M', 'M.ledgerAccountTypeId', 'PC.ledgerAccountTypeId')
               .innerJoin('settlementGranularity AS G', 'M.settlementGranularityId', 'G.settlementGranularityId')
@@ -233,7 +237,9 @@ async function updateTransferSettlement (transferId, status, trx = null) {
                 })
               })
               .union(function () {
-                this.select('PC1.participantCurrencyId', 'TP.amount')
+                // this.select('PC1.participantCurrencyId', 'TP.amount') // MIG: Incorrect
+                // Select ledger entries for SETTLEMENT accounts that match the Settlement Model based on the Granularity type with REVERSED amounts
+                this.select('PC1.participantCurrencyId', knex.raw('?? * -1', ['TP.amount']))  // MIG: correct
                   .from('transferParticipant AS TP')
                   .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
                   .innerJoin('settlementModel AS M', 'M.ledgerAccountTypeId', 'PC.ledgerAccountTypeId')
