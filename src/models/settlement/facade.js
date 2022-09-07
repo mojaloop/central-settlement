@@ -30,7 +30,7 @@ const arrayDiff = require('lodash').difference
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const MLNumber = require('@mojaloop/ml-number')
 const Db = require('../../lib/db')
-const Tb = require("../../lib/tb")
+const Tb = require('../../lib/tb')
 const Uuid = require('uuid4')
 const Crypto = require('crypto')
 const Config = require('../../lib/config')
@@ -178,29 +178,29 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
       }
 
       if (Config.TIGERBEETLE.enabled) {
-          //TODO @jason lookup once...
-          //TODO @jason amounts need to be converted...
-          const hubReconAcc = await Tb.tbLookupHubAccount(
-              Config.HUB_ID.id,
-              enums.ledgerAccountTypes.HUB_RECONCILIATION,
-              t.currency
-          );
-          const hubMultilateral = await Tb.tbLookupHubAccount(
-              Config.HUB_ID.id,
-              enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
-              t.currency
-          );
-          await Tb.tbSettlementPreparationTransfer(
-              enums,
-              t.settlementTransferId,
-              t.transferId,
-              settlementId,
-              hubReconAcc.id,
-              hubMultilateral.id,
-              t.participantCurrencyId,
-              t.currency,
-              t.amount
-          );
+        // TODO @jason lookup once...
+        // TODO @jason amounts need to be converted...
+        const hubReconAcc = await Tb.tbLookupHubAccount(
+          Config.HUB_ID.id,
+          enums.ledgerAccountTypes.HUB_RECONCILIATION,
+          t.currency
+        )
+        const hubMultilateral = await Tb.tbLookupHubAccount(
+          Config.HUB_ID.id,
+          enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
+          t.currency
+        )
+        await Tb.tbSettlementPreparationTransfer(
+          enums,
+          t.settlementTransferId,
+          t.transferId,
+          settlementId,
+          hubReconAcc.id,
+          hubMultilateral.id,
+          t.participantCurrencyId,
+          t.currency,
+          t.amount
+        )
       }
 
       // Insert transferParticipant records
@@ -376,28 +376,28 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             .transacting(trx)
 
           if (Config.TIGERBEETLE.enabled) {
-            //TODO lookup once...
+            // TODO lookup once...
             const hubReconAcc = await Tb.tbLookupHubAccount(
-                Config.HUB_ID.id,
-                enums.ledgerAccountTypes.HUB_RECONCILIATION,
-                currencyId
-            );
-            //TODO lookup once...
+              Config.HUB_ID.id,
+              enums.ledgerAccountTypes.HUB_RECONCILIATION,
+              currencyId
+            )
+            // TODO lookup once...
             const hubMultilateral = await Tb.tbLookupHubAccount(
-                Config.HUB_ID.id,
-                enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
-                currencyId
-            );
+              Config.HUB_ID.id,
+              enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
+              currencyId
+            )
             await Tb.tbSettlementTransferReserve(
-                enums,
-                transferId,
-                settlementId,
-                dfspAccountId,
-                hubMultilateral.id,
-                hubReconAcc.id,
-                currencyId,
-                dfspAmount//TODO need to likely convert...
-            );
+              enums,
+              transferId,
+              settlementId,
+              dfspAccountId,
+              hubMultilateral.id,
+              hubReconAcc.id,
+              currencyId,
+              dfspAmount// TODO need to likely convert...
+            )
           }
 
           // Send notification for position change
@@ -594,19 +594,19 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
             .transacting(trx)
 
           if (Config.TIGERBEETLE.enabled) {
-            //TODO lookup once...
-            const hubReconAcc = await Tb.tbLookupHubAccount(
-                Config.HUB_ID.id,
-                enums.ledgerAccountTypes.HUB_RECONCILIATION,
-                currencyId
-            );
-            //TODO lookup once...
-            const hubMultilateral = await Tb.tbLookupHubAccount(
-                Config.HUB_ID.id,
-                enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
-                currencyId
-            );
-            await Tb.tbSettlementTransferAbort(transferId, settlementId);
+            // TODO lookup once...
+            /* const hubReconAcc = await Tb.tbLookupHubAccount(
+              Config.HUB_ID.id,
+              enums.ledgerAccountTypes.HUB_RECONCILIATION,
+              currencyId
+            ) */
+            // TODO lookup once...
+            /* const hubMultilateral = await Tb.tbLookupHubAccount(
+              Config.HUB_ID.id,
+              enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
+              currencyId
+            ) */
+            await Tb.tbSettlementTransferAbort(transferId, settlementId)
           }
         }
 
@@ -783,19 +783,19 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
           await Utility.produceGeneralMessage(Utility.ENUMS.NOTIFICATION, Utility.ENUMS.EVENT, message, Utility.ENUMS.STATE.SUCCESS)
 
           if (Config.TIGERBEETLE.enabled) {
-            //TODO lookup once...
-            const hubReconAcc = await Tb.tbLookupHubAccount(
-                Config.HUB_ID.id,
-                enums.ledgerAccountTypes.HUB_RECONCILIATION,
-                currencyId
-            );
-            //TODO lookup once...
-            const hubMultilateral = await Tb.tbLookupHubAccount(
-                Config.HUB_ID.id,
-                enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
-                currencyId
-            );
-            await Tb.tbSettlementTransferCommit(transferId, settlementId);
+            // TODO lookup once...
+            /* const hubReconAcc = await Tb.tbLookupHubAccount(
+              Config.HUB_ID.id,
+              enums.ledgerAccountTypes.HUB_RECONCILIATION,
+              currencyId
+            ) */
+            // TODO lookup once...
+            /* const hubMultilateral = await Tb.tbLookupHubAccount(
+              Config.HUB_ID.id,
+              enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
+              currencyId
+            ) */
+            await Tb.tbSettlementTransferCommit(transferId, settlementId)
           }
         }
 
@@ -1536,7 +1536,7 @@ const Facade = {
         await Promise.all(updatePromises)
 
         // aggregate and insert settlement net amounts
-          //TODO create settlement account in TigerBeetle
+        // TODO create settlement account in TigerBeetle
         const builder = knex
           .from(knex.raw('settlementParticipantCurrency (settlementId, participantCurrencyId, createdDate, netAmount)'))
           .insert(function () {
@@ -1563,16 +1563,16 @@ const Facade = {
         })
         insertPromises = []
         const tbSettlementAccounts = []
-        const tbEnabled = Config.TIGERBEETLE.enabled;
+        const tbEnabled = Config.TIGERBEETLE.enabled
         for (const spcsc of settlementParticipantCurrencyStateChangeList) {
           insertPromises.push(
             knex('settlementParticipantCurrencyStateChange').transacting(trx)
               .insert(spcsc)
           )
           if (tbEnabled) {
-              tbSettlementAccounts.push({
-                  participantCurrencyId: spcsc.settlementParticipantCurrencyId,
-              })
+            tbSettlementAccounts.push({
+              participantCurrencyId: spcsc.settlementParticipantCurrencyId
+            })
           }
         }
         const settlementParticipantCurrencyStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
@@ -1584,25 +1584,25 @@ const Facade = {
         }
 
         if (tbEnabled) {
-            //TODO ensure the following exists:
-            //TODO 1. HUB_RECONCILIATION            -> Config.HUB_ID (participant-id)
-            await Tb.tbCreateSettlementHubAccount(
-                Config.HUB_ID.id,
-                enums.ledgerAccountTypes.HUB_RECONCILIATION,
-                settlementModel.currency
-            )
-            await Tb.tbCreateSettlementHubAccount(
-                Config.HUB_ID.id,
-                enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
-                settlementModel.currency
-            )
-            const tbSettlementCreateAccs = await Tb.tbCreateSettlementAccounts(
-               tbSettlementAccounts,
-               settlementId,
-               enums.ledgerAccountTypes.SETTLEMENT,
-               settlementModel.currency,
-               true
-            );
+          // TODO ensure the following exists:
+          // TODO 1. HUB_RECONCILIATION            -> Config.HUB_ID (participant-id)
+          await Tb.tbCreateSettlementHubAccount(
+            Config.HUB_ID,
+            enums.ledgerAccountTypes.HUB_RECONCILIATION,
+            settlementModel.currency
+          )
+          await Tb.tbCreateSettlementHubAccount(
+            Config.HUB_ID,
+            enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
+            settlementModel.currency
+          )
+          await Tb.tbCreateSettlementAccounts(
+            tbSettlementAccounts,
+            settlementId,
+            enums.ledgerAccountTypes.SETTLEMENT,
+            settlementModel.currency,
+            true
+          )
         }
 
         await Promise.all(updatePromises)

@@ -334,7 +334,7 @@ async function getSettlementModelByTransferId (transferId, settlementGranularity
     .select('settlementModel.*')
   if (settlementModelByTransferId.length === 0) {
     const allSettlementModels = await Db.from('settlementModel').find()
-    const transferById = (await TransferFacade.getByIdLight(transferId));
+    const transferById = (await TransferFacade.getByIdLight(transferId))
     if (transferById == null) return settlementModelByTransferId
     const transferCurrency = transferById.currencyId
     switch (settlementGranularityName) {
