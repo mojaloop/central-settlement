@@ -58,6 +58,7 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
 
   tigerBeetleTest.beforeEach(test => {
     Config.TIGERBEETLE.enabled = true
+    Config.TIGERBEETLE.enableMockBeetle = true
     Config.TIGERBEETLE.cluster = TIGERBEETLE_CLUSTER
     sandbox = Sinon.createSandbox()
     //TODO sandbox.stub(Tb.tbCachedClient, 'constructor').returns(P.resolve())
@@ -69,11 +70,11 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
   })
 
   tigerBeetleTest.afterEach(test => {
-    Tb.tbDestroy()
+    Config.TIGERBEETLE.enabled = false
+    Config.TIGERBEETLE.enableMockBeetle = false
     test.end()
   })
 
-  const tigerBeetleContainer = await startTigerBeetleContainer(TIGERBEETLE_CLUSTER)
   const hubId = Config.HUB_ID
   tigerBeetleTest.ok((typeof hubId) !== undefined && hubId > 0)
 
@@ -95,30 +96,88 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
 
   // Test Account Create:
   tigerBeetleTest.test('create accounts', async function (testCreateAccounts) {
-    testCreateAccounts.test('create hub account', async (test) => {
+    testCreateAccounts.test('create and lookup hub account', async (test) => {
+      const tigerBeetleContainer = await startTigerBeetleContainer(TIGERBEETLE_CLUSTER)
       try {
-        const result = []//TODO await Tb.tbCreateSettlementHubAccount(hubId)
+        const accountType = 1
+        const currency = 'USD'
+        const result = await Tb.tbCreateSettlementHubAccount(hubId, accountType, currency)
         test.ok(result.length === 0)
-        console.log('all good!!!')
+        /*const lookupResult = Tb.tbLookupHubAccount(
+          hubId,
+          accountType,
+          currency
+        )
+        test.ok(lookupResult.length === 1)*/
+        // TODO more tests on the result...
       } catch (any) {
         test.fail(`Unable to create settlement accounts [${hubId}:${any.message}].`)
       }
+      Tb.tbDestroy()
+      await tigerBeetleContainer.stop()
       test.end()
     })
 
     testCreateAccounts.test('create settlement account', async (test) => {
-      const settlementAccounts = [{
+      const settlementAccounts = [
+        { participantCurrencyId : 1 },
+        { participantCurrencyId : 2 },
+        { participantCurrencyId : 3 },
+        { participantCurrencyId : 4 }
+      ]
 
-      }]
-      
+      const accountType = 2
+      const currency = 'ZAR'
+
+      try {
+        const result = [] /* TODO Tb.tbCreateSettlementAccounts(
+          settlementAccounts,
+          1, // Settlement Id
+          accountType, // Account Type
+          currency,
+          false // Debits may exceed credits
+        )*/
+        test.ok(result.length === 0)
+
+      } catch (any) {
+        test.fail(`Unable to create settlement accounts [${hubId}:${any.message}].`)
+      }
+
       test.end()
     })
     testCreateAccounts.end()
   })
 
-  Config.TIGERBEETLE.enabled = false
+  // Test Settlement Transfers Create:
+  tigerBeetleTest.test('create settlement transfers', async function (testCreateTransfers) {
+    testCreateTransfers.test('create and lookup settlement transfer', async (test) => {
+      try {
+        const accountType = 1
+        const currency = 'USD'
+
+        // TODO create a hub account
+        // TODO create a settlement account
+        // TODO transfer
+
+        const result = []//TODO await Tb.tbCreateSettlementHubAccount(hubId, accountType, currency)
+        test.ok(result.length === 0)
+        /*const lookupResult = Tb.tbLookupHubAccount(
+          hubId,
+          accountType,
+          currency
+        )
+        test.ok(lookupResult.length === 1)*/
+        // TODO more tests on the result...
+
+      } catch (any) {
+        test.fail(`Unable to create settlement accounts [${hubId}:${any.message}].`)
+      }
+      test.end()
+    })
+    testCreateTransfers.end()
+  })
+
   await tigerBeetleTest.ok(Config.TIGERBEETLE.enabled === false)
-  if (tigerBeetleContainer) await tigerBeetleContainer.stop()
   tigerBeetleTest.end()
 })
 
@@ -174,5 +233,6 @@ const startTigerBeetleContainer = async (clusterId = 1) => {
       .on('err', (line) => console.error(line))
       .on('end', () => console.log('Stream closed for [running-tb-cluster]'))
   }
+  await new Promise((f) => setTimeout(f, 2000))
   return tbContStart
 }

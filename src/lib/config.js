@@ -38,6 +38,7 @@ module.exports = {
   },
   TIGERBEETLE: {
     enabled: RC.TIGERBEETLE === undefined ? false : RC.TIGERBEETLE.ENABLED || false,
+    enableMockBeetle: RC.TIGERBEETLE === undefined ? false : RC.TIGERBEETLE.ENABLE_MOCK_BEETLE || false,
     enableBatching: RC.TIGERBEETLE === undefined ? false : RC.TIGERBEETLE.ENABLE_BATCHING || false,
     disableSQL: RC.TIGERBEETLE === undefined ? false : RC.TIGERBEETLE.DISABLE_SQL || false,
     batchMaxSize: RC.TIGERBEETLE === undefined ? 0 : RC.TIGERBEETLE.BATCH_MAX_SIZE,

@@ -55,9 +55,78 @@ const getTBClient = async () => {
         replica_addresses: [Config.TIGERBEETLE.replicaEndpoint01]
       })
     }
-    Logger.info(`TB-Client-Enabled and Connected. ${util.inspect(tbCachedClient)}`)
+    Logger.info(`TB-Client-Enabled and Connected [${Config.TIGERBEETLE.cluster}:${Config.TIGERBEETLE.replicaEndpoint01}]. ${util.inspect(tbCachedClient)}`)
     return tbCachedClient
   } catch (err) {
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+}
+
+/**
+ * Create a Hub account used for settlement.
+ *
+ * @param id Hub/Hub Recon id
+ * @param accountType Numeric account type for Hub or Hub Recon
+ *    1->POSITION
+ *    2->SETTLEMENT
+ *    3->HUB_RECONCILIATION
+ *    4->HUB_MULTILATERAL_SETTLEMENT
+ *    5->INTERCHANGE_FEE
+ *    6->INTERCHANGE_FEE_SETTLEMENT
+ * @param currencyTxt ISO-4217 alphabetic code
+ */
+const tbCreateSettlementHubAccount = async (
+    id,
+    accountType = 2,
+    currencyTxt = 'USD'
+) => {
+  try {
+    const client = await getTBClient()
+    if (client == null) return {}
+
+    const userData = BigInt(id)
+    const currencyU16 = obtainLedgerFromCurrency(currencyTxt)
+    const tbId = tbAccountIdFrom(userData, currencyU16, accountType)
+
+    // TODO @jason perform account lookup based on ID first...
+    console.info(`JASON::: 1.2 Creating Account ${util.inspect(currencyU16)} - ${tbId}|${typeof tbId}   `)
+
+    const account = {
+      id: tbId,
+      user_data: userData, // u128, opaque third-party identifier to link this account (many-to-one) to an external entity:
+      reserved: Buffer.alloc(48, 0), // [48]u8
+      ledger: currencyU16, // u32, currency
+      code: accountType, // u16, settlement
+      flags: 0, // u32
+      debits_pending: 0n, // u64
+      debits_posted: 0n, // u64
+      credits_pending: 0n, // u64
+      credits_posted: 0n, // u64
+      timestamp: 0n // u64, Reserved: This will be set by the server.
+    }
+
+    let errors
+    try {
+      if (Config.TIGERBEETLE.enableMockBeetle) errors = []
+      else errors = await client.createAccounts([account])
+    } catch (err) {
+      const fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
+          `TB-Account-CRITICAL [${err}] : ${util.inspect(errors)}`)
+      throw fspiopError
+    }
+    if (errors.length > 0) {
+      const errorTxt = errorsToString(TbNode.CreateAccountError, errors)
+
+      Logger.error('CreateAccount-ERROR: ' + errorTxt)
+      const fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
+          'TB-Account entry failed for [' + userData + ':' + errorTxt + '] : ' + util.inspect(errors))
+      throw fspiopError
+    }
+    console.info(`JASON::: 1.3 Accounts Created -> ${util.inspect(errors)} - ${errors}   `)
+    return errors
+  } catch (err) {
+    console.error('TB: Unable to create account.')
+    console.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -72,7 +141,7 @@ const getTBClient = async () => {
 const tbCreateSettlementAccounts = async (
   settlementAccounts,
   settlementId,
-  accountType,
+  accountType = 2,
   currencyTxt,
   debitsNotExceedCredits
 ) => {
@@ -109,68 +178,6 @@ const tbCreateSettlementAccounts = async (
       Logger.error('CreateAccount-ERROR: ' + errorTxt)
       const fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
         `TB-Account entry failed for [${errorTxt}] : ${util.inspect(errors)}`)
-      throw fspiopError
-    }
-    return errors
-  } catch (err) {
-    console.error('TB: Unable to create account.')
-    console.error(err)
-    throw ErrorHandler.Factory.reformatFSPIOPError(err)
-  }
-}
-
-/**
- * Create a Hub account used for settlement.
- *
- * @param id Hub/Hub Recon id
- * @param accountType Numeric account type for Hub or Hub Recon
- *    1->POSITION
- *    2->SETTLEMENT
- *    3->HUB_RECONCILIATION
- *    4->HUB_MULTILATERAL_SETTLEMENT
- *    5->INTERCHANGE_FEE
- *    6->INTERCHANGE_FEE_SETTLEMENT
- * @param currencyTxt ISO-4217 alphabetic code
- */
-const tbCreateSettlementHubAccount = async (
-  id,
-  accountType = 2,
-  currencyTxt = 'USD'
-) => {
-  try {
-    const client = await getTBClient()
-    if (client == null) return {}
-
-    const userData = BigInt(id)
-    const currencyU16 = obtainLedgerFromCurrency(currencyTxt)
-    const tbId = tbAccountIdFrom(userData, currencyU16, accountType)
-
-    // TODO @jason perform account lookup based on ID first...
-    console.info(`JASON::: 1.2 Creating Account ${util.inspect(currencyU16)} - ${tbId}|${typeof tbId}   `)
-
-    const account = {
-      id: tbId,
-      user_data: userData, // u128, opaque third-party identifier to link this account (many-to-one) to an external entity:
-      reserved: Buffer.alloc(48, 0), // [48]u8
-      ledger: currencyU16, // u32, currency
-      code: accountType, // u16, settlement
-      flags: 0, // u32
-      debits_pending: 0n, // u64
-      debits_posted: 0n, // u64
-      credits_pending: 0n, // u64
-      credits_posted: 0n, // u64
-      timestamp: 0n // u64, Reserved: This will be set by the server.
-    }
-
-    const errors = await client.createAccounts([account])
-    console.info(`JASON::: 1.3 Accounts Created -> ${util.inspect(errors)} - ${errors}   `)
-
-    if (errors.length > 0) {
-      const errorTxt = errorsToString(TbNode.CreateAccountError, errors)
-
-      Logger.error('CreateAccount-ERROR: ' + errorTxt)
-      const fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
-        'TB-Account entry failed for [' + userData + ':' + errorTxt + '] : ' + util.inspect(errors))
       throw fspiopError
     }
     return errors

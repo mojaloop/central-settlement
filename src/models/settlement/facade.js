@@ -329,7 +329,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             .transacting(trx)
             .forUpdate()
 
-          if (requireLiquidityCheck) {
+          if (requireLiquidityCheck) { // TODO: This is not a liquidity check, but rather a limit-check since we are only checking against the NED-DEBIT-CAP!
             // Select dfsp NET_DEBIT_CAP limit
             const { netDebitCap } = await knex('participantLimit')
               .select('value AS netDebitCap')
