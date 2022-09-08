@@ -38,11 +38,11 @@ module.exports = {
   },
   TIGERBEETLE: {
     enabled: RC.TIGERBEETLE === undefined ? false : RC.TIGERBEETLE.ENABLED || false,
-    enableMockBeetle: RC.TIGERBEETLE === undefined ? false : RC.TIGERBEETLE.ENABLE_MOCK_BEETLE || false,
+    enableMockBeetle: RC.TIGERBEETLE === undefined ? false : RC.TIGERBEETLE.ENABLE_MOCK_BEETLE || false,// TODO @jaosn remove this
     enableBatching: RC.TIGERBEETLE === undefined ? false : RC.TIGERBEETLE.ENABLE_BATCHING || false,
     disableSQL: RC.TIGERBEETLE === undefined ? false : RC.TIGERBEETLE.DISABLE_SQL || false,
     batchMaxSize: RC.TIGERBEETLE === undefined ? 0 : RC.TIGERBEETLE.BATCH_MAX_SIZE,
-    cluster: RC.TIGERBEETLE === undefined ? 1 : RC.TIGERBEETLE.CLUSTER,
+    cluster: RC.TIGERBEETLE === undefined ? 0 : RC.TIGERBEETLE.CLUSTER,
     replicaEndpoint01: RC.TIGERBEETLE === undefined ? '5001' : RC.TIGERBEETLE.REPLICA_ENDPOINT_01,
     replicaEndpoint02: RC.TIGERBEETLE === undefined ? '5002' : RC.TIGERBEETLE.REPLICA_ENDPOINT_02,
     replicaEndpoint03: RC.TIGERBEETLE === undefined ? '5003' : RC.TIGERBEETLE.REPLICA_ENDPOINT_03
