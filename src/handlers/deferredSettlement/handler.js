@@ -44,7 +44,7 @@ const retry = require('async-retry')
 const SettlementWindowService = require('../../domain/settlementWindow')
 const Utility = require('@mojaloop/central-services-shared').Util
 
-const location = { module: 'SettlementWindowHandler', method: '', path: '' } // var object used as pointer
+const location = { module: 'deferredSettlementHandler', method: '', path: '' } // var object used as pointer
 
 const consumerCommit = true
 const fromSwitch = true

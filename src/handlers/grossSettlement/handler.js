@@ -45,7 +45,7 @@ const retry = require('async-retry')
 const transferSettlementService = require('../../domain/transferSettlement')
 const Utility = require('@mojaloop/central-services-shared').Util
 const Db = require('../../lib/db')
-const LOG_LOCATION = { module: 'TransferFulfilHandler', method: '', path: '' } // var object used as pointer
+const LOG_LOCATION = { module: 'grossSettlementHandler', method: '', path: '' } // var object used as pointer
 const CONSUMER_COMMIT = true
 const FROM_SWITCH = true
 
