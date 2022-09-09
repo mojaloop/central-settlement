@@ -19,7 +19,6 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * Jason Bruwer <jason.bruwer@coil.com>
-
  --------------
  ******/
 'use strict'
@@ -34,10 +33,6 @@ const crypto = require('crypto')
 const uuidv4Gen = require('uuid4')
 
 let tbCachedClient
-
-// TODO const inFlight = []
-
-// const secret = 'This is a secret 🤫'
 
 const getTBClient = async () => {
   try {
@@ -102,15 +97,7 @@ const tbCreateSettlementHubAccount = async (
       timestamp: 0n // u64, Reserved: This will be set by the server.
     }
 
-    let errors
-    try {
-      if (Config.TIGERBEETLE.enableMockBeetle) errors = []
-      else errors = await client.createAccounts([account])
-    } catch (err) {
-      const fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
-          `TB-Account-CRITICAL [${err}] : ${util.inspect(errors)}`)
-      throw fspiopError
-    }
+    const errors = await client.createAccounts([account])
     if (errors.length > 0) {
       const errorTxt = errorsToString(TbNode.CreateAccountError, errors)
 
@@ -136,9 +123,9 @@ const tbCreateSettlementHubAccount = async (
  * @param currencyTxt ISO-4217 alphabetic code
  */
 const tbCreateSettlementAccounts = async (
+  enums,
   settlementAccounts,
   settlementId,
-  accountType = 2,
   currencyTxt,
   debitsNotExceedCredits
 ) => {
@@ -149,15 +136,15 @@ const tbCreateSettlementAccounts = async (
     for (const accIter of settlementAccounts) {
       const userData = BigInt(settlementId)
       const participantCurrencyId = BigInt(accIter.participantCurrencyId)
-      const currencyU16 = obtainLedgerFromCurrency(currencyTxt)
       const id = tbSettlementAccountIdFrom(participantCurrencyId, userData)
+      const currencyU16 = obtainLedgerFromCurrency(currencyTxt)
 
       tbAccountsArray.push({
         id,
         user_data: userData, // u128, settlementId
         reserved: Buffer.alloc(48, 0), // [48]u8
         ledger: currencyU16, // u32, currency
-        code: accountType, // u16, settlement
+        code: enums.ledgerAccountTypes.SETTLEMENT, // u16, settlement
         flags: debitsNotExceedCredits ? TbNode.AccountFlags.debits_must_not_exceed_credits : 0, // u32
         debits_pending:  0n, // u64
         debits_posted:   0n, // u64
@@ -167,13 +154,7 @@ const tbCreateSettlementAccounts = async (
       })
     }
 
-    let errors
-    if (Config.TIGERBEETLE.enableMockBeetle) {
-      errors = []
-    } else {
-      console.log('All good with creating settlement accounts')
-      errors = await client.createAccounts(tbAccountsArray)
-    }
+    const errors = await client.createAccounts(tbAccountsArray)
     if (errors.length > 0) {
       const errorTxt = errorsToString(TbNode.CreateAccountError, errors)
 
@@ -203,23 +184,27 @@ const tbLookupHubAccount = async (
     const currencyU16 = obtainLedgerFromCurrency(currencyTxt)
     const tbId = tbAccountIdFrom(userData, currencyU16, accountType)
 
-    if (Config.TIGERBEETLE.enableMockBeetle) {
-      return {
-        tbId,
-        user_data: userData, // u128, settlementId
-        reserved: Buffer.alloc(48, 0), // [48]u8
-        ledger: currencyU16, // u32, currency
-        code: accountType, // u16, settlement
-        flags: 0, // u32
-        debits_pending: 0n, // u64
-        debits_posted: 0n, // u64
-        credits_pending: 0n, // u64
-        credits_posted: 0n, // u64
-        timestamp: 0n
-      }
-    }
-
     const accounts = await client.lookupAccounts([tbId])
+    if (accounts.length > 0) return accounts[0]
+    return {}
+  } catch (err) {
+    throw ErrorHandler.Factory.reformatFSPIOPError(err)
+  }
+}
+
+const tbLookupSettlementAccount = async (
+    participantCurrencyId,
+    settlementId
+) => {
+  try {
+    const client = await getTBClient()
+    if (client == null) return {}
+
+    const userData = BigInt(settlementId)
+    const participantCurrencyIdBI = BigInt(participantCurrencyId)
+    const id = tbSettlementAccountIdFrom(participantCurrencyIdBI, userData)
+
+    const accounts = await client.lookupAccounts([id])
     if (accounts.length > 0) return accounts[0]
     return {}
   } catch (err) {
@@ -264,7 +249,7 @@ const tbSettlementPreparationTransfer = async (
       credit_account_id: BigInt(crDrParticipantCurrencyIdHubMultilateral), // u128
       user_data: BigInt(settlementId),
       reserved: BigInt(0),
-      pending_id: 0,
+      pending_id: 0n,
       timeout: 0n, // u64, in nano-seconds.
       ledger: currencyU16,
       code: enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
@@ -277,10 +262,10 @@ const tbSettlementPreparationTransfer = async (
     const transferDFSPToHub = {
       id: uuidToBigInt(`${uuidv4Gen()}`),
       debit_account_id: BigInt(crDrParticipantCurrencyIdHubMultilateral), // u128
-      credit_account_id: BigInt(partCurrencyId), // u128
+      credit_account_id: partCurrencyId, // u128
       user_data: uuidToBigInt(orgTransferId),
-      reserved: BigInt(0), // two-phase condition can go in here / Buffer.alloc(32, 0)
-      pending_id: 0,
+      reserved: 0n, // two-phase condition can go in here / Buffer.alloc(32, 0)
+      pending_id: 0n,
       timeout: 0n, // u64, in nano-seconds.
       ledger: currencyU16,
       code: enums.ledgerAccountTypes.SETTLEMENT, // u32
@@ -289,19 +274,11 @@ const tbSettlementPreparationTransfer = async (
       timestamp: 0n // u64, Reserved: This will be set by the server.
     }
 
-    let errors
-    if (Config.TIGERBEETLE.enableMockBeetle) {
-      errors = []
-    } else {
-      errors = await client.createTransfers([transferRecon, transferDFSPToHub])
-    }
+    const errors = await client.createTransfers([transferRecon, transferDFSPToHub])
     if (errors.length > 0) {
       const errorTxt = errorsToString(TbNode.CreateTransferError, errors)
-
-      Logger.error('Transfer-ERROR: ' + errorTxt)
-      const fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
-        'TB-Transfer-Preparation entry failed for [' + settlementTransferId + ':' + errorTxt + '] : ' + util.inspect(errors))
-      throw fspiopError
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
+        `TB-Transfer-Preparation entry failed for [${settlementTransferId}:${errorTxt}] : ${util.inspect(errors)}`)
     }
     return errors
   } catch (err) {
@@ -317,22 +294,28 @@ const tbSettlementTransferReserve = async (
   crDrParticipantCurrencyIdHubMultilateral,
   crParticipantCurrencyIdHubRecon,
   currencyTxt,
-  amount
+  amount,
+  timeoutSeconds
 ) => {
   try {
     const client = await getTBClient()
     if (client == null) return {}
 
     const currencyU16 = obtainLedgerFromCurrency(currencyTxt)
+    let timeoutNanoseconds = 1000000000n
+    if (timeoutSeconds !== undefined) {
+      timeoutNanoseconds = BigInt(timeoutSeconds * 1000000000)
+    }
 
+    const partCurrencyId = tbSettlementAccountIdFrom(drParticipantCurrencyIdDFSP, settlementId)
     const transferHubToDFSPReserve = {
       id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId, 1),
-      debit_account_id: BigInt(drParticipantCurrencyIdDFSP), // u128
+      debit_account_id: partCurrencyId, // u128
       credit_account_id: BigInt(crDrParticipantCurrencyIdHubMultilateral), // u128
       user_data: BigInt(settlementId),
-      reserved: BigInt(0),
-      pending_id: 0,
-      timeout: 0n, // u64, in nano-seconds.
+      reserved: 0n,
+      pending_id: 0n,
+      timeout: timeoutNanoseconds, // u64, in nano-seconds.
       ledger: currencyU16,
       code: enums.ledgerAccountTypes.SETTLEMENT,
       flags: TbNode.TransferFlags.linked | TbNode.TransferFlags.pending, // pending+linked
@@ -345,9 +328,9 @@ const tbSettlementTransferReserve = async (
       debit_account_id: BigInt(crDrParticipantCurrencyIdHubMultilateral), // u128
       credit_account_id: BigInt(crParticipantCurrencyIdHubRecon), // u128
       user_data: uuidToBigInt(settlementTransferId),
-      reserved: BigInt(0),
-      pending_id: 0,
-      timeout: 0n, // u64, in nano-seconds.
+      reserved: 0n,
+      pending_id: 0n,
+      timeout: timeoutNanoseconds, // u64, in nano-seconds.
       ledger: currencyU16,
       code: enums.ledgerAccountTypes.HUB_RECONCILIATION,
       flags: TbNode.TransferFlags.pending, // linked+pending
@@ -355,12 +338,7 @@ const tbSettlementTransferReserve = async (
       timestamp: 0n // u64, Reserved: This will be set by the server.
     }
 
-    let errors
-    if (Config.TIGERBEETLE.enableMockBeetle) {
-      errors = []
-    } else {
-      errors = await client.createTransfers([transferHubToDFSPReserve, transferMultiToRecon])
-    }
+    const errors = await client.createTransfers([transferHubToDFSPReserve, transferMultiToRecon])
     if (errors.length > 0) {
       const errorTxt = errorsToString(TbNode.CreateTransferError, errors)
 
@@ -389,11 +367,11 @@ const tbSettlementTransferCommit = async (
         debit_account_id: 0n, // u128
         credit_account_id: 0n, // u128
         user_data: 0n,
-        reserved: BigInt(0),
+        reserved: 0n,
         pending_id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId, 1),
         timeout: 0n, // u64, in nano-seconds.
-        ledger: 0n,
-        code: 0n,
+        ledger: 0,
+        code: 0,
         flags: TbNode.TransferFlags.linked | TbNode.TransferFlags.post_pending_transfer, // post
         amount: 0n, // u64
         timestamp: 0n // u64, Reserved: This will be set by the server.
@@ -402,29 +380,23 @@ const tbSettlementTransferCommit = async (
         debit_account_id: 0n, // u128
         credit_account_id: 0n, // u128
         user_data: 0n,
-        reserved: BigInt(0),
+        reserved: 0n,
         pending_id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId, 2),
         timeout: 0n, // u64, in nano-seconds.
-        ledger: 0n,
-        code: 0n,
+        ledger: 0,
+        code: 0,
         flags: TbNode.TransferFlags.post_pending_transfer, // post
         amount: 0n, // u64
         timestamp: 0n // u64, Reserved: This will be set by the server.
       }
     ]
 
-    let errors
-    if (Config.TIGERBEETLE.enableMockBeetle) {
-      errors = []
-    } else {
-      errors = await client.createTransfers(commits)
-    }
+    const errors = await client.createTransfers(commits)
     if (errors.length > 0) {
       const errorTxt = errorsToString(TbNode.CreateTransferError, errors)
       Logger.error('Transfer-ERROR: ' + errorTxt)
-      const fspiopError = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
-        'TB-Transfer-Preparation entry failed for [' + settlementTransferId + ':' + errorTxt + '] : ' + util.inspect(errors))
-      throw fspiopError
+      throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
+        `TB-Transfer-Preparation entry failed for [${settlementTransferId}:${errorTxt}] : ${util.inspect(errors)}`)
     }
     return errors
   } catch (err) {
@@ -449,8 +421,8 @@ const tbSettlementTransferAbort = async (
         reserved: BigInt(0),
         pending_id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId, 1),
         timeout: 0n, // u64, in nano-seconds.
-        ledger: 0n,
-        code: 0n,
+        ledger: 0,
+        code: 0,
         flags: TbNode.TransferFlags.linked | TbNode.TransferFlags.void_pending_transfer, // void
         amount: 0n, // u64
         timestamp: 0n // u64, Reserved: This will be set by the server.
@@ -462,20 +434,15 @@ const tbSettlementTransferAbort = async (
         reserved: BigInt(0),
         pending_id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId, 2),
         timeout: 0n, // u64, in nano-seconds.
-        ledger: 0n,
-        code: 0n,
+        ledger: 0,
+        code: 0,
         flags: TbNode.TransferFlags.void_pending_transfer, // void
         amount: 0n, // u64
         timestamp: 0n // u64, Reserved: This will be set by the server.
       }
     ]
 
-    let errors
-    if (Config.TIGERBEETLE.enableMockBeetle) {
-      errors = []
-    } else {
-      errors = await client.createTransfers(aborts)
-    }
+    const errors = await client.createTransfers(aborts)
     if (errors.length > 0) {
       const errorTxt = errorsToString(TbNode.CreateTransferError, errors)
 
@@ -552,6 +519,7 @@ module.exports = {
   tbCreateSettlementAccounts,
   tbCreateSettlementHubAccount,
   tbLookupHubAccount,
+  tbLookupSettlementAccount,
   // Transfers:
   tbSettlementPreparationTransfer,
   tbSettlementTransferReserve,

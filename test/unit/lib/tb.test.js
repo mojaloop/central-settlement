@@ -55,8 +55,6 @@ const settlementAccounts = [
   { participantCurrencyId: 4 }
 ]
 
-const accountType = 2 // Settlement
-const currencyZar = 'ZAR'
 const currencyUsd = 'USD'
 
 const enums = {
@@ -75,7 +73,6 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
   // Test Defaults for TIGERBEETLE configs
   tigerBeetleTest.ok(Config.TIGERBEETLE !== undefined)
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enabled, false)
-  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enableMockBeetle, false)
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enableBatching, false)
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.disableSQL, false)
   tigerBeetleTest.ok(Config.TIGERBEETLE.batchMaxSize < 10_000)
@@ -93,7 +90,6 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
 
   tigerBeetleTest.beforeEach(test => {
     Config.TIGERBEETLE.enabled = true
-    Config.TIGERBEETLE.enableMockBeetle = true
     Config.TIGERBEETLE.cluster = TIGERBEETLE_CLUSTER
     sandbox = Sinon.createSandbox()
     // TODO sandbox.stub(Tb.tbCachedClient, 'constructor').returns(P.resolve())
@@ -105,7 +101,6 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
 
   tigerBeetleTest.afterEach(test => {
     Config.TIGERBEETLE.enabled = false
-    Config.TIGERBEETLE.enableMockBeetle = false
     test.end()
   })
 
@@ -128,70 +123,45 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
     testCreateAccounts.end()
   })
 
-  // Test Account Create:
-  tigerBeetleTest.test('create accounts', async function (testCreateAccounts) {
-    testCreateAccounts.deepEqual(Config.TIGERBEETLE.enabled, true)
-    testCreateAccounts.test('create and lookup hub account', async (test) => {
-      test.deepEqual(Config.TIGERBEETLE.enabled, true)
-      const tigerBeetleContainer = await startTigerBeetleContainer(TIGERBEETLE_CLUSTER)
-      try {
-        const result = await Tb.tbCreateSettlementHubAccount(hubId, accountType, currencyUsd)
-        test.deepEqual(result.length, 0)
-        const lookupResult = await Tb.tbLookupHubAccount(
-          hubId,
-          accountType,
-          currencyUsd
-        )
-        test.deepEqual(lookupResult.code, accountType)
-        test.deepEqual(lookupResult.ledger, 840)
-      } catch (any) {
-        test.fail(`Unable to create settlement accounts [${hubId}:${any.message}].`)
-      }
-      await Tb.tbDestroy()
-      await tigerBeetleContainer.stop()
-      test.end()
-    })
-
-    testCreateAccounts.test('create settlement account', async (test) => {
-      test.deepEqual(Config.TIGERBEETLE.enabled, true)
-
-      try {
-        const result = await Tb.tbCreateSettlementAccounts(
-          settlementAccounts,
-          1, // Settlement Id
-          accountType, // Account Type
-          currencyZar,
-          false // Debits may exceed credits
-        )
-        test.deepEqual(result.length, 0)
-      } catch (any) {
-        test.fail(`Unable to create settlement accounts [${hubId}:${any.message}].`)
-      }
-      await Tb.tbDestroy()
-      test.end()
-    })
-    testCreateAccounts.end()
-  })
-
-  // Test Settlement Transfers Create:
+  // Test Settlement Account create and Settlement Transfers:
   tigerBeetleTest.test('create settlement transfers', async function (testCreateTransfers) {
+    testCreateTransfers.deepEqual(Config.TIGERBEETLE.enabled, true)
+
+    const tigerBeetleContainer = await startTigerBeetleContainer(TIGERBEETLE_CLUSTER)
     testCreateTransfers.test('create full settlement cycle', async (test) => {
       try {
-        const resultHubAcc = await Tb.tbCreateSettlementHubAccount(hubId, accountType, currencyUsd)
+        const resultHubAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyUsd)
         test.deepEqual(resultHubAcc.length, 0)
+        const hubAccLookedUp = await Tb.tbLookupHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyUsd)
+        test.ok(hubAccLookedUp.id > 0)
+        test.deepEqual(hubAccLookedUp.code, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT)
+        test.deepEqual(hubAccLookedUp.ledger, 840)
+
+        const resultReconAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyUsd)
+        test.deepEqual(resultReconAcc.length, 0)
+        const reconAccLookedUp = await Tb.tbLookupHubAccount(hubId, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyUsd)
+        test.ok(reconAccLookedUp.id > 0)
+        test.deepEqual(reconAccLookedUp.code, enums.ledgerAccountTypes.HUB_RECONCILIATION)
+        test.deepEqual(reconAccLookedUp.ledger, 840)
+
         const settlementId = 1
         const result = await Tb.tbCreateSettlementAccounts(
+            enums,
             settlementAccounts,
             settlementId, // Settlement Id
-            accountType, // Account Type
             currencyUsd,
             false // Debits may exceed credits
         )
         test.deepEqual(result.length, 0)
 
+        const settlementAcc1LookedUp = await Tb.tbLookupSettlementAccount(
+            settlementAccounts[0].participantCurrencyId,
+            settlementId
+        )
+        test.ok(settlementAcc1LookedUp.id > 0)
+
         const txnIdSettlement = 'e1e4a5e5-1cef-4541-8186-a184873b7390'
         const orgTransferId = 'e1e4a5e5-1cef-4541-8186-a184873b7310'
-        const hubAccount = 1, hubMultilateral = 2, recon = 3, participantCurrencyId = 50
         const amount = 5000
 
         // Prepare transfer to create settlement obligation:
@@ -200,9 +170,9 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
             txnIdSettlement,
             orgTransferId,
             settlementId,
-            hubAccount,
-            hubMultilateral,
-            participantCurrencyId,
+            hubAccLookedUp.id,
+            reconAccLookedUp.id,
+            settlementAccounts[0].participantCurrencyId,
             currencyUsd,
             amount
         )
@@ -213,9 +183,9 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
             enums,
             txnIdSettlement,
             settlementId,
-            participantCurrencyId,
-            hubMultilateral,
-            recon,
+            settlementAccounts[0].participantCurrencyId,
+            hubAccLookedUp.id,
+            reconAccLookedUp.id,
             currencyUsd,
             amount
         )
@@ -225,10 +195,16 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
         const resultCommit = await Tb.tbSettlementTransferCommit(txnIdSettlement, settlementId)
         test.deepEqual(resultCommit.length, 0)
 
+        // Abort the settlement:
+        // TODO const resultAbort = await Tb.tbSettlementTransferAbort(txnIdSettlement, settlementId)
+        // TODO test.deepEqual(resultAbort.length, 0)
+
       } catch (any) {
+        console.error(any)
         test.fail(`Unable to complete settlement transfer cycle [${hubId}:${any.message}].`)
       }
       await Tb.tbDestroy()
+      await tigerBeetleContainer.stop()
       test.end()
     })
     testCreateTransfers.end()
@@ -287,6 +263,9 @@ const startTigerBeetleContainer = async (clusterId = 1) => {
       .on('err', (line) => console.error(line))
       .on('end', () => console.log('Stream closed for [running-tb-cluster]'))
   }
+
+  Config.TIGERBEETLE.replicaEndpoint01 = tbContStart.getMappedPort(TIGERBEETLE_PORT)
+
   await new Promise((f) => setTimeout(f, 2000))
   return tbContStart
 }
