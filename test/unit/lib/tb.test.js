@@ -108,11 +108,11 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
   })
 
   // Test Settlement Account create and Settlement Transfers:
-  tigerBeetleTest.test('create settlement transfers', async function (testCreateTransfers) {
+  tigerBeetleTest.test('create settlement accounts, transfers and abort', async function (testCreateTransfers) {
     testCreateTransfers.deepEqual(Config.TIGERBEETLE.enabled, true)
 
-    const tigerBeetleContainer = await startTigerBeetleContainer(TIGERBEETLE_CLUSTER)
     testCreateTransfers.test('create full settlement cycle', async (test) => {
+      const tigerBeetleContainer = await startTigerBeetleContainer(TIGERBEETLE_CLUSTER)
       try {
         const resultHubAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyUsd)
         test.deepEqual(resultHubAcc.length, 0)
@@ -144,9 +144,9 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
         )
         test.ok(settlementAcc1LookedUp.id > 0)
 
-        const txnIdSettlement = 'e1e4a5e5-1cef-4541-8186-a184873b7390'
-        const orgTransferId = 'e1e4a5e5-1cef-4541-8186-a184873b7310'
-        const amount = 5000
+        let txnIdSettlement = 'e1e4a5e5-1cef-4541-8186-a184873b7390'
+        let orgTransferId = 'e1e4a5e5-1cef-4541-8186-a184873b7310'
+        let amount = 5000
 
         // Prepare transfer to create settlement obligation:
         const resultPrepare = await Tb.tbSettlementPreparationTransfer(
@@ -179,9 +179,42 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
         const resultCommit = await Tb.tbSettlementTransferCommit(txnIdSettlement, settlementId)
         test.deepEqual(resultCommit.length, 0)
 
-        // Abort the settlement:
-        // TODO const resultAbort = await Tb.tbSettlementTransferAbort(txnIdSettlement, settlementId)
-        // TODO test.deepEqual(resultAbort.length, 0)
+        // Not allowed to abort an already committed settlement:
+        const resultCommitAbort = await Tb.tbSettlementTransferAbort(txnIdSettlement, settlementId)
+        test.deepEqual(resultCommitAbort.length, 2)
+
+        // Abort a new settlement:
+        txnIdSettlement = 'e1e4a5e5-1cef-4541-8186-a184873b7391'
+        orgTransferId = 'e1e4a5e5-1cef-4541-8186-a184873b7311'
+        amount = 5000
+
+        const resultPrepareForAbort = await Tb.tbSettlementPreparationTransfer(
+          enums,
+          txnIdSettlement,
+          orgTransferId,
+          settlementId,
+          hubAccLookedUp.id,
+          reconAccLookedUp.id,
+          settlementAccounts[0].participantCurrencyId,
+          currencyUsd,
+          amount
+        )
+        test.deepEqual(resultPrepareForAbort.length, 0)
+
+        const resultReserveForAbort = await Tb.tbSettlementTransferReserve(
+          enums,
+          txnIdSettlement,
+          settlementId,
+          settlementAccounts[0].participantCurrencyId,
+          hubAccLookedUp.id,
+          reconAccLookedUp.id,
+          currencyUsd,
+          amount
+        )
+        test.deepEqual(resultReserveForAbort.length, 0)
+
+        const resultAbort = await Tb.tbSettlementTransferAbort(txnIdSettlement, settlementId)
+        test.deepEqual(resultAbort.length, 0)
       } catch (any) {
         console.error(any)
         test.fail(`Unable to complete settlement transfer cycle [${hubId}:${any.message}].`)
