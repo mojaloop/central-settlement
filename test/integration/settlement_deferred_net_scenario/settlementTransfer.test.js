@@ -32,6 +32,7 @@ const SettlementTransferData = require('./settlementTransferData')
 const Models = require('../helpers/models')
 const Config = require('../../../src/lib/config')
 const Db = require('../../../src/lib/db')
+const Tb = require('../../../src/lib/tb')
 const CLDb = require('@mojaloop/central-ledger/src/lib/db')
 const SettlementWindowService = require('../../../src/domain/settlementWindow')
 const SettlementService = require('../../../src/domain/settlement')
@@ -45,6 +46,7 @@ const ParticipantPositionModel = require('@mojaloop/central-ledger/src/models/po
 const Producer = require('../../../src/lib/kafka/producer')
 const StreamProducer = require('@mojaloop/central-services-stream').Util.Producer
 const TransferModel = require('@mojaloop/central-ledger/src/models/transfer/transfer')
+const { startTigerBeetleContainer } = require('../../util')
 
 // require('leaked-handles').set({ fullStack: true, timeout: 5000, debugSockets: true })
 
@@ -105,6 +107,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
   await Db.connect(Config.DATABASE)
   await CLDb.connect(Config.DATABASE)
   await SettlementTransferData.init()
+  const tigerBeetleContainer = await startTigerBeetleContainer()
   const enums = await getEnums()
   let settlementWindowId
   let settlementData
@@ -698,7 +701,9 @@ Test('SettlementTransfer should', async settlementTransferTest => {
 
   await settlementTransferTest.test('finally disconnect open handles', async test => {
     try {
+      await Tb.tbDestroy()
       await Db.disconnect()
+      await tigerBeetleContainer.stop()
       await CLDb.disconnect()
       // test.pass('database connection closed')
       await Producer.getProducer('topic-notification-event').disconnect()
