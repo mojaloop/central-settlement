@@ -146,10 +146,10 @@ const tbCreateSettlementAccounts = async (
         ledger: currencyU16, // u32, currency
         code: enums.ledgerAccountTypes.SETTLEMENT, // u16, settlement
         flags: debitsNotExceedCredits ? TbNode.AccountFlags.debits_must_not_exceed_credits : 0, // u32
-        debits_pending:  0n, // u64
-        debits_posted:   0n, // u64
+        debits_pending: 0n, // u64
+        debits_posted: 0n, // u64
         credits_pending: 0n, // u64
-        credits_posted:  0n, // u64
+        credits_posted: 0n, // u64
         timestamp: 0n // u64, Reserved: This will be set by the server.
       })
     }
@@ -193,8 +193,8 @@ const tbLookupHubAccount = async (
 }
 
 const tbLookupSettlementAccount = async (
-    participantCurrencyId,
-    settlementId
+  participantCurrencyId,
+  settlementId
 ) => {
   try {
     const client = await getTBClient()

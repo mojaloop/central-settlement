@@ -36,9 +36,6 @@ const path = require('path')
 const os = require('os')
 const fs = require('fs')
 
-const Sinon = require('sinon')
-const P = require('bluebird')
-
 const { GenericContainer, Wait } = require('testcontainers')
 
 const TIGERBEETLE_IMAGE = 'ghcr.io/coilhq/tigerbeetle@sha256:c312832a460e7374bcbd4bd4a5ae79b8762f73df6363c9c8106c76d864e21303'
@@ -67,9 +64,7 @@ const enums = {
   }
 }
 
-
 Test('TigerBeetle Test', async (tigerBeetleTest) => {
-
   // Test Defaults for TIGERBEETLE configs
   tigerBeetleTest.ok(Config.TIGERBEETLE !== undefined)
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enabled, false)
@@ -82,20 +77,9 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.replicaEndpoint03, 5003)
   tigerBeetleTest.deepEqual(Config.HUB_ID, 1)
 
-  let sandbox
-
-  /* tigerBeetleTest.beforeAll(cppl => {
-    console.log('cool')
-  }) */
-
   tigerBeetleTest.beforeEach(test => {
     Config.TIGERBEETLE.enabled = true
     Config.TIGERBEETLE.cluster = TIGERBEETLE_CLUSTER
-    sandbox = Sinon.createSandbox()
-    // TODO sandbox.stub(Tb.tbCachedClient, 'constructor').returns(P.resolve())
-    // TODO sandbox.stub(Tb.tbCachedClient, 'tbCreateSettlementHubAccount').returns(P.resolve())
-    // TODO sandbox.stub(Tb.tbCachedClient, 'createClient').returns(P.resolve())
-    // TODO sandbox.stub(Tb.tbCachedClient, 'disconnect').returns(P.resolve())
     test.end()
   })
 
@@ -105,7 +89,7 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
   })
 
   const hubId = Config.HUB_ID
-  tigerBeetleTest.ok((typeof hubId) !== undefined && hubId > 0)
+  tigerBeetleTest.ok((typeof hubId) !== 'undefined' && hubId > 0)
 
   // Test Obtain TB client while being disabled:
   tigerBeetleTest.test('tigerbeetle client', async function (testCreateAccounts) {
@@ -146,17 +130,17 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
 
         const settlementId = 1
         const result = await Tb.tbCreateSettlementAccounts(
-            enums,
-            settlementAccounts,
-            settlementId, // Settlement Id
-            currencyUsd,
-            false // Debits may exceed credits
+          enums,
+          settlementAccounts,
+          settlementId, // Settlement Id
+          currencyUsd,
+          false // Debits may exceed credits
         )
         test.deepEqual(result.length, 0)
 
         const settlementAcc1LookedUp = await Tb.tbLookupSettlementAccount(
-            settlementAccounts[0].participantCurrencyId,
-            settlementId
+          settlementAccounts[0].participantCurrencyId,
+          settlementId
         )
         test.ok(settlementAcc1LookedUp.id > 0)
 
@@ -166,28 +150,28 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
 
         // Prepare transfer to create settlement obligation:
         const resultPrepare = await Tb.tbSettlementPreparationTransfer(
-            enums,
-            txnIdSettlement,
-            orgTransferId,
-            settlementId,
-            hubAccLookedUp.id,
-            reconAccLookedUp.id,
-            settlementAccounts[0].participantCurrencyId,
-            currencyUsd,
-            amount
+          enums,
+          txnIdSettlement,
+          orgTransferId,
+          settlementId,
+          hubAccLookedUp.id,
+          reconAccLookedUp.id,
+          settlementAccounts[0].participantCurrencyId,
+          currencyUsd,
+          amount
         )
         test.deepEqual(resultPrepare.length, 0)
 
         // Reserve the settlement as payee:
         const resultReserve = await Tb.tbSettlementTransferReserve(
-            enums,
-            txnIdSettlement,
-            settlementId,
-            settlementAccounts[0].participantCurrencyId,
-            hubAccLookedUp.id,
-            reconAccLookedUp.id,
-            currencyUsd,
-            amount
+          enums,
+          txnIdSettlement,
+          settlementId,
+          settlementAccounts[0].participantCurrencyId,
+          hubAccLookedUp.id,
+          reconAccLookedUp.id,
+          currencyUsd,
+          amount
         )
         test.deepEqual(resultReserve.length, 0)
 
@@ -198,7 +182,6 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
         // Abort the settlement:
         // TODO const resultAbort = await Tb.tbSettlementTransferAbort(txnIdSettlement, settlementId)
         // TODO test.deepEqual(resultAbort.length, 0)
-
       } catch (any) {
         console.error(any)
         test.fail(`Unable to complete settlement transfer cycle [${hubId}:${any.message}].`)
@@ -239,7 +222,7 @@ const startTigerBeetleContainer = async (clusterId = 1) => {
   }
 
   // Give TB a chance to startup (no message currently to notify allocation is complete):
-  await new Promise((f) => setTimeout(f, 1000))
+  setTimeout(() => {}, 1000)
   await tbContFormat.stop()
 
   const tbContStart = await new GenericContainer(TIGERBEETLE_IMAGE)
@@ -266,6 +249,6 @@ const startTigerBeetleContainer = async (clusterId = 1) => {
 
   Config.TIGERBEETLE.replicaEndpoint01 = tbContStart.getMappedPort(TIGERBEETLE_PORT)
 
-  await new Promise((f) => setTimeout(f, 2000))
+  setTimeout(() => {}, 2000)
   return tbContStart
 }
