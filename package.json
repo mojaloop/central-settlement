@@ -41,7 +41,7 @@
         "eslint": "eslint .",
         "test": "npm run test:unit",
         "test:unit": "npx tape 'test/unit/**/*.test.js' | tap-spec",
-        "test:unit:tigerbeetle": "npx tape 'test/unit/lib/tb.test.js' | tap-spec",
+        "test:integration:tigerbeetle": "npx tape 'test/integration/tigerbeetle/tb.test.js' | tap-spec",
         "test:xunit": "tape 'test/unit/**/*.test.js' | tap-xunit",
         "test:coverage": "nyc --reporter=lcov --reporter=text-summary tapes -- 'test/unit/**/**.test.js'",
         "test:coverage-check": "npm run test:coverage && nyc check-coverage",
