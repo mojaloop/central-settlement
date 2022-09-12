@@ -32,6 +32,7 @@ const Test = require('tapes')(require('tape'))
 const Tb = require('../../../src/lib/tb')
 const Config = require('../../../src/lib/config')
 const { startTigerBeetleContainer } = require('../../util')
+const Sinon = require('sinon')
 
 const TIGERBEETLE_CLUSTER = 1
 
@@ -57,24 +58,27 @@ const enums = {
 
 Test('TigerBeetle Test', async (tigerBeetleTest) => {
   // Test Defaults for TIGERBEETLE configs
-  tigerBeetleTest.ok(Config.TIGERBEETLE !== undefined)
-  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enabled, false)
-  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enableBatching, false)
-  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.disableSQL, false)
-  tigerBeetleTest.ok(Config.TIGERBEETLE.batchMaxSize < 10_000)
-  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.cluster, 1)
-  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.replicaEndpoint01, 5001)
-  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.replicaEndpoint02, 5002)
-  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.replicaEndpoint03, 5003)
-  tigerBeetleTest.deepEqual(Config.HUB_ID, 1)
+  tigerBeetleTest.ok(Config.TIGERBEETLE !== undefined, 'config [TIGERBEETLE] not undefined')
+  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enabled, false, 'tigerbeetle enabled')
+  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enableBatching, false, 'batching not enabled')
+  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.disableSQL, false, 'sql not disabled')
+  tigerBeetleTest.ok(Config.TIGERBEETLE.batchMaxSize < 10_000, 'batches less than 10k')
+  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.cluster, 1, 'cluster value [1]')
+  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.replicaEndpoint01, 5001, 'first replicate port')
+  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.replicaEndpoint02, 5002, 'second replicate port')
+  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.replicaEndpoint03, 5003, 'third replicate port')
+  tigerBeetleTest.deepEqual(Config.HUB_ID, 1, 'hub account id is [1]')
 
+  let sandbox
   tigerBeetleTest.beforeEach(test => {
+    sandbox = Sinon.createSandbox()
     Config.TIGERBEETLE.enabled = true
     Config.TIGERBEETLE.cluster = TIGERBEETLE_CLUSTER
     test.end()
   })
 
   tigerBeetleTest.afterEach(test => {
+    sandbox.restore()
     Config.TIGERBEETLE.enabled = false
     test.end()
   })
@@ -85,13 +89,13 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
   // Test Obtain TB client while being disabled:
   tigerBeetleTest.test('tigerbeetle client', async function (testCreateAccounts) {
     testCreateAccounts.test('error when disabled', async (test) => {
-      test.deepEqual(Config.TIGERBEETLE.enabled, true)
+      test.deepEqual(Config.TIGERBEETLE.enabled, true, 'tigerbeetle enabled')
       Config.TIGERBEETLE.enabled = false
       try {
         await Tb.tbCreateSettlementHubAccount(hubId)
         test.fail('Expected an error')
       } catch (any) {
-        test.deepEqual(any.message, 'TB-Client is not enabled.', 'Disable message is not valid.')
+        test.deepEqual(any.message, 'TB-Client is not enabled.', 'tigerbeetle not enabled')
       }
       test.end()
     })
@@ -100,24 +104,24 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
 
   // Test Settlement Account create and Settlement Transfers:
   tigerBeetleTest.test('create settlement accounts, transfers and abort', async function (testCreateTransfers) {
-    testCreateTransfers.deepEqual(Config.TIGERBEETLE.enabled, true)
+    testCreateTransfers.deepEqual(Config.TIGERBEETLE.enabled, true, 'tigerbeetle enabled')
 
     testCreateTransfers.test('create full settlement cycle', async (test) => {
       const tigerBeetleContainer = await startTigerBeetleContainer(TIGERBEETLE_CLUSTER)
       try {
         const resultHubAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyUsd)
-        test.deepEqual(resultHubAcc.length, 0)
+        test.deepEqual(resultHubAcc.length, 0, `create multilateral account for hub currency [${currencyUsd}]`)
         const hubAccLookedUp = await Tb.tbLookupHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyUsd)
-        test.ok(hubAccLookedUp.id > 0)
-        test.deepEqual(hubAccLookedUp.code, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT)
-        test.deepEqual(hubAccLookedUp.ledger, 840)
+        test.ok(hubAccLookedUp.id > 0, 'hub multilateral account lookup successful')
+        test.deepEqual(hubAccLookedUp.code, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, 'account multilateral code match')
+        test.deepEqual(hubAccLookedUp.ledger, 840, 'currency for multilateral lookup match')
 
         const resultReconAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyUsd)
-        test.deepEqual(resultReconAcc.length, 0)
+        test.deepEqual(resultReconAcc.length, 0, `create recon account for hub currency [${currencyUsd}]`)
         const reconAccLookedUp = await Tb.tbLookupHubAccount(hubId, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyUsd)
-        test.ok(reconAccLookedUp.id > 0)
-        test.deepEqual(reconAccLookedUp.code, enums.ledgerAccountTypes.HUB_RECONCILIATION)
-        test.deepEqual(reconAccLookedUp.ledger, 840)
+        test.ok(reconAccLookedUp.id > 0, 'hub recon account lookup successful')
+        test.deepEqual(reconAccLookedUp.code, enums.ledgerAccountTypes.HUB_RECONCILIATION, 'account recon code match')
+        test.deepEqual(reconAccLookedUp.ledger, 840, 'currency for recon lookup match')
 
         const settlementId = 1
         const result = await Tb.tbCreateSettlementAccounts(
@@ -127,13 +131,13 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
           currencyUsd,
           false // Debits may exceed credits
         )
-        test.deepEqual(result.length, 0)
+        test.deepEqual(result.length, 0, `${settlementAccounts.length} accounts created`)
 
         const settlementAcc1LookedUp = await Tb.tbLookupSettlementAccount(
           settlementAccounts[0].participantCurrencyId,
           settlementId
         )
-        test.ok(settlementAcc1LookedUp.id > 0)
+        test.ok(settlementAcc1LookedUp.id > 0, 'first account lookup successful')
 
         let txnIdSettlement = 'e1e4a5e5-1cef-4541-8186-a184873b7390'
         let orgTransferId = 'e1e4a5e5-1cef-4541-8186-a184873b7310'
@@ -151,7 +155,7 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
           currencyUsd,
           amount
         )
-        test.deepEqual(resultPrepare.length, 0)
+        test.deepEqual(resultPrepare.length, 0, 'settlement obligation created')
 
         // Reserve the settlement as payee:
         const resultReserve = await Tb.tbSettlementTransferReserve(
@@ -164,15 +168,15 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
           currencyUsd,
           amount
         )
-        test.deepEqual(resultReserve.length, 0)
+        test.deepEqual(resultReserve.length, 0, 'settlement payee reservation')
 
         // Commit the settlement as payer:
         const resultCommit = await Tb.tbSettlementTransferCommit(txnIdSettlement, settlementId)
-        test.deepEqual(resultCommit.length, 0)
+        test.deepEqual(resultCommit.length, 0, 'settlement payer completed, settlement committed')
 
         // Not allowed to abort an already committed settlement:
         const resultCommitAbort = await Tb.tbSettlementTransferAbort(txnIdSettlement, settlementId)
-        test.deepEqual(resultCommitAbort.length, 2)
+        test.deepEqual(resultCommitAbort.length, 2, 'not able to abort a committed settlement')
 
         // Abort a new settlement:
         txnIdSettlement = 'e1e4a5e5-1cef-4541-8186-a184873b7391'
@@ -190,7 +194,7 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
           currencyUsd,
           amount
         )
-        test.deepEqual(resultPrepareForAbort.length, 0)
+        test.deepEqual(resultPrepareForAbort.length, 0, 'abort: settlement obligation')
 
         const resultReserveForAbort = await Tb.tbSettlementTransferReserve(
           enums,
@@ -202,10 +206,10 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
           currencyUsd,
           amount
         )
-        test.deepEqual(resultReserveForAbort.length, 0)
+        test.deepEqual(resultReserveForAbort.length, 0, 'abort: settlement payee reservation')
 
         const resultAbort = await Tb.tbSettlementTransferAbort(txnIdSettlement, settlementId)
-        test.deepEqual(resultAbort.length, 0)
+        test.deepEqual(resultAbort.length, 0, 'abort: settlement payer')
       } catch (any) {
         console.error(any)
         test.fail(`Unable to complete settlement transfer cycle [${hubId}:${any.message}].`)
