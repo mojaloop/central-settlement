@@ -71,7 +71,7 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enableBatching, false)
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.disableSQL, false)
   tigerBeetleTest.ok(Config.TIGERBEETLE.batchMaxSize < 10_000)
-  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.cluster, 0)
+  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.cluster, 1)
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.replicaEndpoint01, 5001)
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.replicaEndpoint02, 5002)
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.replicaEndpoint03, 5003)

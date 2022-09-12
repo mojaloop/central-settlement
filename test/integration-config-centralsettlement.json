@@ -19,14 +19,7 @@
     "DEBUG": false
   },
   "TIGERBEETLE" : {
-    "ENABLED" : false,
-    "ENABLE_BATCHING" : false,
-    "DISABLE_SQL" : false,
-    "BATCH_MAX_SIZE" : 2048,
-    "CLUSTER" : 0,
-    "REPLICA_ENDPOINT_01" : "5001",
-    "REPLICA_ENDPOINT_02" : "5002",
-    "REPLICA_ENDPOINT_03" : "5003"
+    "ENABLED" : false
   },
   "WINDOW_AGGREGATION": {
     "RETRY_COUNT": 3,

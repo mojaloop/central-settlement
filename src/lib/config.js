@@ -1,5 +1,27 @@
 const RC = require('parse-strings-in-object')(require('rc')('CSET', require('../../config/default.json')))
 
+const TbConfig = {
+  enabled: RC.TIGERBEETLE === undefined ? false : RC.TIGERBEETLE.ENABLED || false
+}
+
+if (RC.TIGERBEETLE === undefined) {
+  TbConfig.enableBatching = false
+  TbConfig.disableSQL = false
+  TbConfig.batchMaxSize = 0
+  TbConfig.cluster = 1
+  TbConfig.replicaEndpoint01 = 5001
+  TbConfig.replicaEndpoint02 = 5002
+  TbConfig.replicaEndpoint03 = 5003
+} else {
+  TbConfig.enableBatching = RC.TIGERBEETLE.ENABLE_BATCHING || false
+  TbConfig.disableSQL = RC.TIGERBEETLE.DISABLE_SQL || false
+  TbConfig.batchMaxSize = RC.TIGERBEETLE.BATCH_MAX_SIZE || 0
+  TbConfig.cluster = RC.TIGERBEETLE.CLUSTER || 1
+  TbConfig.replicaEndpoint01 = RC.TIGERBEETLE.REPLICA_ENDPOINT_01 || 5001
+  TbConfig.replicaEndpoint02 = RC.TIGERBEETLE.REPLICA_ENDPOINT_02 || 5002
+  TbConfig.replicaEndpoint03 = RC.TIGERBEETLE.REPLICA_ENDPOINT_03 || 5003
+}
+
 module.exports = {
   HOSTNAME: RC.HOSTNAME.replace(/\/$/, ''),
   PORT: RC.PORT,
@@ -36,16 +58,7 @@ module.exports = {
     },
     debug: RC.DATABASE.DEBUG
   },
-  TIGERBEETLE: {
-    enabled: RC.TIGERBEETLE === undefined ? false : RC.TIGERBEETLE.ENABLED || false,
-    enableBatching: RC.TIGERBEETLE === undefined ? false : RC.TIGERBEETLE.ENABLE_BATCHING || false,
-    disableSQL: RC.TIGERBEETLE === undefined ? false : RC.TIGERBEETLE.DISABLE_SQL || false,
-    batchMaxSize: RC.TIGERBEETLE === undefined ? 0 : RC.TIGERBEETLE.BATCH_MAX_SIZE,
-    cluster: RC.TIGERBEETLE === undefined ? 0 : RC.TIGERBEETLE.CLUSTER,
-    replicaEndpoint01: RC.TIGERBEETLE === undefined ? '5001' : RC.TIGERBEETLE.REPLICA_ENDPOINT_01,
-    replicaEndpoint02: RC.TIGERBEETLE === undefined ? '5002' : RC.TIGERBEETLE.REPLICA_ENDPOINT_02,
-    replicaEndpoint03: RC.TIGERBEETLE === undefined ? '5003' : RC.TIGERBEETLE.REPLICA_ENDPOINT_03
-  },
+  TIGERBEETLE: TbConfig,
   WINDOW_AGGREGATION_RETRY_COUNT: RC.WINDOW_AGGREGATION.RETRY_COUNT,
   WINDOW_AGGREGATION_RETRY_INTERVAL: RC.WINDOW_AGGREGATION.RETRY_INTERVAL,
   TRANSFER_VALIDITY_SECONDS: RC.TRANSFER_VALIDITY_SECONDS,
