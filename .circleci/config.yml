@@ -198,6 +198,10 @@ jobs:
       - run:
           name: Create dir for test results
           command: mkdir -p ./test/results
+      # Current user to [docker] group:
+      - run: sudo groupadd docker
+      - run: sudo gpasswd -a $USER docker
+      - run: docker ps
       - run:
           name: Execute integration tests
           command: npm -s run test:integration

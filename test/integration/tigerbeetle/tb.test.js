@@ -139,8 +139,8 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
         )
         test.ok(settlementAcc1LookedUp.id > 0, 'first account lookup successful')
 
-        let txnIdSettlement = 'e1e4a5e5-1cef-4541-8186-a184873b7390'
-        let orgTransferId = 'e1e4a5e5-1cef-4541-8186-a184873b7310'
+        let txnIdSettlement = 'e1e4a5e5-1cef-4541-8186-a184873b7390' // from API
+        let orgTransferId = 'e1e4a5e5-1cef-4541-8186-a184873b7310' // obtained from CL lookup
         let amount = 5000
 
         // Prepare transfer to create settlement obligation:
