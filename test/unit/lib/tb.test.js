@@ -53,7 +53,7 @@ const enums = {
   }
 }
 
-Test('TigerBeetle Test', async (tigerBeetleTest) => {
+Test('TigerBeetle - ', async (tigerBeetleTest) => {
   // Test Defaults for TIGERBEETLE configs
   tigerBeetleTest.ok(Config.TIGERBEETLE !== undefined, 'config [TIGERBEETLE] not undefined')
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enabled, false, 'tigerbeetle enabled')
@@ -83,10 +83,10 @@ Test('TigerBeetle Test', async (tigerBeetleTest) => {
   tigerBeetleTest.ok((typeof hubId) !== 'undefined' && hubId > 0)
 
   // Test Settlement Account create and Settlement Transfers:
-  tigerBeetleTest.test('create settlement accounts, transfers and abort', async function (testCreateTransfers) {
+  tigerBeetleTest.test('sandbox: create settlement accounts, transfers and abort', async function (testCreateTransfers) {
     testCreateTransfers.deepEqual(Config.TIGERBEETLE.enabled, true, 'tigerbeetle enabled')
 
-    testCreateTransfers.test('create full settlement cycle', async (test) => {
+    testCreateTransfers.test('sandbox: create full settlement cycle', async (test) => {
       const success = []
       sandbox.stub(Tb, 'tbCreateSettlementHubAccount').returns(success)
       sandbox.stub(Tb, 'tbCreateSettlementAccounts').returns(success)

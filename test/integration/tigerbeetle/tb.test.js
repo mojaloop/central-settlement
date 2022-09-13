@@ -56,7 +56,7 @@ const enums = {
   }
 }
 
-Test('TigerBeetle Test', async (tigerBeetleTest) => {
+Test('TigerBeetle - ', async (tigerBeetleTest) => {
   // Test Defaults for TIGERBEETLE configs
   tigerBeetleTest.ok(Config.TIGERBEETLE !== undefined, 'config [TIGERBEETLE] not undefined')
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enabled, false, 'tigerbeetle enabled')
