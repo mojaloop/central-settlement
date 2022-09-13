@@ -135,13 +135,7 @@ const tbCreateSettlementAccounts = async (
     })
   }
 
-  const errors = await client.createAccounts(tbAccountsArray)
-  /* if (errors.length > 0) {
-    const errorTxt = errorsToString(TbNode.CreateAccountError, errors)
-    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
-        `TB-Account entry failed for [${errorTxt}] : ${util.inspect(errors)}`)
-  } */
-  return errors
+  return await client.createAccounts(tbAccountsArray)
 }
 
 const tbLookupHubAccount = async (
@@ -156,8 +150,7 @@ const tbLookupHubAccount = async (
   const tbId = tbAccountIdFrom(userData, currencyU16, accountType)
 
   const accounts = await client.lookupAccounts([tbId])
-  if (accounts.length > 0) return accounts[0]
-  return {}
+  return accounts.length > 0 ? accounts[0] : {}
 }
 
 const tbLookupSettlementAccount = async (
@@ -171,8 +164,7 @@ const tbLookupSettlementAccount = async (
   const id = tbSettlementAccountIdFrom(participantCurrencyIdBI, userData)
 
   const accounts = await client.lookupAccounts([id])
-  if (accounts.length > 0) return accounts[0]
-  return {}
+  return accounts.length > 0 ? accounts[0] : {}
 }
 
 /**
@@ -235,13 +227,7 @@ const tbSettlementPreparationTransfer = async (
     timestamp: 0n // u64, Reserved: This will be set by the server.
   }
 
-  const errors = await client.createTransfers([transferRecon, transferDFSPToHub])
-  /* if (errors.length > 0) {
-    const errorTxt = errorsToString(TbNode.CreateTransferError, errors)
-    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
-        `TB-Transfer-Preparation entry failed for [${settlementTransferId}:${errorTxt}] : ${util.inspect(errors)}`)
-  } */
-  return errors
+  return await client.createTransfers([transferRecon, transferDFSPToHub])
 }
 
 const tbSettlementTransferReserve = async (
@@ -294,13 +280,7 @@ const tbSettlementTransferReserve = async (
     timestamp: 0n // u64, Reserved: This will be set by the server.
   }
 
-  const errors = await client.createTransfers([transferHubToDFSPReserve, transferMultiToRecon])
-  /* if (errors.length > 0) {
-    const errorTxt = errorsToString(TbNode.CreateTransferError, errors)
-    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
-        'TB-Transfer-Preparation entry failed for [' + settlementTransferId + ':' + errorTxt + '] : ' + util.inspect(errors))
-  } */
-  return errors
+  return await client.createTransfers([transferHubToDFSPReserve, transferMultiToRecon])
 }
 
 const tbSettlementTransferCommit = async (
@@ -339,13 +319,7 @@ const tbSettlementTransferCommit = async (
     }
   ]
 
-  const errors = await client.createTransfers(commits)
-  /* if (errors.length > 0) {
-    const errorTxt = errorsToString(TbNode.CreateTransferError, errors)
-    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
-        `TB-Transfer-Preparation entry failed for [${settlementTransferId}:${errorTxt}] : ${util.inspect(errors)}`)
-  } */
-  return errors
+  return await client.createTransfers(commits)
 }
 
 const tbSettlementTransferAbort = async (
@@ -384,13 +358,7 @@ const tbSettlementTransferAbort = async (
     }
   ]
 
-  const errors = await client.createTransfers(aborts)
-  /* if (errors.length > 0) {
-    const errorTxt = errorsToString(TbNode.CreateTransferError, errors)
-    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
-        `TB-Transfer-Preparation entry failed for [${settlementTransferId}:${errorTxt}] : ${util.inspect(errors)}`)
-  } */
-  return errors
+  return await client.createTransfers(aborts)
 }
 
 const tbDestroy = async () => {
@@ -410,14 +378,6 @@ const obtainLedgerFromCurrency = (currencyTxt) => {
     default : return 840// USD
   }
 }
-
-/* const errorsToString = (resultEnum, errors) => {
-  let errorListing = ''
-  for (const val of errors) {
-    errorListing = errorListing.concat(`[${val.code}:${enumLabelFromCode(resultEnum, val.code)}],`)
-  }
-  return errorListing
-} */
 
 const tbAccountIdFrom = (userData, currencyTxt, accountTypeNumeric) => {
   return sha256(`${userData}-${currencyTxt}-${accountTypeNumeric}`)
@@ -443,6 +403,14 @@ const sha256 = (txt) => {
 const uuidToBigInt = (uuid) => {
   return BigInt('0x' + uuid.replace(/-/g, ''))
 }
+
+/* const errorsToString = (resultEnum, errors) => {
+  let errorListing = ''
+  for (const val of errors) {
+    errorListing = errorListing.concat(`[${val.code}:${enumLabelFromCode(resultEnum, val.code)}],`)
+  }
+  return errorListing
+} */
 
 /* const enumLabelFromCode = (resultEnum, errCode) => {
   const errorEnum = Object.keys(resultEnum)
