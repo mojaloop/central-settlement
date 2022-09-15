@@ -18,6 +18,16 @@ COPY src /opt/app/src
 COPY test /opt/app/test
 COPY README.md /opt/app
 
+# Start - TigerBeetle
+
+COPY tigerbeetle /opt/app
+RUN chmod 777 /opt/app/tigerbeetle
+RUN /opt/app/tigerbeetle format --cluster=1 --replica=0 /opt/app/1_0.tigerbeetle
+RUN /opt/app/tigerbeetle start --addresses=5001 /opt/app/1_0.tigerbeetle &
+
+# End - TigerBeetle
+
+
 # overwrite default.json with integration environment specific config
 RUN cp -f /opt/app/test/integration-config-centralsettlement.json /opt/app/config/default.json
 
