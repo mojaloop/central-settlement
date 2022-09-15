@@ -104,6 +104,7 @@ run_test_command() {
   docker run -it \
     --link $KAFKA_HOST \
     --link $DB_HOST \
+    --link $TIGERBEETLE_HOST \
     --network $DOCKER_NETWORK \
     --name $APP_HOST \
     --env HOST_IP="$APP_HOST" \

@@ -19,7 +19,8 @@
     "DEBUG": false
   },
   "TIGERBEETLE" : {
-    "ENABLED" : false
+    "ENABLED" : false,
+    "REPLICA_ENDPOINT_01" : "tigerbeetle-int:5001"
   },
   "WINDOW_AGGREGATION": {
     "RETRY_COUNT": 3,
