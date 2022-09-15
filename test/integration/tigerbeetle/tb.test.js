@@ -31,7 +31,7 @@ const Test = require('tapes')(require('tape'))
 
 const Tb = require('../../../src/lib/tb')
 const Config = require('../../../src/lib/config')
-const { startTigerBeetleContainer } = require('../../util')
+// TODO const { startTigerBeetleContainer } = require('../../util')
 const Sinon = require('sinon')
 
 const TIGERBEETLE_CLUSTER = 1
@@ -107,7 +107,7 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
     testCreateTransfers.deepEqual(Config.TIGERBEETLE.enabled, true, 'tigerbeetle enabled')
 
     testCreateTransfers.test('create full settlement cycle', async (test) => {
-      const tigerBeetleContainer = await startTigerBeetleContainer(TIGERBEETLE_CLUSTER)
+      // TODO const tigerBeetleContainer = await startTigerBeetleContainer(TIGERBEETLE_CLUSTER)
       try {
         const resultHubAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyUsd)
         test.deepEqual(resultHubAcc.length, 0, `create multilateral account for hub currency [${currencyUsd}]`)
@@ -215,7 +215,7 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
         test.fail(`Unable to complete settlement transfer cycle [${hubId}:${any.message}].`)
       }
       await Tb.tbDestroy()
-      await tigerBeetleContainer.stop()
+      // TODO await tigerBeetleContainer.stop()
       test.end()
     })
     testCreateTransfers.end()

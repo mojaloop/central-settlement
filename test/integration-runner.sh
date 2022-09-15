@@ -21,6 +21,9 @@ if [ $# -ne 1 ]; then
   echo " - KAFKA_HOST: Kafka host"
   echo " - KAFKA_ZOO_PORT: Kafka host name"
   echo " - KAFKA_BROKER_PORT: Kafka container port"
+  echo " - TIGERBEETLE_IMAGE: TigerBeetle image:tag"
+  echo " - TIGERBEETLE_HOST: TigerBeetle host"
+  echo " - TIGERBEETLE_PORT: TigerBeetle port"
   echo " - APP_HOST: Application host name"
   echo " - APP_PORT: Application port"
   echo " - APP_DIR_TEST_INTEGRATION: Location of the integration tests relative to the working directory"
@@ -55,11 +58,16 @@ cat $1
 >&2 echo "Creating local directory to store test results"
 mkdir -p $TEST_DIR/results
 
+tb_data_file_directory='tbdata'
+tb_internal_dir='/var/lib/tigerbeetle'
+
 # Generic functions
 
 stop_docker() {
   >&1 echo "Kafka is shutting down $KAFKA_HOST"
   (docker stop $KAFKA_HOST && docker rm $KAFKA_HOST) > /dev/null 2>&1
+  >&1 echo "TigerBeetle is shutting down $TIGERBEETLE_HOST"
+  (docker stop $TIGERBEETLE_HOST && docker rm $TIGERBEETLE_HOST) > /dev/null 2>&1
   >&1 echo "$SIMULATOR_HOST environment is shutting down"
   (docker stop $SIMULATOR_HOST && docker rm $SIMULATOR_HOST) > /dev/null 2>&1
   >&1 echo "$CENTRAL_LEDGER_HOST environment is shutting down"
@@ -72,6 +80,7 @@ stop_docker() {
   (docker stop $APP_HOST && docker rm $APP_HOST) > /dev/null 2>&1
   >&1 echo "Deleting test network: $DOCKER_NETWORK"
   docker network rm $DOCKER_NETWORK
+  rm -rvf $tb_data_file_directory
 }
 
 clean_docker() {
@@ -151,7 +160,7 @@ fkafka() {
 	  --link $KAFKA_HOST \
 	  --network $DOCKER_NETWORK \
 	  --env KAFKA_HOST="$KAFKA_HOST" \
-      --env KAFKA_ZOO_PORT="$KAFKA_ZOO_PORT" \
+    --env KAFKA_ZOO_PORT="$KAFKA_ZOO_PORT" \
 	  taion809/kafka-cli \
 	  /bin/sh \
 	  -c \
@@ -160,6 +169,31 @@ fkafka() {
 
 is_kafka_up() {
   fkafka 'kafka-topics.sh --list --zookeeper $KAFKA_HOST:$KAFKA_ZOO_PORT' > /dev/null 2>&1
+}
+
+# TigerBeetle Functions
+
+format_tigerbeetle() {
+  docker pull $TIGERBEETLE_IMAGE
+
+  rm -rvf $tb_data_file_directory
+  mkdir -p $tb_data_file_directory
+
+  echo "docker run -td -i --volume ${PWD}/$tb_data_file_directory:$tb_internal_dir $TIGERBEETLE_IMAGE init --cluster=1 --replica=0 --directory=$tb_internal_dir"
+  docker run -td -i --volume ${PWD}/$tb_data_file_directory:$tb_internal_dir $TIGERBEETLE_IMAGE init --cluster=1 --replica=0 --directory=$tb_internal_dir
+  echo "Formatted. See [$tb_data_file_directory]"
+}
+
+start_tigerbeetle() {
+  echo "docker run $TIGERBEETLE_IMAGE"
+  docker run -td -i \
+    -p $TIGERBEETLE_PORT:$TIGERBEETLE_PORT \
+    --network $DOCKER_NETWORK \
+    --name=$TIGERBEETLE_HOST \
+    --env ADVERTISED_HOST=$TIGERBEETLE_HOST \
+    --env ADVERTISED_PORT=$TIGERBEETLE_PORT \
+    --volume ${PWD}/$tb_data_file_directory:$tb_internal_dir \
+    $TIGERBEETLE_IMAGE start --cluster=1 --replica=0 --addresses=0.0.0.0:$TIGERBEETLE_PORT --directory=$tb_internal_dir
 }
 
 # DB functions
@@ -268,6 +302,15 @@ until is_kafka_up; do
   >&1 printf "."
   sleep 5
 done
+
+>&1 echo "Creating TigerBeetle data files (via format)"
+format_tigerbeetle
+
+>&1 echo "Waiting for TigerBeetle data files"
+sleep 3
+
+>&1 echo "TigerBeetle is starting"
+start_tigerbeetle
 
 >&1 echo "DB is starting"
 start_db
