@@ -66,3 +66,6 @@ junit.xml
 # Ignore DevSpace configs, cache and log folder
 .devspace/
 devspace*
+
+# TigerBeetle
+tbdata/
