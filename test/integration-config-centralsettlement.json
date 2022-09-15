@@ -20,7 +20,7 @@
   },
   "TIGERBEETLE" : {
     "ENABLED" : false,
-    "REPLICA_ENDPOINT_01" : "tigerbeetle-int:5001"
+    "REPLICA_ENDPOINT_01" : "127.0.0.1:5001"
   },
   "WINDOW_AGGREGATION": {
     "RETRY_COUNT": 3,
