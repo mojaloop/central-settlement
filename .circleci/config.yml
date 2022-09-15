@@ -200,8 +200,7 @@ jobs:
           command: mkdir -p ./test/results
       - run:
           name: Execute integration tests
-          # TODO @jason put back: command: npm -s run test:integration
-          command: npm -s run test:integration:tigerbeetle
+          command: npm -s run test:integration
       - store_artifacts:
           path: ./test/results
           prefix: test
