@@ -109,7 +109,9 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
     testCreateTransfers.test('create full settlement cycle', async (test) => {
       // TODO const tigerBeetleContainer = await startTigerBeetleContainer(TIGERBEETLE_CLUSTER)
       try {
+        console.log('JasonTest: About to create Account')
         const resultHubAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyUsd)
+        console.log('JasonTest: Have account')
         test.deepEqual(resultHubAcc.length, 0, `create multilateral account for hub currency [${currencyUsd}]`)
         const hubAccLookedUp = await Tb.tbLookupHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyUsd)
         test.ok(hubAccLookedUp.id > 0, 'hub multilateral account lookup successful')
