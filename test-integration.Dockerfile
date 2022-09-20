@@ -26,8 +26,8 @@ RUN /opt/app/tigerbeetle format --cluster=1 --replica=0 /opt/app/1_0.tigerbeetle
 RUN /opt/app/tigerbeetle start --addresses=5001 /opt/app/1_0.tigerbeetle &
 
 # DEBUG
-RUN sudo ps -ef
-RUN sudo lsof -i -P -n | grep LISTEN
+RUN ps -ef
+RUN lsof -i -P -n | grep LISTEN
 # DEBUG
 
 # End - TigerBeetle
