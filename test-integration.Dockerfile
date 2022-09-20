@@ -35,4 +35,4 @@ RUN /opt/app/tigerbeetle format --cluster=1 --replica=0 /opt/app/1_0.tigerbeetle
 RUN cp -f /opt/app/test/integration-config-centralsettlement.json /opt/app/config/default.json
 
 EXPOSE 3007
-CMD /opt/app/tigerbeetle start --addresses=5001 /opt/app/1_0.tigerbeetle & && node src/api/index.js
+CMD node src/api/index.js
