@@ -32,7 +32,7 @@ const SettlementTransferData = require('./settlementTransferData')
 const Models = require('../helpers/models')
 const Config = require('../../../src/lib/config')
 const Db = require('../../../src/lib/db')
-// const Tb = require('../../../src/lib/tb')
+const Tb = require('../../../src/lib/tb')
 const CLDb = require('@mojaloop/central-ledger/src/lib/db')
 const SettlementWindowService = require('../../../src/domain/settlementWindow')
 const SettlementService = require('../../../src/domain/settlement')
@@ -701,7 +701,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
 
   await settlementTransferTest.test('finally disconnect open handles', async test => {
     try {
-      // await Tb.tbDestroy()
+      await Tb.tbDestroy()
       await Db.disconnect()
       // await tigerBeetleContainer.stop()
       await CLDb.disconnect()
