@@ -19,7 +19,7 @@
     "DEBUG": false
   },
   "TIGERBEETLE" : {
-    "ENABLED" : false
+    "ENABLED" : true
   },
   "WINDOW_AGGREGATION": {
     "RETRY_COUNT": 3,
