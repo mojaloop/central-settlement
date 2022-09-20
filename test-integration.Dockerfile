@@ -23,11 +23,10 @@ COPY README.md /opt/app
 COPY tigerbeetle /opt/app
 RUN chmod 777 /opt/app/tigerbeetle
 RUN /opt/app/tigerbeetle format --cluster=1 --replica=0 /opt/app/1_0.tigerbeetle
-RUN /opt/app/tigerbeetle start --addresses=5001 /opt/app/1_0.tigerbeetle &
+# RUN /opt/app/tigerbeetle start --addresses=5001 /opt/app/1_0.tigerbeetle &
 
 # DEBUG
-RUN ps -ef
-RUN lsof -i -P -n | grep LISTEN
+# RUN ps -ef
 # DEBUG
 
 # End - TigerBeetle
@@ -36,4 +35,4 @@ RUN lsof -i -P -n | grep LISTEN
 RUN cp -f /opt/app/test/integration-config-centralsettlement.json /opt/app/config/default.json
 
 EXPOSE 3007
-CMD node src/api/index.js
+CMD /opt/app/tigerbeetle start --addresses=5001 /opt/app/1_0.tigerbeetle & && node src/api/index.js
