@@ -28,7 +28,7 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const TbNode = require('tigerbeetle-node')
 const createClient = TbNode.createClient
 const Config = require('../lib/config')
-// const util = require('util')
+const util = require('util')
 const crypto = require('crypto')
 const uuidv4Gen = require('uuid4')
 
@@ -47,6 +47,37 @@ const getTBClient = async () => {
     })
   }
   return tbCachedClient
+}
+
+/**
+ * Create a Hub account used for settlement.
+ *
+ * @param id Hub/Hub Recon id
+ * @param accountType Numeric account type for Hub or Hub Recon
+ *    1->POSITION
+ *    2->SETTLEMENT
+ *    3->HUB_RECONCILIATION
+ *    4->HUB_MULTILATERAL_SETTLEMENT
+ *    5->INTERCHANGE_FEE
+ *    6->INTERCHANGE_FEE_SETTLEMENT
+ * @param currencyTxt ISO-4217 alphabetic code
+ */
+const tbLookupCreateSettlementHubAccount = async (
+  id,
+  accountType = 2,
+  currencyTxt = 'USD'
+) => {
+  const account = await tbLookupHubAccount(id, accountType, currencyTxt)
+  if (account.id) return account
+
+  // Create:
+  const errors = await tbCreateSettlementHubAccount(id, accountType, currencyTxt)
+  if (errors.length === 0) return await tbLookupHubAccount(id, accountType, currencyTxt)
+  else {
+    const errorTxt = errorsToString(TbNode.CreateAccountError, errors)
+    throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MODIFIED_REQUEST,
+        `TB-Account entry failed for [${currencyTxt}:${errorTxt}] : ${util.inspect(errors)}`)
+  }
 }
 
 /**
@@ -404,18 +435,18 @@ const uuidToBigInt = (uuid) => {
   return BigInt('0x' + uuid.replace(/-/g, ''))
 }
 
-/* const errorsToString = (resultEnum, errors) => {
+const errorsToString = (resultEnum, errors) => {
   let errorListing = ''
   for (const val of errors) {
     errorListing = errorListing.concat(`[${val.code}:${enumLabelFromCode(resultEnum, val.code)}],`)
   }
   return errorListing
-} */
+}
 
-/* const enumLabelFromCode = (resultEnum, errCode) => {
+const enumLabelFromCode = (resultEnum, errCode) => {
   const errorEnum = Object.keys(resultEnum)
   return errorEnum[errCode + ((errorEnum.length / 2) - 1)]
-} */
+}
 
 module.exports = {
   // Accounts:
@@ -429,5 +460,7 @@ module.exports = {
   tbSettlementTransferCommit,
   tbSettlementTransferAbort,
   // Cleanup:
-  tbDestroy
+  tbDestroy,
+  // Helpers:
+  tbLookupCreateSettlementHubAccount
 }

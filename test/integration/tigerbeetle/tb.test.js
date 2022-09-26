@@ -45,6 +45,7 @@ const settlementAccounts = [
 ]
 
 const currencyUsd = 'USD'
+const currencyZar = 'ZAR'
 
 const enums = {
   ledgerAccountTypes: {
@@ -117,6 +118,11 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
         test.ok(hubAccLookedUp.id > 0, 'hub multilateral account lookup successful')
         test.deepEqual(hubAccLookedUp.code, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, 'account multilateral code match')
         test.deepEqual(hubAccLookedUp.ledger, 840, 'currency for multilateral lookup match')
+
+        const combinedCreateAnother = await Tb.tbLookupCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyZar)
+        test.ok(combinedCreateAnother.id > 0, 'hub multilateral account lookup successful')
+        test.deepEqual(combinedCreateAnother.code, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, 'account multilateral code match')
+        test.deepEqual(combinedCreateAnother.ledger, 710, 'currency for multilateral lookup match')
 
         const resultReconAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyUsd)
         test.deepEqual(resultReconAcc.length, 0, `create recon account for hub currency [${currencyUsd}]`)
