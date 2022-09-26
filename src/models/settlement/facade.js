@@ -1598,12 +1598,12 @@ const Facade = {
         if (tbEnabled) {
           // TODO ensure the following exists:
           // TODO 1. HUB_RECONCILIATION            -> Config.HUB_ID (participant-id)
-          await Tb.tbCreateSettlementHubAccount(
+          await Tb.tbLookupCreateSettlementHubAccount(
             Config.HUB_ID,
             enums.ledgerAccountTypes.HUB_RECONCILIATION,
             settlementModel.currency
           )
-          await Tb.tbCreateSettlementHubAccount(
+          await Tb.tbLookupCreateSettlementHubAccount(
             Config.HUB_ID,
             enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
             settlementModel.currency
