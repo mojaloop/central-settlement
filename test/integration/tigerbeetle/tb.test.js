@@ -117,6 +117,13 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
         test.deepEqual(hubAccLookedUp.code, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, 'usd: account multilateral code match')
         test.deepEqual(hubAccLookedUp.ledger, 840, 'usd: currency for multilateral lookup match')
 
+        const resultReconAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyUsd)
+        test.deepEqual(resultReconAcc.length, 0, `create recon account for hub currency [${currencyUsd}]`)
+        const reconAccLookedUp = await Tb.tbLookupHubAccount(hubId, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyUsd)
+        test.ok(reconAccLookedUp.id > 0, 'hub recon account lookup successful')
+        test.deepEqual(reconAccLookedUp.code, enums.ledgerAccountTypes.HUB_RECONCILIATION, 'account recon code match')
+        test.deepEqual(reconAccLookedUp.ledger, 840, 'currency for recon lookup match')
+
         // Make use of the combined service:
         const combinedCreateAnother = await Tb.tbLookupCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyZar)
         test.ok(combinedCreateAnother.id > 0, 'usd: hub multilateral account lookup successful')
@@ -128,13 +135,7 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
         test.deepEqual(combinedCreateAnotherLookup.code, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, '2nd-usd: account multilateral code match')
         test.deepEqual(combinedCreateAnotherLookup.ledger, 710, '2nd-usd: currency for multilateral lookup match')
 
-        const resultReconAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyUsd)
-        test.deepEqual(resultReconAcc.length, 0, `create recon account for hub currency [${currencyUsd}]`)
-        const reconAccLookedUp = await Tb.tbLookupHubAccount(hubId, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyUsd)
-        test.ok(reconAccLookedUp.id > 0, 'hub recon account lookup successful')
-        test.deepEqual(reconAccLookedUp.code, enums.ledgerAccountTypes.HUB_RECONCILIATION, 'account recon code match')
-        test.deepEqual(reconAccLookedUp.ledger, 840, 'currency for recon lookup match')
-
+        // Create Settlement accounts:
         const settlementId = 1
         const result = await Tb.tbCreateSettlementAccounts(
           enums,
