@@ -200,7 +200,7 @@ const tbLookupSettlementAccount = async (
 
 /**
  * Settlement obligation has been created via `createSettlementEvent`.
- * After this is called, we should be in a settlement state of
+ * After this is called, we should be in a settlement state  of
  * `PENDING_SETTLEMENT` -> `PS_TRANSFERS_RECORDED`
  *
  * @param settlementTransferId
