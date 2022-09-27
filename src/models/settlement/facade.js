@@ -1595,25 +1595,29 @@ const Facade = {
             .update({ currentStateChangeId: settlementParticipantCurrencyStateChangeIdList[index] }))
         }
 
+        console.log('\x1b[36m%s\x1b[0m', 'TigerBeetle: [triggerSettlementEvent] :::')
         if (tbEnabled) {
           // TODO ensure the following exists:
           // TODO 1. HUB_RECONCILIATION            -> Config.HUB_ID (participant-id)
+          console.log('\x1b[36m%s\x1b[0m', `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB RECON ACCOUNT[${Config.HUB_ID.id}:${settlementModel.currency}:${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
           await Tb.tbLookupCreateSettlementHubAccount(
-            Config.HUB_ID,
+            Config.HUB_ID.id,
             enums.ledgerAccountTypes.HUB_RECONCILIATION,
             settlementModel.currency
           )
+          console.log('\x1b[36m%s\x1b[0m', `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB MULTILATERAL ACCOUNT[${Config.HUB_ID.id}:${settlementModel.currency}:${enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT}].`)
           await Tb.tbLookupCreateSettlementHubAccount(
-            Config.HUB_ID,
+            Config.HUB_ID.id,
             enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
             settlementModel.currency
           )
+          console.log('\x1b[36m%s\x1b[0m', `TigerBeetle: [triggerSettlementEvent] -> CREATE SETTLEMENT ACCOUNTS[${tbSettlementAccounts.length}:${settlementId}:${enums.ledgerAccountTypes.SETTLEMENT}].`)
           await Tb.tbCreateSettlementAccounts(
             tbSettlementAccounts,
             settlementId,
             enums.ledgerAccountTypes.SETTLEMENT,
             settlementModel.currency,
-            true
+            false
           )
         }
 
