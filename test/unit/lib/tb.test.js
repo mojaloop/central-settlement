@@ -98,6 +98,7 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
       sandbox.stub(Tb, 'tbSettlementTransferAbort').returns(success)
 
       try {
+        console.log('\x1b[36m%s\x1b[0m', 'TigerBeetle: [triggerSettlementEvent] :::')
         const resultHubAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyUsd)
         test.deepEqual(resultHubAcc.length, 0, `create multilateral account for hub currency [${currencyUsd}]`)
 

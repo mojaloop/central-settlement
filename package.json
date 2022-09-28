@@ -48,6 +48,7 @@
         "test:coverage-check": "npm run test:coverage && nyc check-coverage",
         "test:int": "tape 'test/integration/**/*.test.js'",
         "test:integration": "sh ./test/integration-runner.sh ./test/integration-runner.env",
+        "test:integration:screen": "sh ./test/integration-runner.sh ./test/integration-runner-screen.env",
         "test:int:narrow": "jest --config './jest.integration.config.js' --coverage --runInBand --testMatch '**/test/int/**/*.(test|spec).js'",
         "audit:fix": "npm audit fix",
         "audit:check": "npx audit-ci --config ./audit-ci.jsonc",
