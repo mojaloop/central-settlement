@@ -406,6 +406,8 @@ const obtainLedgerFromCurrency = (currencyTxt) => {
   switch (currencyTxt) {
     case 'KES' : return 404
     case 'ZAR' : return 710
+    case 'AED' : return 784
+    case 'EUR' : return 978
     default : return 840// USD
   }
 }

@@ -44,7 +44,7 @@ const settlementAccounts = [
   { participantCurrencyId: 4 }
 ]
 
-const currencyUsd = 'USD'
+const currencyAed = 'AED'
 const currencyZar = 'ZAR'
 
 const enums = {
@@ -110,16 +110,16 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
     testCreateTransfers.test('create full settlement cycle', async (test) => {
       // TODO const tigerBeetleContainer = await startTigerBeetleContainer(TIGERBEETLE_CLUSTER)
       try {
-        const resultHubAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyUsd)
-        test.deepEqual(resultHubAcc.length, 0, `create multilateral account for hub currency [${currencyUsd}]`)
-        const hubAccLookedUp = await Tb.tbLookupHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyUsd)
+        const resultHubAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyAed)
+        test.deepEqual(resultHubAcc.length, 0, `create multilateral account for hub currency [${currencyAed}]`)
+        const hubAccLookedUp = await Tb.tbLookupHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyAed)
         test.ok(hubAccLookedUp.id > 0, 'usd: hub multilateral account lookup successful')
         test.deepEqual(hubAccLookedUp.code, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, 'usd: account multilateral code match')
         test.deepEqual(hubAccLookedUp.ledger, 840, 'usd: currency for multilateral lookup match')
 
-        const resultReconAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyUsd)
-        test.deepEqual(resultReconAcc.length, 0, `create recon account for hub currency [${currencyUsd}]`)
-        const reconAccLookedUp = await Tb.tbLookupHubAccount(hubId, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyUsd)
+        const resultReconAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyAed)
+        test.deepEqual(resultReconAcc.length, 0, `create recon account for hub currency [${currencyAed}]`)
+        const reconAccLookedUp = await Tb.tbLookupHubAccount(hubId, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyAed)
         test.ok(reconAccLookedUp.id > 0, 'hub recon account lookup successful')
         test.deepEqual(reconAccLookedUp.code, enums.ledgerAccountTypes.HUB_RECONCILIATION, 'account recon code match')
         test.deepEqual(reconAccLookedUp.ledger, 840, 'currency for recon lookup match')
@@ -141,7 +141,7 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
           enums,
           settlementAccounts,
           settlementId, // Settlement Id
-          currencyUsd,
+          currencyAed,
           false // Debits may exceed credits
         )
         test.deepEqual(result.length, 0, `${settlementAccounts.length} accounts created`)
@@ -165,7 +165,7 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
           hubAccLookedUp.id,
           reconAccLookedUp.id,
           settlementAccounts[0].participantCurrencyId,
-          currencyUsd,
+          currencyAed,
           amount
         )
         test.deepEqual(resultPrepare.length, 0, 'settlement obligation created')
@@ -178,7 +178,7 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
           settlementAccounts[0].participantCurrencyId,
           hubAccLookedUp.id,
           reconAccLookedUp.id,
-          currencyUsd,
+          currencyAed,
           amount
         )
         test.deepEqual(resultReserve.length, 0, 'settlement payee reservation')
@@ -204,7 +204,7 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
           hubAccLookedUp.id,
           reconAccLookedUp.id,
           settlementAccounts[0].participantCurrencyId,
-          currencyUsd,
+          currencyAed,
           amount
         )
         test.deepEqual(resultPrepareForAbort.length, 0, 'abort: settlement obligation')
@@ -216,7 +216,7 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
           settlementAccounts[0].participantCurrencyId,
           hubAccLookedUp.id,
           reconAccLookedUp.id,
-          currencyUsd,
+          currencyAed,
           amount
         )
         test.deepEqual(resultReserveForAbort.length, 0, 'abort: settlement payee reservation')
