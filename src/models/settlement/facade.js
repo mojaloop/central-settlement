@@ -43,7 +43,7 @@ const Logger = require('@mojaloop/central-services-logger')
 const util = require('util')
 
 const GREEN = '\x1b[32m%s\x1b[0m'
-const YELLOW = '\x1b[33m%s\x1b[0m'
+const YELLOW = '\x1b[33m%s\x1b[5m'
 const BLUE = '\x1b[34m%s\x1b[0m'
 const MAGENTA = '\x1b[35m%s\x1b[0m'
 const TURQUOISE = '\x1b[36m%s\x1b[0m'
@@ -1605,8 +1605,7 @@ const Facade = {
         }
 
         console.log(MAGENTA, '*****************************************')
-        console.log('\x1b[5m', '*[triggerSettlementEvent]****************')
-        console.log(YELLOW, '*[triggerSettlementEvent]****************')
+        console.log(YELLOW, '*******<[triggerSettlementEvent]>********')
         console.log(MAGENTA, `* TigerBeetle: ::: ${util.inspect(swcList)} - ${TB_HUB_ID} - ${util.inspect(enums.ledgerAccountTypes)}`)
         console.log(MAGENTA, '*****************************************')
         if (tbEnabled) {
