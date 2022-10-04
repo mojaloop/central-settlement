@@ -1584,7 +1584,7 @@ const Facade = {
         })
         insertPromises = []
         const tbSettlementAccounts = []
-        var tbEnabled = Config.TIGERBEETLE.enabled
+        const tbEnabled = Config.TIGERBEETLE.enabled
         for (const spcsc of settlementParticipantCurrencyStateChangeList) {
           insertPromises.push(
             knex('settlementParticipantCurrencyStateChange').transacting(trx)
@@ -1608,7 +1608,6 @@ const Facade = {
         console.log(YELLOW, '*******<[triggerSettlementEvent]>********')
         console.log(MAGENTA, `* TigerBeetle: ::: ${util.inspect(swcList)} - ${util.inspect(settlementParticipantCurrencyStateChangeList)} - ${util.inspect(enums.ledgerAccountTypes)} - ${util.inspect(tbSettlementAccounts)}`)
         console.log(MAGENTA, '*****************************************')
-        tbEnabled = true
         if (tbEnabled) {
           // TODO ensure the following exists:
           // TODO 1. HUB_RECONCILIATION            -> Config.HUB_ID (participant-id)
@@ -1636,7 +1635,6 @@ const Facade = {
             false // Debits may exceed credits
           ) */
         }
-        tbEnabled = false
         await Promise.all(updatePromises)
 
         // set state of CLOSED and ABORTED windows to PENDING_SETTLEMENT, skip already in PENDING_SETTLEMENT state
