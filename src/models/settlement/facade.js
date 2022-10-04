@@ -1606,19 +1606,19 @@ const Facade = {
 
         console.log(MAGENTA, '*****************************************')
         console.log(YELLOW, '*******<[triggerSettlementEvent]>********')
-        console.log(MAGENTA, `* TigerBeetle: ::: ${util.inspect(swcList)} - ${TB_HUB_ID} - ${util.inspect(enums.ledgerAccountTypes)} - ${util.inspect(tbSettlementAccounts)}`)
+        console.log(MAGENTA, `* TigerBeetle: ::: ${util.inspect(swcList)} - ${settlementParticipantCurrencyStateChangeList} - ${util.inspect(enums.ledgerAccountTypes)} - ${util.inspect(tbSettlementAccounts)}`)
         console.log(MAGENTA, '*****************************************')
         if (tbEnabled) {
           // TODO ensure the following exists:
           // TODO 1. HUB_RECONCILIATION            -> Config.HUB_ID (participant-id)
-          for (const swc of swcList) {
-            console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB RECON ACCOUNT[${TB_HUB_ID}:${swcList.currencyId}:${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
+          /* for (const swc of swcList) {
+            console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB RECON ACCOUNT[${TB_HUB_ID}:${swc.currencyId}:${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
             await Tb.tbLookupCreateSettlementHubAccount(
               TB_HUB_ID,
               enums.ledgerAccountTypes.HUB_RECONCILIATION,
               swc.currencyId
             )
-            console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB MULTILATERAL ACCOUNT[${TB_HUB_ID}:${swcList.currencyId}:${enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT}].`)
+            console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB MULTILATERAL ACCOUNT[${TB_HUB_ID}:${swc.currencyId}:${enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT}].`)
             await Tb.tbLookupCreateSettlementHubAccount(
               TB_HUB_ID,
               enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
@@ -1632,7 +1632,7 @@ const Facade = {
             settlementId,
             swcList[0].currencyId,
             false // Debits may exceed credits
-          )
+          ) */
         }
 
         await Promise.all(updatePromises)
