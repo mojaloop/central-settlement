@@ -43,8 +43,9 @@ const Logger = require('@mojaloop/central-services-logger')
 const util = require('util')
 
 const GREEN = '\x1b[32m%s\x1b[0m'
+const YELLOW = '\x1b[33m%s\x1b[0m'
 const BLUE = '\x1b[34m%s\x1b[0m'
-const YELLOW = '\x1b[35m%s\x1b[0m'
+const MAGENTA = '\x1b[35m%s\x1b[0m'
 const TURQUOISE = '\x1b[36m%s\x1b[0m'
 const TB_HUB_ID = Config.HUB_ID
 
@@ -1603,25 +1604,27 @@ const Facade = {
             .update({ currentStateChangeId: settlementParticipantCurrencyStateChangeIdList[index] }))
         }
 
-        console.log(YELLOW, '*****************************************')
-        console.log(YELLOW, `* TigerBeetle: [triggerSettlementEvent] ::: ${util.inspect(swcList)} - ${TB_HUB_ID} - ${util.inspect(enums.ledgerAccountTypes)}`)
-        console.log(YELLOW, '*****************************************')
+        console.log(MAGENTA, '*****************************************')
+        console.log('\x1b[5m', '*[triggerSettlementEvent]****************')
+        console.log(YELLOW, '*[triggerSettlementEvent]****************')
+        console.log(MAGENTA, `* TigerBeetle: ::: ${util.inspect(swcList)} - ${TB_HUB_ID} - ${util.inspect(enums.ledgerAccountTypes)}`)
+        console.log(MAGENTA, '*****************************************')
         if (tbEnabled) {
           // TODO ensure the following exists:
           // TODO 1. HUB_RECONCILIATION            -> Config.HUB_ID (participant-id)
-          console.log(YELLOW, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB RECON ACCOUNT[${TB_HUB_ID}:${swcList.currencyId}:${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
+          console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB RECON ACCOUNT[${TB_HUB_ID}:${swcList.currencyId}:${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
           await Tb.tbLookupCreateSettlementHubAccount(
             TB_HUB_ID,
             enums.ledgerAccountTypes.HUB_RECONCILIATION,
             swcList.currencyId
           )
-          console.log(YELLOW, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB MULTILATERAL ACCOUNT[${TB_HUB_ID}:${swcList.currencyId}:${enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT}].`)
+          console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB MULTILATERAL ACCOUNT[${TB_HUB_ID}:${swcList.currencyId}:${enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT}].`)
           await Tb.tbLookupCreateSettlementHubAccount(
             TB_HUB_ID,
             enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
             swcList.currencyId
           )
-          console.log(YELLOW, `TigerBeetle: [triggerSettlementEvent] -> CREATE SETTLEMENT ACCOUNTS[${tbSettlementAccounts.length}:${settlementId}:${enums.ledgerAccountTypes.SETTLEMENT}].`)
+          console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE SETTLEMENT ACCOUNTS[${tbSettlementAccounts.length}:${settlementId}:${enums.ledgerAccountTypes.SETTLEMENT}].`)
           await Tb.tbCreateSettlementAccounts(
             tbSettlementAccounts,
             settlementId,
