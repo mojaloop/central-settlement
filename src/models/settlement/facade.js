@@ -1595,7 +1595,9 @@ const Facade = {
             .update({ currentStateChangeId: settlementParticipantCurrencyStateChangeIdList[index] }))
         }
 
-        console.log('\x1b[36m%s\x1b[0m', 'TigerBeetle: [triggerSettlementEvent] :::')
+        console.log('\x1b[36m%s\x1b[0m', '*****************************************')
+        console.log('\x1b[36m%s\x1b[0m', `TigerBeetle: [triggerSettlementEvent] ::: ${Config.HUB_ID.id} - ${settlementModel.currency}`)
+        console.log('\x1b[36m%s\x1b[0m', '*****************************************')
         if (tbEnabled) {
           // TODO ensure the following exists:
           // TODO 1. HUB_RECONCILIATION            -> Config.HUB_ID (participant-id)
