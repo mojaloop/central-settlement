@@ -60,7 +60,7 @@ const enums = {
 Test('TigerBeetle - ', async (tigerBeetleTest) => {
   // Test Defaults for TIGERBEETLE configs
   tigerBeetleTest.ok(Config.TIGERBEETLE !== undefined, 'config [TIGERBEETLE] not undefined')
-  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enabled, false, 'tigerbeetle enabled')
+  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enabled, true, 'tigerbeetle enabled')
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enableBatching, false, 'batching not enabled')
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.disableSQL, false, 'sql not disabled')
   tigerBeetleTest.ok(Config.TIGERBEETLE.batchMaxSize < 10_000, 'batches less than 10k')
@@ -115,14 +115,14 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
         const hubAccLookedUp = await Tb.tbLookupHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyAed)
         test.ok(hubAccLookedUp.id > 0, 'usd: hub multilateral account lookup successful')
         test.deepEqual(hubAccLookedUp.code, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, 'usd: account multilateral code match')
-        test.deepEqual(hubAccLookedUp.ledger, 840, 'usd: currency for multilateral lookup match')
+        test.deepEqual(hubAccLookedUp.ledger, 784, 'usd: currency for multilateral lookup match')
 
         const resultReconAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyAed)
         test.deepEqual(resultReconAcc.length, 0, `create recon account for hub currency [${currencyAed}]`)
         const reconAccLookedUp = await Tb.tbLookupHubAccount(hubId, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyAed)
         test.ok(reconAccLookedUp.id > 0, 'hub recon account lookup successful')
         test.deepEqual(reconAccLookedUp.code, enums.ledgerAccountTypes.HUB_RECONCILIATION, 'account recon code match')
-        test.deepEqual(reconAccLookedUp.ledger, 840, 'currency for recon lookup match')
+        test.deepEqual(reconAccLookedUp.ledger, 784, 'currency for recon lookup match')
 
         // Make use of the combined service:
         const combinedCreateAnother = await Tb.tbLookupCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyZar)
@@ -234,6 +234,6 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
     testCreateTransfers.end()
   })
 
-  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enabled, false)
+  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enabled, true)
   tigerBeetleTest.end()
 })
