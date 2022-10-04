@@ -188,31 +188,31 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
 
       console.log(TURQUOISE, 'TigerBeetle: [settlementTransfersPrepare] :::')
       if (Config.TIGERBEETLE.enabled) {
-        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> FETCH HUB ACCOUNT[${TB_HUB_ID}:${t.currency}:${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
+        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> FETCH HUB ACCOUNT[${TB_HUB_ID}:${t.currencyId}:${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
         // TODO @jason lookup once...
         // TODO @jason amounts need to be converted...
         const hubReconAcc = await Tb.tbLookupHubAccount(
           TB_HUB_ID,
           enums.ledgerAccountTypes.HUB_RECONCILIATION,
-          t.currency
+          t.currencyId
         )
-        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> FETCH MULTILATERAL ACCOUNT[${t.currency}:${util.inspect(hubReconAcc)}].`)
+        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> FETCH MULTILATERAL ACCOUNT[${t.currencyId}:${enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT}].`)
         const hubMultilateral = await Tb.tbLookupHubAccount(
           TB_HUB_ID,
           enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
-          t.currency
+          t.currencyId
         )
-        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> SETTLEMENT PREPARE[Sid-${settlementId}:SetTxnId-${t.settlementTransferId}:TxnId-${t.transferId}:Amt-${t.amount}]. ${util.inspect(hubReconAcc)}`)
+        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> SETTLEMENT PREPARE[Sid-${settlementId}:SetTxnId-${t.settlementTransferId}:TxnId-${t.transferId}:Amt-${t.netAmount}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)}`)
         await Tb.tbSettlementPreparationTransfer(
           enums,
           t.settlementTransferId,
-          t.transferId,
+          t.settlementTransferId, // t.transferId,
           settlementId,
           hubReconAcc.id,
           hubMultilateral.id,
           t.participantCurrencyId,
-          t.currency,
-          t.amount
+          t.currencyId,
+          t.netAmount
         )
       }
 
