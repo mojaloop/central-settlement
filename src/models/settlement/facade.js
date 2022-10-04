@@ -187,7 +187,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
       }
 
       console.log(TURQUOISE, 'TigerBeetle: [settlementTransfersPrepare] :::')
-      if (!Config.TIGERBEETLE.enabled && Config.TIGERBEETLE.enabled) {
+      if (Config.TIGERBEETLE.enabled) {
         console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> FETCH HUB ACCOUNT[${TB_HUB_ID}:${t.currency}:${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
         // TODO @jason lookup once...
         // TODO @jason amounts need to be converted...
@@ -196,13 +196,13 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           enums.ledgerAccountTypes.HUB_RECONCILIATION,
           t.currency
         )
-        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> FETCH MULTILATERAL ACCOUNT[${t.currency}].`)
+        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> FETCH MULTILATERAL ACCOUNT[${t.currency}:${util.inspect(hubReconAcc)}].`)
         const hubMultilateral = await Tb.tbLookupHubAccount(
           TB_HUB_ID,
           enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
           t.currency
         )
-        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> SETTLEMENT PREPARE[Sid-${settlementId}:SetTxnId-${t.settlementTransferId}:TxnId-${t.transferId}:Amt-${t.amount}]. ${util.inspect(t)}`)
+        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> SETTLEMENT PREPARE[Sid-${settlementId}:SetTxnId-${t.settlementTransferId}:TxnId-${t.transferId}:Amt-${t.amount}]. ${util.inspect(hubReconAcc)}`)
         await Tb.tbSettlementPreparationTransfer(
           enums,
           t.settlementTransferId,
