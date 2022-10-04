@@ -1606,30 +1606,32 @@ const Facade = {
 
         console.log(MAGENTA, '*****************************************')
         console.log(YELLOW, '*******<[triggerSettlementEvent]>********')
-        console.log(MAGENTA, `* TigerBeetle: ::: ${util.inspect(swcList)} - ${TB_HUB_ID} - ${util.inspect(enums.ledgerAccountTypes)}`)
+        console.log(MAGENTA, `* TigerBeetle: ::: ${util.inspect(swcList)} - ${TB_HUB_ID} - ${util.inspect(enums.ledgerAccountTypes)} - ${util.inspect(tbSettlementAccounts)}`)
         console.log(MAGENTA, '*****************************************')
         if (tbEnabled) {
           // TODO ensure the following exists:
           // TODO 1. HUB_RECONCILIATION            -> Config.HUB_ID (participant-id)
-          console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB RECON ACCOUNT[${TB_HUB_ID}:${swcList.currencyId}:${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
-          await Tb.tbLookupCreateSettlementHubAccount(
-            TB_HUB_ID,
-            enums.ledgerAccountTypes.HUB_RECONCILIATION,
-            swcList.currencyId
-          )
-          console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB MULTILATERAL ACCOUNT[${TB_HUB_ID}:${swcList.currencyId}:${enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT}].`)
-          await Tb.tbLookupCreateSettlementHubAccount(
-            TB_HUB_ID,
-            enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
-            swcList.currencyId
-          )
+          for (const swc of swcList) {
+            console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB RECON ACCOUNT[${TB_HUB_ID}:${swcList.currencyId}:${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
+            await Tb.tbLookupCreateSettlementHubAccount(
+              TB_HUB_ID,
+              enums.ledgerAccountTypes.HUB_RECONCILIATION,
+              swc.currencyId
+            )
+            console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB MULTILATERAL ACCOUNT[${TB_HUB_ID}:${swcList.currencyId}:${enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT}].`)
+            await Tb.tbLookupCreateSettlementHubAccount(
+              TB_HUB_ID,
+              enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
+              swc.currencyId
+            )
+          }
           console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE SETTLEMENT ACCOUNTS[${tbSettlementAccounts.length}:${settlementId}:${enums.ledgerAccountTypes.SETTLEMENT}].`)
           await Tb.tbCreateSettlementAccounts(
+            enums,
             tbSettlementAccounts,
             settlementId,
-            enums.ledgerAccountTypes.SETTLEMENT,
-            settlementModel.currency,
-            false
+            swcList[0].currencyId,
+            false // Debits may exceed credits
           )
         }
 
