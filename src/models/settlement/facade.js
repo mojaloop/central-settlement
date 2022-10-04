@@ -1606,7 +1606,7 @@ const Facade = {
 
         console.log(MAGENTA, '*****************************************')
         console.log(YELLOW, '*******<[triggerSettlementEvent]>********')
-        console.log(MAGENTA, `* TigerBeetle: ::: ${util.inspect(swcList)} - ${settlementParticipantCurrencyStateChangeList} - ${util.inspect(enums.ledgerAccountTypes)} - ${util.inspect(tbSettlementAccounts)}`)
+        console.log(MAGENTA, `* TigerBeetle: ::: ${util.inspect(swcList)} - ${util.inspect(settlementParticipantCurrencyStateChangeList)} - ${util.inspect(enums.ledgerAccountTypes)} - ${util.inspect(tbSettlementAccounts)}`)
         console.log(MAGENTA, '*****************************************')
         if (tbEnabled) {
           // TODO ensure the following exists:
