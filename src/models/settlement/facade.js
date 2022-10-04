@@ -1623,7 +1623,7 @@ const Facade = {
               swc.currencyId
             )
           }
-          console.log(YELLOW, `TigerBeetle: [triggerSettlementEvent] -> CREATE SETTLEMENT ACCOUNTS[${tbSettlementAccounts.length}:${settlementId}:${enums.ledgerAccountTypes.SETTLEMENT}].`)
+          console.log(YELLOW, `TigerBeetle: [triggerSettlementEvent] -> CREATE SETTLEMENT ACCOUNTS[Count-${tbSettlementAccounts.length}:Sid-${settlementId}:Type-${enums.ledgerAccountTypes.SETTLEMENT}].`)
           await Tb.tbCreateSettlementAccounts(
             enums,
             tbSettlementAccounts,

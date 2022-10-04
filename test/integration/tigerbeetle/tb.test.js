@@ -38,10 +38,10 @@ const TIGERBEETLE_CLUSTER = 1
 
 // TEST DATA:
 const settlementAccounts = [
-  { participantCurrencyId: 1 },
-  { participantCurrencyId: 2 },
-  { participantCurrencyId: 3 },
-  { participantCurrencyId: 4 }
+  { participantCurrencyId: 101 },
+  { participantCurrencyId: 102 },
+  { participantCurrencyId: 103 },
+  { participantCurrencyId: 104 }
 ]
 
 const currencyAed = 'AED'
@@ -113,9 +113,9 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
         const resultHubAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyAed)
         test.deepEqual(resultHubAcc.length, 0, `create multilateral account for hub currency [${currencyAed}]`)
         const hubAccLookedUp = await Tb.tbLookupHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyAed)
-        test.ok(hubAccLookedUp.id > 0, 'usd: hub multilateral account lookup successful')
-        test.deepEqual(hubAccLookedUp.code, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, 'usd: account multilateral code match')
-        test.deepEqual(hubAccLookedUp.ledger, 784, 'usd: currency for multilateral lookup match')
+        test.ok(hubAccLookedUp.id > 0, 'aed: hub multilateral account lookup successful')
+        test.deepEqual(hubAccLookedUp.code, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, 'aed: account multilateral code match')
+        test.deepEqual(hubAccLookedUp.ledger, 784, 'aed: currency for multilateral lookup match')
 
         const resultReconAcc = await Tb.tbCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyAed)
         test.deepEqual(resultReconAcc.length, 0, `create recon account for hub currency [${currencyAed}]`)
@@ -126,17 +126,17 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
 
         // Make use of the combined service:
         const combinedCreateAnother = await Tb.tbLookupCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyZar)
-        test.ok(combinedCreateAnother.id > 0, 'usd: hub multilateral account lookup successful')
-        test.deepEqual(combinedCreateAnother.code, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, 'usd: account multilateral code match')
-        test.deepEqual(combinedCreateAnother.ledger, 710, 'usd: currency for multilateral lookup match')
+        test.ok(combinedCreateAnother.id > 0, 'aed: hub multilateral account lookup successful')
+        test.deepEqual(combinedCreateAnother.code, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, 'aed: account multilateral code match')
+        test.deepEqual(combinedCreateAnother.ledger, 710, 'aed: currency for multilateral lookup match')
 
         const combinedCreateAnotherLookup = await Tb.tbLookupCreateSettlementHubAccount(hubId, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyZar)
-        test.ok(combinedCreateAnotherLookup.id > 0, '2nd-usd: hub multilateral account lookup successful')
-        test.deepEqual(combinedCreateAnotherLookup.code, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, '2nd-usd: account multilateral code match')
-        test.deepEqual(combinedCreateAnotherLookup.ledger, 710, '2nd-usd: currency for multilateral lookup match')
+        test.ok(combinedCreateAnotherLookup.id > 0, '2nd-aed: hub multilateral account lookup successful')
+        test.deepEqual(combinedCreateAnotherLookup.code, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, '2nd-aed: account multilateral code match')
+        test.deepEqual(combinedCreateAnotherLookup.ledger, 710, '2nd-aed: currency for multilateral lookup match')
 
         // Create Settlement accounts:
-        const settlementId = 1
+        const settlementId = 100
         const result = await Tb.tbCreateSettlementAccounts(
           enums,
           settlementAccounts,
