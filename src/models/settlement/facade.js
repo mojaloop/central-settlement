@@ -1611,7 +1611,8 @@ const Facade = {
         if (tbEnabled) {
           // TODO ensure the following exists:
           // TODO 1. HUB_RECONCILIATION            -> Config.HUB_ID (participant-id)
-          /* for (const swc of swcList) {
+          for (const swc of swcList) {
+            console.log(YELLOW, '*******<[tbLookupCreateSettlementHubAccount]>********')
             console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB RECON ACCOUNT[${TB_HUB_ID}:${swc.currencyId}:${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
             await Tb.tbLookupCreateSettlementHubAccount(
               TB_HUB_ID,
@@ -1625,7 +1626,7 @@ const Facade = {
               swc.currencyId
             )
           }
-          console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE SETTLEMENT ACCOUNTS[${tbSettlementAccounts.length}:${settlementId}:${enums.ledgerAccountTypes.SETTLEMENT}].`)
+          /* console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE SETTLEMENT ACCOUNTS[${tbSettlementAccounts.length}:${settlementId}:${enums.ledgerAccountTypes.SETTLEMENT}].`)
           await Tb.tbCreateSettlementAccounts(
             enums,
             tbSettlementAccounts,
