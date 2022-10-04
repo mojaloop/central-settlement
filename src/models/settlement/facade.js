@@ -187,7 +187,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
       }
 
       console.log(TURQUOISE, 'TigerBeetle: [settlementTransfersPrepare] :::')
-      if (Config.TIGERBEETLE.enabled) {
+      if (!Config.TIGERBEETLE.enabled && Config.TIGERBEETLE.enabled) {
         console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> FETCH HUB ACCOUNT[${TB_HUB_ID}:${t.currency}:${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
         // TODO @jason lookup once...
         // TODO @jason amounts need to be converted...
@@ -389,7 +389,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             .transacting(trx)
 
           console.log(BLUE, 'TigerBeetle: [settlementTransfersReserve] :::')
-          if (Config.TIGERBEETLE.enabled) {
+          if (!Config.TIGERBEETLE.enabled && Config.TIGERBEETLE.enabled) {
             console.log(BLUE, `TigerBeetle: [settlementTransfersReserve] -> FETCH HUB ACCOUNT[${currencyId}].`)
             // TODO lookup once...
             const hubReconAcc = await Tb.tbLookupHubAccount(
@@ -611,7 +611,7 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
             .transacting(trx)
 
           console.log('\x1b[41m%s\x1b[0m', 'TigerBeetle: [settlementTransfersAbort] :::')
-          if (Config.TIGERBEETLE.enabled) {
+          if (!Config.TIGERBEETLE.enabled && Config.TIGERBEETLE.enabled) {
             // TODO lookup once...
             /* const hubReconAcc = await Tb.tbLookupHubAccount(
               TB_HUB_ID,
@@ -802,7 +802,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
           await Utility.produceGeneralMessage(Utility.ENUMS.NOTIFICATION, Utility.ENUMS.EVENT, message, Utility.ENUMS.STATE.SUCCESS)
 
           console.log(GREEN, 'TigerBeetle: [settlementTransfersCommit] -> :::')
-          if (Config.TIGERBEETLE.enabled) {
+          if (!Config.TIGERBEETLE.enabled && Config.TIGERBEETLE.enabled) {
             // TODO lookup once...
             /* const hubReconAcc = await Tb.tbLookupHubAccount(
               TB_HUB_ID,
