@@ -204,17 +204,31 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
         )
         const amountMinorDen = parseInt(`${t.netAmount * 100}`, 10)
         console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> SETTLEMENT PREPARE[Sid-${settlementId}:SetTxnId-${t.settlementTransferId}:TxnId-${t.transferId}:Amt-${t.netAmount}:${amountMinorDen}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)}`)
-        await Tb.tbSettlementPreparationTransfer(
-          enums,
-          t.settlementTransferId,
-          t.settlementTransferId, // t.transferId,
-          settlementId,
-          hubReconAcc.id,
-          hubMultilateral.id,
-          t.participantCurrencyId,
-          t.currencyId,
-          amountMinorDen
-        )
+        if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_SENDER) {
+          await Tb.tbSettlementPreparationTransfer(
+            enums,
+            t.settlementTransferId,
+            t.settlementTransferId, // t.transferId,
+            settlementId,
+            hubReconAcc.id,
+            hubMultilateral.id,
+            t.participantCurrencyId,
+            t.currencyId,
+            amountMinorDen
+          )
+        } else if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_RECIPIENT) {
+          await Tb.tbSettlementPreparationTransfer(
+            enums,
+            t.settlementTransferId,
+            t.settlementTransferId, // t.transferId,
+            settlementId,
+            hubMultilateral.id,
+            hubReconAcc.id,
+            t.participantCurrencyId,
+            t.currencyId,
+            amountMinorDen * -1
+          )
+        }
       }
 
       // Insert transferParticipant records
