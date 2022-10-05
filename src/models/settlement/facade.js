@@ -212,7 +212,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           hubMultilateral.id,
           t.participantCurrencyId,
           t.currencyId,
-          t.netAmount
+          parseInt(t.netAmount * 100)
         )
       }
 
