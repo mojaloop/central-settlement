@@ -202,7 +202,8 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
           t.currencyId
         )
-        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> SETTLEMENT PREPARE[Sid-${settlementId}:SetTxnId-${t.settlementTransferId}:TxnId-${t.transferId}:Amt-${t.netAmount}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)}`)
+        const amountMinorDen = parseInt(`${t.netAmount * 100}`, 10)
+        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> SETTLEMENT PREPARE[Sid-${settlementId}:SetTxnId-${t.settlementTransferId}:TxnId-${t.transferId}:Amt-${t.netAmount}:${amountMinorDen}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)}`)
         await Tb.tbSettlementPreparationTransfer(
           enums,
           t.settlementTransferId,
@@ -212,7 +213,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           hubMultilateral.id,
           t.participantCurrencyId,
           t.currencyId,
-          parseInt(t.netAmount * 100)
+          amountMinorDen
         )
       }
 
