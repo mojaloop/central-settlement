@@ -186,11 +186,10 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
         ledgerEntryTypeId = enums.ledgerEntryTypes.SETTLEMENT_NET_ZERO
       }
 
-      console.log(TURQUOISE, 'TigerBeetle: [settlementTransfersPrepare] :::')
       if (Config.TIGERBEETLE.enabled) {
+        console.log(YELLOW, '********TigerBeetle - BEGIN - ***********************')
+        console.log(TURQUOISE, '*******<[settlementTransfersPrepare]>********')
         console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> FETCH HUB ACCOUNT[${TB_HUB_ID}:${t.currencyId}:${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
-        // TODO @jason lookup once...
-        // TODO @jason amounts need to be converted...
         const hubReconAcc = await Tb.tbLookupHubAccount(
           TB_HUB_ID,
           enums.ledgerAccountTypes.HUB_RECONCILIATION,
@@ -203,9 +202,9 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           t.currencyId
         )
         const amountMinorDen = parseInt(`${t.netAmount * 100}`, 10)
-        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> SETTLEMENT PREPARE[Sid-${settlementId}:SetTxnId-${t.settlementTransferId}:TxnId-${t.transferId}:Amt-${t.netAmount}:${amountMinorDen}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)}`)
+        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> SETTLEMENT PREPARE[Sid-${settlementId}:SetTxnId-${t.settlementTransferId}:TxnId-${t.transferId}:Amt-${t.netAmount}:${amountMinorDen}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)} - DFSP-${t.participantCurrencyId}`)
         if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_SENDER) {
-          await Tb.tbSettlementPreparationTransfer(
+          /* await Tb.tbSettlementPreparationTransfer(
             enums,
             t.settlementTransferId,
             t.settlementTransferId, // t.transferId,
@@ -215,9 +214,9 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             t.participantCurrencyId,
             t.currencyId,
             amountMinorDen
-          )
+          ) */
         } else if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_RECIPIENT) {
-          await Tb.tbSettlementPreparationTransfer(
+          /* await Tb.tbSettlementPreparationTransfer(
             enums,
             t.settlementTransferId,
             t.settlementTransferId, // t.transferId,
@@ -227,9 +226,10 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             t.participantCurrencyId,
             t.currencyId,
             amountMinorDen * -1
-          )
+          ) */
         }
       }
+      console.log(YELLOW, '********TigerBeetle - END - *************************')
 
       // Insert transferParticipant records
       await knex('transferParticipant')
@@ -403,8 +403,9 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             })
             .transacting(trx)
 
-          console.log(BLUE, 'TigerBeetle: [settlementTransfersReserve] :::')
-          if (!Config.TIGERBEETLE.enabled && Config.TIGERBEETLE.enabled) {
+          if (Config.TIGERBEETLE.enabled) {
+            console.log(YELLOW, '********TigerBeetle - BEGIN - ***********************')
+            console.log(BLUE, '*******<[settlementTransfersReserve]>********')
             console.log(BLUE, `TigerBeetle: [settlementTransfersReserve] -> FETCH HUB ACCOUNT[${currencyId}].`)
             // TODO lookup once...
             const hubReconAcc = await Tb.tbLookupHubAccount(
@@ -419,8 +420,8 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
               enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
               currencyId
             )
-            console.log(BLUE, `TigerBeetle: [settlementTransfersReserve] -> SETTLEMENT PREPARE[${settlementId}:${transferId}:${dfspAmount}].`)
-            await Tb.tbSettlementTransferReserve(
+            console.log(BLUE, `TigerBeetle: [settlementTransfersReserve] -> SETTLEMENT PREPARE[Sid-${settlementId}:TxnId-${transferId}:Amt-${dfspAmount}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)} - DFSP-${dfspAccountId}`)
+            /* TODO await Tb.tbSettlementTransferReserve(
               enums,
               transferId,
               settlementId,
@@ -428,8 +429,9 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
               hubMultilateral.id,
               hubReconAcc.id,
               currencyId,
-              dfspAmount// TODO need to likely convert...
-            )
+              dfspAmount
+            ) */
+            console.log(YELLOW, '********TigerBeetle - END - *************************')
           }
 
           // Send notification for position change
@@ -1619,26 +1621,24 @@ const Facade = {
             .update({ currentStateChangeId: settlementParticipantCurrencyStateChangeIdList[index] }))
         }
 
-        console.log(YELLOW, '*****************************************')
-        // console.log(MAGENTA, `* TigerBeetle: ::: ${util.inspect(swcList)} - ${util.inspect(settlementParticipantCurrencyStateChangeList)} - ${util.inspect(enums.ledgerAccountTypes)} - ${util.inspect(tbSettlementAccounts)}`)
-        // console.log(MAGENTA, '*****************************************')
         if (tbEnabled) {
+          console.log(YELLOW, '********TigerBeetle - BEGIN - ***********************')
+          console.log(MAGENTA, '*******<[triggerSettlementEvent]>********')
           for (const swc of swcList) {
-            console.log(MAGENTA, '*******<[tbLookupCreateSettlementHubAccount]>********')
-            console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB RECON ACCOUNT[${TB_HUB_ID}:${swc.currencyId}:${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
+            console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB RECON ACCOUNT[${swc.currencyId}:HUB_RECONCILIATION-${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
             await Tb.tbLookupCreateSettlementHubAccount(
               TB_HUB_ID,
               enums.ledgerAccountTypes.HUB_RECONCILIATION,
               swc.currencyId
             )
-            console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB MULTILATERAL ACCOUNT[${TB_HUB_ID}:${swc.currencyId}:${enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT}].`)
+            console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB MULTILATERAL ACCOUNT[${swc.currencyId}:HUB_MULTILATERAL_SETTLEMENT-${enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT}].`)
             await Tb.tbLookupCreateSettlementHubAccount(
               TB_HUB_ID,
               enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
               swc.currencyId
             )
           }
-          console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE SETTLEMENT ACCOUNTS[Count-${tbSettlementAccounts.length}:Sid-${settlementId}:Type-${enums.ledgerAccountTypes.SETTLEMENT}].`)
+          console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE SETTLEMENT ACCOUNTS[Count-${tbSettlementAccounts.length}:Sid-${settlementId}:SETTLEMENT-${enums.ledgerAccountTypes.SETTLEMENT}].`)
           await Tb.tbCreateSettlementAccounts(
             enums,
             tbSettlementAccounts,
@@ -1646,6 +1646,7 @@ const Facade = {
             swcList[0].currencyId,
             false // Debits may exceed credits
           )
+          console.log(YELLOW, '********TigerBeetle - END - *************************')
         }
         await Promise.all(updatePromises)
 
