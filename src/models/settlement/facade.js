@@ -421,7 +421,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
               currencyId
             )
             console.log(BLUE, `TigerBeetle: [settlementTransfersReserve] -> SETTLEMENT PREPARE[Sid-${settlementId}:TxnId-${transferId}:Amt-${dfspAmount}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)} - DFSP-${dfspAccountId}`)
-            /* TODO await Tb.tbSettlementTransferReserve(
+            await Tb.tbSettlementTransferReserve(
               enums,
               transferId,
               settlementId,
@@ -430,7 +430,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
               hubReconAcc.id,
               currencyId,
               dfspAmount
-            ) */
+            )
             console.log(YELLOW, '******** TigerBeetle - END - ************************\n')
           }
 
