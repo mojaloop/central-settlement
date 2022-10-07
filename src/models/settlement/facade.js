@@ -420,7 +420,9 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
               enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
               currencyId
             )
-            console.log(BLUE, `TigerBeetle: [settlementTransfersReserve] -> SETTLEMENT PREPARE[Sid-${settlementId}:TxnId-${transferId}:Amt-${dfspAmount}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)} - DFSP-${dfspAccountId}`)
+
+            const amountMinorDen = parseInt(`${dfspAmount * 100}`, 10)
+            console.log(BLUE, `TigerBeetle: [settlementTransfersReserve] -> SETTLEMENT PREPARE[Sid-${settlementId}:TxnId-${transferId}:Amt-${dfspAmount}:${amountMinorDen}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)} - DFSP-${dfspAccountId}`)
             await Tb.tbSettlementTransferReserve(
               enums,
               transferId,
@@ -429,7 +431,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
               hubMultilateral.id,
               hubReconAcc.id,
               currencyId,
-              dfspAmount
+              amountMinorDen
             )
             console.log(YELLOW, '******** TigerBeetle - END - ************************\n')
           }
