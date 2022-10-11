@@ -462,29 +462,29 @@ const enumLabelFromCode = (resultEnum, errCode) => {
 
 const printHubAccountInfo = async (color, id, accountType = 2, currencyTxt = 'USD') => {
   const accToPrint = await tbLookupHubAccount(id, accountType, currencyTxt)
-  await printAccountInfo(color, accToPrint)
+  await printAccountInfo(color, id, accToPrint)
 }
 
 const printSettlementAccountInfo = async (color, participantCurrencyId, settlementId) => {
   const accToPrint = await tbLookupSettlementAccount(participantCurrencyId, settlementId)
-  await printAccountInfo(color, accToPrint)
+  await printAccountInfo(color, participantCurrencyId, accToPrint)
 }
 
-const printAccountInfo = async (color, account) => {
+const printAccountInfo = async (color, participantCurrencyId, account) => {
   const accType = account.code
-  var accTypeDesc = 'POSITION'
+  let accTypeDesc = 'POSITION'
   switch (accType) {
     case 2: accTypeDesc = 'SETTLEMENT'
-    break
+      break
     case 3: accTypeDesc = 'HUB_RECONCILIATION'
-    break
+      break
     case 4: accTypeDesc = 'HUB_MULTILATERAL_SETTLEMENT'
-    break
+      break
   }
   const currDesc = obtainCurrencyFromLedger(account.ledger)
 
   // ${util.inspect(account)}
-  console.log(color, `AccountInfo - ID[${accTypeDesc}:${currDesc}:${account.id}] ->\n- Debits_Pending  : ${account.debits_pending}\n- Debits_Posted   : ${account.debits_posted}\n- Credits_Pending : ${account.credits_pending}\n- Credits_Posted  : ${account.credits_posted}\n- PENDING BALANCE : ${account.credits_pending - account.debits_pending}\n- POSTED BALANCE  : ${account.credits_posted - account.debits_posted}`)
+  console.log(color, `AccountInfo - ID[${accTypeDesc}:${currDesc}:TB[${account.id}]MJL[${participantCurrencyId}]] ->\n- Debits_Pending  : ${account.debits_pending}\n- Debits_Posted   : ${account.debits_posted}\n- Credits_Pending : ${account.credits_pending}\n- Credits_Posted  : ${account.credits_posted}\n- PENDING BALANCE : ${account.credits_pending - account.debits_pending}\n- POSTED BALANCE  : ${account.credits_posted - account.debits_posted}`)
 }
 
 module.exports = {
