@@ -189,20 +189,20 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
       if (Config.TIGERBEETLE.enabled) {
         console.log(YELLOW, '\n******** TigerBeetle - BEGIN - **********************')
         console.log(TURQUOISE, '*******<[settlementTransfersPrepare]>********')
-        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> FETCH HUB ACCOUNT[${t.currencyId}:HUB_RECONCILIATION-${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
+        // console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> FETCH HUB ACCOUNT[${t.currencyId}:HUB_RECONCILIATION-${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
         const hubReconAcc = await Tb.tbLookupHubAccount(
           TB_HUB_ID,
           enums.ledgerAccountTypes.HUB_RECONCILIATION,
           t.currencyId
         )
-        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> FETCH MULTILATERAL ACCOUNT[${t.currencyId}:HUB_MULTILATERAL_SETTLEMENT-${enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT}].`)
+        // console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> FETCH MULTILATERAL ACCOUNT[${t.currencyId}:HUB_MULTILATERAL_SETTLEMENT-${enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT}].`)
         const hubMultilateral = await Tb.tbLookupHubAccount(
           TB_HUB_ID,
           enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
           t.currencyId
         )
         const amountMinorDen = parseInt(`${t.netAmount * 100}`, 10)
-        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> SETTLEMENT PREPARE[Sid-${settlementId}:SetTxnId-${t.settlementTransferId}:TxnId-${t.transferId}:Amt-${t.netAmount}:${amountMinorDen}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)} - DFSP-${t.participantCurrencyId}`)
+        // console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> SETTLEMENT PREPARE[Sid-${settlementId}:SetTxnId-${t.settlementTransferId}:TxnId-${t.transferId}:Amt-${t.netAmount}:${amountMinorDen}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)} - DFSP-${t.participantCurrencyId}`)
         if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_SENDER) {
           await Tb.tbSettlementPreparationTransfer(
             enums,
@@ -228,8 +228,12 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             amountMinorDen * -1
           )
         }
+        await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, t.currencyId)
+        await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, t.currencyId)
+        await Tb.printSettlementAccountInfo(MAGENTA, t.participantCurrencyId, settlementId)
+
+        console.log(YELLOW, '******** TigerBeetle - END - ************************\n')
       }
-      console.log(YELLOW, '******** TigerBeetle - END - ************************\n')
 
       // Insert transferParticipant records
       await knex('transferParticipant')
