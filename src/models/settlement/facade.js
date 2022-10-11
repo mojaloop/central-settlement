@@ -439,7 +439,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
 
             await Tb.printHubAccountInfo(BLUE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
             await Tb.printHubAccountInfo(BLUE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
-            await Tb.printSettlementAccountInfo(BLUE, dfspAccountId, settlementId)
+            // await Tb.printSettlementAccountInfo(BLUE, dfspAccountId, settlementId)
 
             console.log(YELLOW, '******** TigerBeetle - END - ************************\n')
           }
