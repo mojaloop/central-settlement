@@ -212,7 +212,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             settlementId,
             hubReconAcc.id,
             hubMultilateral.id,
-            t.settlementParticipantCurrencyId,
+            t.participantCurrencyId,
             t.currencyId,
             amountMinorDen
           )
@@ -224,7 +224,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             settlementId,
             hubMultilateral.id,
             hubReconAcc.id,
-            t.settlementParticipantCurrencyId,
+            t.participantCurrencyId,
             t.currencyId,
             amountMinorDen * -1
           )
@@ -1602,6 +1602,17 @@ const Facade = {
 
         // change settlementParticipantCurrency records state
         const settlementParticipantCurrencyList = await knex('settlementParticipantCurrency').select('settlementParticipantCurrencyId').where('settlementId', settlementId).transacting(trx)
+        const tbEnabled = Config.TIGERBEETLE.enabled
+        const tbSettlementAccounts = []
+        if (tbEnabled) {
+          const participantCurrencyList = await knex('settlementParticipantCurrency').select('participantCurrencyId').distinct().where('settlementId', settlementId).transacting(trx)
+          console.log(YELLOW, `\n******** TOTAL of ${util.inspect(participantCurrencyList)}`)
+          participantCurrencyList.map(value => {
+            tbSettlementAccounts.push({
+              participantCurrencyId: value.participantCurrencyId
+            })
+          })
+        }
         const settlementParticipantCurrencyIdList = []
         const settlementParticipantCurrencyStateChangeList = settlementParticipantCurrencyList.map(value => {
           settlementParticipantCurrencyIdList.push(value.settlementParticipantCurrencyId)
@@ -1613,18 +1624,16 @@ const Facade = {
           }
         })
         insertPromises = []
-        const tbSettlementAccounts = []
-        const tbEnabled = Config.TIGERBEETLE.enabled
         for (const spcsc of settlementParticipantCurrencyStateChangeList) {
           insertPromises.push(
             knex('settlementParticipantCurrencyStateChange').transacting(trx)
               .insert(spcsc)
           )
-          if (tbEnabled) {
+          /* if (tbEnabled) {
             tbSettlementAccounts.push({
               participantCurrencyId: spcsc.settlementParticipantCurrencyId
             })
-          }
+          } */
         }
         const settlementParticipantCurrencyStateChangeIdList = (await Promise.all(insertPromises)).map(v => v[0])
         updatePromises = []
