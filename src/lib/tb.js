@@ -484,7 +484,7 @@ const printAccountInfo = async (color, account) => {
   const currDesc = obtainCurrencyFromLedger(account.ledger)
 
   // ${util.inspect(account)}
-  console.log(color, `AccountInfo - ID[${accTypeDesc}:${currDesc}:${account.id}] ->\n- Debits_Pending : ${account.debits_pending}\n- Debits_Posted : ${account.debits_posted}\n- Credits_Pending : ${account.credits_pending}\n- Credits_Posted : ${account.credits_posted}`)
+  console.log(color, `AccountInfo - ID[${accTypeDesc}:${currDesc}:${account.id}] ->\n- Debits_Pending  : ${account.debits_pending}\n- Debits_Posted   : ${account.debits_posted}\n- Credits_Pending : ${account.credits_pending}\n- Credits_Posted  : ${account.credits_posted}`)
 }
 
 module.exports = {
