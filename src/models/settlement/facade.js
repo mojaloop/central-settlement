@@ -844,8 +844,11 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
               enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
               currencyId
             ) */
-            console.log(GREEN, `TigerBeetle: [settlementTransfersCommit] -> COMMIT[Sid-${settlementId}:TxnId-${transferId}].`)
-            // TODO await Tb.tbSettlementTransferCommit(transferId, settlementId)
+            // console.log(GREEN, `TigerBeetle: [settlementTransfersCommit] -> COMMIT[Sid-${settlementId}:TxnId-${transferId}].`)
+            await Tb.tbSettlementTransferCommit(transferId, settlementId)
+            await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
+            await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
+            await Tb.printSettlementAccountInfo(GREEN, dfspAccountId, settlementId)
             console.log(YELLOW, '******** TigerBeetle - END - ************************\n')
           }
         }
@@ -1611,6 +1614,7 @@ const Facade = {
             tbSettlementAccounts.push({
               participantCurrencyId: value.participantCurrencyId
             })
+            return {}
           })
         }
         const settlementParticipantCurrencyIdList = []
