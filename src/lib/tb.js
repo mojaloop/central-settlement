@@ -450,6 +450,23 @@ const enumLabelFromCode = (resultEnum, errCode) => {
   return errorEnum[errCode + ((errorEnum.length / 2) - 1)]
 }
 
+const printHubAccountInfo = async (color, id, accountType = 2, currencyTxt = 'USD') => {
+  const accToPrint = await tbLookupHubAccount(id, accountType, currencyTxt)
+  await printAccountInfo(color, accToPrint)
+}
+
+const printSettlementAccountInfo = async (color, participantCurrencyId, settlementId) => {
+  const accToPrint = await tbLookupSettlementAccount(participantCurrencyId, settlementId)
+  await printAccountInfo(color, accToPrint)
+}
+
+const printAccountInfo = async (color, account) => {
+  // ${util.inspect(account)}
+  console.log(color, `AccountInfo - ID[${account.id}]\nLedger[${account.ledger}]\nAccType[${account.code}]\n
+    Debits_Pending[${account.debits_pending}]\n
+    Debits_Posted[${account.debits_posted}]`)
+}
+
 module.exports = {
   // Accounts:
   tbCreateSettlementAccounts,
@@ -464,5 +481,7 @@ module.exports = {
   // Cleanup:
   tbDestroy,
   // Helpers:
-  tbLookupCreateSettlementHubAccount
+  tbLookupCreateSettlementHubAccount,
+  printHubAccountInfo,
+  printSettlementAccountInfo
 }

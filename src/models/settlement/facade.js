@@ -1643,7 +1643,7 @@ const Facade = {
               swc.currencyId
             )
 
-            await this.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, swc.currencyId)
+            await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, swc.currencyId)
           }
           console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE SETTLEMENT ACCOUNTS[Count-${tbSettlementAccounts.length}:Sid-${settlementId}:SETTLEMENT-${enums.ledgerAccountTypes.SETTLEMENT}].`)
           await Tb.tbCreateSettlementAccounts(
@@ -1828,23 +1828,6 @@ const Facade = {
           .where('settlementSettlementWindow.settlementId', settlementId)
       })
     }
-  },
-
-  printHubAccountInfo: async function (color, id, accountType = 2, currencyTxt = 'USD') {
-    const accToPrint = Tb.tbLookupHubAccount(id, accountType, currencyTxt)
-    await this.printAccountInfo(color, accToPrint)
-  },
-
-  printSettlementAccountInfo: async function (color, participantCurrencyId, settlementId) {
-    const accToPrint = Tb.tbLookupSettlementAccount(participantCurrencyId, settlementId)
-    await this.printAccountInfo(color, accToPrint)
-  },
-
-  printAccountInfo: async function (color, account) {
-    // ${util.inspect(account)}
-    console.log(color, `AccountInfo - ID[${account.id}]\nLedger[${account.ledger}]\nAccType[${account.code}]\n
-    Debits_Pending[${account.debits_pending}]\n
-    Debits_Posted[${account.debits_posted}]`)
   }
 }
 
