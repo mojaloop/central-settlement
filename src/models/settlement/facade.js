@@ -439,7 +439,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
 
             await Tb.printHubAccountInfo(BLUE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
             await Tb.printHubAccountInfo(BLUE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
-            // await Tb.printSettlementAccountInfo(BLUE, dfspAccountId, settlementId)
+            await Tb.printSettlementAccountInfo(BLUE, dfspAccountId, settlementId)
 
             console.log(YELLOW, '******** TigerBeetle - END - ************************\n')
           }
@@ -846,6 +846,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             ) */
             // console.log(GREEN, `TigerBeetle: [settlementTransfersCommit] -> COMMIT[Sid-${settlementId}:TxnId-${transferId}].`)
             await Tb.tbSettlementTransferCommit(transferId, settlementId)
+
             await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
             await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
             await Tb.printSettlementAccountInfo(GREEN, dfspAccountId, settlementId)
@@ -1609,7 +1610,6 @@ const Facade = {
         const tbSettlementAccounts = []
         if (tbEnabled) {
           const participantCurrencyList = await knex('settlementParticipantCurrency').select('participantCurrencyId').distinct().where('settlementId', settlementId).transacting(trx)
-          console.log(YELLOW, `\n******** TOTAL of ${util.inspect(participantCurrencyList)}`)
           participantCurrencyList.map(value => {
             tbSettlementAccounts.push({
               participantCurrencyId: value.participantCurrencyId
