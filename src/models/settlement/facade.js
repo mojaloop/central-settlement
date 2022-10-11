@@ -202,6 +202,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           t.currencyId
         )
         const amountMinorDen = parseInt(`${t.netAmount * 100}`, 10)
+        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> ${t.participantCurrencyId}-${t.settlementParticipantCurrency}`)
         // console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> SETTLEMENT PREPARE[Sid-${settlementId}:SetTxnId-${t.settlementTransferId}:TxnId-${t.transferId}:Amt-${t.netAmount}:${amountMinorDen}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)} - DFSP-${t.participantCurrencyId}`)
         if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_SENDER) {
           await Tb.tbSettlementPreparationTransfer(
@@ -211,7 +212,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             settlementId,
             hubReconAcc.id,
             hubMultilateral.id,
-            t.participantCurrencyId,
+            t.settlementParticipantCurrency,
             t.currencyId,
             amountMinorDen
           )
@@ -223,14 +224,14 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             settlementId,
             hubMultilateral.id,
             hubReconAcc.id,
-            t.participantCurrencyId,
+            t.settlementParticipantCurrency,
             t.currencyId,
             amountMinorDen * -1
           )
         }
-        await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, t.currencyId)
-        await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, t.currencyId)
-        await Tb.printSettlementAccountInfo(MAGENTA, t.participantCurrencyId, settlementId)
+        await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, t.currencyId)
+        await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, t.currencyId)
+        await Tb.printSettlementAccountInfo(TURQUOISE, t.settlementParticipantCurrency, settlementId)
 
         console.log(YELLOW, '******** TigerBeetle - END - ************************\n')
       }
