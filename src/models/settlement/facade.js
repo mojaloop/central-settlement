@@ -202,10 +202,11 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           t.currencyId
         )
         const amountMinorDen = parseInt(`${t.netAmount * 100}`, 10)
-        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> ${t.participantCurrencyId}-${t.settlementParticipantCurrencyId}`)
+        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> ParticipantCurrency:${t.participantCurrencyId}`)
         // console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> SETTLEMENT PREPARE[Sid-${settlementId}:SetTxnId-${t.settlementTransferId}:TxnId-${t.transferId}:Amt-${t.netAmount}:${amountMinorDen}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)} - DFSP-${t.participantCurrencyId}`)
+        let prepTransferResult
         if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_SENDER) {
-          await Tb.tbSettlementPreparationTransfer(
+          prepTransferResult = await Tb.tbSettlementPreparationTransfer(
             enums,
             t.settlementTransferId,
             t.settlementTransferId, // t.transferId,
@@ -217,7 +218,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             amountMinorDen
           )
         } else if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_RECIPIENT) {
-          await Tb.tbSettlementPreparationTransfer(
+          prepTransferResult = await Tb.tbSettlementPreparationTransfer(
             enums,
             t.settlementTransferId,
             t.settlementTransferId, // t.transferId,
@@ -233,6 +234,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
         await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, t.currencyId)
         await Tb.printSettlementAccountInfo(TURQUOISE, t.participantCurrencyId, settlementId)
 
+        console.log(YELLOW, `${util.inspect(prepTransferResult)}`)
         console.log(YELLOW, '******** TigerBeetle - END - ************************\n')
       }
 
@@ -426,7 +428,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
 
             const amountMinorDen = parseInt(`${dfspAmount * 100}`, 10)
             // console.log(BLUE, `TigerBeetle: [settlementTransfersReserve] -> SETTLEMENT PREPARE[Sid-${settlementId}:TxnId-${transferId}:Amt-${dfspAmount}:${amountMinorDen}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)} - DFSP-${dfspAccountId}`)
-            await Tb.tbSettlementTransferReserve(
+            const reserveResult = await Tb.tbSettlementTransferReserve(
               enums,
               transferId,
               settlementId,
@@ -441,6 +443,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             await Tb.printHubAccountInfo(BLUE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
             await Tb.printSettlementAccountInfo(BLUE, dfspAccountId, settlementId)
 
+            console.log(YELLOW, `${util.inspect(reserveResult)}`)
             console.log(YELLOW, '******** TigerBeetle - END - ************************\n')
           }
 
@@ -845,11 +848,12 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
               currencyId
             ) */
             // console.log(GREEN, `TigerBeetle: [settlementTransfersCommit] -> COMMIT[Sid-${settlementId}:TxnId-${transferId}].`)
-            await Tb.tbSettlementTransferCommit(transferId, settlementId)
+            const commitResult = await Tb.tbSettlementTransferCommit(transferId, settlementId)
 
             await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
             await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
             await Tb.printSettlementAccountInfo(GREEN, dfspAccountId, settlementId)
+            console.log(YELLOW, `${util.inspect(commitResult)}`)
             console.log(YELLOW, '******** TigerBeetle - END - ************************\n')
           }
         }
