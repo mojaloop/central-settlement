@@ -412,6 +412,16 @@ const obtainLedgerFromCurrency = (currencyTxt) => {
   }
 }
 
+const obtainCurrencyFromLedger = (currencyCode) => {
+  switch (currencyCode) {
+    case 404 : return 'KES'
+    case 710 : return 'ZAR'
+    case 784 : return 'AED'
+    case 978 : return 'EUR'
+    default : return 'USD'
+  }
+}
+
 const tbAccountIdFrom = (userData, currencyTxt, accountTypeNumeric) => {
   return sha256(`${userData}-${currencyTxt}-${accountTypeNumeric}`)
 }
@@ -461,10 +471,20 @@ const printSettlementAccountInfo = async (color, participantCurrencyId, settleme
 }
 
 const printAccountInfo = async (color, account) => {
+  const accType = account.code
+  var accTypeDesc = 'POSITION'
+  switch (accType) {
+    case 2: accTypeDesc = 'SETTLEMENT'
+    break
+    case 3: accTypeDesc = 'HUB_RECONCILIATION'
+    break
+    case 4: accTypeDesc = 'HUB_MULTILATERAL_SETTLEMENT'
+    break
+  }
+  const currDesc = obtainCurrencyFromLedger(account.ledger)
+
   // ${util.inspect(account)}
-  console.log(color, `AccountInfo - ID[${account.id}]\nLedger[${account.ledger}]\nAccType[${account.code}]\n
-    Debits_Pending[${account.debits_pending}]\n
-    Debits_Posted[${account.debits_posted}]`)
+  console.log(color, `AccountInfo - ID[${accType}:${currDesc}:${account.id}] ->\n- Debits_Pending[${account.debits_pending}]\n- Debits_Posted[${account.debits_posted}]`)
 }
 
 module.exports = {
