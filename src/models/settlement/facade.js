@@ -842,7 +842,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
             await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
             await Tb.printSettlementAccountInfo(GREEN, dfspAccountId, settlementId)
-            console.log(YELLOW, `${transferId} => ${util.inspect(commitResult)}`)
+            console.log(YELLOW, `${reservedCacheZool[0]} => ${util.inspect(commitResult)}`)
           }
         }
 
