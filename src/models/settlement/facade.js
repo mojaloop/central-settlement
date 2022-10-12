@@ -49,6 +49,8 @@ const MAGENTA = '\x1b[35m%s\x1b[0m'
 const TURQUOISE = '\x1b[36m%s\x1b[0m'
 const TB_HUB_ID = Config.HUB_ID
 
+let reservedCacheZool = []
+
 const groupByWindowsWithContent = (records) => {
   const settlementWindowsAssoc = {}
   for (const record of records) {
@@ -444,6 +446,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             await Tb.printSettlementAccountInfo(BLUE, dfspAccountId, settlementId)
 
             console.log(YELLOW, `${transferId} => ${util.inspect(reserveResult)}`)
+            reservedCacheZool.push(transferId)
             console.log(YELLOW, '******** TigerBeetle - END - ************************\n')
           }
 
@@ -835,7 +838,8 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             console.log(YELLOW, '\n******** TigerBeetle - BEGIN - **********************')
             console.log(GREEN, '*******<[settlementTransfersCommit]>********')
 
-            const commitResult = await Tb.tbSettlementTransferCommit(transferId, settlementId)
+            const commitResult = await Tb.tbSettlementTransferCommit(reservedCacheZool[0], settlementId)
+            reservedCacheZool = []
 
             await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
             await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
