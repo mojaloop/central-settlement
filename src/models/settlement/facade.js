@@ -189,7 +189,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
       }
 
       if (Config.TIGERBEETLE.enabled) {
-        console.log(YELLOW, '\n******** TigerBeetle - BEGIN - **********************')
+        console.log(YELLOW, '\n******** TigerBeetle - OUTPUT - **********************')
         console.log(TURQUOISE, '*******<[settlementTransfersPrepare]>********')
         // console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> FETCH HUB ACCOUNT[${t.currencyId}:HUB_RECONCILIATION-${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
         const hubReconAcc = await Tb.tbLookupHubAccount(
@@ -237,7 +237,6 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
         await Tb.printSettlementAccountInfo(TURQUOISE, t.participantCurrencyId, settlementId)
 
         console.log(YELLOW, `${util.inspect(prepTransferResult)}`)
-        console.log(YELLOW, '******** TigerBeetle - END - ************************\n')
       }
 
       // Insert transferParticipant records
@@ -413,7 +412,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             .transacting(trx)
 
           if (Config.TIGERBEETLE.enabled) {
-            console.log(YELLOW, '\n******** TigerBeetle - BEGIN - **********************')
+            console.log(YELLOW, '\n******** TigerBeetle - OUTPUT - **********************')
             console.log(BLUE, '*******<[settlementTransfersReserve]>********')
             // console.log(BLUE, `TigerBeetle: [settlementTransfersReserve] -> FETCH HUB ACCOUNT[${currencyId}].`)
             const hubReconAcc = await Tb.tbLookupHubAccount(
@@ -447,7 +446,6 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
 
             console.log(YELLOW, `${transferId} => ${util.inspect(reserveResult)}`)
             reservedCacheZool.push(transferId)
-            console.log(YELLOW, '******** TigerBeetle - END - ************************\n')
           }
 
           // Send notification for position change
@@ -835,7 +833,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
           await Utility.produceGeneralMessage(Utility.ENUMS.NOTIFICATION, Utility.ENUMS.EVENT, message, Utility.ENUMS.STATE.SUCCESS)
 
           if (Config.TIGERBEETLE.enabled) {
-            console.log(YELLOW, '\n******** TigerBeetle - BEGIN - **********************')
+            console.log(YELLOW, '\n******** TigerBeetle - OUTPUT - **********************')
             console.log(GREEN, '*******<[settlementTransfersCommit]>********')
 
             const commitResult = await Tb.tbSettlementTransferCommit(reservedCacheZool[0], settlementId)
@@ -845,7 +843,6 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
             await Tb.printSettlementAccountInfo(GREEN, dfspAccountId, settlementId)
             console.log(YELLOW, `${transferId} => ${util.inspect(commitResult)}`)
-            console.log(YELLOW, '******** TigerBeetle - END - ************************\n')
           }
         }
 
@@ -1643,7 +1640,7 @@ const Facade = {
         }
 
         if (tbEnabled) {
-          console.log(YELLOW, '\n******** TigerBeetle - BEGIN - **********************')
+          console.log(YELLOW, '\n******** TigerBeetle - OUTPUT - **********************')
           console.log(MAGENTA, '*******<[triggerSettlementEvent]>********')
           for (const swc of swcList) {
             // console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB RECON ACCOUNT[${swc.currencyId}:HUB_RECONCILIATION-${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
@@ -1673,7 +1670,6 @@ const Facade = {
           for (const accIter of tbSettlementAccounts) {
             await Tb.printSettlementAccountInfo(MAGENTA, accIter.participantCurrencyId, settlementId)
           }
-          console.log(YELLOW, '******** TigerBeetle - END - ************************\n')
         }
         await Promise.all(updatePromises)
 
