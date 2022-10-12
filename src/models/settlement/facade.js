@@ -50,6 +50,7 @@ const TURQUOISE = '\x1b[36m%s\x1b[0m'
 const TB_HUB_ID = Config.HUB_ID
 
 let reservedCacheZool = []
+let reservedCachePool = []
 
 const groupByWindowsWithContent = (records) => {
   const settlementWindowsAssoc = {}
@@ -446,6 +447,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
 
             console.log(YELLOW, `${transferId} => ${util.inspect(reserveResult)}`)
             reservedCacheZool.push(transferId)
+            reservedCachePool.push(dfspAccountId)
           }
 
           // Send notification for position change
@@ -836,13 +838,16 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             console.log(YELLOW, '\n******** TigerBeetle - OUTPUT - **********************')
             console.log(GREEN, '*******<[settlementTransfersCommit]>********')
 
+            // const commitResult = await Tb.tbSettlementTransferCommit(transferId, settlementId)
             const commitResult = await Tb.tbSettlementTransferCommit(reservedCacheZool[0], settlementId)
 
             await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
             await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
-            await Tb.printSettlementAccountInfo(GREEN, dfspAccountId, settlementId)
+            // await Tb.printSettlementAccountInfo(GREEN, dfspAccountId, settlementId)
+            await Tb.printSettlementAccountInfo(GREEN, reservedCachePool[0], settlementId)
             console.log(YELLOW, `${reservedCacheZool[0]} => ${util.inspect(commitResult)}`)
             reservedCacheZool = []
+            reservedCachePool = []
           }
         }
 
