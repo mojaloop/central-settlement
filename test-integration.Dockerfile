@@ -22,8 +22,12 @@ COPY README.md /opt/app
 
 COPY tigerbeetle /opt/app
 RUN chmod 777 /opt/app/tigerbeetle
-RUN /opt/app/tigerbeetle format --cluster=1 --replica=0 /opt/app/1_0.tigerbeetle
+# TigerBeetle LSM:
+# RUN /opt/app/tigerbeetle format --cluster=1 --replica=0 /opt/app/1_0.tigerbeetle
 # RUN /opt/app/tigerbeetle start --addresses=5001 /opt/app/1_0.tigerbeetle &
+# TigerBeetle Old:
+RUN /opt/app/tigerbeetle init --cluster=1 --replica=0 --directory=.
+# ./tigerbeetle start --cluster=1 --replica=0 --directory=. --addresses=3001
 
 # DEBUG
 # RUN ps -ef
