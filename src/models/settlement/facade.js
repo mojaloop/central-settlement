@@ -1648,18 +1648,18 @@ const Facade = {
           console.log(YELLOW, '\n******** TigerBeetle - OUTPUT - **********************')
           console.log(MAGENTA, '*******<[triggerSettlementEvent]>********')
           for (const swc of swcList) {
-            // console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB RECON ACCOUNT[${swc.currencyId}:HUB_RECONCILIATION-${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
             await Tb.tbLookupCreateSettlementHubAccount(
               TB_HUB_ID,
               enums.ledgerAccountTypes.HUB_RECONCILIATION,
               swc.currencyId
             )
-            // console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE HUB MULTILATERAL ACCOUNT[${swc.currencyId}:HUB_MULTILATERAL_SETTLEMENT-${enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT}].`)
             await Tb.tbLookupCreateSettlementHubAccount(
               TB_HUB_ID,
               enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
               swc.currencyId
             )
+
+            console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> ${util.inspect(swc)}.`)
 
             await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, swc.currencyId)
             await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, swc.currencyId)
