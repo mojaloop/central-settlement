@@ -1548,7 +1548,7 @@ const Facade = {
 
         if (settlementModel.currencyId === null) { // Default settlement model
           const allSettlementModels = await SettlementModelModel.getAll()
-          console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> ${util.inspect(allSettlementModels)}`)
+          console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] [SETTLEMENT_MODELS] -> ${util.inspect(allSettlementModels)}`)
 
           const settlementModelCurrenciesList = allSettlementModels.filter(record => record.currencyId !== null).map(record => record.currencyId)
           swcList = swcList.filter(swc => !settlementModelCurrenciesList.includes(swc.currencyId))
