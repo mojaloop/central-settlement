@@ -1548,6 +1548,8 @@ const Facade = {
 
         if (settlementModel.currencyId === null) { // Default settlement model
           const allSettlementModels = await SettlementModelModel.getAll()
+          console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> ${util.inspect(allSettlementModels)}`)
+
           const settlementModelCurrenciesList = allSettlementModels.filter(record => record.currencyId !== null).map(record => record.currencyId)
           swcList = swcList.filter(swc => !settlementModelCurrenciesList.includes(swc.currencyId))
         }
@@ -1659,7 +1661,7 @@ const Facade = {
               swc.currencyId
             )
 
-            console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> ${util.inspect(swc)}.`)
+            console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> SettlementWindowId[${swc.settlementWindowId}], Reason[${swc.reason}], Created[${swc.createdDate}], SettlementModelId[${swc.SettlementModelId}]`)
 
             await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, swc.currencyId)
             await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, swc.currencyId)
