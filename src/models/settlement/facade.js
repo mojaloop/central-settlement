@@ -192,13 +192,11 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
       if (Config.TIGERBEETLE.enabled) {
         console.log(YELLOW, '\n******** TigerBeetle - OUTPUT - **********************')
         console.log(TURQUOISE, '*******<[settlementTransfersPrepare]>********')
-        // console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> FETCH HUB ACCOUNT[${t.currencyId}:HUB_RECONCILIATION-${enums.ledgerAccountTypes.HUB_RECONCILIATION}].`)
         const hubReconAcc = await Tb.tbLookupHubAccount(
           TB_HUB_ID,
           enums.ledgerAccountTypes.HUB_RECONCILIATION,
           t.currencyId
         )
-        // console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> FETCH MULTILATERAL ACCOUNT[${t.currencyId}:HUB_MULTILATERAL_SETTLEMENT-${enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT}].`)
         const hubMultilateral = await Tb.tbLookupHubAccount(
           TB_HUB_ID,
           enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
@@ -206,7 +204,6 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
         )
         const amountMinorDen = parseInt(`${t.netAmount * 100}`, 10)
         console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> ParticipantCurrency:${t.participantCurrencyId}`)
-        // console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> SETTLEMENT PREPARE[Sid-${settlementId}:SetTxnId-${t.settlementTransferId}:TxnId-${t.transferId}:Amt-${t.netAmount}:${amountMinorDen}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)} - DFSP-${t.participantCurrencyId}`)
         let prepTransferResult
         if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_SENDER) {
           prepTransferResult = await Tb.tbSettlementPreparationTransfer(

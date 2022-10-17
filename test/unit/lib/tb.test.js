@@ -58,7 +58,7 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
   tigerBeetleTest.ok(Config.TIGERBEETLE !== undefined, 'config [TIGERBEETLE] not undefined')
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enabled, false, 'tigerbeetle enabled')
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enableBatching, false, 'batching not enabled')
-  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.disableSQL, false, 'sql not disabled')
+  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.disableSQL, false, 'sql enabled')
   tigerBeetleTest.ok(Config.TIGERBEETLE.batchMaxSize < 10_000, 'batches less than 10k')
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.cluster, 1, 'cluster value [1]')
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.replicaEndpoint01, 5001, 'first replicate port')
