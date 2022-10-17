@@ -228,10 +228,18 @@ const tbSettlementPreparationTransfer = async (
   const client = await getTBClient()
 
   const currencyU16 = obtainLedgerFromCurrency(currencyTxt)
+
+  let debitAccIdHub = BigInt(drParticipantCurrencyIdHubRecon)
+  let creditAccIdHub = BigInt(crDrParticipantCurrencyIdHubMultilateral)
+  if (payee) {
+    debitAccIdHub = BigInt(crDrParticipantCurrencyIdHubMultilateral)
+    creditAccIdHub = BigInt(drParticipantCurrencyIdHubRecon)
+  }
+
   const transferRecon = {
     id: uuidToBigInt(settlementTransferId), // u128
-    debit_account_id: BigInt(drParticipantCurrencyIdHubRecon), // u128
-    credit_account_id: BigInt(crDrParticipantCurrencyIdHubMultilateral), // u128
+    debit_account_id: debitAccIdHub, // u128
+    credit_account_id: creditAccIdHub, // u128
     user_data: BigInt(settlementId),
     reserved: BigInt(0),
     pending_id: 0n,
