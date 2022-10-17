@@ -204,9 +204,9 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           t.currencyId
         )
         const amountMinorDen = parseInt(`${t.netAmount * 100}`, 10)
-        console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare] -> ParticipantCurrency:${t.participantCurrencyId}`)
         let prepTransferResult
         if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_SENDER) {
+          console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare-SETTLEMENT_NET_SENDER] -> ParticipantCurrency:${t.participantCurrencyId}`)
           prepTransferResult = await Tb.tbSettlementPreparationTransfer(
             enums,
             t.settlementTransferId,
@@ -219,6 +219,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             amountMinorDen
           )
         } else if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_RECIPIENT) {
+          console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare-SETTLEMENT_NET_RECIPIENT] -> ParticipantCurrency:${t.participantCurrencyId}`)
           prepTransferResult = await Tb.tbSettlementPreparationTransfer(
             enums,
             t.settlementTransferId,
