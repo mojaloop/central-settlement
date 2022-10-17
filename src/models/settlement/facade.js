@@ -224,9 +224,9 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             enums,
             t.settlementTransferId,
             t.settlementTransferId, // t.transferId,
-            settlementId,
-            hubMultilateral.id,
             hubReconAcc.id,
+            hubMultilateral.id,
+            settlementId,
             t.participantCurrencyId,
             t.currencyId,
             amountMinorDen * -1
