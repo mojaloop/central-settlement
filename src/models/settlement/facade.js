@@ -44,7 +44,7 @@ const util = require('util')
 
 const GREEN = '\x1b[32m%s\x1b[0m'
 const YELLOW = '\x1b[33m%s\x1b[0m'
-const BLUE = '\x1b[90m%s\x1b[0m'
+const GREY = '\x1b[90m%s\x1b[0m'
 const MAGENTA = '\x1b[35m%s\x1b[0m'
 const TURQUOISE = '\x1b[36m%s\x1b[0m'
 const TB_HUB_ID = Config.HUB_ID
@@ -190,7 +190,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
       }
 
       if (Config.TIGERBEETLE.enabled) {
-        console.log(YELLOW, '\n******** TigerBeetle - OUTPUT - **********************')
+        console.log(GREY, '\n******** TigerBeetle - OUTPUT - **********************')
         console.log(TURQUOISE, '*******<[settlementTransfersPrepare]>********')
         const hubReconAcc = await Tb.tbLookupHubAccount(
           TB_HUB_ID,
@@ -234,7 +234,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
         // await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, t.currencyId)
         await Tb.printSettlementAccountInfo(TURQUOISE, t.participantCurrencyId, settlementId)
 
-        console.log(YELLOW, `${util.inspect(prepTransferResult)}`)
+        console.log(GREY, `${util.inspect(prepTransferResult)}`)
       }
 
       // Insert transferParticipant records
@@ -410,15 +410,15 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             .transacting(trx)
 
           if (Config.TIGERBEETLE.enabled) {
-            console.log(YELLOW, '\n******** TigerBeetle - OUTPUT - **********************')
-            console.log(BLUE, '*******<[settlementTransfersReserve]>********')
-            // console.log(BLUE, `TigerBeetle: [settlementTransfersReserve] -> FETCH HUB ACCOUNT[${currencyId}].`)
+            console.log(GREY, '\n******** TigerBeetle - OUTPUT - **********************')
+            console.log(YELLOW, '*******<[settlementTransfersReserve]>********')
+            // console.log(GREY, `TigerBeetle: [settlementTransfersReserve] -> FETCH HUB ACCOUNT[${currencyId}].`)
             const hubReconAcc = await Tb.tbLookupHubAccount(
               TB_HUB_ID,
               enums.ledgerAccountTypes.HUB_RECONCILIATION,
               currencyId
             )
-            // console.log(BLUE, `TigerBeetle: [settlementTransfersReserve] -> FETCH MULTILATERAL ACCOUNT[${currencyId}].`)
+            // console.log(GREY, `TigerBeetle: [settlementTransfersReserve] -> FETCH MULTILATERAL ACCOUNT[${currencyId}].`)
             const hubMultilateral = await Tb.tbLookupHubAccount(
               TB_HUB_ID,
               enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
@@ -426,7 +426,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             )
 
             const amountMinorDen = parseInt(`${dfspAmount * 100}`, 10)
-            // console.log(BLUE, `TigerBeetle: [settlementTransfersReserve] -> SETTLEMENT PREPARE[Sid-${settlementId}:TxnId-${transferId}:Amt-${dfspAmount}:${amountMinorDen}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)} - DFSP-${dfspAccountId}`)
+            // console.log(GREY, `TigerBeetle: [settlementTransfersReserve] -> SETTLEMENT PREPARE[Sid-${settlementId}:TxnId-${transferId}:Amt-${dfspAmount}:${amountMinorDen}]. ${util.inspect(hubReconAcc)} - ${util.inspect(hubMultilateral)} - DFSP-${dfspAccountId}`)
             const reserveResult = await Tb.tbSettlementTransferReserve(
               enums,
               transferId,
@@ -438,11 +438,11 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
               amountMinorDen
             )
 
-            await Tb.printHubAccountInfo(BLUE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
-            // await Tb.printHubAccountInfo(BLUE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
-            await Tb.printSettlementAccountInfo(BLUE, dfspAccountId, settlementId)
+            await Tb.printHubAccountInfo(YELLOW, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
+            // await Tb.printHubAccountInfo(YELLOW, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
+            await Tb.printSettlementAccountInfo(YELLOW, dfspAccountId, settlementId)
 
-            console.log(YELLOW, `${transferId} => ${util.inspect(reserveResult)}`)
+            console.log(GREY, `${transferId} => ${util.inspect(reserveResult)}`)
             reservedCacheZool.push(transferId)
             reservedCachePool.push(dfspAccountId)
           }
@@ -832,7 +832,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
           await Utility.produceGeneralMessage(Utility.ENUMS.NOTIFICATION, Utility.ENUMS.EVENT, message, Utility.ENUMS.STATE.SUCCESS)
 
           if (Config.TIGERBEETLE.enabled) {
-            console.log(YELLOW, '\n******** TigerBeetle - OUTPUT - **********************')
+            console.log(GREY, '\n******** TigerBeetle - OUTPUT - **********************')
             console.log(GREEN, '*******<[settlementTransfersCommit]>********')
 
             // const commitResult = await Tb.tbSettlementTransferCommit(transferId, settlementId)
@@ -842,7 +842,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             // await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
             // await Tb.printSettlementAccountInfo(GREEN, dfspAccountId, settlementId)
             await Tb.printSettlementAccountInfo(GREEN, reservedCachePool[0], settlementId)
-            console.log(YELLOW, `${reservedCacheZool[0]} => ${util.inspect(commitResult)}`)
+            console.log(GREY, `${reservedCacheZool[0]} => ${util.inspect(commitResult)}`)
             reservedCacheZool = []
             reservedCachePool = []
           }
@@ -1644,7 +1644,7 @@ const Facade = {
         }
 
         if (tbEnabled) {
-          console.log(YELLOW, '\n******** TigerBeetle - OUTPUT - **********************')
+          console.log(GREY, '\n******** TigerBeetle - OUTPUT - **********************')
           console.log(MAGENTA, '*******<[triggerSettlementEvent]>********')
           for (const swc of swcList) {
             await Tb.tbLookupCreateSettlementHubAccount(
