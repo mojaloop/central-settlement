@@ -191,7 +191,6 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
 
       if (Config.TIGERBEETLE.enabled) {
         console.log(GREY, '\n******** TigerBeetle - OUTPUT - **********************')
-        console.log(GREY, `[${util.inspect(ledgerEntryTypeId)}] - [${util.inspect(settlementId)}]`)
         console.log(TURQUOISE, '*******<[settlementTransfersPrepare]>********')
         const hubReconAcc = await Tb.tbLookupHubAccount(
           TB_HUB_ID,
@@ -206,7 +205,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
         const amountMinorDen = parseInt(`${t.netAmount * 100}`, 10)
         let prepTransferResult
         if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_SENDER) {
-          console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare-SETTLEMENT_NET_SENDER / PAYER] -> ParticipantCurrency:${t.participantCurrencyId}`)
+          console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare - PAYER] -> ParticipantCurrency:${t.participantCurrencyId}`)
           prepTransferResult = await Tb.tbSettlementPreparationTransfer(
             enums,
             t.settlementTransferId,
@@ -220,7 +219,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             false
           )
         } else if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_RECIPIENT) {
-          console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare-SETTLEMENT_NET_RECIPIENT / PAYEE] -> ParticipantCurrency:${t.participantCurrencyId}`)
+          console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare - PAYEE] -> ParticipantCurrency:${t.participantCurrencyId}`)
           prepTransferResult = await Tb.tbSettlementPreparationTransfer(
             enums,
             t.settlementTransferId,
@@ -235,7 +234,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           )
         }
         await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, t.currencyId)
-        // await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, t.currencyId)
+        await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, t.currencyId)
         await Tb.printSettlementAccountInfo(TURQUOISE, t.participantCurrencyId, settlementId)
 
         console.log(GREY, `${util.inspect(prepTransferResult)}`)
@@ -845,7 +844,6 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             const balRecon = await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
             const balMultiLat = await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
             const balSettlement = await Tb.printSettlementAccountInfo(GREEN, reservedCachePool[0], settlementId)
-            console.log(GREEN, `- SETTLED BALANCE :  Recon:${balRecon} <-> Multi:${balMultiLat} <-> Settlement:${balSettlement} `)
             console.log(GREEN, `- SETTLED BALANCE :  ${balRecon + balMultiLat} <-- SETTLED`)
 
             console.log(GREY, `${reservedCacheZool[0]} => ${util.inspect(commitResult)}`)
@@ -1667,7 +1665,7 @@ const Facade = {
             console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> SettlementWindowId[${swc.settlementWindowId}], Reason[${swc.reason}], Created[${swc.createdDate}], SettlementModelId[${swc.SettlementModelId}]`)
 
             await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, swc.currencyId)
-            // await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, swc.currencyId)
+            await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, swc.currencyId)
           }
           // console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE SETTLEMENT ACCOUNTS[Count-${tbSettlementAccounts.length}:Sid-${settlementId}:SETTLEMENT-${enums.ledgerAccountTypes.SETTLEMENT}].`)
           await Tb.tbCreateSettlementAccounts(
