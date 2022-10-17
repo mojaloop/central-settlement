@@ -44,7 +44,7 @@ const util = require('util')
 
 const GREEN = '\x1b[32m%s\x1b[0m'
 const YELLOW = '\x1b[33m%s\x1b[0m'
-const BLUE = '\x1b[34m%s\x1b[0m'
+const BLUE = '\x1b[90m%s\x1b[0m'
 const MAGENTA = '\x1b[35m%s\x1b[0m'
 const TURQUOISE = '\x1b[36m%s\x1b[0m'
 const TB_HUB_ID = Config.HUB_ID
@@ -231,7 +231,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           )
         }
         await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, t.currencyId)
-        await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, t.currencyId)
+        // await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, t.currencyId)
         await Tb.printSettlementAccountInfo(TURQUOISE, t.participantCurrencyId, settlementId)
 
         console.log(YELLOW, `${util.inspect(prepTransferResult)}`)
@@ -439,7 +439,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             )
 
             await Tb.printHubAccountInfo(BLUE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
-            await Tb.printHubAccountInfo(BLUE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
+            // await Tb.printHubAccountInfo(BLUE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
             await Tb.printSettlementAccountInfo(BLUE, dfspAccountId, settlementId)
 
             console.log(YELLOW, `${transferId} => ${util.inspect(reserveResult)}`)
@@ -839,7 +839,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             const commitResult = await Tb.tbSettlementTransferCommit(reservedCacheZool[0], settlementId)
 
             await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
-            await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
+            // await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
             // await Tb.printSettlementAccountInfo(GREEN, dfspAccountId, settlementId)
             await Tb.printSettlementAccountInfo(GREEN, reservedCachePool[0], settlementId)
             console.log(YELLOW, `${reservedCacheZool[0]} => ${util.inspect(commitResult)}`)
@@ -1545,7 +1545,7 @@ const Facade = {
 
         if (settlementModel.currencyId === null) { // Default settlement model
           const allSettlementModels = await SettlementModelModel.getAll()
-          console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] [SETTLEMENT_MODELS] -> ${util.inspect(allSettlementModels)}`)
+          // console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] [SETTLEMENT_MODELS] -> ${util.inspect(allSettlementModels)}`)
 
           const settlementModelCurrenciesList = allSettlementModels.filter(record => record.currencyId !== null).map(record => record.currencyId)
           swcList = swcList.filter(swc => !settlementModelCurrenciesList.includes(swc.currencyId))
@@ -1661,7 +1661,7 @@ const Facade = {
             console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> SettlementWindowId[${swc.settlementWindowId}], Reason[${swc.reason}], Created[${swc.createdDate}], SettlementModelId[${swc.SettlementModelId}]`)
 
             await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, swc.currencyId)
-            await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, swc.currencyId)
+            // await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, swc.currencyId)
           }
           // console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE SETTLEMENT ACCOUNTS[Count-${tbSettlementAccounts.length}:Sid-${settlementId}:SETTLEMENT-${enums.ledgerAccountTypes.SETTLEMENT}].`)
           await Tb.tbCreateSettlementAccounts(
