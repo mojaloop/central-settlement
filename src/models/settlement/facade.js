@@ -840,8 +840,9 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             // const commitResult = await Tb.tbSettlementTransferCommit(transferId, settlementId)
             const commitResult = await Tb.tbSettlementTransferCommit(reservedCacheZool[0], settlementId)
 
-            await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
-            await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
+            const balRecon = await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
+            const balMultiLat = await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
+            console.log(GREEN, `- SETTLED BALANCE :  ${(balRecon - balMultiLat)}`)
             // await Tb.printSettlementAccountInfo(GREEN, dfspAccountId, settlementId)
             await Tb.printSettlementAccountInfo(GREEN, reservedCachePool[0], settlementId)
             console.log(GREY, `${reservedCacheZool[0]} => ${util.inspect(commitResult)}`)

@@ -467,7 +467,7 @@ const printHubAccountInfo = async (color, id, accountType = 2, currencyTxt = 'US
 
 const printSettlementAccountInfo = async (color, participantCurrencyId, settlementId) => {
   const accToPrint = await tbLookupSettlementAccount(participantCurrencyId, settlementId)
-  await printAccountInfo(color, participantCurrencyId, accToPrint)
+  return await printAccountInfo(color, participantCurrencyId, accToPrint)
 }
 
 const printAccountInfo = async (color, participantCurrencyId, account) => {
@@ -482,7 +482,9 @@ const printAccountInfo = async (color, participantCurrencyId, account) => {
       break
   }
   const currDesc = obtainCurrencyFromLedger(account.ledger)
-  console.log(color, `AccountInfo - [${accTypeDesc}:${currDesc}] ->\n- Debits_Reserved  : ${account.debits_pending}\n- Debits_Committed : ${account.debits_posted}\n- Credits_Reserved : ${account.credits_pending}\n- Credits_Committed: ${account.credits_posted}\n- ----------------\n- RESERVED BALANCE : ${account.credits_pending - account.debits_pending}\n- COMMITTED BALANCE: ${account.credits_posted - account.debits_posted}\n- ----------------`)
+  const balance = (account.credits_posted - account.debits_posted)
+  console.log(color, `AccountInfo - [${accTypeDesc}:${currDesc}] ->\n- Debits_Reserved  : ${account.debits_pending}\n- Debits_Committed : ${account.debits_posted}\n- Credits_Reserved : ${account.credits_pending}\n- Credits_Committed: ${account.credits_posted}\n- ----------------\n- RESERVED BALANCE : ${account.credits_pending - account.debits_pending}\n- COMMITTED BALANCE: ${balance}\n- ----------------`)
+  return balance
 }
 
 module.exports = {
