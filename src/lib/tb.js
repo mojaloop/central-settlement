@@ -469,7 +469,7 @@ const enumLabelFromCode = (resultEnum, errCode) => {
 
 const printHubAccountInfo = async (color, id, accountType = 2, currencyTxt = 'USD') => {
   const accToPrint = await tbLookupHubAccount(id, accountType, currencyTxt)
-  await printAccountInfo(color, id, accToPrint)
+  return await printAccountInfo(color, id, accToPrint)
 }
 
 const printSettlementAccountInfo = async (color, participantCurrencyId, settlementId) => {
