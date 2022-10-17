@@ -296,20 +296,6 @@ const tbSettlementTransferReserve = async (
   }
 
   const partCurrencyId = tbSettlementAccountIdFrom(drParticipantCurrencyIdDFSP, settlementId)
-  const transferHubToDFSPReserve = {
-    id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId, 1),
-    debit_account_id: partCurrencyId, // u128
-    credit_account_id: BigInt(crDrParticipantCurrencyIdHubMultilateral), // u128
-    user_data: BigInt(settlementId),
-    reserved: 0n,
-    pending_id: 0n,
-    timeout: timeoutNanoseconds, // u64, in nano-seconds.
-    ledger: currencyU16,
-    code: enums.ledgerAccountTypes.SETTLEMENT,
-    flags: TbNode.TransferFlags.linked | TbNode.TransferFlags.pending, // pending+linked
-    amount: BigInt(amount), // u64
-    timestamp: 0n // u64, Reserved: This will be set by the server.
-  }
 
   const transferMultiToRecon = {
     id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId, 2),
@@ -322,6 +308,21 @@ const tbSettlementTransferReserve = async (
     ledger: currencyU16,
     code: enums.ledgerAccountTypes.HUB_RECONCILIATION,
     flags: TbNode.TransferFlags.pending, // linked+pending
+    amount: BigInt(amount), // u64
+    timestamp: 0n // u64, Reserved: This will be set by the server.
+  }
+
+  const transferHubToDFSPReserve = {
+    id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId, 1),
+    debit_account_id: BigInt(crParticipantCurrencyIdHubRecon), // u128
+    credit_account_id: partCurrencyId, // u128
+    user_data: BigInt(settlementId),
+    reserved: 0n,
+    pending_id: 0n,
+    timeout: timeoutNanoseconds, // u64, in nano-seconds.
+    ledger: currencyU16,
+    code: enums.ledgerAccountTypes.SETTLEMENT,
+    flags: TbNode.TransferFlags.linked | TbNode.TransferFlags.pending, // pending+linked
     amount: BigInt(amount), // u64
     timestamp: 0n // u64, Reserved: This will be set by the server.
   }
