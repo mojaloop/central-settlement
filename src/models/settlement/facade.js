@@ -216,7 +216,8 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             hubReconAcc.id,
             t.participantCurrencyId,
             t.currencyId,
-            amountMinorDen
+            amountMinorDen,
+            false
           )
         } else if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_RECIPIENT) {
           console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare-SETTLEMENT_NET_RECIPIENT / PAYEE] -> ParticipantCurrency:${t.participantCurrencyId}`)
@@ -224,12 +225,13 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             enums,
             t.settlementTransferId,
             t.settlementTransferId, // t.transferId,
-            hubReconAcc.id,
-            hubMultilateral.id,
             settlementId,
+            hubMultilateral.id,
+            hubReconAcc.id,
             t.participantCurrencyId,
             t.currencyId,
-            amountMinorDen * -1
+            amountMinorDen * -1,
+            true
           )
         }
         await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, t.currencyId)
@@ -842,7 +844,9 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
 
             const balRecon = await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
             const balMultiLat = await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
-            console.log(GREEN, `- SETTLED BALANCE :  ${(balRecon - balMultiLat)}`)
+
+            console.log(GREEN, `- SETTLED BALANCE :  ${balRecon} - ${balMultiLat}`)
+            console.log(GREEN, `- SETTLED BALANCE :  ${balRecon - balMultiLat}`)
             // await Tb.printSettlementAccountInfo(GREEN, dfspAccountId, settlementId)
             await Tb.printSettlementAccountInfo(GREEN, reservedCachePool[0], settlementId)
             console.log(GREY, `${reservedCacheZool[0]} => ${util.inspect(commitResult)}`)

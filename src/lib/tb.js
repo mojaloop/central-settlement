@@ -222,7 +222,8 @@ const tbSettlementPreparationTransfer = async (
   crDrParticipantCurrencyIdHubMultilateral,
   crParticipantCurrencyIdDFSP,
   currencyTxt,
-  amount
+  amount,
+  payee
 ) => {
   const client = await getTBClient()
 
@@ -243,10 +244,16 @@ const tbSettlementPreparationTransfer = async (
   }
 
   const partCurrencyId = tbSettlementAccountIdFrom(crParticipantCurrencyIdDFSP, settlementId)
+  let debitAccId = BigInt(crDrParticipantCurrencyIdHubMultilateral)
+  let creditAccId = partCurrencyId
+  if (payee) {
+    debitAccId = partCurrencyId
+    creditAccId = BigInt(crDrParticipantCurrencyIdHubMultilateral)
+  }
   const transferDFSPToHub = {
     id: uuidToBigInt(`${uuidv4Gen()}`),
-    debit_account_id: BigInt(crDrParticipantCurrencyIdHubMultilateral), // u128
-    credit_account_id: partCurrencyId, // u128
+    debit_account_id: debitAccId, // u128
+    credit_account_id: creditAccId, // u128
     user_data: uuidToBigInt(orgTransferId),
     reserved: 0n, // two-phase condition can go in here / Buffer.alloc(32, 0)
     pending_id: 0n,
