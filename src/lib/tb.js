@@ -498,7 +498,7 @@ const printAccountInfo = async (color, participantCurrencyId, account) => {
   }
   const currDesc = obtainCurrencyFromLedger(account.ledger)
   const balance = (account.credits_posted - account.debits_posted)
-  console.log(color, `AccountInfo - [${accTypeDesc}:${currDesc}] ->\n- Debits_Reserved  : ${account.debits_pending}\n- Debits_Committed : ${account.debits_posted}\n- Credits_Reserved : ${account.credits_pending}\n- Credits_Committed: ${account.credits_posted}\n- ----------------\n- RESERVED BALANCE : ${account.credits_pending - account.debits_pending}\n- COMMITTED BALANCE: ${balance}\n- ----------------`)
+  console.log(color, `AccountInfo - [${accTypeDesc}:${currDesc}:${participantCurrencyId}] ->\n- Debits_Reserved  : ${account.debits_pending}\n- Debits_Committed : ${account.debits_posted}\n- Credits_Reserved : ${account.credits_pending}\n- Credits_Committed: ${account.credits_posted}\n- ----------------\n- RESERVED BALANCE : ${account.credits_pending - account.debits_pending}\n- COMMITTED BALANCE: ${balance}\n- ----------------`)
   return balance
 }
 
