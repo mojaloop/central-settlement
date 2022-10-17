@@ -191,6 +191,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
 
       if (Config.TIGERBEETLE.enabled) {
         console.log(GREY, '\n******** TigerBeetle - OUTPUT - **********************')
+        console.log(GREY, `${util.inspect(ledgerEntryTypeId)} ${util.inspect(settlementId)} - ${util.inspect(trx)}`)
         console.log(TURQUOISE, '*******<[settlementTransfersPrepare]>********')
         const hubReconAcc = await Tb.tbLookupHubAccount(
           TB_HUB_ID,
