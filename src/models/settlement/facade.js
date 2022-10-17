@@ -206,7 +206,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
         const amountMinorDen = parseInt(`${t.netAmount * 100}`, 10)
         let prepTransferResult
         if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_SENDER) {
-          console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare-SETTLEMENT_NET_SENDER] -> ParticipantCurrency:${t.participantCurrencyId}`)
+          console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare-SETTLEMENT_NET_SENDER / PAYER] -> ParticipantCurrency:${t.participantCurrencyId}`)
           prepTransferResult = await Tb.tbSettlementPreparationTransfer(
             enums,
             t.settlementTransferId,
@@ -219,7 +219,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             amountMinorDen
           )
         } else if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_RECIPIENT) {
-          console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare-SETTLEMENT_NET_RECIPIENT] -> ParticipantCurrency:${t.participantCurrencyId}`)
+          console.log(TURQUOISE, `TigerBeetle: [settlementTransfersPrepare-SETTLEMENT_NET_RECIPIENT / PAYEE] -> ParticipantCurrency:${t.participantCurrencyId}`)
           prepTransferResult = await Tb.tbSettlementPreparationTransfer(
             enums,
             t.settlementTransferId,
@@ -841,7 +841,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             const commitResult = await Tb.tbSettlementTransferCommit(reservedCacheZool[0], settlementId)
 
             await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
-            // await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
+            await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
             // await Tb.printSettlementAccountInfo(GREEN, dfspAccountId, settlementId)
             await Tb.printSettlementAccountInfo(GREEN, reservedCachePool[0], settlementId)
             console.log(GREY, `${reservedCacheZool[0]} => ${util.inspect(commitResult)}`)
