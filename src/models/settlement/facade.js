@@ -442,7 +442,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             )
 
             await Tb.printHubAccountInfo(YELLOW, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
-            // await Tb.printHubAccountInfo(YELLOW, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
+            await Tb.printHubAccountInfo(YELLOW, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
             await Tb.printSettlementAccountInfo(YELLOW, dfspAccountId, settlementId)
 
             console.log(GREY, `${transferId} => ${util.inspect(reserveResult)}`)
