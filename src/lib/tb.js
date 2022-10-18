@@ -228,13 +228,8 @@ const tbSettlementPreparationTransfer = async (
   const client = await getTBClient()
 
   const currencyU16 = obtainLedgerFromCurrency(currencyTxt)
-  let debitAccIdHub = BigInt(drParticipantCurrencyIdHubRecon)
-  let creditAccIdHub = BigInt(crDrParticipantCurrencyIdHubMultilateral)
-  if (payee) {
-    debitAccIdHub = BigInt(crDrParticipantCurrencyIdHubMultilateral)
-    creditAccIdHub = BigInt(drParticipantCurrencyIdHubRecon)
-  }
-
+  const debitAccIdHub = (payee) ? BigInt(crDrParticipantCurrencyIdHubMultilateral) : BigInt(drParticipantCurrencyIdHubRecon)
+  const creditAccIdHub = (payee) ? BigInt(drParticipantCurrencyIdHubRecon) : BigInt(crDrParticipantCurrencyIdHubMultilateral)
   const transferRecon = {
     id: uuidToBigInt(settlementTransferId), // u128
     debit_account_id: debitAccIdHub, // u128
@@ -251,12 +246,8 @@ const tbSettlementPreparationTransfer = async (
   }
 
   const partCurrencyId = tbSettlementAccountIdFrom(crParticipantCurrencyIdDFSP, settlementId)
-  let debitAccId = BigInt(crDrParticipantCurrencyIdHubMultilateral)
-  let creditAccId = partCurrencyId
-  if (payee) {
-    debitAccId = partCurrencyId
-    creditAccId = BigInt(crDrParticipantCurrencyIdHubMultilateral)
-  }
+  const debitAccId = (payee) ? partCurrencyId : BigInt(crDrParticipantCurrencyIdHubMultilateral)
+  const creditAccId = (payee) ? BigInt(crDrParticipantCurrencyIdHubMultilateral) : partCurrencyId
   const transferDFSPToHub = {
     id: uuidToBigInt(`${uuidv4Gen()}`),
     debit_account_id: debitAccId, // u128
