@@ -390,6 +390,45 @@ const tbSettlementTransferCommit = async (
   return await client.createTransfers(commits)
 }
 
+const tbSettlementTransferCommitNoPayer = async (
+  settlementTransferId,
+  settlementId
+) => {
+  const client = await getTBClient()
+
+  const commits = [
+    {
+      id: uuidToBigInt(`${uuidv4Gen()}`),
+      debit_account_id: 0n, // u128
+      credit_account_id: 0n, // u128
+      user_data: 0n,
+      reserved: 0n,
+      pending_id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId, 1),
+      timeout: 0n, // u64, in nano-seconds.
+      ledger: 0,
+      code: 0,
+      flags: TbNode.TransferFlags.linked | TbNode.TransferFlags.post_pending_transfer, // post
+      amount: 0n, // u64
+      timestamp: 0n // u64, Reserved: This will be set by the server.
+    }, {
+      id: uuidToBigInt(`${uuidv4Gen()}`),
+      debit_account_id: 0n, // u128
+      credit_account_id: 0n, // u128
+      user_data: 0n,
+      reserved: 0n,
+      pending_id: tbMultilateralTransferSettlementId(settlementId, settlementTransferId, 2),
+      timeout: 0n, // u64, in nano-seconds.
+      ledger: 0,
+      code: 0,
+      flags: TbNode.TransferFlags.post_pending_transfer, // post
+      amount: 0n, // u64
+      timestamp: 0n // u64, Reserved: This will be set by the server.
+    }
+  ]
+
+  return await client.createTransfers(commits)
+}
+
 const tbSettlementTransferAbort = async (
   settlementTransferId,
   settlementId
@@ -534,6 +573,7 @@ module.exports = {
   tbSettlementPreparationTransfer,
   tbSettlementTransferReserve,
   tbSettlementTransferCommit,
+  tbSettlementTransferCommitNoPayer,
   tbSettlementTransferAbort,
   // Cleanup:
   tbDestroy,
