@@ -370,10 +370,14 @@ const tbSettlementTransferCommit = async (
       flags: flagsPostLinked, // post
       amount: 0n, // u64
       timestamp: 0n // u64, Reserved: This will be set by the server.
-    }, {
+    }
+  ]
+
+  if (payerId) {
+    commits.push({
       id: uuidToBigInt(`${uuidv4Gen()}`), // u128
-      debit_account_id: currencyIdHubMultilateral, // u128
-      credit_account_id: partCurrencyId, // u128
+      debit_account_id: partCurrencyId, // u128
+      credit_account_id: currencyIdHubMultilateral, // u128
       user_data: BigInt(settlementId),
       reserved: BigInt(0),
       pending_id: 0n,
@@ -383,8 +387,8 @@ const tbSettlementTransferCommit = async (
       flags: 0,
       amount: BigInt(amount), // u64
       timestamp: 0n // u64, Reserved: This will be set by the server.
-    }
-  ]
+    })
+  }
 
   return await client.createTransfers(commits)
 }

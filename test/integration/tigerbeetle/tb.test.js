@@ -188,10 +188,7 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
           enums,
           txnIdSettlement,
           settlementId,
-          resultHubAcc,
-          settlementAccounts[0].participantCurrencyId,
-          currencyAed,
-          amount
+          resultHubAcc
         )
         test.deepEqual(resultCommit.length, 0, 'settlement payer completed, settlement committed')
 
