@@ -343,7 +343,6 @@ const tbSettlementTransferCommit = async (
 
   const flagsPostLinked = TbNode.TransferFlags.linked | TbNode.TransferFlags.post_pending_transfer
   const partCurrencyId = tbSettlementAccountIdFrom(payerId, settlementId)
-  console.log(`${payerId} and ${settlementId} resulted in [${util.inspect(partCurrencyId)}]`)
   const commits = [
     {
       id: uuidToBigInt(`${uuidv4Gen()}`),
