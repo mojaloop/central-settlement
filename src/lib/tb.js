@@ -228,7 +228,6 @@ const tbSettlementPreparationTransfer = async (
   const client = await getTBClient()
 
   const currencyU16 = obtainLedgerFromCurrency(currencyTxt)
-
   let debitAccIdHub = BigInt(drParticipantCurrencyIdHubRecon)
   let creditAccIdHub = BigInt(crDrParticipantCurrencyIdHubMultilateral)
   if (payee) {
@@ -343,6 +342,7 @@ const tbSettlementTransferCommit = async (
   const currencyU16 = obtainLedgerFromCurrency(currencyId)
 
   const flagsPostLinked = TbNode.TransferFlags.linked | TbNode.TransferFlags.post_pending_transfer
+  const partCurrencyId = tbSettlementAccountIdFrom(payerId, settlementId)
   const commits = [
     {
       id: uuidToBigInt(`${uuidv4Gen()}`),
@@ -373,7 +373,7 @@ const tbSettlementTransferCommit = async (
     }, {
       id: uuidToBigInt(`${uuidv4Gen()}`), // u128
       debit_account_id: currencyIdHubMultilateral, // u128
-      credit_account_id: payerId, // u128
+      credit_account_id: partCurrencyId, // u128
       user_data: BigInt(settlementId),
       reserved: BigInt(0),
       pending_id: 0n,
