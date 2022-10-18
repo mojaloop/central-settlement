@@ -378,6 +378,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             isLimitExceeded = netDebitCap - dfspPositionValue - dfspReservedValue - dfspAmount < 0
             console.log(GREY, 'isLimitExceeded = netDebitCap - dfspPositionValue - dfspReservedValue - dfspAmount < 0')
             console.log(GREY, `${isLimitExceeded} = ${netDebitCap} - ${dfspPositionValue} - ${dfspReservedValue} - ${dfspAmount} < 0`)
+            console.log(GREY, `${netDebitCap - dfspPositionValue - dfspReservedValue - dfspAmount} < 0`)
 
             if (isLimitExceeded) {
               /* let { startAfterParticipantPositionChangeId } = */
