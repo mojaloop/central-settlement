@@ -855,8 +855,8 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
               amountMinorDen * -1
             )
 
-            const balRecon = await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
             const balMultiLat = await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
+            const balRecon = await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
             const balSettlement = await Tb.printSettlementAccountInfo(GREEN, reservedCachePool[0], settlementId)
             const balSettlementPayer = await Tb.printSettlementAccountInfo(GREEN, dfspAccountId, settlementId)
             // console.log(GREEN, `- SETTLED BALANCE :  ${balRecon + balMultiLat} <-- SETTLED`)
@@ -1679,8 +1679,8 @@ const Facade = {
 
             console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> SettlementId[${settlementId}], SettlementWindowId[${swc.settlementWindowId}], Reason[${swc.reason}], SettlementModelId[${swc.SettlementModelId}]`)
 
-            await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, swc.currencyId)
             await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, swc.currencyId)
+            await Tb.printHubAccountInfo(MAGENTA, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, swc.currencyId)
           }
           // console.log(MAGENTA, `TigerBeetle: [triggerSettlementEvent] -> CREATE SETTLEMENT ACCOUNTS[Count-${tbSettlementAccounts.length}:Sid-${settlementId}:SETTLEMENT-${enums.ledgerAccountTypes.SETTLEMENT}].`)
           await Tb.tbCreateSettlementAccounts(
