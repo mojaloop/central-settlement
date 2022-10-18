@@ -331,6 +331,7 @@ const tbSettlementTransferReserve = async (
 }
 
 const tbSettlementTransferCommit = async (
+  enums,
   settlementTransferId,
   settlementId,
   currencyIdHubMultilateral,

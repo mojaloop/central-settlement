@@ -850,6 +850,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
 
             // const commitResult = await Tb.tbSettlementTransferCommit(transferId, settlementId)
             const commitResult = await Tb.tbSettlementTransferCommit(
+              enums,
               reservedCacheZool[0],
               settlementId,
               hubMultilateral.id,
