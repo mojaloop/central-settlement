@@ -837,9 +837,18 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
           if (Config.TIGERBEETLE.enabled) {
             console.log(GREY, '\n******** TigerBeetle - OUTPUT - **********************')
             console.log(GREEN, '*******<[settlementTransfersCommit]>********')
+            const amountMinorDen = parseInt(`${dfspAmount * 100}`, 10)
+
+            console.log(GREEN, `*******<[${dfspAccountId} <-> ${amountMinorDen}]>********`)
+
+            const hubMultilateral = await Tb.tbLookupHubAccount(
+              TB_HUB_ID,
+              enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
+              t.currencyId
+            )
 
             // const commitResult = await Tb.tbSettlementTransferCommit(transferId, settlementId)
-            const commitResult = await Tb.tbSettlementTransferCommit(reservedCacheZool[0], settlementId)
+            const commitResult = await Tb.tbSettlementTransferCommit(reservedCacheZool[0], settlementId, hubMultilateral.id)
 
             const balRecon = await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
             const balMultiLat = await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)

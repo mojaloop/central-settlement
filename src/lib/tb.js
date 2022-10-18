@@ -332,10 +332,12 @@ const tbSettlementTransferReserve = async (
 
 const tbSettlementTransferCommit = async (
   settlementTransferId,
-  settlementId
+  settlementId,
+  currencyIdHubMultilateral
 ) => {
   const client = await getTBClient()
 
+  let debAccIdHub = BigInt(currencyIdHubMultilateral)
   const commits = [
     {
       id: uuidToBigInt(`${uuidv4Gen()}`),
