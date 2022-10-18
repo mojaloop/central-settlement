@@ -366,7 +366,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             .transacting(trx)
             .forUpdate()
 
-          console.log(GREY, `${hubAccountId} => ${dfspPositionValue} - ${dfspReservedValue}`)
+          console.log(GREY, `${hubAccountId}:${dfspAccountId} => ${dfspPositionValue} - ${dfspReservedValue} - ${hubAmount}`)
 
           if (requireLiquidityCheck) { // TODO: This is not a liquidity check, but rather a limit-check since we are only checking against the NED-DEBIT-CAP!
             // Select dfsp NET_DEBIT_CAP limit
