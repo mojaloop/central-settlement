@@ -335,11 +335,13 @@ const tbSettlementTransferCommit = async (
   settlementId,
   currencyIdHubMultilateral,
   payerId,
+  currencyId,
   amount
 ) => {
   const client = await getTBClient()
+  const currencyU16 = obtainLedgerFromCurrency(currencyId)
 
-  // let debAccIdHub = BigInt(currencyIdHubMultilateral)
+  const flagsPostLinked = TbNode.TransferFlags.linked | TbNode.TransferFlags.post_pending_transfer
   const commits = [
     {
       id: uuidToBigInt(`${uuidv4Gen()}`),
@@ -351,7 +353,7 @@ const tbSettlementTransferCommit = async (
       timeout: 0n, // u64, in nano-seconds.
       ledger: 0,
       code: 0,
-      flags: TbNode.TransferFlags.linked | TbNode.TransferFlags.post_pending_transfer, // post
+      flags: flagsPostLinked, // post
       amount: 0n, // u64
       timestamp: 0n // u64, Reserved: This will be set by the server.
     }, {
@@ -364,8 +366,21 @@ const tbSettlementTransferCommit = async (
       timeout: 0n, // u64, in nano-seconds.
       ledger: 0,
       code: 0,
-      flags: TbNode.TransferFlags.post_pending_transfer, // post
+      flags: flagsPostLinked, // post
       amount: 0n, // u64
+      timestamp: 0n // u64, Reserved: This will be set by the server.
+    }, {
+      id: uuidToBigInt(`${uuidv4Gen()}`), // u128
+      debit_account_id: currencyIdHubMultilateral, // u128
+      credit_account_id: payerId, // u128
+      user_data: BigInt(settlementId),
+      reserved: BigInt(0),
+      pending_id: 0n,
+      timeout: 0n, // u64, in nano-seconds.
+      ledger: currencyU16,
+      code: enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
+      flags: 0,
+      amount: BigInt(amount), // u64
       timestamp: 0n // u64, Reserved: This will be set by the server.
     }
   ]

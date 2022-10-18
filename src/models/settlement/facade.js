@@ -854,6 +854,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
               settlementId,
               hubMultilateral.id,
               dfspAccountId,
+              currencyId,
               amountMinorDen * -1
             )
 
