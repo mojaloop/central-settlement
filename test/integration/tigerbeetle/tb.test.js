@@ -184,7 +184,15 @@ Test('TigerBeetle - ', async (tigerBeetleTest) => {
         test.deepEqual(resultReserve.length, 0, 'settlement payee reservation')
 
         // Commit the settlement as payer:
-        const resultCommit = await Tb.tbSettlementTransferCommit(txnIdSettlement, settlementId)
+        const resultCommit = await Tb.tbSettlementTransferCommit(
+          enums,
+          txnIdSettlement,
+          settlementId,
+          resultHubAcc,
+          settlementAccounts[0].participantCurrencyId,
+          currencyAed,
+          amount
+        )
         test.deepEqual(resultCommit.length, 0, 'settlement payer completed, settlement committed')
 
         // Not allowed to abort an already committed settlement:
