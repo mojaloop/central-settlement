@@ -846,9 +846,16 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
               enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
               currencyId
             )
+            console.log(GREY, `${hubMultilateral} --->>>>>>`)
 
             // const commitResult = await Tb.tbSettlementTransferCommit(transferId, settlementId)
-            const commitResult = await Tb.tbSettlementTransferCommit(reservedCacheZool[0], settlementId, hubMultilateral.id)
+            const commitResult = await Tb.tbSettlementTransferCommit(
+              reservedCacheZool[0],
+              settlementId,
+              hubMultilateral.id,
+              dfspAccountId,
+              amountMinorDen
+            )
 
             const balRecon = await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, currencyId)
             const balMultiLat = await Tb.printHubAccountInfo(GREEN, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, currencyId)
