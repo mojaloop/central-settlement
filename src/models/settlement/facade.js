@@ -839,12 +839,12 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
             console.log(GREEN, '*******<[settlementTransfersCommit]>********')
             const amountMinorDen = parseInt(`${dfspAmount * 100}`, 10)
 
-            console.log(GREEN, `*******<[${dfspAccountId} <-> ${amountMinorDen}]>********`)
+            console.log(GREEN, `*******<[Payee[${reservedCacheZool[0]}], Payer[${dfspAccountId}] <-> ${amountMinorDen}]>********`)
 
             const hubMultilateral = await Tb.tbLookupHubAccount(
               TB_HUB_ID,
               enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT,
-              t.currencyId
+              currencyId
             )
 
             // const commitResult = await Tb.tbSettlementTransferCommit(transferId, settlementId)
