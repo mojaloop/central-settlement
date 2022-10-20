@@ -249,7 +249,7 @@ const tbSettlementPreparationTransfer = async (
   const debitAccId = (payee) ? partCurrencyId : BigInt(crDrParticipantCurrencyIdHubMultilateral)
   const creditAccId = (payee) ? BigInt(crDrParticipantCurrencyIdHubMultilateral) : partCurrencyId
   const transferDFSPToHub = {
-    id: uuidToBigInt(`${uuidv4Gen()}`),
+    id: uuidToBigInt(`${uuidv4Gen()}`),//TODO make use of the id here, build a key, that will link us.
     debit_account_id: debitAccId, // u128
     credit_account_id: creditAccId, // u128
     user_data: uuidToBigInt(orgTransferId),

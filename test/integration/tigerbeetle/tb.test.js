@@ -57,11 +57,11 @@ const enums = {
   }
 }
 
-Test('TigerBeetle - ', async (tigerBeetleTest) => {
+Test('**** TigerBeetle Integration Tests ****', async (tigerBeetleTest) => {
   // Test Defaults for TIGERBEETLE configs
   tigerBeetleTest.ok(Config.TIGERBEETLE !== undefined, 'config [TIGERBEETLE] not undefined')
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enabled, true, 'tigerbeetle enabled')
-  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enableBatching, false, 'batching not enabled')
+  tigerBeetleTest.deepEqual(Config.TIGERBEETLE.enableBatching, false, 'batching disabled')
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.disableSQL, false, 'sql enabled')
   tigerBeetleTest.ok(Config.TIGERBEETLE.batchMaxSize < 10_000, 'batches less than 10k')
   tigerBeetleTest.deepEqual(Config.TIGERBEETLE.cluster, 1, 'cluster value [1]')

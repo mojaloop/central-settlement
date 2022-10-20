@@ -387,7 +387,9 @@ until is_ml_api_adapter_up; do
   sleep 5
 done
 
->&1 echo "Integration tests are starting"
+>&1 echo "****************************************"
+>&1 echo "**** INTEGRATION TESTS ARE STARTING ****"
+>&1 echo "****************************************"
 run_test_command
 test_exit_code=$?
 >&2 echo "Test exited with result code.... $test_exit_code ..."

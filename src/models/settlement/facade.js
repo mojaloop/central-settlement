@@ -190,7 +190,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
       }
 
       if (Config.TIGERBEETLE.enabled) {
-        console.log(GREY, '\n******** TigerBeetle - OUTPUT - **********************')
+        console.log(GREY, '\n******** TigerBeetle Output ********')
         console.log(TURQUOISE, '*******<[settlementTransfersPrepare]>********')
         const hubReconAcc = await Tb.tbLookupHubAccount(
           TB_HUB_ID,
@@ -376,9 +376,9 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
               .transacting(trx)
               .forUpdate()
             isLimitExceeded = netDebitCap - dfspPositionValue - dfspReservedValue - dfspAmount < 0
-            console.log(GREY, 'isLimitExceeded = netDebitCap - dfspPositionValue - dfspReservedValue - dfspAmount < 0')
-            console.log(GREY, `${isLimitExceeded} = ${netDebitCap} - ${dfspPositionValue} - ${dfspReservedValue} - ${dfspAmount} < 0`)
-            console.log(GREY, `${netDebitCap - dfspPositionValue - dfspReservedValue - dfspAmount} < 0`)
+            // console.log(GREY, 'isLimitExceeded = netDebitCap - dfspPositionValue - dfspReservedValue - dfspAmount < 0')
+            // console.log(GREY, `${isLimitExceeded} = ${netDebitCap} - ${dfspPositionValue} - ${dfspReservedValue} - ${dfspAmount} < 0`)
+            // console.log(GREY, `${netDebitCap - dfspPositionValue - dfspReservedValue - dfspAmount} < 0`)
 
             if (isLimitExceeded) {
               /* let { startAfterParticipantPositionChangeId } = */
@@ -416,7 +416,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             .transacting(trx)
 
           if (Config.TIGERBEETLE.enabled) {
-            console.log(GREY, '\n******** TigerBeetle - OUTPUT - **********************')
+            console.log(GREY, '\n******** TigerBeetle Output ********')
             console.log(YELLOW, '*******<[settlementTransfersReserve]>********')
             // console.log(GREY, `TigerBeetle: [settlementTransfersReserve] -> FETCH HUB ACCOUNT[${currencyId}].`)
             const hubReconAcc = await Tb.tbLookupHubAccount(
@@ -838,7 +838,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
           await Utility.produceGeneralMessage(Utility.ENUMS.NOTIFICATION, Utility.ENUMS.EVENT, message, Utility.ENUMS.STATE.SUCCESS)
 
           if (Config.TIGERBEETLE.enabled) {
-            console.log(GREY, '\n******** TigerBeetle - OUTPUT - **********************')
+            console.log(GREY, '\n******** TigerBeetle Output ********')
             console.log(GREEN, '*******<[settlementTransfersCommit]>********')
             const hubMultilateral = await Tb.tbLookupHubAccount(
               TB_HUB_ID,
@@ -1666,7 +1666,7 @@ const Facade = {
         }
 
         if (tbEnabled) {
-          console.log(GREY, '\n******** TigerBeetle - OUTPUT - **********************')
+          console.log(GREY, '\n******** TigerBeetle Output ********')
           console.log(MAGENTA, '*******<[triggerSettlementEvent]>********')
           for (const swc of swcList) {
             await Tb.tbLookupCreateSettlementHubAccount(
