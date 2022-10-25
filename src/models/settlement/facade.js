@@ -218,6 +218,10 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             amountMinorDen,
             false
           )
+
+          await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, t.currencyId)
+          await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, t.currencyId)
+          await Tb.printSettlementAccountInfo(TURQUOISE, t.participantCurrencyId, settlementId)
         } else if (ledgerEntryTypeId === enums.ledgerEntryTypes.SETTLEMENT_NET_RECIPIENT) {
           console.log(TURQUOISE, 'TigerBeetle: [settlementTransfersPrepare - PAYEE]')
           prepTransferResult = await Tb.tbSettlementPreparationTransfer(
@@ -232,10 +236,11 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             amountMinorDen * -1,
             true
           )
+
+          await Tb.printSettlementAccountInfo(TURQUOISE, t.participantCurrencyId, settlementId)
+          await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, t.currencyId)
+          await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, t.currencyId)
         }
-        await Tb.printSettlementAccountInfo(TURQUOISE, t.participantCurrencyId, settlementId)
-        await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, t.currencyId)
-        await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, t.currencyId)
 
         console.log(GREY, `${util.inspect(prepTransferResult)}`)
       }
