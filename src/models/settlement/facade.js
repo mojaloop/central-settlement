@@ -233,9 +233,9 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
             true
           )
         }
+        await Tb.printSettlementAccountInfo(TURQUOISE, t.participantCurrencyId, settlementId)
         await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_MULTILATERAL_SETTLEMENT, t.currencyId)
         await Tb.printHubAccountInfo(TURQUOISE, TB_HUB_ID, enums.ledgerAccountTypes.HUB_RECONCILIATION, t.currencyId)
-        await Tb.printSettlementAccountInfo(TURQUOISE, t.participantCurrencyId, settlementId)
 
         console.log(GREY, `${util.inspect(prepTransferResult)}`)
       }
