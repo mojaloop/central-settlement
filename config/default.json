@@ -18,6 +18,9 @@
     "CREATE_RETRY_INTERVAL_MILLIS": 200,
     "DEBUG": false
   },
+  "TIGERBEETLE" : {
+    "ENABLED" : false
+  },
   "WINDOW_AGGREGATION": {
     "RETRY_COUNT": 3,
     "RETRY_INTERVAL": 3000

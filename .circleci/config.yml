@@ -23,7 +23,7 @@ defaults_Dependencies: &defaults_Dependencies |
   apk --no-cache add ca-certificates
   apk --no-cache add curl
   apk --no-cache add openssh-client
-  apk add --no-cache -t build-dependencies make gcc g++ python3 libtool autoconf automake jq
+  apk add --no-cache -t build-dependencies make gcc g++ python3 libtool autoconf automake jq wget
   apk add --no-cache -t openssl ncurses coreutils libgcc linux-headers grep util-linux binutils findutils
   npm config set unsafe-perm true
   npm install -g node-gyp
@@ -254,10 +254,10 @@ jobs:
           name: Build Docker local image
           command: |
             echo "Building Docker image: local"
-            docker build -t $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:local .
+            docker build -t mojaloop/$CIRCLE_PROJECT_REPONAME:local .
       - run:
           name: Save docker image to workspace
-          command: docker save -o /tmp/docker-image-local.tar $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:local
+          command: docker save -o /tmp/docker-image-local.tar mojaloop/$CIRCLE_PROJECT_REPONAME:local
       - persist_to_workspace:
           root: /tmp
           paths:
@@ -326,7 +326,7 @@ jobs:
             apk --no-cache add ca-certificates
             apk --no-cache add curl
             apk --no-cache add openssh-client
-            apk add --no-cache -t build-dependencies make gcc g++ python3 libtool autoconf automake
+            apk add --no-cache -t build-dependencies make gcc g++ python3 libtool autoconf automake wget
             npm config set unsafe-perm true
             npm install -g node-gyp
       - run:

@@ -230,7 +230,17 @@ async function initTransfers () {
       await Api.sendTransfer(payerFsp, payeeFsp, transfer)
       await Api.waitForTransferToBeCommitted(transfer.transferId, SLEEP_MS, 10)
       await transferParticipantStateChangeService.processMsgFulfil(transfer.transferId, 'success')
+
+      /* await Utils.sleep(SLEEP_MS)
+      const fulfillResult = await Api.sendTransferFulfill(payerFsp, payeeFsp, transfer)
+      if (fulfillResult.status == 200) {
+        await Api.waitForTransferToBeCommited(transfer.transferId, SLEEP_MS, 10)
+        console.info(`Committed ${transfer.transferId}`)
+        const fulfilled = await transferParticipantStateChangeService.processMsgFulfil(transfer.transferId, 'success')
+        console.info(`Fulfilled ${fulfilled}`)
+      } */
     } catch (err) {
+      console.error(err)
       Logger.error(`prepareTransferDataTest failed with error - ${err}`)
     }
   }
