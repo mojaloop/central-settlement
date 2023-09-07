@@ -31,8 +31,7 @@ const Path = require('path')
 const Proxyquire = require('proxyquire')
 const Sinon = require('sinon')
 const Test = require('tapes')(require('tape'))
-
-const getPort = async () => (await import('../../util/esmodules.mjs')).getPort()
+const getPort = async () => (await import('get-port')).getPort
 
 Test('Server Setup', async setupTest => {
   let sandbox
