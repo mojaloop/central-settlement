@@ -13,9 +13,7 @@ const expectedContainers = [
   'cs_central-ledger',
   'cs_kafka',
   'cs_ml-api-adapter',
-  'cs_mysql',
-  'cs_simulator',
-  'kafka-provisioning'
+  'cs_mysql'
 ]
 
 let retries = 40

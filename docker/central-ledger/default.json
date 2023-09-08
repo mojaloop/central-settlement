@@ -35,7 +35,7 @@
   },
   "MONGODB": {
     "DISABLED": true,
-    "URI": "mongodb://localhost:27017/mlos"
+    "URI": "mongodb://objstore:27017/mlos"
   },
   "ERROR_HANDLING": {
     "includeCauseExtension": true,
