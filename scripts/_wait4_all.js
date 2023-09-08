@@ -9,13 +9,13 @@ const { execSync } = require('child_process')
 
 // Define the docker-compose containers you want to monitor here
 const expectedContainers = [
-  'cs_central_settlement',
+  'cs_central-settlement',
   'cs_central-ledger',
   'cs_kafka',
   'cs_ml-api-adapter',
-  'cs_ml-api-adapter-endpoint',
   'cs_mysql',
-  'cs_simulator'
+  'cs_simulator',
+  'kafka-provisioning'
 ]
 
 let retries = 40
