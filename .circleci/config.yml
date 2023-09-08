@@ -27,6 +27,16 @@ defaults_docker_Dependencies: &defaults_docker_Dependencies |
   apk --no-cache add -t openssl ncurses coreutils libgcc linux-headers grep util-linux binutils findutils
   apk --no-cache add librdkafka-dev
 
+## Default 'default-machine' executor dependencies
+defaults_machine_Dependencies: &defaults_machine_Dependencies |
+  ## Add Package Repos
+  ## Ref: https://docs.confluent.io/platform/current/installation/installing_cp/deb-ubuntu.html#get-the-software
+  wget -qO - https://packages.confluent.io/deb/7.4/archive.key | sudo apt-key add -
+  sudo add-apt-repository -y "deb https://packages.confluent.io/clients/deb $(lsb_release -cs) main"
+
+  ## Install deps
+  sudo apt install -y librdkafka-dev curl bash
+
 defaults_awsCliDependencies: &defaults_awsCliDependencies |
     apk --no-cache add aws-cli
 
@@ -276,6 +286,32 @@ jobs:
       - store_artifacts:
           path: coverage
           destination: test
+  
+  build-local:
+    executor: default-machine
+    environment:
+      <<: *defaults_environment
+    steps:
+      - checkout
+      - run:
+          <<: *defaults_configure_nvmrc
+      - run:
+          <<: *defaults_display_versions
+      - run:
+          name: Build Docker local image
+          command: |
+            source ~/.profile
+            export DOCKER_NODE_VERSION="$NVMRC_VERSION-alpine"
+            echo "export DOCKER_NODE_VERSION=$NVMRC_VERSION-alpine" >> $BASH_ENV
+            echo "Building Docker image: ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:local --build-arg NODE_VERSION=$DOCKER_NODE_VERSION"
+            docker build -t ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:local --build-arg NODE_VERSION=$DOCKER_NODE_VERSION .
+      - run:
+          name: Save docker image to workspace
+          command: docker save -o /tmp/docker-image.tar ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:local
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - ./docker-image.tar
 
   test-integration:
     executor: default-machine
@@ -284,17 +320,56 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install general dependencies
+          command: *defaults_machine_Dependencies
+      - run:
           <<: *defaults_configure_nvm
       - run:
           <<: *defaults_display_versions
       - restore_cache:
           key: dependency-cache-{{ .Environment.CIRCLE_SHA1 }}
       - run:
+          name: Update NPM install
+          command: |
+            # Set Node version to default (Note: this is needed on Ubuntu)
+            nvm use default
+
+            # Install dependencies
+            npm ci
+      - run:
           name: Create dir for test results
           command: mkdir -p ./test/results
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name: Load the pre-built docker image from workspace
+          command: docker load -i /tmp/docker-image.tar
+      - run:
+          name: Start docker-compose
+          command: |
+            docker-compose up -d
+
+            # Check straight away to see if any containers have exited
+            docker-compose ps
+      - run:
+          name: Wait 4 Health Services
+          command: |
+            # Set Node version to default (Note: this is needed on Ubuntu)
+            nvm use default
+
+            # wait for services to be up and running
+            npm run wait-4-docker
       - run:
           name: Execute integration tests
-          command: npm -s run test:integration
+          command: |
+            # Set Node version to default (Note: this is needed on Ubuntu)
+            nvm use default
+
+            # check service health
+            curl localhost:3000/health && \
+
+            # run integration tests
+            npm -s run test:integration
       - store_artifacts:
           path: ./test/results
           destination: test
@@ -345,32 +420,6 @@ jobs:
       - store_artifacts:
           path: /tmp/license-scanner/results
           destination: licenses
-
-  build-local:
-    executor: default-machine
-    environment:
-      <<: *defaults_environment
-    steps:
-      - checkout
-      - run:
-          <<: *defaults_configure_nvmrc
-      - run:
-          <<: *defaults_display_versions
-      - run:
-          name: Build Docker local image
-          command: |
-            source ~/.profile
-            export DOCKER_NODE_VERSION="$NVMRC_VERSION-alpine"
-            echo "export DOCKER_NODE_VERSION=$NVMRC_VERSION-alpine" >> $BASH_ENV
-            echo "Building Docker image: ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:local --build-arg NODE_VERSION=$DOCKER_NODE_VERSION"
-            docker build -t ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:local --build-arg NODE_VERSION=$DOCKER_NODE_VERSION .
-      - run:
-          name: Save docker image to workspace
-          command: docker save -o /tmp/docker-image.tar ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:local
-      - persist_to_workspace:
-          root: /tmp
-          paths:
-            - ./docker-image.tar
 
   license-scan:
     executor: default-machine
@@ -738,7 +787,7 @@ workflows:
       - test-integration:
           context: org-global
           requires:
-            - setup
+            - build-local
           filters:
             tags:
               only: /.*/
@@ -808,6 +857,7 @@ workflows:
           context: org-global
           requires:
             - pr-tools/pr-title-check
+            - build-local
             - test-lint
             - test-unit
             - test-coverage
@@ -833,6 +883,7 @@ workflows:
           context: org-global
           requires:
             - pr-tools/pr-title-check
+            - build-local
             - test-lint
             - test-unit
             - test-coverage
@@ -850,6 +901,7 @@ workflows:
           context: org-global
           requires:
             - pr-tools/pr-title-check
+            - build-local
             - test-lint
             - test-unit
             - test-coverage

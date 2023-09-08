@@ -1,10 +1,14 @@
 version: "3.7"
+
+networks:
+  cs-mojaloop-net:
+    name: cs-mojaloop-net
+
 services:
   central-settlement:
+    image: mojaloop/central-settlement:local
     build:
       context: .
-      cache_from:
-        - mojaloop/central-settlement:latest
     container_name: cs_central-settlement
     command:
       - "sh"
@@ -23,6 +27,8 @@ services:
     volumes:
       - ./docker/central-settlement/default.json:/opt/app/config/default.json
       - ./docker/wait-for:/opt/wait-for
+    networks:
+      - cs-mojaloop-net
 
   central-ledger:
     image: mojaloop/central-ledger:latest
@@ -42,6 +48,8 @@ services:
     volumes:
        - ./docker/central-ledger/default.json:/opt/app/config/default.json
        - ./docker/wait-for:/opt/wait-for
+    networks:
+      - cs-mojaloop-net
 
   ml-api-adapter:
     image: mojaloop/ml-api-adapter:latest
@@ -61,6 +69,8 @@ services:
     volumes:
       - ./docker/ml-api-adapter/default.json:/opt/app/config/default.json
       - ./docker/wait-for:/opt/wait-for
+    networks:
+      - cs-mojaloop-net
 
   mysql:
     image: mysql/mysql-server
@@ -70,6 +80,8 @@ services:
     volumes:
       #this fixes the permissions issue, but docker-compose up will fail on first attempt
       - ./docker/sql-init/:/docker-entrypoint-initdb.d/
+    networks:
+      - cs-mojaloop-net
     environment:
       - MYSQL_USER=${DBUSER:-central_ledger}
       - MYSQL_PASSWORD=${DBPASS:-password}
@@ -87,6 +99,8 @@ services:
       - "8444:8444"
     environment:
       - TRANSFERS_ENDPOINT=http://ml-api-adapter:3000
+    networks:
+      - cs-mojaloop-net
 
 #  mockserver:
 #    image: jamesdbloom/mockserver
@@ -106,13 +120,43 @@ services:
 #      - /opt/wait-for/wait-for-mockserver.sh
 
   kafka:
-    image: johnnypark/kafka-zookeeper:2.3.0
+    image: docker.io/bitnami/kafka:3.5
     container_name: cs_kafka
-    # Disable kafka logging as it is far too verbose for debugging locally
-    logging:
-      driver: none
+    networks:
+      - cs-mojaloop-net
     ports:
-      - "2181:2181"
       - "9092:9092"
     environment:
-      - ADVERTISED_HOST=kafka
+      # BITNAMI_DEBUG: "yes"
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_CFG_LISTENERS: CONTROLLER://:9093,LISTENER_DOCKER://:29092,LISTENER_EXTERN://:9092
+      KAFKA_CFG_ADVERTISED_LISTENERS: LISTENER_DOCKER://kafka:29092,LISTENER_EXTERN://localhost:9092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,LISTENER_DOCKER:PLAINTEXT,LISTENER_EXTERN:PLAINTEXT
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CFG_MESSAGE_MAX_BYTES: 200000000
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_PROCESS_ROLES: broker,controller
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@127.0.0.1:9093
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_ENABLE_KRAFT: "true"
+    healthcheck:
+      test: ["CMD" ,"/opt/bitnami/kafka/bin/kafka-broker-api-versions.sh","--bootstrap-server","kafka:29092"]
+      timeout: 20s
+      retries: 10
+      start_period: 40s
+      interval: 30s
+
+  kafka-provisioning:
+    container_name: kafka-provisioning
+    networks:
+      - cs-mojaloop-net
+    image: docker.io/bitnami/kafka:3.5
+    depends_on:
+      - kafka
+    volumes:
+      - ./docker/kafka/scripts:/tmp/kafka/scripts
+    command: bash /tmp/kafka/scripts/provision.sh
+
