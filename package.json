@@ -58,7 +58,8 @@
         "dep:check": "npx ncu -e 2",
         "dep:update": "npx ncu -u",
         "release": "standard-version --releaseCommitMessageFormat 'chore(release): {{currentTag}} [skip ci]'",
-        "snapshot": "standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'chore(snapshot): {{currentTag}}'"
+        "snapshot": "standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'chore(snapshot): {{currentTag}}'",
+        "wait-4-docker": "node ./scripts/_wait4_all.js"
     },
     "dependencies": {
         "@hapi/basic": "7.0.2",
