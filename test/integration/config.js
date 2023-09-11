@@ -6,10 +6,10 @@ const config = {
   ML_API_ADAPTER_HOST: process.env.ML_API_ADAPTER_HOST || 'localhost',
   ML_API_ADAPTER_PORT: process.env.ML_API_ADAPTER_PORT || '3000',
   ML_API_ADAPTER_BASE: '',
-  SIMULATOR_HOST: process.env.SIMULATOR_HOST || 'localhost',
+  SIMULATOR_HOST: process.env.SIMULATOR_HOST || 'simulator',
   SIMULATOR_PORT: process.env.SIMULATOR_PORT || '8444',
   SIMULATOR_CORR_ENDPOINT: '/payeefsp/correlationid',
-  SIMULATOR_REMOTE_HOST: process.env.SIMULATOR_REMOTE_HOST || 'simulator-int',
+  SIMULATOR_REMOTE_HOST: process.env.SIMULATOR_REMOTE_HOST || 'simulator',
   SIMULATOR_REMOTE_PORT: process.env.SIMULATOR_REMOTE_PORT || '8444',
   get CENTRAL_LEDGER_URL () {
     return `${this.URI_PREFIX}://${this.CENTRAL_LEDGER_HOST}:${this.CENTRAL_LEDGER_PORT}${this.CENTRAL_LEDGER_BASE}`

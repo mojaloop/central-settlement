@@ -112,6 +112,9 @@ services:
       - ml-api-adapter
     ports:
       - "8444:8444"
+    # needed to make host.docker.internal work on linux
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - LOG_LEVEL=info
       - TRANSFERS_ENDPOINT=http://host.docker.internal:3000
