@@ -26,6 +26,7 @@ topics=(
   "topic-bulk-fulfil"
   "topic-bulk-processing"
   "topic-bulk-get"
+  "topic-deferredsettlement-close"
 )
 
 # Loop through the topics and create them using kafka-topics.sh
