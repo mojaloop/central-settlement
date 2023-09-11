@@ -64,9 +64,9 @@ Running integration tests (narrow)
 If you want to run integration tests in a repetitive manner, you can startup the test containers using `docker-compose`, login to running `central-settlement` container like so:
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.integration.yml up
+npm run docker:build && npm run docker:up
 
-#first time only:
+#first time only (in a new shell):
 docker exec -it cs_central-ledger sh
 npm run migrate
 

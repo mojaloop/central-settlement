@@ -112,10 +112,9 @@ services:
       - ml-api-adapter
     ports:
       - "8444:8444"
-    # needed to make host.docker.internal work on linux
     extra_hosts:
-      - "host.docker.internal:host-gateway"
-      - "simulator:host-gateway"
+      - "host.docker.internal:host-gateway" # needed to make "host.docker.internal" host route on linux
+      - "simulator:host-gateway" # needed to make "simulator" host name route properly for integration tests
     environment:
       - LOG_LEVEL=info
       - TRANSFERS_ENDPOINT=http://host.docker.internal:3000
