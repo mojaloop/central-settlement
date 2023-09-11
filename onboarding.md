@@ -139,7 +139,7 @@ We use `npm` scripts as a common entrypoint for running the tests.
 npm run test:unit
 
 # integration tests
-npm run test:integration
+npm run test:int
 
 # check test coverage
 npm run test:coverage
