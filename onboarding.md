@@ -1,6 +1,6 @@
 # Onboarding
 
->*Note:* Before completing this guide, make sure you have completed the _general_ onboarding guide in the [base mojaloop repository](https://github.com/mojaloop/mojaloop/blob/master/onboarding.md#mojaloop-onboarding).
+>*Note:* Before completing this guide, make sure you have completed the _general_ onboarding guide in the [base mojaloop repository](https://github.com/mojaloop/mojaloop/blob/main/onboarding.md#mojaloop-onboarding).
 
 ## Contents
 
@@ -20,7 +20,7 @@
 
 #  1. <a name='Prerequisites'></a>Prerequisites
 
-If you have followed the [general onboarding guide](https://github.com/mojaloop/mojaloop/blob/master/onboarding.md#mojaloop-onboarding), you should already have the following cli tools installed:
+If you have followed the [general onboarding guide](https://github.com/mojaloop/mojaloop/blob/main/onboarding.md#mojaloop-onboarding), you should already have the following cli tools installed:
 
 * `brew` (macOS), [todo: windows package manager]
 * `curl`, `wget`
@@ -139,7 +139,7 @@ We use `npm` scripts as a common entrypoint for running the tests.
 npm run test:unit
 
 # integration tests
-npm run test:integration
+npm run test:int
 
 # check test coverage
 npm run test:coverage
@@ -147,7 +147,7 @@ npm run test:coverage
 
 ### 5.1 Testing the `central-settlement` API with Postman
 
->Note: Make sure you have installed Postman and cloned the `mojaloop/postman` repo, which contains all the required collections and environments. You can find detailed instructions for this in the [general onboarding guide](https://github.com/mojaloop/mojaloop/blob/master/onboarding.md#2-postman).
+>Note: Make sure you have installed Postman and cloned the `mojaloop/postman` repo, which contains all the required collections and environments. You can find detailed instructions for this in the [general onboarding guide](https://github.com/mojaloop/mojaloop/blob/main/onboarding.md#2-postman).
 
 
 #### Prerequisites:

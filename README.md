@@ -1,5 +1,5 @@
 # central-settlements
-[![Git Commit](https://img.shields.io/github/last-commit/mojaloop/central-settlement.svg?style=flat)](https://github.com/mojaloop/central-settlement/commits/master)
+[![Git Commit](https://img.shields.io/github/last-commit/mojaloop/central-settlement.svg?style=flat)](https://github.com/mojaloop/central-settlement/commits/main)
 [![Git Releases](https://img.shields.io/github/release/mojaloop/central-settlement.svg?style=flat)](https://github.com/mojaloop/central-settlement/releases)
 [![Docker pulls](https://img.shields.io/docker/pulls/mojaloop/central-settlement.svg?style=flat)](https://hub.docker.com/r/mojaloop/central-settlement)
 [![CircleCI](https://circleci.com/gh/mojaloop/central-settlement.svg?style=svg)](https://app.circleci.com/pipelines/github/mojaloop/central-settlement)
@@ -64,9 +64,9 @@ Running integration tests (narrow)
 If you want to run integration tests in a repetitive manner, you can startup the test containers using `docker-compose`, login to running `central-settlement` container like so:
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.integration.yml up
+npm run docker:build && npm run docker:up
 
-#first time only:
+#first time only (in a new shell):
 docker exec -it cs_central-ledger sh
 npm run migrate
 
@@ -77,19 +77,21 @@ npm run test:int
 
 ## Auditing Dependencies
 
-We use `npm-audit-resolver` along with `npm audit` to check dependencies for node vulnerabilities, and keep track of resolved dependencies with an `audit-resolve.json` file.
+We use `audit-ci` along with `npm audit` to check dependencies for node vulnerabilities, and keep track of resolved dependencies with an `audit-ci.jsonc` file.
 
 To start a new resolution process, run:
+
 ```bash
-npm run audit:resolve
+npm run audit:fix
 ```
 
 You can then check to see if the CI will pass based on the current dependencies with:
+
 ```bash
 npm run audit:check
 ```
 
-And commit the changed `audit-resolv.json` to ensure that CircleCI will build correctly.
+The [audit-ci.jsonc](./audit-ci.jsonc) contains any audit-exceptions that cannot be fixed to ensure that CircleCI will build correctly.
 
 ## Container Scans
 

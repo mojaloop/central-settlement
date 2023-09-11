@@ -1,9 +1,9 @@
 {
   "PORT": 3007,
-  "HOSTNAME": "http://central-settlements.local",
+  "HOSTNAME": "http://central-settlement",
   "DATABASE": {
     "DIALECT": "mysql",
-    "HOST": "localhost",
+    "HOST": "mysql",
     "PORT": 3306,
     "USER": "central_ledger",
     "PASSWORD": "password",
@@ -71,7 +71,7 @@
             "rdkafkaConf": {
               "client.id": "cs-con-deferredsettlement-close",
               "group.id": "cs-group-deferredsettlement-close",
-              "metadata.broker.list": "kafka:9092",
+              "metadata.broker.list": "kafka:29092",
               "socket.keepalive.enable": true,
               "allow.auto.create.topics": true
             },
@@ -97,7 +97,7 @@
             "rdkafkaConf": {
               "client.id": "cs-con-notification-event",
               "group.id": "cs-group-notification-event",
-              "metadata.broker.list": "kafka:9092",
+              "metadata.broker.list": "kafka:29092",
               "socket.keepalive.enable": true,
               "allow.auto.create.topics": true
             },
@@ -117,7 +117,7 @@
             },
             "rdkafkaConf": {
               "debug": "all",
-              "metadata.broker.list": "kafka:9092",
+              "metadata.broker.list": "kafka:29092",
               "client.id": "cs-prod-notification-event",
               "event_cb": true,
               "compression.codec": "none",
@@ -142,7 +142,7 @@
               "messageCharset": "utf8"
             },
             "rdkafkaConf": {
-              "metadata.broker.list": "kafka:9092",
+              "metadata.broker.list": "kafka:29092",
               "client.id": "cs-prod-deferredsettlement-close",
               "event_cb": true,
               "dr_cb": true,

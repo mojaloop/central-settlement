@@ -30,7 +30,7 @@
 
 const ServerSetup = require('../../src/shared/setup')
 const ApiRoutes = require('../../src/api/routes')
-const getPort = require('get-port')
+const getPort = async () => (await import('get-port')).getPort
 
 const setup = async () => {
   const port = await getPort()
