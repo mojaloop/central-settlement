@@ -57,7 +57,7 @@
             "rdkafkaConf": {
               "client.id": "cep-con",
               "group.id": "cep-group",
-              "metadata.broker.list": "kafka:9092",
+              "metadata.broker.list": "kafka:29092",
               "socket.blocking.max.ms": 1,
               "fetch.wait.max.ms": 1,
               "fetch.error.backoff.ms": 1,
@@ -85,7 +85,7 @@
             },
             "rdkafkaConf": {
               "debug": "all",
-              "metadata.broker.list": "kafka:9092",
+              "metadata.broker.list": "kafka:29092",
               "client.id": "cep-prod",
               "event_cb": true,
               "compression.codec": "none",
