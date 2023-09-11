@@ -115,6 +115,7 @@ services:
     # needed to make host.docker.internal work on linux
     extra_hosts:
       - "host.docker.internal:host-gateway"
+      - "simulator:host-gateway"
     environment:
       - LOG_LEVEL=info
       - TRANSFERS_ENDPOINT=http://host.docker.internal:3000

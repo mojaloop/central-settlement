@@ -345,9 +345,6 @@ jobs:
           name: Load the pre-built docker image from workspace
           command: docker load -i /tmp/docker-image.tar
       - run:
-          name: Update host file
-          command: echo '127.0.0.1   simulator' | sudo tee -a /etc/hosts
-      - run:
           name: Start docker-compose
           command: |
             docker-compose up -d
