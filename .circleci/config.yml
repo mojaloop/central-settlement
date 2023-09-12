@@ -58,7 +58,7 @@ defaults_configure_git: &defaults_configure_git
     git config user.email ${GIT_CI_EMAIL}
     git config user.name ${GIT_CI_USER}
 
-efaults_configure_nvmrc: &defaults_configure_nvmrc
+defaults_configure_nvmrc: &defaults_configure_nvmrc
   name: Configure NVMRC
   command: |
     if [ -z "$NVMRC_VERSION" ]; then
