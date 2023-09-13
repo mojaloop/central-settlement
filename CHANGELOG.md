@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [15.0.2](https://github.com/mojaloop/central-settlement/compare/v15.0.1...v15.0.2) (2023-09-13)
+
+
+### Chore
+
+* fix ci config and "get-port" import ([#395](https://github.com/mojaloop/central-settlement/issues/395)) ([2bc480c](https://github.com/mojaloop/central-settlement/commit/2bc480c810fee977d018d42341e5c9544dfb9c74))
+
 ### [15.0.1](https://github.com/mojaloop/central-settlement/compare/v15.0.0...v15.0.1) (2023-09-11)
 
 
