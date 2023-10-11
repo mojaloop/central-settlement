@@ -243,7 +243,7 @@ Test('Producer', producerTest => {
       const getProducerStub = sandbox.stub()
       try {
         getProducerStub.returns(new KafkaProducer({}))
-        getProducerStub.withArgs(topicNameFailure).throws(`No producer found for topic ${topicNameFailure}`)
+        getProducerStub.withArgs(topicNameFailure).throws(new Error(`No producer found for topic ${topicNameFailure}`))
 
         // lets rewire the producer import
         const KafkaProducerProxy = rewire('../../../../src/lib/kafka/producer')
@@ -260,7 +260,7 @@ Test('Producer', producerTest => {
         test.end()
       } catch (e) {
         test.ok(e instanceof FSPIOPError)
-        test.ok(e.message === `The following Producers could not be disconnected: [{"topic":"${topicNameFailure}","error":"No producer found for topic ${topicNameFailure}"}]`)
+        test.ok(e.message === `The following Producers could not be disconnected: [{"topic":"${topicNameFailure}","error":"Error: No producer found for topic ${topicNameFailure}"}]`)
         test.end()
       }
     })
