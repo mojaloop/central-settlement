@@ -13,12 +13,12 @@ ARG NODE_VERSION=lts-alpine
 # Build Image
 FROM node:${NODE_VERSION} as builder
 
-USER root
-
 WORKDIR /opt/app/
 
-RUN apk add --no-cache -t build-dependencies git make gcc g++ python3 libtool autoconf automake bash \
-    && cd $(npm root -g)/npm
+RUN apk --no-cache add git
+RUN apk add --no-cache -t build-dependencies make gcc g++ python3 libtool openssl-dev autoconf automake bash \
+    && cd $(npm root -g)/npm \
+    && npm install -g node-gyp
 
 COPY package.json package-lock.json* /opt/app/
 RUN npm ci
