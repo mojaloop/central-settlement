@@ -1,7 +1,7 @@
 {
     "name": "central-settlement",
     "description": "Central settlements hosted by a scheme to record and make settlements.",
-    "version": "15.0.3",
+    "version": "15.0.4-snapshot.0",
     "license": "Apache-2.0",
     "private": false,
     "author": "ModusBox",
