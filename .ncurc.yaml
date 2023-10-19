@@ -1,5 +1,9 @@
 ## Add a TODO comment indicating the reason for each rejected dependency upgrade added to this list, and what should be done to resolve it (i.e. handle it through a story, etc).
 reject: [
   # @hapi/catbox-memory v6 and onwards breaks tests. Needs investigation.
-  "@hapi/catbox-memory"
+  "@hapi/catbox-memory",
+  "@mojaloop/central-ledger",
+  "@mojaloop/central-services-shared",
+  "@mojaloop/central-services-stream",
+  "@mojaloop/event-sdk"
 ]
