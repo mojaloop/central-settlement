@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [16.0.0](https://github.com/mojaloop/central-settlement/compare/v15.0.4...v16.0.0) (2023-11-06)
+
+
+### Bug Fixes
+
+* **mojaloop/#3615:** update dependencies ([#399](https://github.com/mojaloop/central-settlement/issues/399)) ([2fdc77e](https://github.com/mojaloop/central-settlement/commit/2fdc77e7e27bb4cd668b05d229dd94831919d049)), closes [mojaloop/#3615](https://github.com/mojaloop/project/issues/3615)
+
 ### [15.0.4](https://github.com/mojaloop/central-settlement/compare/v15.0.3...v15.0.4) (2023-10-19)
 
 
