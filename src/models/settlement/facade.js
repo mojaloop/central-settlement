@@ -34,7 +34,6 @@ const Uuid = require('uuid4')
 const Crypto = require('crypto')
 const Config = require('../../lib/config')
 const ParticipantFacade = require('@mojaloop/central-ledger/src/models/participant/facade')
-const Enums = require('../lib/enums')
 const Utility = require('../../lib/utility')
 const SettlementModelModel = require('./settlementModel')
 const Logger = require('@mojaloop/central-services-logger')
@@ -87,7 +86,7 @@ const getNotificationMessage = function (action, destination, payload) {
       headers: {
         'Content-Type': 'application/json',
         Date: new Date().toISOString(),
-        'FSPIOP-Source': Enums.headers.FSPIOP.SWITCH,
+        'FSPIOP-Source': Config.HUB_NAME,
         'FSPIOP-Destination': destination
       },
       payload
