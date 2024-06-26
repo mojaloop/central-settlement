@@ -36,7 +36,7 @@ services:
       interval: 30s
 
   central-ledger:
-    image: mojaloop/central-ledger:latest
+    image: mojaloop/central-ledger:v17.7.0-snapshot.16
     container_name: cs_central-ledger
     command:
       - "sh"
@@ -60,7 +60,7 @@ services:
       interval: 30s
 
   ml-api-adapter:
-    image: mojaloop/ml-api-adapter:latest
+    image: mojaloop/ml-api-adapter:v14.1.0-snapshot.13
     container_name: cs_ml-api-adapter
     command:
       - "sh"
