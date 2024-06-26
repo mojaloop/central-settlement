@@ -225,7 +225,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
           }
         })
       })
-      netSettlementSenderId = participantFilter[0].id
+      netSettlementSenderId = participantFilter[0]?.id
       participantFilter = settlementData.participants.filter(participant => {
         return participant.accounts.find(account => {
           if (account.netSettlementAmount.currency === currency && account.netSettlementAmount.amount < 0) {
@@ -236,7 +236,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
           }
         })
       })
-      netSettlementRecipientId = participantFilter[0].id
+      netSettlementRecipientId = participantFilter[0]?.id
       // data retrieved and stored into module scope variables
 
       const params = {
