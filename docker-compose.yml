@@ -106,7 +106,7 @@ services:
       interval: 30s
 
   simulator:
-    image: mojaloop/simulator:local
+    image: mojaloop/simulator:v12.3.0-snapshot.0
     container_name: cs_simulator
     depends_on:
       - ml-api-adapter
