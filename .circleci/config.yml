@@ -801,7 +801,7 @@ workflows:
             - build-local
           filters:
             tags:
-              only: /.*/
+              # only: /.*/
               # disabling integration tests for snapshots until tests are fixed for fx compatibility
               ignore:  /v[0-9]+(\.[0-9]+)*(\-snapshot(\.[0-9]+)?)?/ 
             branches:
@@ -909,7 +909,7 @@ workflows:
             - image-scan
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*\-snapshot+((\.[0-9]+)?)?/
+              only: /v[0-9]+(\.[0-9]+)*\-snapshot+((\.[0-9]+)?)/
             branches:
               ignore:
                 - /.*/
