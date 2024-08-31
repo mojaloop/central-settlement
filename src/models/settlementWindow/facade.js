@@ -160,11 +160,9 @@ const Facade = {
           await knex('settlementWindow').transacting(trx)
             .where({ settlementWindowId: newSettlementWindowId })
             .update({ currentStateChangeId: newSettlementWindowStateChangeId })
-          await trx.commit
           return newSettlementWindowId[0]
         } catch (err) {
           Logger.isErrorEnabled && Logger.error(err)
-          await trx.rollback
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
       })
@@ -281,12 +279,9 @@ const Facade = {
           await knex('settlementWindow').transacting(trx)
             .where({ settlementWindowId })
             .update({ currentStateChangeId: settlementWindowStateChangeId })
-
-          await trx.commit
           return true
         } catch (err) {
           Logger.isErrorEnabled && Logger.error(err)
-          await trx.rollback
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
       })
