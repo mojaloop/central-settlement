@@ -11,8 +11,5 @@ reject: [
   "@mojaloop/central-services-error-handling",
   "@mojaloop/event-sdk",
   # prevents CI from running package install in v6.1.1
-  "sinon",
-  # upgrading chai beyond v4.3.10 causes peer dependencies conflict.
-  # can be upgraded when chai-exclude is upgraded.
-  "chai"
+  "sinon"
 ]
