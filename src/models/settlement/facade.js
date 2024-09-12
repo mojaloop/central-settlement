@@ -120,7 +120,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
     .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyId', 'spc.settlementParticipantCurrencyId')
     .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'spc.participantCurrencyId')
     .leftJoin('transferDuplicateCheck AS tdc', 'tdc.transferId', 'spc.settlementTransferId')
-    .select('spc.*', 'pc.currencyId')
+    .select('spc.*', 'pc.currencyId', 'pc.participantId')
     .where('spc.settlementId', settlementId)
     .where('spcsc.settlementStateId', enums.settlementStates.PS_TRANSFERS_RECORDED)
     .whereNotNull('spc.settlementTransferId')
@@ -183,7 +183,8 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           transferParticipantRoleTypeId: enums.transferParticipantRoleTypes.HUB,
           ledgerEntryTypeId,
           amount: t.netAmount,
-          createdDate: transactionTimestamp
+          createdDate: transactionTimestamp,
+          participantId: Config.HUB_ID
         })
         .transacting(trx)
       await knex('transferParticipant')
@@ -193,7 +194,8 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           transferParticipantRoleTypeId: enums.transferParticipantRoleTypes.DFSP_POSITION,
           ledgerEntryTypeId,
           amount: -t.netAmount,
-          createdDate: transactionTimestamp
+          createdDate: transactionTimestamp,
+          participantId: t.participantId
         })
         .transacting(trx)
 

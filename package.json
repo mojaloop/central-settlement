@@ -119,7 +119,7 @@
         "replace": "^1.2.2",
         "rewire": "7.0.0",
         "sinon": "16.1.0",
-        "standard": "17.1.0",
+        "standard": "17.1.1",
         "standard-version": "^9.5.0",
         "supertest": "7.0.0",
         "swagmock": "1.0.0",
