@@ -46,6 +46,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'transferParticipantRoleTypeId']))
           .select('E.ledgerEntryTypeId')
           .select(knex.raw('CASE ?? WHEN ? THEN ? WHEN ? THEN ? ELSE ? END AS ??', ['P.name', ledgerEntry.payerFspId, ledgerEntry.amount, ledgerEntry.payeeFspId, ledgerEntry.amount * -1, 0, 'amount']))
+          .select('PC.participantId')
           .from('participantCurrency as PC')
           .innerJoin('participant as P', 'P.participantId', 'PC.participantId')
           .innerJoin('ledgerEntryType as E', 'E.LedgerAccountTypeId', 'PC.LedgerAccountTypeId')
