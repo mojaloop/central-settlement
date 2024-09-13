@@ -171,12 +171,12 @@ async function updateTransferSettlement (transferId, status, trx = null) {
     const trxFunction = async (trx, doCommit = true) => {
       try {
         // Insert TransferParticipant ledger entry type.
-        await knex.from(knex.raw('transferParticipant (transferID, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, amount)'))
+        await knex.from(knex.raw('transferParticipant (transferID, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, participantId, amount)'))
           // insert debit/credit ledger entries for matching ledger entries for both Settlement and Position accounts
           .insert(function () {
             this.from('transferParticipant AS TP')
               // Select ledger entries for POSITION accounts that match the Settlement Model based on the Granularity type with REVERSED amounts
-              .select('TP.transferId', 'TP.participantCurrencyId', 'TP.transferParticipantRoleTypeId', 'TP.ledgerEntryTypeId', knex.raw('?? * -1', ['TP.amount']))
+              .select('TP.transferId', 'TP.participantCurrencyId', 'TP.transferParticipantRoleTypeId', 'TP.ledgerEntryTypeId', 'TP.participantId', knex.raw('?? * -1', ['TP.amount']))
               .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
               .innerJoin('settlementModel AS M', 'PC.ledgerAccountTypeId', 'M.ledgerAccountTypeId')
               .innerJoin('settlementGranularity AS G', 'M.settlementGranularityId', 'G.settlementGranularityId')
@@ -188,7 +188,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
               })
               .union(function () {
                 // Select ledger entries for SETTLEMENT accounts that match the Settlement Model based on the Granularity type with NORMAL amounts
-                this.select('TP.transferId', 'PC1.participantCurrencyId', 'TP.transferParticipantRoleTypeId', 'TP.ledgerEntryTypeId', 'TP.amount')
+                this.select('TP.transferId', 'PC1.participantCurrencyId', 'TP.transferParticipantRoleTypeId', 'TP.ledgerEntryTypeId', 'TP.participantId', 'TP.amount')
                   .from('transferParticipant AS TP')
                   .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
                   .innerJoin('settlementModel AS M', 'PC.ledgerAccountTypeId', 'M.ledgerAccountTypeId')
@@ -259,10 +259,10 @@ async function updateTransferSettlement (transferId, status, trx = null) {
           .transacting(trx)
 
         // Insert new participant position change records
-        await knex.from(knex.raw('participantPositionChange (participantPositionId, transferStateChangeId, value, reservedValue)'))
+        await knex.from(knex.raw('participantPositionChange (participantPositionId, transferStateChangeId, value, reservedValue, participantCurrencyId)'))
           .insert(function () {
             this.from('participantPosition AS PP')
-              .select('PP.participantPositionId', 'TSC.transferStateChangeId', 'PP.value', 'PP.reservedValue')
+              .select('PP.participantPositionId', 'TSC.transferStateChangeId', 'PP.value', 'PP.reservedValue', 'PP.participantCurrencyId')
               .innerJoin(function () {
                 this.from('transferParticipant AS TP')
                   .select('PC.participantCurrencyId')
