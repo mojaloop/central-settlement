@@ -91,7 +91,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
         }
 
         const participantPositionRecords = await knex('participantPosition')
-          .select('participantPositionId', 'value', 'reservedValue')
+          .select('participantPositionId', 'participantCurrencyId', 'value', 'reservedValue')
           .where('participantCurrencyId', recordsToInsert[0].participantCurrencyId)
           .orWhere('participantCurrencyId', recordsToInsert[1].participantCurrencyId)
           .transacting(trx)

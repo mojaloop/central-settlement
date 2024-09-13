@@ -342,6 +342,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
           await knex('participantPositionChange')
             .insert({
               participantPositionId: dfspPositionId,
+              participantCurrencyId: dfspAccountId,
               transferStateChangeId,
               value: new MLNumber(dfspPositionValue).add(dfspAmount).toNumber(),
               reservedValue: dfspReservedValue,
@@ -378,6 +379,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
           await knex('participantPositionChange')
             .insert({
               participantPositionId: hubPositionId,
+              participantCurrencyId: hubAccountId,
               transferStateChangeId,
               value: new MLNumber(hubPositionValue).add(hubAmount).toNumber(),
               reservedValue: 0,
@@ -499,6 +501,7 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
           await knex('participantPositionChange')
             .insert({
               participantPositionId: dfspPositionId,
+              participantCurrencyId: dfspAccountId,
               transferStateChangeId,
               value: dfspPositionValue - dfspAmount,
               reservedValue: dfspReservedValue,
@@ -535,6 +538,7 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
           await knex('participantPositionChange')
             .insert({
               participantPositionId: hubPositionId,
+              participantCurrencyId: hubAccountId,
               transferStateChangeId,
               value: hubPositionValue - hubAmount,
               reservedValue: 0,
@@ -672,6 +676,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
           await knex('participantPositionChange')
             .insert({
               participantPositionId: dfspPositionId,
+              participantCurrencyId: dfspAccountId,
               transferStateChangeId,
               value: new MLNumber(dfspPositionValue).add(dfspAmount).toNumber(),
               reservedValue: dfspReservedValue,
@@ -697,6 +702,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
           await knex('participantPositionChange')
             .insert({
               participantPositionId: hubPositionId,
+              participantCurrencyId: hubAccountId,
               transferStateChangeId,
               value: new MLNumber(hubPositionValue).add(hubAmount).toNumber(),
               reservedValue: 0,
