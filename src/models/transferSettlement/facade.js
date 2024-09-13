@@ -111,12 +111,12 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           .transacting(trx)
 
         if (doCommit) {
-          await trx.commit
+          await trx.commit()
         }
       } catch (err) {
         Logger.isErrorEnabled && Logger.error(err)
         if (doCommit) {
-          await trx.rollback
+          await trx.rollback()
         }
         throw err
       }
@@ -143,12 +143,12 @@ async function insertLedgerEntries (ledgerEntries, transferId, trx = null) {
           await insertLedgerEntry(ledgerEntry, transferId, trx)
         }
         if (doCommit) {
-          await trx.commit
+          await trx.commit()
         }
       } catch (err) {
         Logger.isErrorEnabled && Logger.error(err)
         if (doCommit) {
-          await trx.rollback
+          await trx.rollback()
         }
         throw err
       }
@@ -303,11 +303,11 @@ async function updateTransferSettlement (transferId, status, trx = null) {
           .transacting(trx)
 
         if (doCommit) {
-          await trx.commit
+          await trx.commit()
         }
       } catch (err) {
         if (doCommit) {
-          await trx.rollback
+          await trx.rollback()
         }
         throw err
       }

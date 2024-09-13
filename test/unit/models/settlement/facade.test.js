@@ -2909,6 +2909,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           const knexStub = sandbox.stub()
           const trxStub = sandbox.stub()
           trxStub.commit = sandbox.stub()
+          trxStub.rollback = sandbox.stub()
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
 
           Db.getKnex.returns(knexStub)

@@ -210,12 +210,12 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
         .transacting(trx)
 
       if (doCommit) {
-        await trx.commit
+        await trx.commit()
       }
     } catch (err) {
       Logger.isErrorEnabled && Logger.error(err)
       if (doCommit) {
-        await trx.rollback
+        await trx.rollback()
       }
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
@@ -389,13 +389,13 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
         }
 
         if (doCommit) {
-          await trx.commit
+          await trx.commit()
         }
       }
     } catch (err) {
       Logger.isErrorEnabled && Logger.error(err)
       if (doCommit) {
-        await trx.rollback
+        await trx.rollback()
       }
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
@@ -548,13 +548,13 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
         }
 
         if (doCommit) {
-          await trx.commit
+          await trx.commit()
         }
       }
     } catch (err) {
       Logger.isErrorEnabled && Logger.error(err)
       if (doCommit) {
-        await trx.rollback
+        await trx.rollback()
       }
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
@@ -723,13 +723,13 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
         }
 
         if (doCommit) {
-          await trx.commit
+          await trx.commit()
         }
       }
     } catch (err) {
       Logger.isErrorEnabled && Logger.error(err)
       if (doCommit) {
-        await trx.rollback
+        await trx.rollback()
       }
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
@@ -1206,7 +1206,7 @@ const Facade = {
               .transacting(trx)
           }
 
-          await trx.commit
+          await trx.commit()
 
           return {
             id: settlementId,
@@ -1218,7 +1218,7 @@ const Facade = {
         }
       } catch (err) {
         Logger.isErrorEnabled && Logger.error(err)
-        await trx.rollback
+        await trx.rollback()
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
@@ -1323,7 +1323,7 @@ const Facade = {
           .update({ currentStateChangeId: settlementStateChangeId })
           .transacting(trx)
 
-        await trx.commit
+        await trx.commit()
         return {
           id: settlementId,
           state: payload.state,
@@ -1331,7 +1331,7 @@ const Facade = {
         }
       } catch (err) {
         Logger.isErrorEnabled && Logger.error(err)
-        await trx.rollback
+        await trx.rollback()
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
@@ -1540,11 +1540,11 @@ const Facade = {
         await knex('settlement').transacting(trx)
           .where('settlementId', settlementId)
           .update({ currentStateChangeId: settlementStateChangeId })
-        await trx.commit
+        await trx.commit()
         return settlementId
       } catch (err) {
         Logger.isErrorEnabled && Logger.error(err)
-        await trx.rollback
+        await trx.rollback()
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })

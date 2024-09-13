@@ -144,7 +144,10 @@ Test('TransferSettlementHandler', async (transferSettlementHandlerTest) => {
     Kafka.produceGeneralMessage.returns(Promise.resolve())
     const knexStub = sandbox.stub()
     sandbox.stub(Db, 'getKnex').returns(knexStub)
-    const trxStub = sandbox.stub()
+    const trxStub = {
+      commit: sandbox.stub(),
+      rollback: sandbox.stub()
+    }
     knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
     SpanStub = {
       audit: sandbox.stub().callsFake(),
