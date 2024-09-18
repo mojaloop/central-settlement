@@ -216,12 +216,41 @@ const Facade = {
 
           await Promise.all(promiseArray)
           // Insert settlementContentAggregation
+          // let builder = knex
+          //   .from(knex.raw('settlementContentAggregation (settlementWindowContentId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, currentStateId, createdDate, amount)'))
+          //   .insert(function () {
+          //     this.from('transferFulfilment AS tf')
+          //       .join('transferParticipant AS tp', 'tp.transferId', 'tf.transferId')
+          //       .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'tp.participantCurrencyId')
+          //       .join('settlementWindowContent AS swc', function () {
+          //         this.on('swc.settlementWindowId', 'tf.settlementWindowId')
+          //           .on('swc.ledgerAccountTypeId', 'pc.ledgerAccountTypeId')
+          //           .on('swc.currencyId', 'pc.currencyId')
+          //       })
+          //       .join('settlementModel AS m', 'm.settlementModelId', 'swc.settlementModelId')
+          //       .where('tf.settlementWindowId', settlementWindowId)
+          //       .andWhere('m.settlementGranularityId', Enum.Settlements.SettlementGranularity.NET)
+          //       .groupBy('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId')
+          //       .select('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId',
+          //         knex.raw('? AS ??', [Enum.Settlements.SettlementWindowState.CLOSED, 'settlementWindowStateId']),
+          //         knex.raw('? AS ??', [transactionTimestamp, 'createdDate']))
+          //       .sum('tp.amount AS amount')
+          //   })
+          //   .transacting(trx)
+          // await builder
+
           let builder = knex
-            .from(knex.raw('settlementContentAggregation (settlementWindowContentId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, currentStateId, createdDate, amount)'))
+            .from(knex.raw('settlementContentAggregation (settlementWindowContentId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, currentStateId, createdDate, amount)')) // LedgerEntryType.PRINCIPAL_VALUE
             .insert(function () {
               this.from('transferFulfilment AS tf')
-                .join('transferParticipant AS tp', 'tp.transferId', 'tf.transferId')
-                .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'tp.participantCurrencyId')
+                .join('transferStateChange AS tsc', 'tsc.transferId', 'tf.transferId')
+                .join('participantPositionChange AS ppc', 'ppc.transferStateChangeId', 'tsc.transferStateChangeId')
+                .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'ppc.participantCurrencyId')
+                .join('participant AS p', 'p.participantId', 'pc.participantId')
+                .leftJoin('transferParticipant AS tp', function () {
+                  this.on('tp.participantId', 'p.participantId')
+                    .andOn('tp.transferId', 'tf.transferId')
+                })
                 .join('settlementWindowContent AS swc', function () {
                   this.on('swc.settlementWindowId', 'tf.settlementWindowId')
                     .on('swc.ledgerAccountTypeId', 'pc.ledgerAccountTypeId')
@@ -231,7 +260,9 @@ const Facade = {
                 .where('tf.settlementWindowId', settlementWindowId)
                 .andWhere('m.settlementGranularityId', Enum.Settlements.SettlementGranularity.NET)
                 .groupBy('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId')
-                .select('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId',
+                .select('swc.settlementWindowContentId', 'pc.participantCurrencyId',
+                  knex.raw('CASE WHEN ?? = NULL THEN ? ELSE ?? END AS transferParticipantRoleTypeId', ['tp.transferParticipantRoleTypeId', 7, 'tp.transferParticipantRoleTypeId']), // @todo 7 = Enum.Accounts.TransferParticipantRoleType.COUNTER_PARTY_FSP requires upgrade of cs-shared
+                  knex.raw('CASE WHEN ?? = NULL THEN ? ELSE ?? END AS ledgerEntryTypeId', ['tp.ledgerEntryTypeId', Enum.Accounts.LedgerEntryType.PRINCIPLE_VALUE, 'tp.ledgerEntryTypeId']),
                   knex.raw('? AS ??', [Enum.Settlements.SettlementWindowState.CLOSED, 'settlementWindowStateId']),
                   knex.raw('? AS ??', [transactionTimestamp, 'createdDate']))
                 .sum('tp.amount AS amount')
