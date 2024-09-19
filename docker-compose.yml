@@ -37,7 +37,8 @@ services:
 
   central-ledger:
     # image: mojaloop/central-ledger:v17.7.0-snapshot.16
-    image: mojaloop/central-ledger:v17.8.0-snapshot.27
+    # image: mojaloop/central-ledger:v17.8.0-snapshot.27
+    image: mojaloop/central-ledger:v17.8.0-snapshot.30
     container_name: cs_central-ledger
     command:
       - "sh"
