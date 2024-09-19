@@ -49,7 +49,8 @@ async function connectDatabase () {
   const dbLoadedTables = Db._tables ? Db._tables.length : -1
   Logger.isDebugEnabled && Logger.debug(`DB.connect loaded '${dbLoadedTables}' tables!`)
 
-  // Connect central-ledger database as well
+  // Initalize knex in central-ledger depedency
+  // This is required to be able to use the central-ledger models
   Logger.isDebugEnabled && Logger.debug(`Connecting Central-Ledger DB ${JSON.stringify(Config.DATABASE)}`)
   await CLDb.connect(Config.DATABASE)
   const clDbLoadedTables = CLDb._tables ? Db._tables.length : -1
