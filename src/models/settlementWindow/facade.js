@@ -240,7 +240,7 @@ const Facade = {
           // await builder
 
           let builder = knex
-            .from(knex.raw('settlementContentAggregation (settlementWindowContentId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, currentStateId, createdDate, amount)')) // LedgerEntryType.PRINCIPAL_VALUE
+            .from(knex.raw('settlementContentAggregation (settlementWindowContentId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, currentStateId, createdDate, amount)'))
             .insert(function () {
               this.from('transferFulfilment AS tf')
                 .join('transferStateChange AS tsc', 'tsc.transferId', 'tf.transferId')
