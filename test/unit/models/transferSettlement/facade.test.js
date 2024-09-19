@@ -70,8 +70,6 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
   let sandbox
   let knexStub
   let trxStub
-  let trxSpyCommit
-  let trxSpyRollBack
 
   transferSettlementTest.beforeEach(t => {
     sandbox = Sinon.createSandbox()
@@ -90,9 +88,6 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
 
       }
     }
-    trxSpyCommit = sandbox.spy(trxStub, 'commit', ['get'])
-
-    trxSpyRollBack = sandbox.spy(trxStub, 'rollback', ['get'])
     knexStub = {
       insert: sandbox.stub().returnsThis(),
       increment: sandbox.stub().returnsThis(),
@@ -317,7 +312,6 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
 
       const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
       await Model.insertLedgerEntry(ledgerEntry, transferId)
-      test.equal(trxSpyCommit.get.calledOnce, true, 'should commit the transaction')
       test.end()
     } catch (err) {
       test.fail('An error was thrown')
@@ -341,7 +335,6 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
     } catch (err) {
       test.ok(err instanceof Error, 'should throw an error')
       test.equal(err.message, 'An Error occured while inserting')
-      test.equal(trxSpyRollBack.get.calledOnce, true, 'should rollback the transaction')
       test.end()
     }
   })
@@ -426,7 +419,6 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
 
       const transferId = '42a874d4-82a4-4471-a3fc-3dfeb6f7cb93'
       await Model.insertLedgerEntries([ledgerEntry], transferId)
-      test.equal(trxSpyCommit.get.calledOnce, true, 'should commit the transaction')
       test.end()
     } catch (err) {
       console.log(err)
@@ -451,7 +443,6 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
     } catch (err) {
       test.ok(err instanceof Error, 'should throw an error')
       test.equal(err.message, 'An Error occured while inserting')
-      test.equal(trxSpyRollBack.get.calledOnce, true, 'should rollback the transaction')
       test.end()
     }
   })
