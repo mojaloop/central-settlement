@@ -265,7 +265,7 @@ const Facade = {
                   knex.raw('CASE WHEN ?? = NULL THEN ? ELSE ?? END AS ledgerEntryTypeId', ['tp.ledgerEntryTypeId', Enum.Accounts.LedgerEntryType.PRINCIPLE_VALUE, 'tp.ledgerEntryTypeId']),
                   knex.raw('? AS ??', [Enum.Settlements.SettlementWindowState.CLOSED, 'settlementWindowStateId']),
                   knex.raw('? AS ??', [transactionTimestamp, 'createdDate']))
-                .sum('tp.amount AS amount')
+                .sum('ppc.change AS amount')
             })
             .transacting(trx)
           await builder
