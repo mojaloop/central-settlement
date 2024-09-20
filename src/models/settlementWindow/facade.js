@@ -247,10 +247,6 @@ const Facade = {
                 .join('participantPositionChange AS ppc', 'ppc.transferStateChangeId', 'tsc.transferStateChangeId')
                 .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'ppc.participantCurrencyId')
                 .join('participant AS p', 'p.participantId', 'pc.participantId')
-                .leftJoin('transferParticipant AS tp', function () {
-                  this.on('tp.participantId', 'p.participantId')
-                    .andOn('tp.transferId', 'tf.transferId')
-                })
                 .join('settlementWindowContent AS swc', function () {
                   this.on('swc.settlementWindowId', 'tf.settlementWindowId')
                     .on('swc.ledgerAccountTypeId', 'pc.ledgerAccountTypeId')
@@ -259,10 +255,10 @@ const Facade = {
                 .join('settlementModel AS m', 'm.settlementModelId', 'swc.settlementModelId')
                 .where('tf.settlementWindowId', settlementWindowId)
                 .andWhere('m.settlementGranularityId', Enum.Settlements.SettlementGranularity.NET)
-                .groupBy('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId')
+                .groupBy('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId')
                 .select('swc.settlementWindowContentId', 'pc.participantCurrencyId',
-                  knex.raw('CASE WHEN ?? = NULL THEN ? ELSE ?? END AS transferParticipantRoleTypeId', ['tp.transferParticipantRoleTypeId', 7, 'tp.transferParticipantRoleTypeId']), // @todo 7 = Enum.Accounts.TransferParticipantRoleType.COUNTER_PARTY_FSP requires upgrade of cs-shared
-                  knex.raw('CASE WHEN ?? = NULL THEN ? ELSE ?? END AS ledgerEntryTypeId', ['tp.ledgerEntryTypeId', Enum.Accounts.LedgerEntryType.PRINCIPLE_VALUE, 'tp.ledgerEntryTypeId']),
+                  knex.raw('CASE WHEN ppc.change > 0 THEN ? ELSE ?? END AS transferParticipantRoleTypeId', [ Enum.Accounts.TransferParticipantRoleType.PAYER_DFSP, Enum.Accounts.TransferParticipantRoleType.PAYEE_DFSP]),
+                  knex.raw('? AS ??', [Enum.Accounts.LedgerEntryType.PRINCIPLE_VALUE, 'ledgerEntryTypeId']),
                   knex.raw('? AS ??', [Enum.Settlements.SettlementWindowState.CLOSED, 'settlementWindowStateId']),
                   knex.raw('? AS ??', [transactionTimestamp, 'createdDate']))
                 .sum('ppc.change AS amount')
@@ -278,10 +274,6 @@ const Facade = {
                 .join('participantPositionChange AS ppc', 'ppc.fxTransferStateChangeId', 'fxtsc.fxTransferStateChangeId')
                 .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'ppc.participantCurrencyId')
                 .join('participant AS p', 'p.participantId', 'pc.participantId')
-                .leftJoin('fxTransferParticipant AS fxtp', function () {
-                  this.on('fxtp.participantId', 'p.participantId')
-                    .andOn('fxtp.commitRequestId', 'fxtf.commitRequestId')
-                })
                 .join('settlementWindowContent AS swc', function () {
                   this.on('swc.settlementWindowId', 'fxtf.settlementWindowId')
                     .on('swc.ledgerAccountTypeId', 'pc.ledgerAccountTypeId')
@@ -290,10 +282,10 @@ const Facade = {
                 .join('settlementModel AS m', 'm.settlementModelId', 'swc.settlementModelId')
                 .where('fxtf.settlementWindowId', settlementWindowId)
                 .andWhere('m.settlementGranularityId', Enum.Settlements.SettlementGranularity.NET)
-                .groupBy('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'fxtp.transferParticipantRoleTypeId', 'fxtp.ledgerEntryTypeId')
+                .groupBy('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId')
                 .select('swc.settlementWindowContentId', 'pc.participantCurrencyId',
-                  knex.raw('CASE WHEN ?? = NULL THEN ? ELSE ?? END AS transferParticipantRoleTypeId', ['fxtp.transferParticipantRoleTypeId', 7, 'fxtp.transferParticipantRoleTypeId']), // @todo 7 = Enum.Accounts.TransferParticipantRoleType.COUNTER_PARTY_FSP requires upgrade of cs-shared
-                  knex.raw('CASE WHEN ?? = NULL THEN ? ELSE ?? END AS ledgerEntryTypeId', ['fxtp.ledgerEntryTypeId', Enum.Accounts.LedgerEntryType.PRINCIPLE_VALUE, 'fxtp.ledgerEntryTypeId']),
+                  knex.raw('CASE WHEN ppc.change > 0 THEN ? ELSE ?? END AS transferParticipantRoleTypeId', [ Enum.Accounts.TransferParticipantRoleType.PAYER_DFSP, Enum.Accounts.TransferParticipantRoleType.PAYEE_DFSP]),
+                  knex.raw('? AS ??', [Enum.Accounts.LedgerEntryType.PRINCIPLE_VALUE, 'ledgerEntryTypeId']),
                   knex.raw('? AS ??', [Enum.Settlements.SettlementWindowState.CLOSED, 'settlementWindowStateId']),
                   knex.raw('? AS ??', [transactionTimestamp, 'createdDate']))
                 .sum('ppc.change AS amount')
