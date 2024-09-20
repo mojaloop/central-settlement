@@ -50,6 +50,7 @@ const Facade = {
   },
 
   getTransfersCount: async function ({ settlementWindowId }) {
+    // Get fxTransferFulfilment count aswell?
     return Db.from('transferFulfilment').query(builder => {
       return builder
         .count('* as cnt')
@@ -80,6 +81,7 @@ const Facade = {
 
   getByParams: async function ({ query }) {
     const { participantId, state, fromDateTime, toDateTime, currency } = query
+    // Get from fxTransferFulfilment as well?
     return Db.from('settlementWindow').query(builder => {
       if (!participantId) {
         const b = builder
@@ -160,11 +162,9 @@ const Facade = {
           await knex('settlementWindow').transacting(trx)
             .where({ settlementWindowId: newSettlementWindowId })
             .update({ currentStateChangeId: newSettlementWindowStateChangeId })
-          await trx.commit
           return newSettlementWindowId[0]
         } catch (err) {
           Logger.isErrorEnabled && Logger.error(err)
-          await trx.rollback
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
       })
@@ -247,10 +247,6 @@ const Facade = {
                 .join('participantPositionChange AS ppc', 'ppc.transferStateChangeId', 'tsc.transferStateChangeId')
                 .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'ppc.participantCurrencyId')
                 .join('participant AS p', 'p.participantId', 'pc.participantId')
-                .leftJoin('transferParticipant AS tp', function () {
-                  this.on('tp.participantId', 'p.participantId')
-                    .andOn('tp.transferId', 'tf.transferId')
-                })
                 .join('settlementWindowContent AS swc', function () {
                   this.on('swc.settlementWindowId', 'tf.settlementWindowId')
                     .on('swc.ledgerAccountTypeId', 'pc.ledgerAccountTypeId')
@@ -259,16 +255,43 @@ const Facade = {
                 .join('settlementModel AS m', 'm.settlementModelId', 'swc.settlementModelId')
                 .where('tf.settlementWindowId', settlementWindowId)
                 .andWhere('m.settlementGranularityId', Enum.Settlements.SettlementGranularity.NET)
-                .groupBy('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId')
+                .groupBy('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId')
                 .select('swc.settlementWindowContentId', 'pc.participantCurrencyId',
-                  knex.raw('CASE WHEN ?? = NULL THEN ? ELSE ?? END AS transferParticipantRoleTypeId', ['tp.transferParticipantRoleTypeId', 7, 'tp.transferParticipantRoleTypeId']), // @todo 7 = Enum.Accounts.TransferParticipantRoleType.COUNTER_PARTY_FSP requires upgrade of cs-shared
-                  knex.raw('CASE WHEN ?? = NULL THEN ? ELSE ?? END AS ledgerEntryTypeId', ['tp.ledgerEntryTypeId', Enum.Accounts.LedgerEntryType.PRINCIPLE_VALUE, 'tp.ledgerEntryTypeId']),
+                  knex.raw('CASE WHEN ppc.change > 0 THEN ? ELSE ?? END AS transferParticipantRoleTypeId', [ Enum.Accounts.TransferParticipantRoleType.PAYER_DFSP, Enum.Accounts.TransferParticipantRoleType.PAYEE_DFSP]),
+                  knex.raw('? AS ??', [Enum.Accounts.LedgerEntryType.PRINCIPLE_VALUE, 'ledgerEntryTypeId']),
                   knex.raw('? AS ??', [Enum.Settlements.SettlementWindowState.CLOSED, 'settlementWindowStateId']),
                   knex.raw('? AS ??', [transactionTimestamp, 'createdDate']))
                 .sum('ppc.change AS amount')
             })
             .transacting(trx)
           await builder
+
+          const fxBuilder = knex
+            .from(knex.raw('settlementContentAggregation (settlementWindowContentId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, currentStateId, createdDate, amount)'))
+            .insert(function () {
+              this.from('fxTransferFulfilment AS fxtf')
+                .join('fxTransferStateChange AS fxtsc', 'fxtsc.commitRequestId', 'fxtf.commitRequestId')
+                .join('participantPositionChange AS ppc', 'ppc.fxTransferStateChangeId', 'fxtsc.fxTransferStateChangeId')
+                .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'ppc.participantCurrencyId')
+                .join('participant AS p', 'p.participantId', 'pc.participantId')
+                .join('settlementWindowContent AS swc', function () {
+                  this.on('swc.settlementWindowId', 'fxtf.settlementWindowId')
+                    .on('swc.ledgerAccountTypeId', 'pc.ledgerAccountTypeId')
+                    .on('swc.currencyId', 'pc.currencyId')
+                })
+                .join('settlementModel AS m', 'm.settlementModelId', 'swc.settlementModelId')
+                .where('fxtf.settlementWindowId', settlementWindowId)
+                .andWhere('m.settlementGranularityId', Enum.Settlements.SettlementGranularity.NET)
+                .groupBy('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId')
+                .select('swc.settlementWindowContentId', 'pc.participantCurrencyId',
+                  knex.raw('CASE WHEN ppc.change > 0 THEN ? ELSE ?? END AS transferParticipantRoleTypeId', [ Enum.Accounts.TransferParticipantRoleType.PAYER_DFSP, Enum.Accounts.TransferParticipantRoleType.PAYEE_DFSP]),
+                  knex.raw('? AS ??', [Enum.Accounts.LedgerEntryType.PRINCIPLE_VALUE, 'ledgerEntryTypeId']),
+                  knex.raw('? AS ??', [Enum.Settlements.SettlementWindowState.CLOSED, 'settlementWindowStateId']),
+                  knex.raw('? AS ??', [transactionTimestamp, 'createdDate']))
+                .sum('ppc.change AS amount')
+            })
+            .transacting(trx)
+          await fxBuilder
 
           // Insert settlementWindowContentStateChange
           builder = knex
@@ -313,11 +336,9 @@ const Facade = {
             .where({ settlementWindowId })
             .update({ currentStateChangeId: settlementWindowStateChangeId })
 
-          await trx.commit
           return true
         } catch (err) {
           Logger.isErrorEnabled && Logger.error(err)
-          await trx.rollback
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
       })

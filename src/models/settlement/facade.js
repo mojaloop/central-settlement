@@ -208,15 +208,8 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           createdDate: transactionTimestamp
         })
         .transacting(trx)
-
-      if (doCommit) {
-        await trx.commit
-      }
     } catch (err) {
       Logger.isErrorEnabled && Logger.error(err)
-      if (doCommit) {
-        await trx.rollback
-      }
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
@@ -246,7 +239,6 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
 const settlementTransfersReserve = async function (settlementId, transactionTimestamp, requireLiquidityCheck, enums, trx = null) {
   const knex = await Db.getKnex()
   let isLimitExceeded, transferStateChangeId
-
   // Retrieve list of PS_TRANSFERS_RESERVED, but not RESERVED
   const settlementTransferList = await knex('settlementParticipantCurrency AS spc')
     .join('settlementParticipantCurrencyStateChange AS spcsc', function () {
@@ -389,16 +381,9 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             })
             .transacting(trx)
         }
-
-        if (doCommit) {
-          await trx.commit
-        }
       }
     } catch (err) {
       Logger.isErrorEnabled && Logger.error(err)
-      if (doCommit) {
-        await trx.rollback
-      }
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
@@ -550,16 +535,9 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
             })
             .transacting(trx)
         }
-
-        if (doCommit) {
-          await trx.commit
-        }
       }
     } catch (err) {
       Logger.isErrorEnabled && Logger.error(err)
-      if (doCommit) {
-        await trx.rollback
-      }
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
@@ -727,16 +705,9 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
           const message = Facade.getNotificationMessage(action, destination, payload)
           await Utility.produceGeneralMessage(Utility.ENUMS.NOTIFICATION, Utility.ENUMS.EVENT, message, Utility.ENUMS.STATE.SUCCESS)
         }
-
-        if (doCommit) {
-          await trx.commit
-        }
       }
     } catch (err) {
       Logger.isErrorEnabled && Logger.error(err)
-      if (doCommit) {
-        await trx.rollback
-      }
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
@@ -1211,9 +1182,6 @@ const Facade = {
               .update({ currentStateChangeId: settlementStateChangeId })
               .transacting(trx)
           }
-
-          await trx.commit
-
           return {
             id: settlementId,
             state: settlementData.settlementStateId,
@@ -1224,7 +1192,6 @@ const Facade = {
         }
       } catch (err) {
         Logger.isErrorEnabled && Logger.error(err)
-        await trx.rollback
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
@@ -1329,7 +1296,6 @@ const Facade = {
           .update({ currentStateChangeId: settlementStateChangeId })
           .transacting(trx)
 
-        await trx.commit
         return {
           id: settlementId,
           state: payload.state,
@@ -1337,7 +1303,6 @@ const Facade = {
         }
       } catch (err) {
         Logger.isErrorEnabled && Logger.error(err)
-        await trx.rollback
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
@@ -1546,11 +1511,9 @@ const Facade = {
         await knex('settlement').transacting(trx)
           .where('settlementId', settlementId)
           .update({ currentStateChangeId: settlementStateChangeId })
-        await trx.commit
         return settlementId
       } catch (err) {
         Logger.isErrorEnabled && Logger.error(err)
-        await trx.rollback
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
