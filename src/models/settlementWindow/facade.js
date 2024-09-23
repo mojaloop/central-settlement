@@ -255,13 +255,13 @@ const Facade = {
             .from(knex.raw('settlementContentAggregation (settlementWindowContentId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, currentStateId, createdDate, amount)'))
             .insert(function () {
               this.from(function () {
-                this.select('ppc.*', 'tf.settlementWindowId')
+                this.select('ppc.participantCurrencyId', 'ppc.change', 'tf.settlementWindowId')
                   .from('transferFulfilment AS tf')
                   .join('transferStateChange AS tsc', 'tsc.transferId', 'tf.transferId')
                   .join('participantPositionChange AS ppc', 'ppc.transferStateChangeId', 'tsc.transferStateChangeId')
                   .where('tf.settlementWindowId', settlementWindowId)
                   .unionAll(function () {
-                    this.select('ppc.*', 'fxtf.settlementWindowId')
+                    this.select('ppc.participantCurrencyId', 'ppc.change', 'fxtf.settlementWindowId')
                       .from('fxTransferFulfilment AS fxtf')
                       .join('fxTransferStateChange AS fxtsc', 'fxtsc.commitRequestId', 'fxtf.commitRequestId')
                       .join('participantPositionChange AS ppc', 'ppc.fxTransferStateChangeId', 'fxtsc.fxTransferStateChangeId')
