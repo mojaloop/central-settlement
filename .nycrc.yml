@@ -18,6 +18,5 @@ reporter: [
 exclude: [
   "**/node_modules/**",
   '**/migrations/**',
-  '**/docs/**',
-  'src/models/settlementWindow/facade.js' # TODO: remove this line once test coverage is updated  
+  '**/docs/**'
 ]

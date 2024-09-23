@@ -228,29 +228,6 @@ const Facade = {
 
           await Promise.all(promiseArray)
           // Insert settlementContentAggregation
-          // let builder = knex
-          //   .from(knex.raw('settlementContentAggregation (settlementWindowContentId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, currentStateId, createdDate, amount)'))
-          //   .insert(function () {
-          //     this.from('transferFulfilment AS tf')
-          //       .join('transferParticipant AS tp', 'tp.transferId', 'tf.transferId')
-          //       .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'tp.participantCurrencyId')
-          //       .join('settlementWindowContent AS swc', function () {
-          //         this.on('swc.settlementWindowId', 'tf.settlementWindowId')
-          //           .on('swc.ledgerAccountTypeId', 'pc.ledgerAccountTypeId')
-          //           .on('swc.currencyId', 'pc.currencyId')
-          //       })
-          //       .join('settlementModel AS m', 'm.settlementModelId', 'swc.settlementModelId')
-          //       .where('tf.settlementWindowId', settlementWindowId)
-          //       .andWhere('m.settlementGranularityId', Enum.Settlements.SettlementGranularity.NET)
-          //       .groupBy('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId')
-          //       .select('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'tp.transferParticipantRoleTypeId', 'tp.ledgerEntryTypeId',
-          //         knex.raw('? AS ??', [Enum.Settlements.SettlementWindowState.CLOSED, 'settlementWindowStateId']),
-          //         knex.raw('? AS ??', [transactionTimestamp, 'createdDate']))
-          //       .sum('tp.amount AS amount')
-          //   })
-          //   .transacting(trx)
-          // await builder
-
           let builder = knex
             .from(knex.raw('settlementContentAggregation (settlementWindowContentId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, currentStateId, createdDate, amount)'))
             .insert(function () {
