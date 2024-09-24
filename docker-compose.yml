@@ -60,7 +60,8 @@ services:
       interval: 30s
 
   ml-api-adapter:
-    image: mojaloop/ml-api-adapter:v14.1.0-snapshot.13
+    # image: mojaloop/ml-api-adapter:v14.1.0-snapshot.13
+    image: mojaloop/ml-api-adapter:v14.1.0.643-snapshot.0
     container_name: cs_ml-api-adapter
     command:
       - "sh"
@@ -106,7 +107,7 @@ services:
       interval: 30s
 
   simulator:
-    image: mojaloop/simulator:v12.3.0-snapshot.0
+    image: mojaloop/simulator:v12.3.0-snapshot.3
     container_name: cs_simulator
     depends_on:
       - ml-api-adapter
