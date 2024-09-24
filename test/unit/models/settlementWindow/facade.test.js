@@ -646,9 +646,8 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
 
           SettlementWindowFacade.getById = sandbox.stub().returns(undefined)
-          const result = await SettlementWindowFacade.close(params, enums)
-          test.ok(result, 'Result returned')
-          test.ok(SettlementWindowFacade.getById.withArgs({ settlementWindowId }).calledOnce)
+          await SettlementWindowFacade.close(params, enums)
+          test.fail('Error not thrown!')
           test.end()
         } catch (err) {
           Logger.error('Close settlementwindow failed with error : ' + err)
@@ -665,9 +664,8 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
 
           SettlementWindowFacade.getById = sandbox.stub().returns('INVALID STATE')
-          const result = await SettlementWindowFacade.close(params, enums)
-          test.ok(result, 'Result returned')
-          test.ok(SettlementWindowFacade.getById.withArgs({ settlementWindowId }).calledOnce)
+          await SettlementWindowFacade.close(params, enums)
+          test.fail('Error not thrown!')
           test.end()
         } catch (err) {
           Logger.error('Close settlementwindow failed with error : ' + err)
@@ -676,12 +674,8 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
         }
       })
 
-      await closeTest.test('close the specified open window should roll back on error.', async test => {
+      await closeTest.test('close the specified open window should throw an error.', async test => {
         try {
-          const knexStub = sandbox.stub()
-          knexStub.raw = sandbox.stub()
-          knexStub.from = sandbox.stub()
-          Db.getKnex.returns(knexStub)
           sandbox.stub(SettlementModel, 'getAll').resolves([
             {
               settlementModelId: 1,
@@ -690,7 +684,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
               settlementGranularity: 'NET',
               settlementInterchange: 'MULTILATERAL',
               settlementDelay: 'DEFERRED',
-              currency: 'USD',
+              currencyId: 'USD',
               requireLiquidityCheck: true,
               ledgerAccountTypeId: 'POSITION',
               autoPositionReset: true
@@ -702,54 +696,63 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
               settlementGranularity: 'NET',
               settlementInterchange: 'MULTILATERAL',
               settlementDelay: 'DEFERRED',
-              currency: null,
+              currencyId: null,
               requireLiquidityCheck: true,
               ledgerAccountTypeId: 'POSITION',
               autoPositionReset: true
             }
           ])
 
-          knexStub.from.withArgs('transferFulfilment AS tf').returns({
-            join: sandbox.stub().returns({
-              join: sandbox.stub().returns({
-                join: sandbox.stub().returns({
-                  where: sandbox.stub().returns({
-                    andWhere: sandbox.stub().returns({
-                      distinct: sandbox.stub().returns({
-                        transacting: sandbox.stub().resolves([
-                          {
-                            settlementWindowId: 31,
-                            ledgerAccountTypeId: 1,
-                            currencyId: 'USD',
-                            settlementModelId: 2
-                          },
-                          {
-                            settlementWindowId: 31,
-                            ledgerAccountTypeId: 1,
-                            currencyId: 'USD',
-                            settlementModelId: 1
-                          }
-                        ])
-                      })
-                    })
-                  })
-                })
-              })
-            })
-          })
+          const knexProps = {
+            select: sandbox.stub().returnsThis(),
+            from: sandbox.stub().returnsThis(),
+            where: sandbox.stub().returnsThis(),
+            join: sandbox.stub().returnsThis(),
+            update: sandbox.stub().returnsThis(),
+            insert: sandbox.stub().returnsThis(),
+            unionAll: sandbox.stub().returnsThis(),
+            as: sandbox.stub().returnsThis(),
+            distinct: sandbox.stub().returnsThis(),
+            raw: sandbox.stub().returnsThis(),
+            transaction: sandbox.stub().returnsThis(),
+            transacting: sandbox.stub().returns([])
+          }
+          const settlementWindowResult = [
+            {
+              settlementWindowId: 31,
+              ledgerAccountTypeId: 1,
+              currencyId: 'USD',
+              settlementModelId: 2
+            },
+            {
+              settlementWindowId: 31,
+              ledgerAccountTypeId: 1,
+              currencyId: 'USD',
+              settlementModelId: 1
+            }
+          ]
+          knexProps.transacting.onCall(0).returns(settlementWindowResult)
+
+          const knexStub = sandbox.stub().returns(knexProps)
+          Object.assign(knexStub, knexProps)
+
+          knexStub.withArgs('settlementWindow').returns({}) // This should cause an error
 
           const trxStub = sandbox.stub()
           trxStub.commit = sandbox.stub()
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
           const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
 
+          Db.getKnex.returns(knexStub)
+
           SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
-          const result = await SettlementWindowFacade.close(params, enums)
-          test.ok(result, 'Result returned')
+          await SettlementWindowFacade.close(params, enums)
+
+          test.fail('Error not thrown!')
           test.end()
         } catch (err) {
           Logger.error('Close settlementwindow failed with error : ' + err)
-          test.pass('Error thrown as expected')
+          test.ok('Error thrown as expected')
           test.end()
         }
       })
