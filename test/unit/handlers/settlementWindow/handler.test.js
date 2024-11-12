@@ -32,11 +32,12 @@ const Util = require('@mojaloop/central-services-shared').Util
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 const KafkaConsumer = require('@mojaloop/central-services-stream').Kafka.Consumer
-const Uuid = require('uuid4')
 const Enum = require('@mojaloop/central-services-shared').Enum
 const SettlementWindowService = require('../../../../src/domain/settlementWindow/index')
 const Proxyquire = require('proxyquire')
+const idGenerator = require('@mojaloop/central-services-shared').Util.id
 
+const generateULID = idGenerator({ type: 'ulid' })
 const payload = {
   settlementWindowId: '3',
   reason: 'test'
@@ -67,7 +68,7 @@ const transfer = {
 }
 
 const messageProtocol = {
-  id: Uuid(),
+  id: generateULID(),
   from: transfer.payerFsp,
   to: transfer.payeeFsp,
   type: 'application/json',
@@ -78,7 +79,7 @@ const messageProtocol = {
   },
   metadata: {
     event: {
-      id: Uuid(),
+      id: generateULID(),
       type: 'settlement',
       action: 'close',
       createdAt: new Date(),
@@ -92,7 +93,7 @@ const messageProtocol = {
 }
 
 const messageProtocolActionNotClosed = {
-  id: Uuid(),
+  id: generateULID(),
   from: transfer.payerFsp,
   to: transfer.payeeFsp,
   type: 'application/json',
@@ -103,7 +104,7 @@ const messageProtocolActionNotClosed = {
   },
   metadata: {
     event: {
-      id: Uuid(),
+      id: generateULID(),
       type: 'settlement',
       action: 'notClose',
       createdAt: new Date(),
@@ -117,7 +118,7 @@ const messageProtocolActionNotClosed = {
 }
 
 const messageProtocolMissingPayload = {
-  id: Uuid(),
+  id: generateULID(),
   from: transfer.payerFsp,
   to: transfer.payeeFsp,
   type: 'application/json',
@@ -127,7 +128,7 @@ const messageProtocolMissingPayload = {
   },
   metadata: {
     event: {
-      id: Uuid(),
+      id: generateULID(),
       type: 'settlement',
       action: 'close',
       createdAt: new Date(),

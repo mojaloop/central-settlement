@@ -30,13 +30,14 @@ const arrayDiff = require('lodash').difference
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const MLNumber = require('@mojaloop/ml-number')
 const Db = require('../../lib/db')
-const Uuid = require('uuid4')
+const idGenerator = require('@mojaloop/central-services-shared').Util.id
 const Crypto = require('crypto')
 const Config = require('../../lib/config')
 const ParticipantFacade = require('@mojaloop/central-ledger/src/models/participant/facade')
 const Utility = require('../../lib/utility')
 const SettlementModelModel = require('./settlementModel')
 const Logger = require('@mojaloop/central-services-logger')
+const generateULID = idGenerator({ type: 'ulid' })
 
 const groupByWindowsWithContent = (records) => {
   const settlementWindowsAssoc = {}
@@ -78,7 +79,7 @@ const groupByWindowsWithContent = (records) => {
 
 const getNotificationMessage = function (action, destination, payload) {
   return {
-    id: Uuid(),
+    id: generateULID(),
     from: Config.HUB_NAME,
     to: destination,
     type: 'application/json',
@@ -955,7 +956,7 @@ const Facade = {
                   createdDate: transactionTimestamp
                 }
                 if (accountPayload.state === enums.settlementStates.PS_TRANSFERS_RECORDED) {
-                  spcsc.settlementTransferId = Uuid()
+                  spcsc.settlementTransferId = generateULID()
                 }
                 settlementParticipantCurrencyStateChange.push(spcsc)
 

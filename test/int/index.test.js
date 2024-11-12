@@ -7,15 +7,15 @@ const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Config = require('../../src/lib/config')
 const KafkaProducer = require('@mojaloop/central-services-stream').Util.Producer
 const Enum = require('@mojaloop/central-services-shared').Enum
-const Uuid = require('uuid4')
 const Db = require('../../src/lib/db')
 const ilpPacket = require('ilp-packet')
 const base64url = require('base64url')
-
+const idGenerator = require('@mojaloop/central-services-shared').Util.id
 const chai = require('chai')
 const chaiExclude = require('chai-exclude')
 const chaiSubset = require('chai-subset')
 
+const generateULID = idGenerator({ type: 'ulid' })
 chai.use(chaiExclude)
 chai.use(chaiSubset)
 const expect = chai.expect
@@ -35,7 +35,7 @@ describe('when a transfer notification with COMMITTED status is received  ', () 
     await require('../../src/api/index.js')
     request = request(`http://localhost:${config.PORT}`)
 
-    const transactionId = Uuid()
+    const transactionId = generateULID()
     const message = {
       value: {
         from: 'fsp781121341',
