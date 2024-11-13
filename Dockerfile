@@ -7,7 +7,7 @@ ARG NODE_VERSION=lts-alpine
 #  docker build \
 #    --build-arg NODE_VERSION=$NODE_VERSION \
 #    -t mojaloop/sdk-scheme-adapter:local \
-#    . \
+#    .
 #
 
 # Build Image

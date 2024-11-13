@@ -96,8 +96,10 @@ async function fundsIn (participant, accountId, amount, currency) {
       currency
     }
   }
-
-  return axios.post(url, payload)
+  return await axios.put(url, payload).catch(function (error) {
+    Logger.error(`Error in fundsIn: ${JSON.stringify(error)}`)
+    throw error
+  })
 }
 
 async function sendTransfer (payerFsp, payeeFsp, transfer) {
