@@ -36,7 +36,7 @@ services:
   central-ledger:
     # image: mojaloop/central-ledger:v17.7.0-snapshot.16
     # image: mojaloop/central-ledger:v17.8.0-snapshot.27
-    image: mojaloop/central-ledger:local
+    image: mojaloop/central-ledger:v17.9.0-snapshot.2
     container_name: cs_central-ledger
     command:
       - "sh"
@@ -60,7 +60,8 @@ services:
       interval: 30s
 
   ml-api-adapter:
-    image: mojaloop/ml-api-adapter:v14.2.0-snapshot.14
+    # image: mojaloop/ml-api-adapter:v14.1.0-snapshot.13
+    image: mojaloop/ml-api-adapter:v14.1.0-snapshot.25
     container_name: cs_ml-api-adapter
     command:
       - "sh"
@@ -106,7 +107,7 @@ services:
       interval: 30s
 
   simulator:
-    image: mojaloop/simulator:local
+    image: mojaloop/simulator:v12.2.1-snapshot.2
     container_name: cs_simulator
     depends_on:
       - ml-api-adapter

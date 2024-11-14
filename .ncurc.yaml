@@ -11,5 +11,6 @@ reject: [
   "@mojaloop/central-services-error-handling",
   "@mojaloop/event-sdk",
   # prevents CI from running package install in v6.1.1
-  "sinon"
+  "sinon",
+  "node-fetch"
 ]

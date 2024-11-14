@@ -94,7 +94,7 @@
     },
     "devDependencies": {
         "@hapi/joi": "17.1.1",
-        "@mojaloop/central-services-metrics": "12.0.8",
+        "@mojaloop/central-services-metrics": "12.1.0",
         "@types/lodash": "4.17.13",
         "ajv": "8.17.1",
         "ajv-keywords": "5.1.0",
