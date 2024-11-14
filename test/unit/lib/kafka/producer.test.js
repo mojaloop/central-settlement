@@ -35,10 +35,11 @@ const Test = require('tapes')(require('tape'))
 const KafkaProducer = require('@mojaloop/central-services-stream').Kafka.Producer
 const Producer = require('../../../../src/lib/kafka/producer')
 const P = require('bluebird')
-const Uuid = require('uuid4')
+const idGenerator = require('@mojaloop/central-services-shared').Util.id
 const Logger = require('@mojaloop/central-services-logger')
 const FSPIOPError = require('@mojaloop/central-services-error-handling').Factory.FSPIOPError
 
+const generateULID = idGenerator({ type: 'ulid' })
 const transfer = {
   transferId: 'b51ec534-ee48-4575-b6a9-ead2955b8999',
   payerFsp: 'dfsp1',
@@ -75,7 +76,7 @@ const messageProtocol = {
   },
   metadata: {
     event: {
-      id: Uuid(),
+      id: generateULID(),
       type: 'prepare',
       action: 'prepare',
       createdAt: new Date(),

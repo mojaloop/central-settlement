@@ -4,7 +4,7 @@ const Sinon = require('sinon')
 const Test = require('tapes')(require('tape'))
 const Mustache = require('mustache')
 const P = require('bluebird')
-const Uuid = require('uuid4')
+const idGenerator = require('@mojaloop/central-services-shared').Util.id
 
 const KafkaProducer = require('@mojaloop/central-services-stream').Kafka.Producer
 const Utility = require('../../../src/lib/utility')
@@ -13,9 +13,9 @@ const NOTIFICATION = 'notification'
 const EVENT = 'event'
 
 const generalTopic = 'topic-notification-event'
-
+const generateULID = idGenerator({ type: 'ulid' })
 const messageProtocol = {
-  id: Uuid(),
+  id: generateULID(),
   from: 'central-switch',
   to: 'dfsp1',
   type: 'application/json',
@@ -34,7 +34,7 @@ const messageProtocol = {
   },
   metadata: {
     event: {
-      id: Uuid(),
+      id: generateULID(),
       type: 'dummy',
       action: 'settlement-transfer-position-change',
       createdAt: new Date(),

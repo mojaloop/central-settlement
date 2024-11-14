@@ -28,12 +28,13 @@
 
 const Config = require('../config')
 const Logger = require('@mojaloop/central-services-logger')
-const Uuid = require('uuid4')
 const transferParticipantStateChangeService = require('../../../src/domain/transferSettlement')
 const Api = require('../helpers/api')
 const Db = require('../../../src/lib/db')
 const Utils = require('../helpers/utils')
 const axios = require('axios')
+const idGenerator = require('@mojaloop/central-services-shared').Util.id
+const generateULID = idGenerator({ type: 'ulid' })
 const currencies = ['USD', 'TZS', 'EUR']
 
 const settlementModels = [
@@ -86,7 +87,7 @@ const fspList = [
 const transfers = []
 for (const currency of currencies) {
   transfers.push({
-    transferId: Uuid(),
+    transferId: generateULID(),
     amount: {
       amount: (10 + Math.floor(Math.random() * 9000) / 100).toString().substr(0, 5), // transfer amount between 10.00 and 100
       currency

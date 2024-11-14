@@ -30,7 +30,8 @@ const Sinon = require('sinon')
 const TestConfig = require('../../integration-config')
 const Logger = require('@mojaloop/central-services-logger')
 const fetch = require('node-fetch')
-const Uuid = require('uuid4')
+const idGenerator = require('@mojaloop/central-services-shared').Util.id
+const generateULID = idGenerator({ type: 'ulid' })
 
 const rand8 = () => {
   return Math.floor(Math.random() * 1000000000)
@@ -78,7 +79,7 @@ module.exports = {
       const transfers = []
       for (const currency of currencies) {
         transfers.push({
-          transferId: Uuid(),
+          transferId: generateULID(),
           amount: {
             amount: (10 + Math.floor(Math.random() * 9000) / 100).toString().substr(0, 5), // transfer amount between 10.00 and 100
             currency
