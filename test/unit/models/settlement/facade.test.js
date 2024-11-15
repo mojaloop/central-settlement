@@ -31,9 +31,11 @@ const Db = require('../../../../src/lib/db')
 const Logger = require('@mojaloop/central-services-logger')
 const SettlementFacade = require('../../../../src/models/settlement/facade')
 const ParticipantFacade = require('@mojaloop/central-ledger/src/models/participant/facade')
-const Uuid = require('uuid4')
+const idGenerator = require('@mojaloop/central-services-shared').Util.id
 const Utility = require('../../../../src/lib/utility')
 const FSPIOPError = require('@mojaloop/central-services-error-handling').Factory.FSPIOPError
+
+const generateULID = idGenerator({ type: 'ulid' })
 
 Test('Settlement facade', async (settlementFacadeTest) => {
   let sandbox
@@ -239,7 +241,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         netAmount: 800,
         createdDate: new Date(),
         currentStateChangeId: 3,
-        settlementTransferId: Uuid(),
+        settlementTransferId: generateULID(),
         currencyId: 'USD'
       },
       {
@@ -249,7 +251,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         netAmount: -800,
         createdDate: new Date(),
         currentStateChangeId: 4,
-        settlementTransferId: Uuid(),
+        settlementTransferId: generateULID(),
         currencyId: 'USD'
       },
       {
@@ -259,7 +261,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         netAmount: 0,
         createdDate: new Date(),
         currentStateChangeId: 5,
-        settlementTransferId: Uuid(),
+        settlementTransferId: generateULID(),
         currencyId: 'USD'
       }
     ]
@@ -267,7 +269,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
   stubData.settlementTransfersReserve = {
     settlementTransferList: [
       {
-        transferId: Uuid(),
+        transferId: generateULID(),
         ledgerEntryTypeId: 7,
         dfspAccountId: 3,
         dfspAmount: -800,
@@ -275,7 +277,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         hubAmount: 800
       },
       {
-        transferId: Uuid(),
+        transferId: generateULID(),
         ledgerEntryTypeId: 6,
         dfspAccountId: 5,
         dfspAmount: 800,
@@ -283,7 +285,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         hubAmount: -800
       },
       {
-        transferId: Uuid(),
+        transferId: generateULID(),
         ledgerEntryTypeId: 6,
         dfspAccountId: 5,
         dfspAmount: 1001,
@@ -295,7 +297,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
   stubData.settlementTransfersAbort = {
     settlementTransferList: [
       {
-        transferId: Uuid(),
+        transferId: generateULID(),
         ledgerEntryTypeId: 7,
         dfspAccountId: 3,
         dfspAmount: -800,
@@ -303,7 +305,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         hubAmount: 800
       },
       {
-        transferId: Uuid(),
+        transferId: generateULID(),
         ledgerEntryTypeId: 6,
         dfspAccountId: 5,
         dfspAmount: 800,
@@ -311,7 +313,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         hubAmount: -800
       },
       {
-        transferId: Uuid(),
+        transferId: generateULID(),
         ledgerEntryTypeId: 6,
         dfspAccountId: 5,
         dfspAmount: 1001,
@@ -323,7 +325,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
   stubData.settlementTransfersCommit = {
     settlementTransferList: [
       {
-        transferId: Uuid(),
+        transferId: generateULID(),
         ledgerEntryTypeId: 7,
         dfspAccountId: 3,
         dfspAmount: -800,
@@ -331,7 +333,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         hubAmount: 800
       },
       {
-        transferId: Uuid(),
+        transferId: generateULID(),
         ledgerEntryTypeId: 6,
         dfspAccountId: 5,
         dfspAmount: 800,

@@ -3,6 +3,25 @@
     "ID": 1,
     "NAME": "Hub"
   },
+  "PROXY_CACHE": {
+    "enabled": false,
+    "type": "redis-cluster",
+    "proxyConfig": {
+      "cluster": [
+        { "host": "localhost", "port": 6379 }
+      ]
+    }
+  },
+  "ORIGINAL_PAYLOAD_STORAGE": "",
+  "PAYLOAD_CACHE": {
+    "enabled": false,
+    "type": "redis-cluster",
+    "connectionConfig": {
+      "cluster": [
+        { "host": "localhost", "port": 6379 }
+      ]
+    }
+  },
   "PORT": 3000,
   "HOSTNAME": "http://ml-api-adapter",
   "ENDPOINT_SOURCE_URL": "http://central-ledger:3001",
