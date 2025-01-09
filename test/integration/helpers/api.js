@@ -127,7 +127,11 @@ async function sendTransfer (payerFsp, payeeFsp, transfer) {
     }
   }
   return axios.post(url, body, {
-    headers
+    headers,
+    transformRequest: [(data, headers) => {
+      headers.delete('Accept')
+      return typeof data === 'string' ? data : JSON.stringify(data)
+    }]
   })
 }
 

@@ -31,6 +31,7 @@
 const Boom = require('@hapi/boom')
 const Config = require('../lib/config')
 const Db = require('../lib/db')
+const CLDb = require('@mojaloop/central-ledger/src/lib/db')
 const Enums = require('../models/lib/enums')
 const ErrorHandling = require('@mojaloop/central-services-error-handling')
 const Hapi = require('@hapi/hapi')
@@ -47,6 +48,13 @@ async function connectDatabase () {
   await Db.connect(Config.DATABASE)
   const dbLoadedTables = Db._tables ? Db._tables.length : -1
   Logger.isDebugEnabled && Logger.debug(`DB.connect loaded '${dbLoadedTables}' tables!`)
+
+  // Initalize knex in central-ledger depedency
+  // This is required to be able to use the central-ledger models
+  Logger.isDebugEnabled && Logger.debug(`Connecting Central-Ledger DB ${JSON.stringify(Config.DATABASE)}`)
+  await CLDb.connect(Config.DATABASE)
+  const clDbLoadedTables = CLDb._tables ? Db._tables.length : -1
+  Logger.isDebugEnabled && Logger.debug(`CLDB.connect loaded '${clDbLoadedTables}' tables!`)
 }
 
 const createServer = async function (port, modules) {

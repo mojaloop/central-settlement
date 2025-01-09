@@ -40,6 +40,7 @@ Test('Server Setup', async setupTest => {
   let HapiOpenAPIStub
   let PathStub
   let DbStub
+  let CLDbStub
   let EnumsStub
   let ConfigStub
   let EngineStub
@@ -91,6 +92,9 @@ Test('Server Setup', async setupTest => {
       DbStub = {
         connect: sandbox.stub().returns(Promise.resolve())
       }
+      CLDbStub = {
+        connect: sandbox.stub().returns(Promise.resolve())
+      }
       HapiOpenAPIStub = sandbox.stub()
       PathStub = Path
       EnumsStub = [sandbox.stub()]
@@ -103,6 +107,7 @@ Test('Server Setup', async setupTest => {
         'hapi-openapi': HapiOpenAPIStub,
         path: PathStub,
         '../lib/db': DbStub,
+        '@mojaloop/central-ledger/src/lib/db': CLDbStub,
         '../models/lib/enums': EnumsStub,
         '../lib/config': ConfigStub
       })
@@ -137,6 +142,7 @@ Test('Server Setup', async setupTest => {
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
+            '@mojaloop/central-ledger/src/lib/db': CLDbStub,
             '../models/lib/enums': EnumsStub,
             '../lib/config': ConfigStub
           })
@@ -176,6 +182,7 @@ Test('Server Setup', async setupTest => {
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
+            '@mojaloop/central-ledger/src/lib/db': CLDbStub,
             '../models/lib/enums': EnumsStub,
             '../lib/config': ConfigStub
           })
@@ -216,6 +223,7 @@ Test('Server Setup', async setupTest => {
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
+            '@mojaloop/central-ledger/src/lib/db': CLDbStub,
             '../models/lib/enums': EnumsStub,
             '../lib/config': Config2Stub
           })
@@ -248,6 +256,7 @@ Test('Server Setup', async setupTest => {
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
+            '@mojaloop/central-ledger/src/lib/db': CLDbStub,
             '../models/lib/enums': EnumsStub,
             '../lib/config': ConfigStub,
             '@hapi/hapi': HapiStubThrowError
@@ -297,6 +306,7 @@ Test('Server Setup', async setupTest => {
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
+            '@mojaloop/central-ledger/src/lib/db': CLDbStub,
             '../models/lib/enums': EnumsStub,
             '../lib/config': ConfigStub
           })
@@ -340,6 +350,7 @@ Test('Server Setup', async setupTest => {
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
+            '@mojaloop/central-ledger/src/lib/db': CLDbStub,
             '../models/lib/enums': EnumsStub,
             '../lib/config': ConfigStub
           })
@@ -383,6 +394,7 @@ Test('Server Setup', async setupTest => {
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
+            '@mojaloop/central-ledger/src/lib/db': CLDbStub,
             '../models/lib/enums': EnumsStub,
             '../lib/config': ConfigStub
           })
@@ -426,6 +438,7 @@ Test('Server Setup', async setupTest => {
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
+            '@mojaloop/central-ledger/src/lib/db': CLDbStub,
             '../models/lib/enums': EnumsStub,
             '../lib/config': ConfigStub
           })
@@ -459,6 +472,7 @@ Test('Server Setup', async setupTest => {
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
+            '@mojaloop/central-ledger/src/lib/db': CLDbStub,
             '../models/lib/enums': EnumsStub,
             '../lib/config': ConfigStub
           })
