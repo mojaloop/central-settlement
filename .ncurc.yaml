@@ -10,6 +10,7 @@ reject: [
   # can be upgraded when @mojaloop/central-services-health and @mojaloop/sdk-standard-components are upgraded.
   "@mojaloop/central-services-error-handling",
   "@mojaloop/event-sdk",
+  "@mojaloop/sdk-standard-components",
   # prevents CI from running package install in v6.1.1
   "sinon"
 ]

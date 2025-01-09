@@ -37,6 +37,7 @@
     "GHSA-rjqq-98f6-6j3r", // https://github.com/advisories/GHSA-rjqq-98f6-6j3r
     "GHSA-rm97-x556-q36h", // https://github.com/advisories/GHSA-rm97-x556-q36h
     "GHSA-v88g-cgmw-v5xw", // https://github.com/advisories/GHSA-v88g-cgmw-v5xw
+    "GHSA-3xgq-45jj-v275", // https://github.com/advisories/GHSA-3xgq-45jj-v275
     "GHSA-w5p7-h5w8-2hfq"  // https://github.com/advisories/GHSA-w5p7-h5w8-2hfq
   ]
 }
