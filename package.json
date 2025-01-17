@@ -1,7 +1,7 @@
 {
     "name": "central-settlement",
     "description": "Central settlements hosted by a scheme to record and make settlements.",
-    "version": "16.0.0",
+    "version": "16.0.1",
     "license": "Apache-2.0",
     "private": false,
     "author": "ModusBox",
@@ -77,7 +77,7 @@
         "@mojaloop/central-services-health": "15.0.0",
         "@mojaloop/central-services-logger": "11.5.2",
         "@mojaloop/central-services-shared": "18.4.0",
-        "@mojaloop/central-services-stream":"11.4.2",
+        "@mojaloop/central-services-stream": "11.4.2",
         "@mojaloop/event-sdk": "14.1.2",
         "@mojaloop/ml-number": "11.2.5",
         "@mojaloop/sdk-standard-components": "19.6.3",
