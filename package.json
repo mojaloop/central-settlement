@@ -47,6 +47,8 @@
         "test:int": "npx tape 'test/integration/**/*.test.js'",
         "test:int:spec": "npm run test:int | tap-spec",
         "test:xint": "npm run test:int | tap-xunit > ./test/results/xunit-integration.xml",
+        "test:functional": "echo 'No functional tests defined'",
+        "test:integration": "echo 'No integration tests defined'",
         "docker:build": "docker build --build-arg NODE_VERSION=\"$(cat .nvmrc)-alpine\" -t mojaloop/central-settlement:local .",
         "docker:up": "docker-compose -f docker-compose.yml up",
         "docker:stop": "docker-compose -f docker-compose.yml stop",
