@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.0.0](https://github.com/mojaloop/central-settlement/compare/v16.0.1...v17.0.0) (2025-01-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* parameterize switch id and iso 20022 support (#416)
+
+### Features
+
+* parameterize switch id and iso 20022 support ([#416](https://github.com/mojaloop/central-settlement/issues/416)) ([936430e](https://github.com/mojaloop/central-settlement/commit/936430e673b45a93fdd1ca603a4eda44db66f3fd)), closes [mojaloop/#3984](https://github.com/mojaloop/project/issues/3984)
+
 ### [16.0.1](https://github.com/mojaloop/central-settlement/compare/v16.0.0...v16.0.1) (2025-01-17)
 
 
