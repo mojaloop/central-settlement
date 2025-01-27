@@ -217,7 +217,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
 
   for (t of settlementTransferList) {
     if (trx) {
-      await trxFunction(trx, false)
+      await trxFunction(trx)
     } else {
       await knex.transaction(trxFunction)
     }
@@ -390,7 +390,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
   }
 
   if (trx) {
-    await trxFunction(trx, false)
+    await trxFunction(trx)
   } else {
     await knex.transaction(trxFunction)
   }
@@ -544,7 +544,7 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
   }
 
   if (trx) {
-    await trxFunction(trx, false)
+    await trxFunction(trx)
   } else {
     await knex.transaction(trxFunction)
   }
@@ -714,7 +714,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
   }
 
   if (trx) {
-    await trxFunction(trx, false)
+    await trxFunction(trx)
   } else {
     await knex.transaction(trxFunction)
   }

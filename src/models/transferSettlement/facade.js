@@ -115,7 +115,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
       }
     }
     if (trx) {
-      return await trxFunction(trx, false)
+      return await trxFunction(trx)
     } else {
       return await knex.transaction(trxFunction)
     }
@@ -141,7 +141,7 @@ async function insertLedgerEntries (ledgerEntries, transferId, trx = null) {
       }
     }
     if (trx) {
-      return await trxFunction(trx, false)
+      return await trxFunction(trx)
     } else {
       return await knex.transaction(trxFunction)
     }
@@ -289,7 +289,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
         .transacting(trx)
     }
     if (trx) {
-      return await trxFunction(trx, false)
+      return await trxFunction(trx)
     } else {
       return await knex.transaction(trxFunction)
     }
