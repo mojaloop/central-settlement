@@ -40,7 +40,7 @@ const TransferFacade = require('@mojaloop/central-ledger/src/models/transfer/fac
 async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
   try {
     const knex = await Db.getKnex()
-    const trxFunction = async (trx, doCommit = true) => {
+    const trxFunction = async (trx) => {
       try {
         const recordsToInsert = await knex.select(knex.raw('? AS transferId', transferId), 'PC.participantCurrencyId')
           .select(knex.raw('IFNULL (??, ??) as ??', ['T1.transferparticipantroletypeId', 'T2.transferparticipantroletypeId', 'transferParticipantRoleTypeId']))
@@ -129,7 +129,7 @@ async function insertLedgerEntries (ledgerEntries, transferId, trx = null) {
   Logger.isInfoEnabled && Logger.info(`Ledger entries: ${JSON.stringify(ledgerEntries)}`)
   try {
     const knex = await Db.getKnex()
-    const trxFunction = async (trx, doCommit = true) => {
+    const trxFunction = async (trx) => {
       try {
         for (const ledgerEntry of ledgerEntries) {
           Logger.isInfoEnabled && Logger.info(`Inserting ledger entry: ${JSON.stringify(ledgerEntry)}`)
