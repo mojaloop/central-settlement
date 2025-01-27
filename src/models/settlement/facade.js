@@ -128,7 +128,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
     .whereNull('tdc.transferId')
     .transacting(trx)
 
-  const trxFunction = async (trx, doCommit = true) => {
+  const trxFunction = async (trx) => {
     try {
       const hashSha256 = Crypto.createHash('sha256')
       let hash = hashSha256.update(String(t.settlementTransferId))
@@ -271,7 +271,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
     .whereNull('tsc2.transferId')
     .transacting(trx)
 
-  const trxFunction = async (trx, doCommit = true) => {
+  const trxFunction = async (trx) => {
     try {
       for (const {
         transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount,
@@ -446,7 +446,7 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
     .whereNull('tsc2.transferId')
     .transacting(trx)
 
-  const trxFunction = async (trx, doCommit = true) => {
+  const trxFunction = async (trx) => {
     try {
       for (const {
         transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount, isReserved,
@@ -598,7 +598,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
     .whereNull('tsc2.transferId')
     .transacting(trx)
 
-  const trxFunction = async (trx, doCommit = true) => {
+  const trxFunction = async (trx) => {
     try {
       for (const {
         transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount,
