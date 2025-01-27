@@ -105,9 +105,7 @@ async function processTransferSettlement (error, messages) {
         await knex.transaction(async trx => {
           try {
             await transferSettlementService.processMsgFulfil(transferEventId, transferEventStateStatus, trx)
-            await trx.commit
           } catch (err) {
-            await trx.rollback
             throw ErrorHandler.Factory.reformatFSPIOPError(err)
           }
         })

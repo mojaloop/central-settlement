@@ -26,9 +26,9 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Uuid = require('uuid4')
 const Proxyquire = require('proxyquire')
 const EventSdk = require('@mojaloop/event-sdk')
+const idGenerator = require('@mojaloop/central-services-shared').Util.id
 const Util = require('@mojaloop/central-services-shared').Util
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 const Logger = require('@mojaloop/central-services-logger')
@@ -37,6 +37,7 @@ const KafkaConsumer = require('@mojaloop/central-services-stream').Kafka.Consume
 const Db = require('../../../../src/lib/db')
 const TransferFulfilService = require('../../../../src/domain/transferSettlement/index')
 
+const generateULID = idGenerator({ type: 'ulid' })
 const payload = {
   settlementWindowId: '3',
   reason: 'test'
@@ -66,7 +67,7 @@ const transfer = {
   }
 }
 const messageProtocol = {
-  id: Uuid(),
+  id: generateULID(),
   from: transfer.payerFsp,
   to: transfer.payeeFsp,
   type: 'application/json',
@@ -77,7 +78,7 @@ const messageProtocol = {
   },
   metadata: {
     event: {
-      id: Uuid(),
+      id: generateULID(),
       type: 'settlement',
       action: 'commit',
       createdAt: new Date(),

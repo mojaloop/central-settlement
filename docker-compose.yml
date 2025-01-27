@@ -1,5 +1,3 @@
-version: "3.7"
-
 networks:
   cs-mojaloop-net:
     name: cs-mojaloop-net
@@ -36,7 +34,7 @@ services:
       interval: 30s
 
   central-ledger:
-    image: mojaloop/central-ledger:latest
+    image: mojaloop/central-ledger:v17.9.0-snapshot.2
     container_name: cs_central-ledger
     command:
       - "sh"
@@ -60,7 +58,7 @@ services:
       interval: 30s
 
   ml-api-adapter:
-    image: mojaloop/ml-api-adapter:latest
+    image: mojaloop/ml-api-adapter:v14.1.0-snapshot.25
     container_name: cs_ml-api-adapter
     command:
       - "sh"
@@ -106,7 +104,7 @@ services:
       interval: 30s
 
   simulator:
-    image: mojaloop/simulator:latest
+    image: mojaloop/simulator:v12.2.1-snapshot.3
     container_name: cs_simulator
     depends_on:
       - ml-api-adapter
@@ -154,6 +152,7 @@ services:
       - cs-mojaloop-net
     ports:
       - "9092:9092"
+      - "29092:29092"
     environment:
       # BITNAMI_DEBUG: "yes"
       ALLOW_PLAINTEXT_LISTENER: "yes"
@@ -187,5 +186,18 @@ services:
     volumes:
       - ./docker/kafka/scripts:/tmp/kafka/scripts
     command: bash /tmp/kafka/scripts/provision.sh
-    
 
+  ## Debug utilities
+  kafka-debug-console:
+    # image: quay.io/cloudhut/kowl:v1.4.0
+    image: docker.redpanda.com/redpandadata/console:latest
+    deploy:
+      replicas: 1
+    restart: on-failure
+    hostname: kafka-debug-console
+    ports:
+    - "9080:8080"
+    networks:
+      - cs-mojaloop-net
+    environment:
+      - KAFKA_BROKERS=kafka:29092

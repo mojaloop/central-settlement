@@ -40,10 +40,10 @@ const Config = require('./config')
 const Mustache = require('mustache')
 const KafkaConfig = Config.KAFKA_CONFIG
 const Logger = require('@mojaloop/central-services-logger')
-const Uuid = require('uuid4')
+const idGenerator = require('@mojaloop/central-services-shared').Util.id
 const Kafka = require('./kafka/index')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
-
+const generateULID = idGenerator({ type: 'ulid' })
 /**
  * The Producer config required
  *
@@ -155,7 +155,7 @@ const updateMessageProtocolMetadata = (messageProtocol, metadataType, metadataAc
   if (!messageProtocol.metadata) {
     messageProtocol.metadata = {
       event: {
-        id: Uuid(),
+        id: generateULID(),
         type: metadataType,
         action: metadataAction,
         state
@@ -163,7 +163,7 @@ const updateMessageProtocolMetadata = (messageProtocol, metadataType, metadataAc
     }
   } else {
     messageProtocol.metadata.event.responseTo = messageProtocol.metadata.event.id
-    messageProtocol.metadata.event.id = Uuid()
+    messageProtocol.metadata.event.id = generateULID()
     messageProtocol.metadata.event.type = metadataType
     messageProtocol.metadata.event.state = state
   }
@@ -202,7 +202,7 @@ const generalTopicTemplate = (functionality, action) => {
 const createGeneralTopicConf = (functionality, action, partition = 0, opaqueKey = 0) => {
   return {
     topicName: generalTopicTemplate(functionality, action),
-    key: Uuid(),
+    key: generateULID(),
     partition,
     opaqueKey
   }

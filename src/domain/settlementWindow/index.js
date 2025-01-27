@@ -38,7 +38,8 @@ const SettlementWindowModel = require('../../models/settlementWindow')
 const SettlementWindowContentModel = require('../../models/settlementWindowContent')
 const StreamingProtocol = require('@mojaloop/central-services-shared').Util.StreamingProtocol
 const Logger = require('@mojaloop/central-services-logger')
-const Uuid = require('uuid4')
+const idGenerator = require('@mojaloop/central-services-shared').Util.id
+const generateULID = idGenerator({ type: 'ulid' })
 
 module.exports = {
   getById: async function (params, enums, options) {
@@ -92,12 +93,12 @@ module.exports = {
 
   process: async function (params, enums) {
     const settlementWindowId = await SettlementWindowModel.process(params, enums)
-    const messageId = Uuid()
-    const eventId = Uuid()
+    const messageId = generateULID()
+    const eventId = generateULID()
     const state = StreamingProtocol.createEventState(Enum.Events.EventStatus.SUCCESS.status, Enum.Events.EventStatus.SUCCESS.code, Enum.Events.EventStatus.SUCCESS.description)
     const event = StreamingProtocol.createEventMetadata(Enum.Events.Event.Type.DEFERRED_SETTLEMENT, Enum.Events.Event.Action.CLOSE, state)
     const metadata = StreamingProtocol.createMetadata(eventId, event)
-    const messageProtocol = StreamingProtocol.createMessage(messageId, Enum.Http.Headers.FSPIOP.SWITCH.value, Enum.Http.Headers.FSPIOP.SWITCH.value, metadata, params.headers, params)
+    const messageProtocol = StreamingProtocol.createMessage(messageId, Config.HUB_NAME, Config.HUB_NAME, metadata, params.headers, params)
     const topicConfig = KafkaUtil.createGeneralTopicConf(Config.KAFKA_CONFIG.TOPIC_TEMPLATES.GENERAL_TOPIC_TEMPLATE.TEMPLATE, Enum.Events.Event.Type.DEFERRED_SETTLEMENT, Enum.Events.Event.Action.CLOSE)
     const kafkaConfig = KafkaUtil.getKafkaConfig(Config.KAFKA_CONFIG, Enum.Kafka.Config.PRODUCER, Enum.Events.Event.Type.DEFERRED_SETTLEMENT.toUpperCase(), Enum.Events.Event.Action.CLOSE.toUpperCase())
     await Producer.produceMessage(messageProtocol, topicConfig, kafkaConfig)

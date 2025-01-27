@@ -18,5 +18,5 @@ reporter: [
 exclude: [
   "**/node_modules/**",
   '**/migrations/**',
-  '**/docs/**',
+  '**/docs/**'
 ]

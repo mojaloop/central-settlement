@@ -28,7 +28,8 @@ const Config = require('../config')
 const axios = require('axios')
 const Utils = require('./utils')
 const Logger = require('@mojaloop/central-services-logger')
-const uuid4 = require('uuid4')
+const idGenerator = require('@mojaloop/central-services-shared').Util.id
+const generateULID = idGenerator({ type: 'ulid' })
 
 async function createSettlementModel (settlementModel) {
   const url = `${Config.CENTRAL_LEDGER_URL}/settlementModels`
@@ -86,7 +87,7 @@ async function createNetDebitCapInitialPositionAndLimit (participant, initialPos
 async function fundsIn (participant, accountId, amount, currency) {
   const url = `${Config.CENTRAL_LEDGER_URL}/participants/${participant}/accounts/${accountId}`
   const payload = {
-    transferId: uuid4(),
+    transferId: generateULID(),
     externalReference: 'populateTestData',
     action: 'recordFundsIn',
     reason: 'populateTestData',
@@ -96,7 +97,10 @@ async function fundsIn (participant, accountId, amount, currency) {
     }
   }
 
-  return axios.post(url, payload)
+  return axios.post(url, payload).catch(function (error) {
+    Logger.error(`Error in fundsIn: ${JSON.stringify(error)}`)
+    throw error
+  })
 }
 
 async function sendTransfer (payerFsp, payeeFsp, transfer) {
@@ -127,7 +131,10 @@ async function sendTransfer (payerFsp, payeeFsp, transfer) {
     }
   }
   return axios.post(url, body, {
-    headers
+    headers,
+    transformRequest: [(data, headers) => {
+      return typeof data === 'string' ? data : JSON.stringify(data)
+    }]
   })
 }
 

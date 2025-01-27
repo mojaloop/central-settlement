@@ -30,14 +30,14 @@ const arrayDiff = require('lodash').difference
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const MLNumber = require('@mojaloop/ml-number')
 const Db = require('../../lib/db')
-const Uuid = require('uuid4')
+const idGenerator = require('@mojaloop/central-services-shared').Util.id
 const Crypto = require('crypto')
 const Config = require('../../lib/config')
 const ParticipantFacade = require('@mojaloop/central-ledger/src/models/participant/facade')
-const Enums = require('../lib/enums')
 const Utility = require('../../lib/utility')
 const SettlementModelModel = require('./settlementModel')
 const Logger = require('@mojaloop/central-services-logger')
+const generateULID = idGenerator({ type: 'ulid' })
 
 const groupByWindowsWithContent = (records) => {
   const settlementWindowsAssoc = {}
@@ -79,7 +79,7 @@ const groupByWindowsWithContent = (records) => {
 
 const getNotificationMessage = function (action, destination, payload) {
   return {
-    id: Uuid(),
+    id: generateULID(),
     from: Config.HUB_NAME,
     to: destination,
     type: 'application/json',
@@ -87,7 +87,7 @@ const getNotificationMessage = function (action, destination, payload) {
       headers: {
         'Content-Type': 'application/json',
         Date: new Date().toISOString(),
-        'FSPIOP-Source': Enums.headers.FSPIOP.SWITCH,
+        'FSPIOP-Source': Config.HUB_NAME,
         'FSPIOP-Destination': destination
       },
       payload
@@ -121,14 +121,14 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
     .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyId', 'spc.settlementParticipantCurrencyId')
     .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'spc.participantCurrencyId')
     .leftJoin('transferDuplicateCheck AS tdc', 'tdc.transferId', 'spc.settlementTransferId')
-    .select('spc.*', 'pc.currencyId')
+    .select('spc.*', 'pc.currencyId', 'pc.participantId')
     .where('spc.settlementId', settlementId)
     .where('spcsc.settlementStateId', enums.settlementStates.PS_TRANSFERS_RECORDED)
     .whereNotNull('spc.settlementTransferId')
     .whereNull('tdc.transferId')
     .transacting(trx)
 
-  const trxFunction = async (trx, doCommit = true) => {
+  const trxFunction = async (trx) => {
     try {
       const hashSha256 = Crypto.createHash('sha256')
       let hash = hashSha256.update(String(t.settlementTransferId))
@@ -184,7 +184,8 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           transferParticipantRoleTypeId: enums.transferParticipantRoleTypes.HUB,
           ledgerEntryTypeId,
           amount: t.netAmount,
-          createdDate: transactionTimestamp
+          createdDate: transactionTimestamp,
+          participantId: Config.HUB_ID
         })
         .transacting(trx)
       await knex('transferParticipant')
@@ -194,7 +195,8 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           transferParticipantRoleTypeId: enums.transferParticipantRoleTypes.DFSP_POSITION,
           ledgerEntryTypeId,
           amount: -t.netAmount,
-          createdDate: transactionTimestamp
+          createdDate: transactionTimestamp,
+          participantId: t.participantId
         })
         .transacting(trx)
 
@@ -207,22 +209,15 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
           createdDate: transactionTimestamp
         })
         .transacting(trx)
-
-      if (doCommit) {
-        await trx.commit
-      }
     } catch (err) {
       Logger.isErrorEnabled && Logger.error(err)
-      if (doCommit) {
-        await trx.rollback
-      }
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
 
   for (t of settlementTransferList) {
     if (trx) {
-      await trxFunction(trx, false)
+      await trxFunction(trx)
     } else {
       await knex.transaction(trxFunction)
     }
@@ -245,7 +240,6 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
 const settlementTransfersReserve = async function (settlementId, transactionTimestamp, requireLiquidityCheck, enums, trx = null) {
   const knex = await Db.getKnex()
   let isLimitExceeded, transferStateChangeId
-
   // Retrieve list of PS_TRANSFERS_RESERVED, but not RESERVED
   const settlementTransferList = await knex('settlementParticipantCurrency AS spc')
     .join('settlementParticipantCurrencyStateChange AS spcsc', function () {
@@ -277,7 +271,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
     .whereNull('tsc2.transferId')
     .transacting(trx)
 
-  const trxFunction = async (trx, doCommit = true) => {
+  const trxFunction = async (trx) => {
     try {
       for (const {
         transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount,
@@ -341,8 +335,10 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
           await knex('participantPositionChange')
             .insert({
               participantPositionId: dfspPositionId,
+              participantCurrencyId: dfspAccountId,
               transferStateChangeId,
               value: new MLNumber(dfspPositionValue).add(dfspAmount).toNumber(),
+              change: new MLNumber(dfspAmount).toNumber(),
               reservedValue: dfspReservedValue,
               createdDate: transactionTimestamp
             })
@@ -377,29 +373,24 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
           await knex('participantPositionChange')
             .insert({
               participantPositionId: hubPositionId,
+              participantCurrencyId: hubAccountId,
               transferStateChangeId,
               value: new MLNumber(hubPositionValue).add(hubAmount).toNumber(),
+              change: new MLNumber(hubAmount).toNumber(),
               reservedValue: 0,
               createdDate: transactionTimestamp
             })
             .transacting(trx)
         }
-
-        if (doCommit) {
-          await trx.commit
-        }
       }
     } catch (err) {
       Logger.isErrorEnabled && Logger.error(err)
-      if (doCommit) {
-        await trx.rollback
-      }
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
 
   if (trx) {
-    await trxFunction(trx, false)
+    await trxFunction(trx)
   } else {
     await knex.transaction(trxFunction)
   }
@@ -455,7 +446,7 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
     .whereNull('tsc2.transferId')
     .transacting(trx)
 
-  const trxFunction = async (trx, doCommit = true) => {
+  const trxFunction = async (trx) => {
     try {
       for (const {
         transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount, isReserved,
@@ -498,8 +489,10 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
           await knex('participantPositionChange')
             .insert({
               participantPositionId: dfspPositionId,
+              participantCurrencyId: dfspAccountId,
               transferStateChangeId,
               value: dfspPositionValue - dfspAmount,
+              change: new MLNumber(dfspAmount).toNumber(),
               reservedValue: dfspReservedValue,
               createdDate: transactionTimestamp
             })
@@ -534,29 +527,24 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
           await knex('participantPositionChange')
             .insert({
               participantPositionId: hubPositionId,
+              participantCurrencyId: hubAccountId,
               transferStateChangeId,
               value: hubPositionValue - hubAmount,
+              change: new MLNumber(hubAmount).toNumber(),
               reservedValue: 0,
               createdDate: transactionTimestamp
             })
             .transacting(trx)
         }
-
-        if (doCommit) {
-          await trx.commit
-        }
       }
     } catch (err) {
       Logger.isErrorEnabled && Logger.error(err)
-      if (doCommit) {
-        await trx.rollback
-      }
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
 
   if (trx) {
-    await trxFunction(trx, false)
+    await trxFunction(trx)
   } else {
     await knex.transaction(trxFunction)
   }
@@ -610,7 +598,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
     .whereNull('tsc2.transferId')
     .transacting(trx)
 
-  const trxFunction = async (trx, doCommit = true) => {
+  const trxFunction = async (trx) => {
     try {
       for (const {
         transferId, ledgerEntryTypeId, dfspAccountId, dfspAmount, hubAccountId, hubAmount,
@@ -671,8 +659,10 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
           await knex('participantPositionChange')
             .insert({
               participantPositionId: dfspPositionId,
+              participantCurrencyId: dfspAccountId,
               transferStateChangeId,
               value: new MLNumber(dfspPositionValue).add(dfspAmount).toNumber(),
+              change: new MLNumber(dfspAmount).toNumber(),
               reservedValue: dfspReservedValue,
               createdDate: transactionTimestamp
             })
@@ -696,8 +686,10 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
           await knex('participantPositionChange')
             .insert({
               participantPositionId: hubPositionId,
+              participantCurrencyId: hubAccountId,
               transferStateChangeId,
               value: new MLNumber(hubPositionValue).add(hubAmount).toNumber(),
+              change: new MLNumber(hubAmount).toNumber(),
               reservedValue: 0,
               createdDate: transactionTimestamp
             })
@@ -714,22 +706,15 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
           const message = Facade.getNotificationMessage(action, destination, payload)
           await Utility.produceGeneralMessage(Utility.ENUMS.NOTIFICATION, Utility.ENUMS.EVENT, message, Utility.ENUMS.STATE.SUCCESS)
         }
-
-        if (doCommit) {
-          await trx.commit
-        }
       }
     } catch (err) {
       Logger.isErrorEnabled && Logger.error(err)
-      if (doCommit) {
-        await trx.rollback
-      }
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
 
   if (trx) {
-    await trxFunction(trx, false)
+    await trxFunction(trx)
   } else {
     await knex.transaction(trxFunction)
   }
@@ -971,7 +956,7 @@ const Facade = {
                   createdDate: transactionTimestamp
                 }
                 if (accountPayload.state === enums.settlementStates.PS_TRANSFERS_RECORDED) {
-                  spcsc.settlementTransferId = Uuid()
+                  spcsc.settlementTransferId = generateULID()
                 }
                 settlementParticipantCurrencyStateChange.push(spcsc)
 
@@ -1198,9 +1183,6 @@ const Facade = {
               .update({ currentStateChangeId: settlementStateChangeId })
               .transacting(trx)
           }
-
-          await trx.commit
-
           return {
             id: settlementId,
             state: settlementData.settlementStateId,
@@ -1211,7 +1193,6 @@ const Facade = {
         }
       } catch (err) {
         Logger.isErrorEnabled && Logger.error(err)
-        await trx.rollback
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
@@ -1316,7 +1297,6 @@ const Facade = {
           .update({ currentStateChangeId: settlementStateChangeId })
           .transacting(trx)
 
-        await trx.commit
         return {
           id: settlementId,
           state: payload.state,
@@ -1324,7 +1304,6 @@ const Facade = {
         }
       } catch (err) {
         Logger.isErrorEnabled && Logger.error(err)
-        await trx.rollback
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
@@ -1533,11 +1512,9 @@ const Facade = {
         await knex('settlement').transacting(trx)
           .where('settlementId', settlementId)
           .update({ currentStateChangeId: settlementStateChangeId })
-        await trx.commit
         return settlementId
       } catch (err) {
         Logger.isErrorEnabled && Logger.error(err)
-        await trx.rollback
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
