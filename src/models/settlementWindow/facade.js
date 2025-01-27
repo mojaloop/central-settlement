@@ -80,7 +80,6 @@ const Facade = {
 
   getByParams: async function ({ query }) {
     const { participantId, state, fromDateTime, toDateTime, currency } = query
-    // Get from fxTransferFulfilment as well?
     return Db.from('settlementWindow').query(builder => {
       if (!participantId) {
         const b = builder
