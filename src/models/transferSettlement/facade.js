@@ -155,7 +155,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
   Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(location, { method: 'updateTransferSettlement' }))
   try {
     const knex = await Db.getKnex()
-    const trxFunction = async (trx, doCommit = true) => {
+    const trxFunction = async (trx) => {
       // Insert TransferParticipant ledger entry type.
       await knex.from(knex.raw('transferParticipant (transferID, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, participantId, amount)'))
         // insert debit/credit ledger entries for matching ledger entries for both Settlement and Position accounts
