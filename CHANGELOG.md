@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [16.0.1](https://github.com/mojaloop/central-settlement/compare/v16.0.0...v16.0.1) (2025-01-17)
+
+
+### Chore
+
+* **deps-dev:** Bump @babel/traverse from 7.22.15 to 7.24.7 ([#402](https://github.com/mojaloop/central-settlement/issues/402)) ([7f401c9](https://github.com/mojaloop/central-settlement/commit/7f401c9c8c0e0fadfd5a231d73ce8dcc75e8a34a))
+* **deps:** Bump express from 4.18.2 to 4.19.2 ([#401](https://github.com/mojaloop/central-settlement/issues/401)) ([e255be4](https://github.com/mojaloop/central-settlement/commit/e255be4ac6ffd711a265041e0d1d23a5f3821335))
+* **deps:** Bump protobufjs and @mojaloop/central-ledger ([#400](https://github.com/mojaloop/central-settlement/issues/400)) ([6d93585](https://github.com/mojaloop/central-settlement/commit/6d93585b23ff21a35b03545757fd91b0961f6934))
+* update deps, nodejs version, CI config ([#415](https://github.com/mojaloop/central-settlement/issues/415)) ([f6bbf91](https://github.com/mojaloop/central-settlement/commit/f6bbf91a551439d3e3b060e9b23e4ef377b47973))
+
 ## [16.0.0](https://github.com/mojaloop/central-settlement/compare/v15.0.4...v16.0.0) (2023-11-06)
 
 
