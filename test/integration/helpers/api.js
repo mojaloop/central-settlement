@@ -149,6 +149,7 @@ async function waitForTransferToBeCommitted (transferId, sleepMs, iterations) {
     Logger.info(`Waiting for transfer ${transferId} to be committed...`)
     try {
       const simulatorResponse = await axios.get(url)
+      console.log(simulatorResponse.data)
       if (simulatorResponse.data && simulatorResponse.data.transferState === localEnum.transferStates.COMMITTED) {
         return
       }

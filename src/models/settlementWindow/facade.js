@@ -145,6 +145,7 @@ const Facade = {
               settlementWindowId,
               createdDate: transactionTimestamp
             })
+          console.log('settlementWindowId', settlementWindowId)
           await knex('settlementWindow').transacting(trx)
             .where({ settlementWindowId })
             .update({ currentStateChangeId: settlementWindowStateChangeId })
@@ -157,17 +158,18 @@ const Facade = {
               reason,
               createdDate: transactionTimestamp
             })
+          console.log('newSettlementWindowId', newSettlementWindowId)
           await knex('settlementWindow').transacting(trx)
-            .where({ settlementWindowId: newSettlementWindowId })
+            .where({ settlementWindowId: newSettlementWindowId[0] })
             .update({ currentStateChangeId: newSettlementWindowStateChangeId })
           return newSettlementWindowId[0]
         } catch (err) {
-          Logger.isErrorEnabled && Logger.error(err)
+          Logger.isErrorEnabled && Logger.error(err.stack)
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
       })
         .catch((err) => {
-          Logger.isErrorEnabled && Logger.error(err)
+          Logger.isErrorEnabled && Logger.error(err.stack)
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         })
     }
@@ -303,6 +305,7 @@ const Facade = {
               createdDate: transactionTimestamp
             })
             .transacting(trx)
+          console.log('settlementWindowId', settlementWindowId)
           await knex('settlementWindow')
             .where({ settlementWindowId })
             .update({ currentStateChangeId: settlementWindowStateChangeId })
@@ -310,12 +313,12 @@ const Facade = {
 
           return true
         } catch (err) {
-          Logger.isErrorEnabled && Logger.error(err)
+          Logger.isErrorEnabled && Logger.error(err.stack)
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
       })
         .catch((err) => {
-          Logger.isErrorEnabled && Logger.error(err)
+          Logger.isErrorEnabled && Logger.error(err.stack)
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         })
     }

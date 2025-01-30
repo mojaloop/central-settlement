@@ -210,7 +210,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
         })
         .transacting(trx)
     } catch (err) {
-      Logger.isErrorEnabled && Logger.error(err)
+      Logger.isErrorEnabled && Logger.error(err.stack)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
@@ -384,7 +384,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
         }
       }
     } catch (err) {
-      Logger.isErrorEnabled && Logger.error(err)
+      Logger.isErrorEnabled && Logger.error(err.stack)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
@@ -538,7 +538,7 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
         }
       }
     } catch (err) {
-      Logger.isErrorEnabled && Logger.error(err)
+      Logger.isErrorEnabled && Logger.error(err.stack)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
@@ -708,7 +708,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
         }
       }
     } catch (err) {
-      Logger.isErrorEnabled && Logger.error(err)
+      Logger.isErrorEnabled && Logger.error(err.stack)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
@@ -733,7 +733,7 @@ const abortByIdStateAborted = async (settlementId, payload, enums) => {
   // seq-settlement-6.2.6, step 5a
   await knex('settlement')
     .where('settlementId', settlementId)
-    .update({ currentStateChangeId: settlementStateChangeId })
+    .update({ currentStateChangeId: settlementStateChangeId[0] })
 
   return {
     id: settlementId,
@@ -1192,7 +1192,7 @@ const Facade = {
           }
         }
       } catch (err) {
-        Logger.isErrorEnabled && Logger.error(err)
+        Logger.isErrorEnabled && Logger.error(err.stack)
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
@@ -1303,7 +1303,7 @@ const Facade = {
           reason: payload.reason
         }
       } catch (err) {
-        Logger.isErrorEnabled && Logger.error(err)
+        Logger.isErrorEnabled && Logger.error(err.stack)
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
@@ -1361,12 +1361,15 @@ const Facade = {
       try {
         // insert new settlement
         const transactionTimestamp = new Date().toISOString().replace(/[TZ]/g, ' ').trim()
-        const settlementId = await knex('settlement').transacting(trx)
+        let settlementId = await knex('settlement').transacting(trx)
           .insert({
             reason,
             createdDate: transactionTimestamp,
             settlementModelId: settlementModel.settlementModelId
           })
+        console.log('settlementId', settlementId)
+        settlementId = settlementId[0]
+        console.log('settlementId', settlementId)
         const settlementSettlementWindowList = idList.map(settlementWindowId => {
           return {
             settlementId,
@@ -1435,7 +1438,7 @@ const Facade = {
           .from(knex.raw('settlementParticipantCurrency (settlementId, participantCurrencyId, createdDate, netAmount)'))
           .insert(function () {
             this.from('settlementContentAggregation AS sca')
-              .whereRaw('sca.settlementId = ?', settlementId[0])
+              .whereRaw('sca.settlementId = ?', settlementId)
               .groupBy('sca.settlementId', 'sca.participantCurrencyId')
               .select('sca.settlementId', 'sca.participantCurrencyId', knex.raw('? AS createdDate', transactionTimestamp))
               .sum('sca.amount AS netAmount')
@@ -1509,12 +1512,13 @@ const Facade = {
             reason,
             createdDate: transactionTimestamp
           })
+        console.log(settlementId)
         await knex('settlement').transacting(trx)
           .where('settlementId', settlementId)
           .update({ currentStateChangeId: settlementStateChangeId })
         return settlementId
       } catch (err) {
-        Logger.isErrorEnabled && Logger.error(err)
+        Logger.isErrorEnabled && Logger.error(err.stack)
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })

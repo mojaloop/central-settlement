@@ -32,7 +32,7 @@ exports.getById = async (id) => {
   try {
     return await Db.from('ilpPacket').find({ transferId: id })
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
+    Logger.isErrorEnabled && Logger.error(err.stack)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
