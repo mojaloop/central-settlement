@@ -158,7 +158,7 @@ const Facade = {
               createdDate: transactionTimestamp
             })
           await knex('settlementWindow').transacting(trx)
-            .where({ settlementWindowId: newSettlementWindowId })
+            .where({ settlementWindowId: newSettlementWindowId[0] })
             .update({ currentStateChangeId: newSettlementWindowStateChangeId })
           return newSettlementWindowId[0]
         } catch (err) {

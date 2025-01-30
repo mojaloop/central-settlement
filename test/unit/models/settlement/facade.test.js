@@ -4270,7 +4270,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
     try {
       await triggerSettlementEventTest.test('create new settlement', async test => {
         try {
-          const insertedSettlementId = 1
+          const insertedSettlementId = [1]
           sandbox.stub(Db, 'getKnex')
           const knexStub = sandbox.stub()
           const trxStub = sandbox.stub()
@@ -4376,7 +4376,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           const settlementModel = 'DEFERRED_NET'
 
           const settlementId = await SettlementFacade.triggerSettlementEvent(payload.triggerSettlementEvent, settlementModel, enums)
-          test.equal(settlementId, insertedSettlementId, 'settlementId returned')
+          test.equal(settlementId, insertedSettlementId[0], 'settlementId returned')
           test.equal(knexStub.callCount, 14, 'Knex called 14 times')
           test.end()
         } catch (err) {
