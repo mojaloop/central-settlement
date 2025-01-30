@@ -63,8 +63,6 @@ const Facade = {
   },
   getBySettlementAndWindowId: async (settlementId, settlementWindowId) => {
     const knex = await Db.getKnex()
-    console.log('settlementId', settlementId)
-    console.log('settlementWindowId', settlementWindowId)
     return knex('settlementWindowContent AS swc')
       .join('settlementWindowContentStateChange AS swcsc', 'swcsc.settlementWindowContentStateChangeId', 'swc.currentStateChangeId')
       .join('ledgerAccountType AS lat', 'lat.ledgerAccountTypeId', 'swc.ledgerAccountTypeId')

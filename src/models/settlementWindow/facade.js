@@ -145,7 +145,6 @@ const Facade = {
               settlementWindowId,
               createdDate: transactionTimestamp
             })
-          console.log('settlementWindowId', settlementWindowId)
           await knex('settlementWindow').transacting(trx)
             .where({ settlementWindowId })
             .update({ currentStateChangeId: settlementWindowStateChangeId })
@@ -158,7 +157,6 @@ const Facade = {
               reason,
               createdDate: transactionTimestamp
             })
-          console.log('newSettlementWindowId', newSettlementWindowId)
           await knex('settlementWindow').transacting(trx)
             .where({ settlementWindowId: newSettlementWindowId[0] })
             .update({ currentStateChangeId: newSettlementWindowStateChangeId })
@@ -305,7 +303,6 @@ const Facade = {
               createdDate: transactionTimestamp
             })
             .transacting(trx)
-          console.log('settlementWindowId', settlementWindowId)
           await knex('settlementWindow')
             .where({ settlementWindowId })
             .update({ currentStateChangeId: settlementWindowStateChangeId })
