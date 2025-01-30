@@ -5,6 +5,7 @@ set -xe
 docker compose up -d
 docker compose ps
 
+nvm use default
 npm run wait-4-docker
 
 curl localhost:3000/health && npm -s run test:int
