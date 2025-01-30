@@ -3,35 +3,35 @@ networks:
     name: cs-mojaloop-net
 
 services:
-  #central-settlement:
-  #  image: mojaloop/central-settlement:local
-  #  build:
-  #    context: .
-  #    cache_from:
-  #      - mojaloop/central-settlement
-  #      - central-settlement
-  #  container_name: cs_central-settlement
-  #  command:
-  #    - "sh"
-  #    - "-c"
-  #    - "sh /opt/wait-for/wait-for-central-settlement.sh && node src/api/index.js"
-  #  depends_on:
-  #    - mysql
-  #    - kafka
-  #    - central-ledger
-  #  ports:
-  #    - "3007:3007"
-  #  volumes:
-  #    - ./docker/central-settlement/default.json:/opt/app/config/default.json
-  #    - ./docker/wait-for:/opt/wait-for
-  #  networks:
-  #    - cs-mojaloop-net
-  #  user: 'root'
-  #  healthcheck:
-  #    test: ["CMD", "sh", "-c" ,"apk --no-cache add curl", "&&", "curl", "http://localhost:3007/v2/health"]
-  #    timeout: 20s
-  #    retries: 10
-  #    interval: 30s
+  central-settlement:
+   image: mojaloop/central-settlement:local
+   build:
+     context: .
+     cache_from:
+       - mojaloop/central-settlement
+       - central-settlement
+   container_name: cs_central-settlement
+   command:
+     - "sh"
+     - "-c"
+     - "sh /opt/wait-for/wait-for-central-settlement.sh && node src/api/index.js"
+   depends_on:
+     - mysql
+     - kafka
+     - central-ledger
+   ports:
+     - "3007:3007"
+   volumes:
+     - ./docker/central-settlement/default.json:/opt/app/config/default.json
+     - ./docker/wait-for:/opt/wait-for
+   networks:
+     - cs-mojaloop-net
+   user: 'root'
+   healthcheck:
+     test: ["CMD", "sh", "-c" ,"apk --no-cache add curl", "&&", "curl", "http://localhost:3007/v2/health"]
+     timeout: 20s
+     retries: 10
+     interval: 30s
 
   central-ledger:
     image: mojaloop/central-ledger:v19.0.6
