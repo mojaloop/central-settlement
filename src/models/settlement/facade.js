@@ -210,7 +210,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
         })
         .transacting(trx)
     } catch (err) {
-      Logger.isErrorEnabled && Logger.error(err.stack)
+      Logger.isErrorEnabled && Logger.error(err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
@@ -384,7 +384,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
         }
       }
     } catch (err) {
-      Logger.isErrorEnabled && Logger.error(err.stack)
+      Logger.isErrorEnabled && Logger.error(err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
@@ -538,7 +538,7 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
         }
       }
     } catch (err) {
-      Logger.isErrorEnabled && Logger.error(err.stack)
+      Logger.isErrorEnabled && Logger.error(err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
@@ -708,7 +708,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
         }
       }
     } catch (err) {
-      Logger.isErrorEnabled && Logger.error(err.stack)
+      Logger.isErrorEnabled && Logger.error(err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
@@ -1192,7 +1192,7 @@ const Facade = {
           }
         }
       } catch (err) {
-        Logger.isErrorEnabled && Logger.error(err.stack)
+        Logger.isErrorEnabled && Logger.error(err)
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
@@ -1303,7 +1303,7 @@ const Facade = {
           reason: payload.reason
         }
       } catch (err) {
-        Logger.isErrorEnabled && Logger.error(err.stack)
+        Logger.isErrorEnabled && Logger.error(err)
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
@@ -1367,9 +1367,7 @@ const Facade = {
             createdDate: transactionTimestamp,
             settlementModelId: settlementModel.settlementModelId
           })
-        console.log('settlementId', settlementId)
         settlementId = settlementId[0]
-        console.log('settlementId', settlementId)
         const settlementSettlementWindowList = idList.map(settlementWindowId => {
           return {
             settlementId,
@@ -1512,13 +1510,12 @@ const Facade = {
             reason,
             createdDate: transactionTimestamp
           })
-        console.log(settlementId)
         await knex('settlement').transacting(trx)
           .where('settlementId', settlementId)
           .update({ currentStateChangeId: settlementStateChangeId })
         return settlementId
       } catch (err) {
-        Logger.isErrorEnabled && Logger.error(err.stack)
+        Logger.isErrorEnabled && Logger.error(err)
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })

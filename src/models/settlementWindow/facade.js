@@ -164,12 +164,12 @@ const Facade = {
             .update({ currentStateChangeId: newSettlementWindowStateChangeId })
           return newSettlementWindowId[0]
         } catch (err) {
-          Logger.isErrorEnabled && Logger.error(err.stack)
+          Logger.isErrorEnabled && Logger.error(err)
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
       })
         .catch((err) => {
-          Logger.isErrorEnabled && Logger.error(err.stack)
+          Logger.isErrorEnabled && Logger.error(err)
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         })
     }
@@ -313,12 +313,12 @@ const Facade = {
 
           return true
         } catch (err) {
-          Logger.isErrorEnabled && Logger.error(err.stack)
+          Logger.isErrorEnabled && Logger.error(err)
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
       })
         .catch((err) => {
-          Logger.isErrorEnabled && Logger.error(err.stack)
+          Logger.isErrorEnabled && Logger.error(err)
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         })
     }

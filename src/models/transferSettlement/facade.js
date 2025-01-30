@@ -110,7 +110,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
           .insert(participantPositionChangeRecords)
           .transacting(trx)
       } catch (err) {
-        Logger.isErrorEnabled && Logger.error(err.stack)
+        Logger.isErrorEnabled && Logger.error(err)
         throw err
       }
     }
@@ -120,7 +120,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
       return await knex.transaction(trxFunction)
     }
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err.stack)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -136,7 +136,7 @@ async function insertLedgerEntries (ledgerEntries, transferId, trx = null) {
           await insertLedgerEntry(ledgerEntry, transferId, trx)
         }
       } catch (err) {
-        Logger.isErrorEnabled && Logger.error(err.stack)
+        Logger.isErrorEnabled && Logger.error(err)
         throw err
       }
     }
@@ -146,7 +146,7 @@ async function insertLedgerEntries (ledgerEntries, transferId, trx = null) {
       return await knex.transaction(trxFunction)
     }
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err.stack)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -294,7 +294,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
       return await knex.transaction(trxFunction)
     }
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err.stack)
+    Logger.isErrorEnabled && Logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
