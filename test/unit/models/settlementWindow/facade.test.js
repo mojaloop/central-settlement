@@ -471,7 +471,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
             reason,
             createdDate: now
           }).calledOnce)
-          test.ok(whereStub.withArgs({ settlementWindowId: newSettlementWindowIdMock }).calledOnce)
+          test.ok(whereStub.withArgs({ settlementWindowId: newSettlementWindowIdMock[0] }).calledOnce)
           test.ok(updateStub.withArgs({ currentStateChangeId: newSettlementWindowStateChangeIdMock }).calledOnce)
           try {
             insertStub.onCall(3).throws(new Error('Insert into settlementWindowStateChange failed'))
