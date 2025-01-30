@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.0.1](https://github.com/mojaloop/central-settlement/compare/v17.0.0...v17.0.1) (2025-01-30)
+
+
+### Bug Fixes
+
+* **csi-1153:** fixes for `knex.insert` returned insert index ([#417](https://github.com/mojaloop/central-settlement/issues/417)) ([8261c8b](https://github.com/mojaloop/central-settlement/commit/8261c8ba81472b7fb464497c731db7b08b8ae0eb))
+
 ## [17.0.0](https://github.com/mojaloop/central-settlement/compare/v16.0.1...v17.0.0) (2025-01-27)
 
 
