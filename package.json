@@ -96,7 +96,7 @@
         "vm": "0.1.0"
     },
     "devDependencies": {
-        "@hapi/joi": "17.1.1",
+        "joi": "17.13.3",
         "@mojaloop/central-services-metrics": "12.4.4",
         "@types/lodash": "4.17.15",
         "ajv": "8.17.1",
