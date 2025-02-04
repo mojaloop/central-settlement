@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.0.2](https://github.com/mojaloop/central-settlement/compare/v17.0.1...v17.0.2) (2025-02-04)
+
+
+### Chore
+
+* update build orb to version 1.0.50 and add context to workflow ([#418](https://github.com/mojaloop/central-settlement/issues/418)) ([b0a551c](https://github.com/mojaloop/central-settlement/commit/b0a551c2e32a52e65affbd4f632e08b0eb286a89))
+
 ### [17.0.1](https://github.com/mojaloop/central-settlement/compare/v17.0.0...v17.0.1) (2025-01-30)
 
 
