@@ -140,11 +140,9 @@
             "sanitize-html": "2.12.1",
             "jsonpointer": "5.0.0",
             "markdown-it": "12.3.2",
-            "yargs-parser": "13.1.2",
             "postcss": "8.4.31"
         },
         "widdershins": {
-            "yargs-parser": "13.1.2",
             "markdown-it": "12.3.2",
             "swagger2openapi": "7.0.8"
         },
@@ -152,7 +150,8 @@
         "markdown-it": "12.3.2",
         "trim": "0.0.3",
         "cross-spawn": "7.0.6",
-        "validator": "13.7.0"
+        "validator": "13.7.0",
+        "yargs-parser": "21.1.1"
     },
     "generator-swaggerize": {
         "version": "4.1.0"
