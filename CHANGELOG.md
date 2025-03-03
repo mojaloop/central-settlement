@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.0.5](https://github.com/mojaloop/central-settlement/compare/v17.0.4...v17.0.5) (2025-03-03)
+
+
+### Bug Fixes
+
+* ansi-regex vulnerability ([#421](https://github.com/mojaloop/central-settlement/issues/421)) ([6019d4a](https://github.com/mojaloop/central-settlement/commit/6019d4abfdaba1bbea2da8f6beedc4a5d5dcad72))
+
 ### [17.0.4](https://github.com/mojaloop/central-settlement/compare/v17.0.3...v17.0.4) (2025-03-03)
 
 
