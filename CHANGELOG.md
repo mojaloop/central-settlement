@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.0.4](https://github.com/mojaloop/central-settlement/compare/v17.0.3...v17.0.4) (2025-03-03)
+
+
+### Bug Fixes
+
+* add 'change' column to insert ([#420](https://github.com/mojaloop/central-settlement/issues/420)) ([64e290a](https://github.com/mojaloop/central-settlement/commit/64e290a287f0d34cf7dff6d70a2b465db1603f86))
+
 ### [17.0.3](https://github.com/mojaloop/central-settlement/compare/v17.0.2...v17.0.3) (2025-02-25)
 
 
