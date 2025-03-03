@@ -249,13 +249,13 @@ async function updateTransferSettlement (transferId, status, trx = null) {
         .transacting(trx)
 
       // Insert new participant position change records
-      await knex.from(knex.raw('participantPositionChange (participantPositionId, transferStateChangeId, value, reservedValue, participantCurrencyId)'))
+      await knex.from(knex.raw('participantPositionChange (participantPositionId, transferStateChangeId, value, `change`, reservedValue, participantCurrencyId)'))
         .insert(function () {
           this.from('participantPosition AS PP')
-            .select('PP.participantPositionId', 'TSC.transferStateChangeId', 'PP.value', 'PP.reservedValue', 'PP.participantCurrencyId')
+            .select('PP.participantPositionId', 'TSC.transferStateChangeId', 'PP.value', 'PP.reservedValue', 'TR.amount', 'PP.participantCurrencyId')
             .innerJoin(function () {
               this.from('transferParticipant AS TP')
-                .select('PC.participantCurrencyId')
+                .select('PC.participantCurrencyId', 'TP.amount')
                 .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
                 .innerJoin('settlementModel AS M', 'M.ledgerAccountTypeId', 'PC.ledgerAccountTypeId')
                 .innerJoin('settlementGranularity AS G', 'M.settlementGranularityId', 'G.settlementGranularityId')
@@ -266,7 +266,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
                   })
                 })
                 .union(function () {
-                  this.select('PC1.participantCurrencyId')
+                  this.select('PC1.participantCurrencyId', 'TP.amount')
                     .from('transferParticipant AS TP')
                     .innerJoin('participantCurrency AS PC', 'TP.participantCurrencyId', 'PC.participantCurrencyId')
                     .innerJoin('settlementModel AS M', 'M.ledgerAccountTypeId', 'PC.ledgerAccountTypeId')
