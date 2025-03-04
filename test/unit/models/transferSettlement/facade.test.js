@@ -61,13 +61,15 @@ const expectedParticipantPositionChangeRecords = [
     participantPositionId: 130,
     value: 39.37,
     reservedValue: 0,
-    transferStateChangeId: 4581
+    transferStateChangeId: 4581,
+    change: 39.37
   },
   {
     participantPositionId: 129,
     value: -39.37,
     reservedValue: 0,
-    transferStateChangeId: 4581
+    transferStateChangeId: 4581,
+    change: -39.37
   }
 ]
 Test('TransferSettlement facade', async (transferSettlementTest) => {

@@ -107,6 +107,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
         }
         const participantPositionChangeRecords = participantPositionRecords.map(participantPositionRecord => {
           participantPositionRecord.transferStateChangeId = transferStateChangeId[0].transferStateChangeId
+          participantPositionRecord.change = participantPositionRecord.value
           return participantPositionRecord
         })
 
