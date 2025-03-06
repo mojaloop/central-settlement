@@ -1,34 +1,34 @@
 /*****
  License
- --------------
- Copyright © 2020-2025 Mojaloop Foundation
- The Mojaloop files are made available by the Mojaloop Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
+--------------
+Copyright © 2020-2025 Mojaloop Foundation
+The Mojaloop files are made available by the Mojaloop Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
 
- http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
- Unless required by applicable law or agreed to in writing, the Mojaloop files are distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+Unless required by applicable law or agreed to in writing, the Mojaloop files are distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
- Contributors
- --------------
- This is the official list of the Mojaloop project contributors for this file.
- Names of the original copyright holders (individuals or organizations)
- should be listed with a '*' in the first column. People who have
- contributed from an organization can be listed under the organization
- that actually holds the copyright for their contributions (see the
- Mojaloop Foundation for an example). Those individuals should have
- their names indented and be marked with a '-'. Email address can be added
- optionally within square brackets <email>.
+Contributors
+--------------
+This is the official list of the Mojaloop project contributors for this file.
+Names of the original copyright holders (individuals or organizations)
+should be listed with a '*' in the first column. People who have
+contributed from an organization can be listed under the organization
+that actually holds the copyright for their contributions (see the
+Mojaloop Foundation for an example). Those individuals should have
+their names indented and be marked with a '-'. Email address can be added
+optionally within square brackets <email>.
 
- * Mojaloop Foundation
- - Name Surname <name.surname@mojaloop.io>
+* Mojaloop Foundation
+- Name Surname <name.surname@mojaloop.io>
 
- * ModusBox
- - Deon Botha <deon.botha@modusbox.com>
- - Georgi Georgiev <georgi.georgiev@modusbox.com>
- - Valentin Genev <valentin.genev@modusbox.com>
- - Claudio Viola <claudio.viola@modusbox.com>
- --------------
- ******/
+* ModusBox
+- Deon Botha <deon.botha@modusbox.com>
+- Georgi Georgiev <georgi.georgiev@modusbox.com>
+- Valentin Genev <valentin.genev@modusbox.com>
+- Claudio Viola <claudio.viola@modusbox.com>
+--------------
+******/
 
 'use strict'
 
@@ -95,7 +95,16 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
         }
 
         const participantPositionRecords = await knex('participantPosition')
-          .select('participantPositionId', 'participantCurrencyId', 'value', 'reservedValue')
+          .select('participantPositionId', 'participantCurrencyId', 'value', 'reservedValue',
+            knex.raw(`
+              CASE 
+                WHEN participantCurrencyId = ? THEN ? 
+                WHEN participantCurrencyId = ? THEN ? 
+              END AS \`change\`
+            `, [
+              recordsToInsert[0].participantCurrencyId, recordsToInsert[0].amount,
+              recordsToInsert[1].participantCurrencyId, recordsToInsert[1].amount
+            ]))
           .where('participantCurrencyId', recordsToInsert[0].participantCurrencyId)
           .orWhere('participantCurrencyId', recordsToInsert[1].participantCurrencyId)
           .transacting(trx)
@@ -160,6 +169,8 @@ async function updateTransferSettlement (transferId, status, trx = null) {
   try {
     const knex = await Db.getKnex()
     const trxFunction = async (trx) => {
+      const transactionTimestamp = new Date()
+
       // Insert TransferParticipant ledger entry type.
       await knex.from(knex.raw('transferParticipant (transferID, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, participantId, amount)'))
         // insert debit/credit ledger entries for matching ledger entries for both Settlement and Position accounts
@@ -212,7 +223,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
 
       // Update the positions
       await knex('participantPosition AS PP')
-        .update({ value: knex.raw('?? - ??', ['PP.value', 'TR.amount']) })
+        .update({ value: knex.raw('?? - ??', ['PP.value', 'TR.amount']), changedDate: transactionTimestamp })
         .innerJoin(function () {
           this.from('transferParticipant AS TP')
           // Select ledger entries for POSITION accounts that match the Settlement Model based on the Granularity type with NORMAL amounts
