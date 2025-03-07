@@ -95,7 +95,16 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
         }
 
         const participantPositionRecords = await knex('participantPosition')
-          .select('participantPositionId', 'participantCurrencyId', 'value', 'reservedValue')
+          .select('participantPositionId', 'participantCurrencyId', 'value', 'reservedValue',
+            knex.raw(`
+              CASE 
+                WHEN participantCurrencyId = ? THEN ? 
+                WHEN participantCurrencyId = ? THEN ? 
+              END AS \`change\`
+            `, [
+              recordsToInsert[0].participantCurrencyId, recordsToInsert[0].amount,
+              recordsToInsert[1].participantCurrencyId, recordsToInsert[1].amount
+            ]))
           .where('participantCurrencyId', recordsToInsert[0].participantCurrencyId)
           .orWhere('participantCurrencyId', recordsToInsert[1].participantCurrencyId)
           .transacting(trx)
@@ -160,6 +169,8 @@ async function updateTransferSettlement (transferId, status, trx = null) {
   try {
     const knex = await Db.getKnex()
     const trxFunction = async (trx) => {
+      const transactionTimestamp = new Date()
+
       // Insert TransferParticipant ledger entry type.
       await knex.from(knex.raw('transferParticipant (transferID, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, participantId, amount)'))
         // insert debit/credit ledger entries for matching ledger entries for both Settlement and Position accounts
@@ -212,7 +223,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
 
       // Update the positions
       await knex('participantPosition AS PP')
-        .update({ value: knex.raw('?? - ??', ['PP.value', 'TR.amount']) })
+        .update({ value: knex.raw('?? - ??', ['PP.value', 'TR.amount']), changedDate: transactionTimestamp })
         .innerJoin(function () {
           this.from('transferParticipant AS TP')
           // Select ledger entries for POSITION accounts that match the Settlement Model based on the Granularity type with NORMAL amounts
