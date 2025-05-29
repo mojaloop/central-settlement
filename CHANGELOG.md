@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.1.1](https://github.com/mojaloop/central-settlement/compare/v17.1.0...v17.1.1) (2025-05-29)
+
+
+### Bug Fixes
+
+* new orb version to fix docker issue ([#427](https://github.com/mojaloop/central-settlement/issues/427)) ([98150cd](https://github.com/mojaloop/central-settlement/commit/98150cdc2988cffb82b2d6d7b043a0ab94c09909))
+
 ## [17.1.0](https://github.com/mojaloop/central-settlement/compare/v17.0.6...v17.1.0) (2025-05-27)
 
 
