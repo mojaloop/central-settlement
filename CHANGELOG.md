@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.1.0](https://github.com/mojaloop/central-settlement/compare/v17.0.6...v17.1.0) (2025-05-27)
+
+
+### Features
+
+* bump up node to v22.15.1 ([#426](https://github.com/mojaloop/central-settlement/issues/426)) ([800cf89](https://github.com/mojaloop/central-settlement/commit/800cf89e414a867884673870a93d464b4f10ead1))
+
 ### [17.0.6](https://github.com/mojaloop/central-settlement/compare/v17.0.5...v17.0.6) (2025-03-07)
 
 
