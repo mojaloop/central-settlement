@@ -172,6 +172,19 @@ Test('SubServiceHealth test', function (subServiceHealthTest) {
       test.end()
     })
 
+    brokerTest.test('broker test fails when getListOfTopics throws', async test => {
+      // Arrange
+      Consumer.getListOfTopics.throws(new Error('Failed to get topics'))
+      const expected = { name: serviceName.broker, status: statusEnum.DOWN }
+
+      // Act
+      const result = await getSubServiceHealthBroker()
+
+      // Assert
+      test.deepEqual(result, expected, 'getSubServiceHealthBroker should match expected result')
+      test.end()
+    })
+
     brokerTest.end()
   })
 
