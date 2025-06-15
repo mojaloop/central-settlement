@@ -109,6 +109,8 @@ Test('SubServiceHealth test', function (subServiceHealthTest) {
     brokerTest.test('broker test passes when there are no topics', async test => {
       // Arrange
       Consumer.getListOfTopics.returns([])
+      // allConnected should not be called if there are no topics
+      const allConnectedStub = sandbox.stub(Consumer, 'allConnected')
       const expected = { name: serviceName.broker, status: statusEnum.OK }
 
       // Act
@@ -116,13 +118,16 @@ Test('SubServiceHealth test', function (subServiceHealthTest) {
 
       // Assert
       test.deepEqual(result, expected, 'getSubServiceHealthBroker should match expected result')
+      test.equal(allConnectedStub.callCount, 0, 'allConnected should not be called')
       test.end()
     })
 
     brokerTest.test('broker test fails when one broker cannot connect', async test => {
       // Arrange
       Consumer.getListOfTopics.returns(['admin1', 'admin2'])
-      Consumer.isConnected.throws(new Error('Not connected!'))
+      const allConnectedStub = sandbox.stub(Consumer, 'allConnected')
+      allConnectedStub.onFirstCall().resolves(true)
+      allConnectedStub.onSecondCall().resolves(false)
       const expected = { name: serviceName.broker, status: statusEnum.DOWN }
 
       // Act
@@ -130,14 +135,47 @@ Test('SubServiceHealth test', function (subServiceHealthTest) {
 
       // Assert
       test.deepEqual(result, expected, 'getSubServiceHealthBroker should match expected result')
+      test.equal(allConnectedStub.callCount, 2, 'allConnected should be called for each topic')
       test.end()
     })
 
-    brokerTest.test('Passes when it connects', async test => {
+    brokerTest.test('broker test fails when allConnected throws for a topic', async test => {
       // Arrange
       Consumer.getListOfTopics.returns(['admin1', 'admin2'])
-      Consumer.isConnected.returns(Promise.resolve(true))
+      const allConnectedStub = sandbox.stub(Consumer, 'allConnected')
+      allConnectedStub.onFirstCall().resolves(true)
+      allConnectedStub.onSecondCall().throws(new Error('Not connected!'))
+      const expected = { name: serviceName.broker, status: statusEnum.DOWN }
+
+      // Act
+      const result = await getSubServiceHealthBroker()
+
+      // Assert
+      test.deepEqual(result, expected, 'getSubServiceHealthBroker should match expected result')
+      test.equal(allConnectedStub.callCount, 2, 'allConnected should be called for each topic')
+      test.end()
+    })
+
+    brokerTest.test('Passes when all topics are connected', async test => {
+      // Arrange
+      Consumer.getListOfTopics.returns(['admin1', 'admin2'])
+      const allConnectedStub = sandbox.stub(Consumer, 'allConnected')
+      allConnectedStub.resolves(true)
       const expected = { name: serviceName.broker, status: statusEnum.OK }
+
+      // Act
+      const result = await getSubServiceHealthBroker()
+
+      // Assert
+      test.deepEqual(result, expected, 'getSubServiceHealthBroker should match expected result')
+      test.equal(allConnectedStub.callCount, 2, 'allConnected should be called for each topic')
+      test.end()
+    })
+
+    brokerTest.test('broker test fails when getListOfTopics throws', async test => {
+      // Arrange
+      Consumer.getListOfTopics.throws(new Error('Failed to get topics'))
+      const expected = { name: serviceName.broker, status: statusEnum.DOWN }
 
       // Act
       const result = await getSubServiceHealthBroker()
