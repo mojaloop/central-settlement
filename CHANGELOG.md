@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.1.2](https://github.com/mojaloop/central-settlement/compare/v17.1.1...v17.1.2) (2025-06-16)
+
+
+### Chore
+
+* bump deps for rdkafka ([#428](https://github.com/mojaloop/central-settlement/issues/428)) ([834d37f](https://github.com/mojaloop/central-settlement/commit/834d37fff7f6d3986a8c8abd7340e897a4374873))
+
 ### [17.1.1](https://github.com/mojaloop/central-settlement/compare/v17.1.0...v17.1.1) (2025-05-29)
 
 
