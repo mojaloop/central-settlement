@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.1.3](https://github.com/mojaloop/central-settlement/compare/v17.1.2...v17.1.3) (2025-07-11)
+
+
+### Chore
+
+* update deps ([b896fc5](https://github.com/mojaloop/central-settlement/commit/b896fc5970ed8638c3bfe2a5e06961728bbf44e5))
+
 ### [17.1.2](https://github.com/mojaloop/central-settlement/compare/v17.1.1...v17.1.2) (2025-06-16)
 
 
