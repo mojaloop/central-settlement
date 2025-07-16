@@ -388,10 +388,10 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       test.equal(payeeTransferStateChangeRecord.transferStateId, enums.transferStates.RESERVED, '#39 settlement transfer for payee is RESERVED')
 
       const currentPayerPosition = (await ParticipantPositionModel.getPositionByCurrencyId(netSenderAccountId)).value
-      test.equal(currentPayerPosition, initialPayerPosition, '#40 position for NET_SETTLEMENT_SENDER is not changed')
+      test.ok(new MLNumber(currentPayerPosition).isEqualTo(initialPayerPosition), '#40 position for NET_SETTLEMENT_SENDER is not changed')
 
       const currentPayeePosition = (await ParticipantPositionModel.getPositionByCurrencyId(netRecipientAccountId)).value
-      test.equal(currentPayeePosition, new MLNumber(initialPayeePosition).add(netSettlementAmount).toNumber(), '#41 position for NET_SETTLEMENT_RECIPIENT is adjusted')
+      test.ok(new MLNumber(initialPayeePosition).add(netSettlementAmount).isEqualTo(currentPayeePosition), '#41 position for NET_SETTLEMENT_RECIPIENT is adjusted')
 
       test.end()
     } catch (err) {
@@ -452,10 +452,10 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       test.equal(payeeTransferStateChangeRecord.transferStateId, enums.transferStates.COMMITTED, '#48 settlement transfer for payee is COMMITTED')
 
       const currentPayerPosition = (await ParticipantPositionModel.getPositionByCurrencyId(netSenderAccountId)).value
-      test.equal(currentPayerPosition, new MLNumber(initialPayerPosition).subtract(netSettlementAmount).toNumber(), '#49 position for NET_SETTLEMENT_SENDER is adjusted')
+      test.ok(new MLNumber(initialPayerPosition).subtract(netSettlementAmount).isEqualTo(currentPayerPosition), '#49 position for NET_SETTLEMENT_SENDER is adjusted')
 
       const currentPayeePosition = (await ParticipantPositionModel.getPositionByCurrencyId(netRecipientAccountId)).value
-      test.equal(currentPayeePosition, initialPayeePosition, '#50 position for NET_SETTLEMENT_RECIPIENT is unchanged')
+      test.ok(new MLNumber(currentPayeePosition).isEqualTo(initialPayeePosition), '#50 position for NET_SETTLEMENT_RECIPIENT is unchanged')
 
       test.end()
     } catch (err) {
