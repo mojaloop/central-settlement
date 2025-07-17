@@ -76,7 +76,7 @@
         "@mojaloop/central-services-error-handling": "13.1.0",
         "@mojaloop/central-services-health": "15.1.0",
         "@mojaloop/central-services-logger": "11.9.0",
-        "@mojaloop/central-services-shared": "18.30.0",
+        "@mojaloop/central-services-shared": "18.30.1",
         "@mojaloop/central-services-stream": "11.8.2",
         "@mojaloop/event-sdk": "14.6.1",
         "@mojaloop/ml-number": "11.3.0",
