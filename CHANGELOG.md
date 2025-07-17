@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.2.0](https://github.com/mojaloop/central-settlement/compare/v17.1.2...v17.2.0) (2025-07-17)
+
+
+### Features
+
+* added additional connection options ([#433](https://github.com/mojaloop/central-settlement/issues/433)) ([865742a](https://github.com/mojaloop/central-settlement/commit/865742ae21fb8d2a9e681cc4e89ac840d79ec5b4))
+
+
+### Chore
+
+* update dependencies ([#432](https://github.com/mojaloop/central-settlement/issues/432)) ([981381b](https://github.com/mojaloop/central-settlement/commit/981381b3520203b14f9a2a8a931cfbc3304cc8f1))
+
 ### [17.1.3](https://github.com/mojaloop/central-settlement/compare/v17.1.2...v17.1.3) (2025-07-11)
 
 
