@@ -342,7 +342,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
               participantCurrencyId: dfspAccountId,
               transferStateChangeId,
               value: new MLNumber(dfspPositionValue).add(dfspAmount).toNumber(),
-              change: new MLNumber(dfspAmount).toNumber(),
+              positionChange: new MLNumber(dfspAmount).toNumber(),
               reservedValue: dfspReservedValue,
               createdDate: transactionTimestamp
             })
@@ -380,7 +380,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
               participantCurrencyId: hubAccountId,
               transferStateChangeId,
               value: new MLNumber(hubPositionValue).add(hubAmount).toNumber(),
-              change: new MLNumber(hubAmount).toNumber(),
+              positionChange: new MLNumber(hubAmount).toNumber(),
               reservedValue: 0,
               createdDate: transactionTimestamp
             })
@@ -496,7 +496,7 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
               participantCurrencyId: dfspAccountId,
               transferStateChangeId,
               value: dfspPositionValue - dfspAmount,
-              change: new MLNumber(dfspAmount).toNumber(),
+              positionChange: new MLNumber(dfspAmount).toNumber(),
               reservedValue: dfspReservedValue,
               createdDate: transactionTimestamp
             })
@@ -534,7 +534,7 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
               participantCurrencyId: hubAccountId,
               transferStateChangeId,
               value: hubPositionValue - hubAmount,
-              change: new MLNumber(hubAmount).toNumber(),
+              positionChange: new MLNumber(hubAmount).toNumber(),
               reservedValue: 0,
               createdDate: transactionTimestamp
             })
@@ -666,7 +666,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
               participantCurrencyId: dfspAccountId,
               transferStateChangeId,
               value: new MLNumber(dfspPositionValue).add(dfspAmount).toNumber(),
-              change: new MLNumber(dfspAmount).toNumber(),
+              positionChange: new MLNumber(dfspAmount).toNumber(),
               reservedValue: dfspReservedValue,
               createdDate: transactionTimestamp
             })
@@ -693,7 +693,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
               participantCurrencyId: hubAccountId,
               transferStateChangeId,
               value: new MLNumber(hubPositionValue).add(hubAmount).toNumber(),
-              change: new MLNumber(hubAmount).toNumber(),
+              positionChange: new MLNumber(hubAmount).toNumber(),
               reservedValue: 0,
               createdDate: transactionTimestamp
             })

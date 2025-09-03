@@ -234,13 +234,13 @@ const Facade = {
             .from(knex.raw('settlementContentAggregation (settlementWindowContentId, participantCurrencyId, transferParticipantRoleTypeId, ledgerEntryTypeId, currentStateId, createdDate, amount)'))
             .insert(/* istanbul ignore next */ function () {
               this.from(function () {
-                this.select('ppc.participantCurrencyId', 'ppc.change', 'tf.settlementWindowId')
+                this.select('ppc.participantCurrencyId', 'ppc.positionChange', 'tf.settlementWindowId')
                   .from('transferFulfilment AS tf')
                   .join('transferStateChange AS tsc', 'tsc.transferId', 'tf.transferId')
                   .join('participantPositionChange AS ppc', 'ppc.transferStateChangeId', 'tsc.transferStateChangeId')
                   .where('tf.settlementWindowId', settlementWindowId)
                   .unionAll(/* istanbul ignore next */ function () {
-                    this.select('ppc.participantCurrencyId', 'ppc.change', 'fxtf.settlementWindowId')
+                    this.select('ppc.participantCurrencyId', 'ppc.positionChange', 'fxtf.settlementWindowId')
                       .from('fxTransferFulfilment AS fxtf')
                       .join('fxTransferStateChange AS fxtsc', 'fxtsc.commitRequestId', 'fxtf.commitRequestId')
                       .join('participantPositionChange AS ppc', 'ppc.fxTransferStateChangeId', 'fxtsc.fxTransferStateChangeId')
@@ -258,11 +258,11 @@ const Facade = {
                 .andWhere('m.settlementGranularityId', Enum.Settlements.SettlementGranularity.NET)
                 .groupBy('swc.settlementWindowContentId', 'pc.participantCurrencyId', 'transferParticipantRoleTypeId', 'ledgerEntryTypeId')
                 .select('swc.settlementWindowContentId', 'pc.participantCurrencyId',
-                  knex.raw('CASE WHEN unioned.change > 0 THEN ? ELSE ?? END AS transferParticipantRoleTypeId', [Enum.Accounts.TransferParticipantRoleType.PAYER_DFSP, Enum.Accounts.TransferParticipantRoleType.PAYEE_DFSP]),
+                  knex.raw('CASE WHEN unioned.positionChange > 0 THEN ? ELSE ?? END AS transferParticipantRoleTypeId', [Enum.Accounts.TransferParticipantRoleType.PAYER_DFSP, Enum.Accounts.TransferParticipantRoleType.PAYEE_DFSP]),
                   knex.raw('? AS ??', [Enum.Accounts.LedgerEntryType.PRINCIPLE_VALUE, 'ledgerEntryTypeId']),
                   knex.raw('? AS ??', [Enum.Settlements.SettlementWindowState.CLOSED, 'settlementWindowStateId']),
                   knex.raw('? AS ??', [transactionTimestamp, 'createdDate']))
-                .sum('unioned.change AS amount')
+                .sum('unioned.positionChange AS amount')
             })
             .transacting(trx)
           await builder

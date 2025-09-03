@@ -34,7 +34,7 @@ services:
      interval: 30s
 
   central-ledger:
-    image: mojaloop/central-ledger:v19.0.6
+    image: mojaloop/central-ledger:v19.8.7
     container_name: cs_central-ledger
     command:
       - "sh"
