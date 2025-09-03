@@ -71,7 +71,7 @@
         "@hapi/hapi": "21.4.3",
         "@hapi/inert": "7.1.0",
         "@hapi/vision": "7.0.3",
-        "@mojaloop/central-ledger": "v19.8.6",
+        "@mojaloop/central-ledger": "v19.8.7",
         "@mojaloop/database-lib": "^11.3.2",
         "@mojaloop/central-services-error-handling": "13.1.0",
         "@mojaloop/central-services-health": "15.1.0",
