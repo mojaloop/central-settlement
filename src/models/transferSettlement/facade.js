@@ -100,7 +100,7 @@ async function insertLedgerEntry (ledgerEntry, transferId, trx = null) {
               CASE 
                 WHEN participantCurrencyId = ? THEN ? 
                 WHEN participantCurrencyId = ? THEN ? 
-              END AS \`change\`
+              END AS \`positionChange\`
             `, [
               recordsToInsert[0].participantCurrencyId, recordsToInsert[0].amount,
               recordsToInsert[1].participantCurrencyId, recordsToInsert[1].amount
@@ -260,7 +260,7 @@ async function updateTransferSettlement (transferId, status, trx = null) {
         .transacting(trx)
 
       // Insert new participant position change records
-      await knex.from(knex.raw('participantPositionChange (participantPositionId, transferStateChangeId, value, `change`, reservedValue, participantCurrencyId)'))
+      await knex.from(knex.raw('participantPositionChange (participantPositionId, transferStateChangeId, value, positionChange, reservedValue, participantCurrencyId)'))
         .insert(function () {
           this.from('participantPosition AS PP')
             .select('PP.participantPositionId', 'TSC.transferStateChangeId', 'PP.value', 'PP.reservedValue', 'TR.amount', 'PP.participantCurrencyId')
