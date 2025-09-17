@@ -80,7 +80,7 @@
         "@mojaloop/central-services-stream": "11.8.2",
         "@mojaloop/event-sdk": "14.6.1",
         "@mojaloop/ml-number": "11.3.0",
-        "@mojaloop/sdk-standard-components": "19.16.4",
+        "@mojaloop/sdk-standard-components": "19.16.8",
         "@now-ims/hapi-now-auth": "2.1.0",
         "async": "3.2.6",
         "async-retry": "1.3.3",
