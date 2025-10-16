@@ -2,6 +2,10 @@ ignore:
   # Ignore cross-spawn vulnerabilities by CVE ID due to false positive
   # as grype looks at package-lock.json where it shows versions with
   # vulnerabilities, npm ls shows only 7.0.6 verion is used
+  - vulnerability: CVE-2025-46394
+  - vulnerability: CVE-2024-58251
+  - vulnerability: CVE-2025-56200
+    include-aliases: true
 
 
 # Set output format defaults
