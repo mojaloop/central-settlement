@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.2.3](https://github.com/mojaloop/central-settlement/compare/v17.2.2...v17.2.3) (2025-10-16)
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([1c363ed](https://github.com/mojaloop/central-settlement/commit/1c363ed75864de68398958c1c2f6ea5289471280))
+* update orb, node version, Docker image, add grype ignore ([#444](https://github.com/mojaloop/central-settlement/issues/444)) ([75654a9](https://github.com/mojaloop/central-settlement/commit/75654a96d6862c216587ad647b31bfef4cd398df))
+
 ### [17.2.2](https://github.com/mojaloop/central-settlement/compare/v17.2.1...v17.2.2) (2025-07-30)
 
 
