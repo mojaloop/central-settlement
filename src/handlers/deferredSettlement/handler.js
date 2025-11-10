@@ -115,7 +115,7 @@ const closeSettlementWindow = async (error, messages) => {
     }, retryOpts)
     return true
   } catch (err) {
-    logger.error(`${Utility.breadcrumb(location)}::${err.message}--0`)
+    logger.error(`${Utility.breadcrumb(location)}::${err.message}--0`, err)
     const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
     const state = new EventSdk.EventStateMetadata(
       EventSdk.EventStatusType.failed,

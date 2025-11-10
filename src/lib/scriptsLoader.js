@@ -49,7 +49,7 @@ function loadScripts (scriptDirectory) {
       return fs.statSync(path.join(scriptDirectoryPath, fileName)).isFile()
     })
   } catch (err) {
-    logger.error(`Error loading scripts from : ${scriptDirectoryPath}, ${err}`)
+    logger.error(`Error loading scripts from : ${scriptDirectoryPath}`, err)
     return scriptsMap
   }
   for (const scriptFile of scriptFiles) {

@@ -55,7 +55,7 @@ const getSubServiceHealthBroker = async () => {
         try {
           return await Consumer.allConnected(t)
         } catch (err) {
-          logger.warn(`allConnected threw for topic ${t}: ${err.message}`)
+          logger.warn(`allConnected threw for topic ${t}: `, err)
           return false
         }
       })
@@ -65,7 +65,7 @@ const getSubServiceHealthBroker = async () => {
       status = statusEnum.DOWN
     }
   } catch (err) {
-    logger.warn(`getSubServiceHealthBroker failed with error ${err.message}.`)
+    logger.warn('getSubServiceHealthBroker failed with error.', err)
     status = statusEnum.DOWN
   }
 
@@ -93,7 +93,7 @@ const getSubServiceHealthDatastore = async () => {
       status = statusEnum.DOWN
     }
   } catch (err) {
-    logger.error(`getSubServiceHealthDatastore failed with error ${err.message}.`)
+    logger.error('getSubServiceHealthDatastore failed with error.', err)
     status = statusEnum.DOWN
   }
 
