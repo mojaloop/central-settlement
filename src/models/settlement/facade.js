@@ -40,7 +40,7 @@ const Config = require('../../lib/config')
 const ParticipantFacade = require('@mojaloop/central-ledger/src/models/participant/facade')
 const Utility = require('../../lib/utility')
 const SettlementModelModel = require('./settlementModel')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../shared/logger')
 const generateULID = idGenerator({ type: 'ulid' })
 
 const groupByWindowsWithContent = (records) => {
@@ -214,7 +214,7 @@ const settlementTransfersPrepare = async function (settlementId, transactionTime
         })
         .transacting(trx)
     } catch (err) {
-      Logger.isErrorEnabled && Logger.error(err)
+      logger.error(err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
@@ -388,7 +388,7 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
         }
       }
     } catch (err) {
-      Logger.isErrorEnabled && Logger.error(err)
+      logger.error(err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
@@ -542,7 +542,7 @@ const settlementTransfersAbort = async function (settlementId, transactionTimest
         }
       }
     } catch (err) {
-      Logger.isErrorEnabled && Logger.error(err)
+      logger.error(err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
@@ -712,7 +712,7 @@ const settlementTransfersCommit = async function (settlementId, transactionTimes
         }
       }
     } catch (err) {
-      Logger.isErrorEnabled && Logger.error(err)
+      logger.error(err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }
@@ -1196,7 +1196,7 @@ const Facade = {
           }
         }
       } catch (err) {
-        Logger.isErrorEnabled && Logger.error(err)
+        logger.error(err)
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
@@ -1307,7 +1307,7 @@ const Facade = {
           reason: payload.reason
         }
       } catch (err) {
-        Logger.isErrorEnabled && Logger.error(err)
+        logger.error(err)
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })
@@ -1519,7 +1519,7 @@ const Facade = {
           .update({ currentStateChangeId: settlementStateChangeId })
         return settlementId
       } catch (err) {
-        Logger.isErrorEnabled && Logger.error(err)
+        logger.error(err)
         throw ErrorHandler.Factory.reformatFSPIOPError(err)
       }
     })

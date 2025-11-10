@@ -28,7 +28,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const Model = require('../../../../src/models/transferSettlement/facade')
 const Db = require('../../../../src/lib/db')
 const TransferFacade = require('@mojaloop/central-ledger/src/models/transfer/facade')
@@ -459,7 +459,7 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       test.fail('An error is expected')
       test.end()
     } catch (err) {
-      Logger.error(`updateTransferSettlement failed with error - ${err}`)
+      logger.error(`updateTransferSettlement failed with error - ${err}`)
       test.pass('Error expected')
       test.end()
     }
@@ -474,7 +474,7 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
           try {
             await trxFunction(sandbox.stub())
           } catch (err) {
-            Logger.error(`Got error ${err}`)
+            logger.error(`Got error ${err}`)
             throw err
           }
         }
@@ -483,7 +483,7 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       test.fail('An error is expected')
       test.end()
     } catch (err) {
-      Logger.error(`updateTransferSettlement failed with error - ${err}`)
+      logger.error(`updateTransferSettlement failed with error - ${err}`)
       test.pass('Error is expected')
       test.end()
     }
@@ -553,7 +553,7 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       // TODO add expectations
       test.end()
     } catch (err) {
-      Logger.error(`updateTransferSettlement failed with error - ${err}`)
+      logger.error(`updateTransferSettlement failed with error - ${err}`)
       test.fail()
       test.end()
     }
@@ -603,7 +603,7 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       test.deepEqual(result, settlementModelResult, 'results match')
       test.end()
     } catch (err) {
-      Logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
+      logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
       test.fail()
       test.end()
     }
@@ -656,7 +656,7 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       test.deepEqual(result, [settlementModelResult], 'results match')
       test.end()
     } catch (err) {
-      Logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
+      logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
       test.fail()
       test.end()
     }
@@ -717,7 +717,7 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       test.deepEqual(result, [], 'results match')
       test.end()
     } catch (err) {
-      Logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
+      logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
       test.fail()
       test.end()
     }
@@ -770,7 +770,7 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       test.deepEqual(result, [settlementModelResult], 'results match')
       test.end()
     } catch (err) {
-      Logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
+      logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
       test.fail()
       test.end()
     }
@@ -831,7 +831,7 @@ Test('TransferSettlement facade', async (transferSettlementTest) => {
       test.deepEqual(result, [], 'results match')
       test.end()
     } catch (err) {
-      Logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
+      logger.error(`getSettlementModelByTransferId failed with error - ${err}`)
       test.fail()
       test.end()
     }

@@ -29,7 +29,7 @@
  ******/
 'use strict'
 
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const Sinon = require('sinon')
 const SettlementModel = require('../../../../src/models/settlement')
 const SettlementModelModel = require('../../../../src/models/settlement/settlementModel')
@@ -43,8 +43,8 @@ Test('SettlementService', async (settlementServiceTest) => {
 
   settlementServiceTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
-    sandbox.stub(Logger, 'isErrorEnabled').value(true)
-    sandbox.stub(Logger, 'error')
+    sandbox.stub(logger, 'isErrorEnabled').value(true)
+    sandbox.stub(logger, 'error')
     test.end()
   })
 
@@ -59,7 +59,7 @@ Test('SettlementService', async (settlementServiceTest) => {
       const settlementWindowId = 1
       const enums = {}
       const options = {
-        logger: Logger
+        logger: logger
       }
       const settlementMock = {
         settlementId: 1,
@@ -137,7 +137,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.ok(SettlementWindowContentModel.getBySettlementAndWindowId.withArgs(settlementId, settlementWindowId).calledOnce, 'SettlementWindowContentModel.getBySettlementAndWindowId with args ... called once')
           test.end()
         } catch (err) {
-          Logger.error(`getByIdTest failed with error - ${err}`)
+          logger.error(`getByIdTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -150,7 +150,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`getByIdTest failed with error - ${err}`)
+          logger.error(`getByIdTest failed with error - ${err}`)
           test.equal(err.message, 'participantCurrenciesList is not iterable', `Error "${err.message}" thrown`)
           test.end()
         }
@@ -163,7 +163,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`getByIdTest failed with error - ${err}`)
+          logger.error(`getByIdTest failed with error - ${err}`)
           test.equal(err.message, 'Settlement not found', `Error "${err.message}" thrown`)
           test.end()
         }
@@ -171,7 +171,7 @@ Test('SettlementService', async (settlementServiceTest) => {
 
       await getByIdTest.end()
     } catch (err) {
-      Logger.error(`settlementServiceTest failed with error - ${err}`)
+      logger.error(`settlementServiceTest failed with error - ${err}`)
       getByIdTest.fail()
       getByIdTest.end()
     }
@@ -194,7 +194,7 @@ Test('SettlementService', async (settlementServiceTest) => {
       abortByIdTest.fail()
       abortByIdTest.end()
     } catch (err) {
-      Logger.error(`settlementServiceTest failed with error - ${err}`)
+      logger.error(`settlementServiceTest failed with error - ${err}`)
       abortByIdTest.ok(err, 'error thrown')
       abortByIdTest.end()
     }
@@ -217,7 +217,7 @@ Test('SettlementService', async (settlementServiceTest) => {
       abortByIdTest.fail()
       abortByIdTest.end()
     } catch (err) {
-      Logger.error(`settlementServiceTest failed with error - ${err}`)
+      logger.error(`settlementServiceTest failed with error - ${err}`)
       abortByIdTest.ok(err, 'error thrown')
       abortByIdTest.end()
     }
@@ -240,7 +240,7 @@ Test('SettlementService', async (settlementServiceTest) => {
       abortByIdTest.fail()
       abortByIdTest.end()
     } catch (err) {
-      Logger.error(`settlementServiceTest failed with error - ${err}`)
+      logger.error(`settlementServiceTest failed with error - ${err}`)
       abortByIdTest.ok(err, 'error thrown')
       abortByIdTest.end()
     }
@@ -265,7 +265,7 @@ Test('SettlementService', async (settlementServiceTest) => {
       abortByIdTest.pass()
       abortByIdTest.end()
     } catch (err) {
-      Logger.error(`settlementServiceTest failed with error - ${err}`)
+      logger.error(`settlementServiceTest failed with error - ${err}`)
       abortByIdTest.fail()
       abortByIdTest.end()
     }
@@ -281,7 +281,7 @@ Test('SettlementService', async (settlementServiceTest) => {
       }
       const enums = {}
       const options = {
-        logger: Logger
+        logger: logger
       }
       const settlementWindowContentMock = [
         {
@@ -368,7 +368,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.equal(result[0].participants[0].accounts[1].netSettlementAmount.currency, settlementsMockData[1].accountCurrency)
           test.end()
         } catch (err) {
-          Logger.error(`getSettlementsByParamsTest failed with error - ${err}`)
+          logger.error(`getSettlementsByParamsTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -381,7 +381,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`getSettlementsByParamsTest failed with error - ${err}`)
+          logger.error(`getSettlementsByParamsTest failed with error - ${err}`)
           test.equal(err.message, 'Settlements not found', `Error "${err.message}" thrown`)
           test.end()
         }
@@ -393,7 +393,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`getSettlementsByParamsTest failed with error - ${err}`)
+          logger.error(`getSettlementsByParamsTest failed with error - ${err}`)
           test.pass(`Error "${err.message.substr(0, 50)} ..." thrown`)
           test.end()
         }
@@ -401,7 +401,7 @@ Test('SettlementService', async (settlementServiceTest) => {
 
       await getSettlementsByParamsTest.end()
     } catch (err) {
-      Logger.error(`settlementServiceTest failed with error - ${err}`)
+      logger.error(`settlementServiceTest failed with error - ${err}`)
       getSettlementsByParamsTest.fail()
       getSettlementsByParamsTest.end()
     }
@@ -432,7 +432,7 @@ Test('SettlementService', async (settlementServiceTest) => {
         }
       }
       const options = {
-        logger: Logger
+        logger: logger
       }
 
       const settlementModelDataMock = [null, {
@@ -526,7 +526,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.equal(result.participants[0].accounts[1].state, participantCurrenciesListMock[1].state, 'Result property matched')
           test.end()
         } catch (err) {
-          Logger.error(`settlementEventTriggerTest failed with error - ${err}`)
+          logger.error(`settlementEventTriggerTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -539,7 +539,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementEventTriggerTest failed with error - ${err}`)
+          logger.error(`settlementEventTriggerTest failed with error - ${err}`)
           test.equal(err.message, 'Inapplicable windows 1, 2', `Error "${err.message}" thrown`)
           test.end()
         }
@@ -552,7 +552,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementEventTriggerTest failed with error - ${err}`)
+          logger.error(`settlementEventTriggerTest failed with error - ${err}`)
           test.equal(err.message, 'Settlement model not found', `Error "${err.message}" thrown`)
           test.end()
         }
@@ -565,7 +565,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementEventTriggerTest failed with error - ${err}`)
+          logger.error(`settlementEventTriggerTest failed with error - ${err}`)
           test.equal(err.message, 'Settlement can not be created for GROSS or IMMEDIATE models', `Error "${err.message}" thrown`)
           test.end()
         }
@@ -573,7 +573,7 @@ Test('SettlementService', async (settlementServiceTest) => {
 
       await settlementEventTriggerTest.end()
     } catch (err) {
-      Logger.error(`settlementServiceTest failed with error - ${err}`)
+      logger.error(`settlementServiceTest failed with error - ${err}`)
       settlementEventTriggerTest.fail()
       settlementEventTriggerTest.end()
     }
@@ -587,7 +587,7 @@ Test('SettlementService', async (settlementServiceTest) => {
       let params = { settlementId, participantId, accountId }
       const enums = {}
       const options = {
-        logger: Logger
+        logger: logger
       }
 
       const settlementMock = {
@@ -738,7 +738,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           }
           test.end()
         } catch (err) {
-          Logger.error(`getByIdParticipantAccountTest failed with error - ${err}`)
+          logger.error(`getByIdParticipantAccountTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -746,7 +746,7 @@ Test('SettlementService', async (settlementServiceTest) => {
 
       await getByIdParticipantAccountTest.end()
     } catch (err) {
-      Logger.error(`settlementServiceTest failed with error - ${err}`)
+      logger.error(`settlementServiceTest failed with error - ${err}`)
       getByIdParticipantAccountTest.fail()
       getByIdParticipantAccountTest.end()
     }

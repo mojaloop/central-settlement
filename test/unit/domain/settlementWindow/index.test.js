@@ -32,7 +32,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const SettlementWindowService = require('../../../../src/domain/settlementWindow')
 const SettlementWindowModel = require('../../../../src/models/settlementWindow')
 const SettlementWindowContentModel = require('../../../../src/models/settlementWindowContent')
@@ -55,7 +55,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
     try {
       const params = { settlementWindowId: 1 }
       const enums = {}
-      const options = { logger: Logger }
+      const options = { logger: logger }
       const settlementWindowMock = { settlementWindowId: 1, content: { id: 11 } }
       const settlementWindowContentMock = { id: 11 }
 
@@ -78,7 +78,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
           }
           test.end()
         } catch (err) {
-          Logger.error(`getByIdTest failed with error - ${err}`)
+          logger.error(`getByIdTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -86,7 +86,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
       await getByIdTest.end()
     } catch (err) {
-      Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
+      logger.error(`settlementWindowServiceTest failed with error - ${err}`)
       getByIdTest.fail()
       getByIdTest.end()
     }
@@ -110,7 +110,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
           }
           test.end()
         } catch (err) {
-          Logger.error(`getByIdTest failed with error - ${err}`)
+          logger.error(`getByIdTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -118,7 +118,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
       await getByIdTest.end()
     } catch (err) {
-      Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
+      logger.error(`settlementWindowServiceTest failed with error - ${err}`)
       getByIdTest.fail()
       getByIdTest.end()
     }
@@ -143,7 +143,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
           }
           test.end()
         } catch (err) {
-          Logger.error(`getByIdTest failed with error - ${err}`)
+          logger.error(`getByIdTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -151,7 +151,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
       await getByIdTest.end()
     } catch (err) {
-      Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
+      logger.error(`settlementWindowServiceTest failed with error - ${err}`)
       getByIdTest.fail()
       getByIdTest.end()
     }
@@ -161,7 +161,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
     try {
       let params = { query: { participantId: 1, state: 'PENDING_SETTLEMENT' } }
       const enums = {}
-      const options = { logger: Logger }
+      const options = { logger: logger }
       const settlementWindowsMock = [{ settlementWindowId: 1 }, { settlementWindowId: 2 }]
       const settlementWindowMock = { settlementWindowId: 1, content: { id: 11 } }
       const settlementWindowContentMock = { id: 11 }
@@ -194,7 +194,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
           test.end()
         } catch (err) {
-          Logger.error(`getByParamsTest failed with error - ${err}`)
+          logger.error(`getByParamsTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -202,7 +202,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
       await getByParamsTest.end()
     } catch (err) {
-      Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
+      logger.error(`settlementWindowServiceTest failed with error - ${err}`)
       getByParamsTest.fail()
       getByParamsTest.end()
     }
@@ -212,7 +212,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
     try {
       let params = { query: { participantId: 1, state: 'PENDING_SETTLEMENT' } }
       const enums = {}
-      const options = { logger: Logger }
+      const options = { logger: logger }
       const settlementWindowsMock = [{ settlementWindowId: 1 }, { settlementWindowId: 2 }]
       const settlementWindowMock = { settlementWindowId: 1, content: { id: 11 } }
 
@@ -246,7 +246,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
           test.end()
         } catch (err) {
-          Logger.error(`getByParamsTest failed with error - ${err}`)
+          logger.error(`getByParamsTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -254,7 +254,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
       await getByParamsTest.end()
     } catch (err) {
-      Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
+      logger.error(`settlementWindowServiceTest failed with error - ${err}`)
       getByParamsTest.fail()
       getByParamsTest.end()
     }
@@ -264,7 +264,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
     try {
       const params = { id: 1, request: { headers: { testHeader: 'testHeader' } } }
       const enums = {}
-      const options = { logger: Logger }
+      const options = { logger: logger }
       const settlementWindowIdMock = 1
       const settlementWindowMock = { settlementWindowId: settlementWindowIdMock, state: 'PROCESSING' }
       Producer.produceMessage = sandbox.stub()
@@ -291,7 +291,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
           test.end()
         } catch (err) {
-          Logger.error(`processTest failed with error - ${err}`)
+          logger.error(`processTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -299,7 +299,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
 
       await processTest.end()
     } catch (err) {
-      Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
+      logger.error(`settlementWindowServiceTest failed with error - ${err}`)
       processTest.fail()
       processTest.end()
     }
@@ -320,14 +320,14 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
           test.ok(result, 'Result returned')
           test.end()
         } catch (err) {
-          Logger.error(`processTest failed with error - ${err}`)
+          logger.error(`processTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
       })
       await processTest.end()
     } catch (err) {
-      Logger.error(`settlementWindowServiceTest failed with error - ${err}`)
+      logger.error(`settlementWindowServiceTest failed with error - ${err}`)
       processTest.fail()
       processTest.end()
     }

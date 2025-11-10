@@ -30,7 +30,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const Proxyquire = require('proxyquire')
 
 Test('Settlement Window Model Index', async (settlementWindowIndexTest) => {
@@ -61,7 +61,7 @@ Test('Settlement Window Model Index', async (settlementWindowIndexTest) => {
           test.ok(SettlementWindowModelProxy.getById.withArgs({ settlementWindowId }).calledOnce, 'once with settlement window model getById proxy')
           test.end()
         } catch (err) {
-          Logger.error(`getById failed with error - ${err}`)
+          logger.error(`getById failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -69,7 +69,7 @@ Test('Settlement Window Model Index', async (settlementWindowIndexTest) => {
 
       await getByIdTest.end()
     } catch (err) {
-      Logger.error(`settlementWindowIndexTest failed with error - ${err}`)
+      logger.error(`settlementWindowIndexTest failed with error - ${err}`)
       getByIdTest.fail()
       getByIdTest.end()
     }

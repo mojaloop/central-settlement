@@ -31,7 +31,7 @@
 const Config = require('../config')
 const axios = require('axios')
 const Utils = require('./utils')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const idGenerator = require('@mojaloop/central-services-shared').Util.id
 const generateULID = idGenerator({ type: 'ulid' })
 
@@ -102,7 +102,7 @@ async function fundsIn (participant, accountId, amount, currency) {
   }
 
   return axios.post(url, payload).catch(function (error) {
-    Logger.error(`Error in fundsIn: ${JSON.stringify(error)}`)
+    logger.error(`Error in fundsIn: ${JSON.stringify(error)}`)
     throw error
   })
 }
@@ -150,7 +150,7 @@ async function waitForTransferToBeCommitted (transferId, sleepMs, iterations) {
   }
   const url = `${Config.SIMULATOR_HOST_URL}/${transferId}`
   for (let i = 0; i < iterations; i++) {
-    Logger.info(`Waiting for transfer ${transferId} to be committed...`)
+    logger.info(`Waiting for transfer ${transferId} to be committed...`)
     try {
       const simulatorResponse = await axios.get(url)
       if (simulatorResponse.data && simulatorResponse.data.transferState === localEnum.transferStates.COMMITTED) {
@@ -158,9 +158,9 @@ async function waitForTransferToBeCommitted (transferId, sleepMs, iterations) {
       }
     } catch (err) {
       if (err.type === 'invalid-json') {
-        Logger.info(`Transfer not processed yet. Awaiting ${sleepMs} ms...`)
+        logger.info(`Transfer not processed yet. Awaiting ${sleepMs} ms...`)
       } else {
-        Logger.info(err.message)
+        logger.info(err.message)
         throw err
       }
     }

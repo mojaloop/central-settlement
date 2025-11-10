@@ -30,7 +30,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const RulesService = require('../../../../src/domain/rules')
 const TransferSettlementModel = require('../../../../src/models/transferSettlement')
 
@@ -40,10 +40,10 @@ Test('RulesService', async (rulesServiceTest) => {
 
   rulesServiceTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
-    sandbox.stub(Logger, 'isDebugEnabled').value(true)
-    sandbox.stub(Logger, 'isErrorEnabled').value(true)
-    sandbox.stub(Logger, 'error')
-    sandbox.stub(Logger, 'debug')
+    sandbox.stub(logger, 'isDebugEnabled').value(true)
+    sandbox.stub(logger, 'isErrorEnabled').value(true)
+    sandbox.stub(logger, 'error')
+    sandbox.stub(logger, 'debug')
     test.end()
   })
 
@@ -77,7 +77,7 @@ Test('RulesService', async (rulesServiceTest) => {
         test.fail()
         test.end()
       } catch (err) {
-        Logger.error(`insertLedgerEntries failed with error - ${err}`)
+        logger.error(`insertLedgerEntries failed with error - ${err}`)
         test.pass()
         test.end()
       }

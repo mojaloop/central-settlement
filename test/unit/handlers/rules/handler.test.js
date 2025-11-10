@@ -32,7 +32,7 @@ const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Util = require('@mojaloop/central-services-shared').Util
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 const KafkaConsumer = require('@mojaloop/central-services-stream').Kafka.Consumer
 const Db = require('../../../../src/lib/db')
@@ -145,7 +145,7 @@ Test('RulesHandler', async (rulesHandlerTest) => {
     })
     sandbox.stub(Consumer, 'isConsumerAutoCommitEnabled').returns(false)
     sandbox.stub(Kafka)
-    sandbox.stub(Logger)
+    sandbox.stub(logger)
     sandbox.stub(Util.StreamingProtocol)
     Kafka.produceGeneralMessage.returns(Promise.resolve())
     knexStub = sandbox.stub()

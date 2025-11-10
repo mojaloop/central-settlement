@@ -32,7 +32,7 @@
 const Sinon = require('sinon')
 const Test = require('tapes')(require('tape'))
 const Transaction = require('../../../src/domain/transactions/index')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../src/shared/logger')
 const scriptEngine = require('../../../src/lib/scriptEngine')
 const vm = require('vm')
 const fs = require('fs')
@@ -100,7 +100,7 @@ Test('Script Engine Execute Test', async (scriptEngineTest) => {
 
   scriptEngineTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
-    sandbox.stub(Logger)
+    sandbox.stub(logger)
     test.end()
   })
 

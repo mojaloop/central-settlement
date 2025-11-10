@@ -39,7 +39,7 @@ const CLDb = require('@mojaloop/central-ledger/src/lib/db')
 const Enums = require('../models/lib/enums')
 const ErrorHandling = require('@mojaloop/central-services-error-handling')
 const Hapi = require('@hapi/hapi')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../shared/logger')
 const Plugins = require('./plugins')
 const RegisterHandlers = require('../handlers/register')
 
@@ -48,17 +48,17 @@ const getEnums = (id) => {
 }
 
 async function connectDatabase () {
-  Logger.isDebugEnabled && Logger.debug(`Connecting to DB ${JSON.stringify(Config.DATABASE)}`)
+  logger.debug(`Connecting to DB ${JSON.stringify(Config.DATABASE)}`)
   await Db.connect(Config.DATABASE)
   const dbLoadedTables = Db._tables ? Db._tables.length : -1
-  Logger.isDebugEnabled && Logger.debug(`DB.connect loaded '${dbLoadedTables}' tables!`)
+  logger.debug(`DB.connect loaded '${dbLoadedTables}' tables!`)
 
   // Initalize knex in central-ledger depedency
   // This is required to be able to use the central-ledger models
-  Logger.isDebugEnabled && Logger.debug(`Connecting Central-Ledger DB ${JSON.stringify(Config.DATABASE)}`)
+  logger.debug(`Connecting Central-Ledger DB ${JSON.stringify(Config.DATABASE)}`)
   await CLDb.connect(Config.DATABASE)
   const clDbLoadedTables = CLDb._tables ? Db._tables.length : -1
-  Logger.isDebugEnabled && Logger.debug(`CLDB.connect loaded '${clDbLoadedTables}' tables!`)
+  logger.debug(`CLDB.connect loaded '${clDbLoadedTables}' tables!`)
 }
 
 const createServer = async function (port, modules) {
@@ -158,7 +158,7 @@ const createHandlers = async (handlers) => {
     const handler = handlers[handlerIndex]
     let errorMessage
     if (handler.enabled) {
-      Logger.isInfoEnabled && Logger.info(`Handler Setup - Registering ${JSON.stringify(handler)}!`)
+      logger.info(`Handler Setup - Registering ${JSON.stringify(handler)}!`)
       switch (handler.type) {
         case 'deferredSettlement':
           await RegisterHandlers.deferredSettlement.registerSettlementWindowHandler()
@@ -171,7 +171,7 @@ const createHandlers = async (handlers) => {
           break
         default:
           errorMessage = `Handler Setup - ${JSON.stringify(handler)} is not a valid handler to register!`
-          Logger.isErrorEnabled && Logger.error(errorMessage)
+          logger.error(errorMessage)
           throw ErrorHandling.Factory.reformatFSPIOPError(errorMessage)
       }
     }
@@ -214,7 +214,7 @@ const initialize = async function (options = { modules: [], runHandlers: false, 
       break
     default:
       error = ErrorHandling.Factory.createFSPIOPError(ErrorHandling.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `No valid service type ${service} found!`)
-      Logger.isErrorEnabled && Logger.error(error)
+      logger.error(error)
       throw error
   }
   if (runHandlers) {

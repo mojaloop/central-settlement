@@ -31,7 +31,7 @@
 'use strict'
 
 const { statusEnum, serviceName } = require('@mojaloop/central-services-shared').HealthCheck.HealthCheckEnums
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../shared/logger')
 const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 
 const MigrationLockModel = require('../../models/misc/migrationLock')
@@ -55,7 +55,7 @@ const getSubServiceHealthBroker = async () => {
         try {
           return await Consumer.allConnected(t)
         } catch (err) {
-          Logger.isWarnEnabled && Logger.warn(`allConnected threw for topic ${t}: ${err.message}`)
+          logger.warn(`allConnected threw for topic ${t}: ${err.message}`)
           return false
         }
       })
@@ -65,7 +65,7 @@ const getSubServiceHealthBroker = async () => {
       status = statusEnum.DOWN
     }
   } catch (err) {
-    Logger.isWarnEnabled && Logger.warn(`getSubServiceHealthBroker failed with error ${err.message}.`)
+    logger.warn(`getSubServiceHealthBroker failed with error ${err.message}.`)
     status = statusEnum.DOWN
   }
 
@@ -93,7 +93,7 @@ const getSubServiceHealthDatastore = async () => {
       status = statusEnum.DOWN
     }
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(`getSubServiceHealthDatastore failed with error ${err.message}.`)
+    logger.error(`getSubServiceHealthDatastore failed with error ${err.message}.`)
     status = statusEnum.DOWN
   }
 

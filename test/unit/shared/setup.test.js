@@ -30,7 +30,7 @@
 'use strict'
 
 const Config = require('../../../src/lib/config')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../src/shared/logger')
 const Path = require('path')
 const Proxyquire = require('proxyquire')
 const Sinon = require('sinon')
@@ -54,12 +54,12 @@ Test('Server Setup', async setupTest => {
   setupTest.beforeEach(test => {
     try {
       sandbox = Sinon.createSandbox()
-      sandbox.stub(Logger, 'isDebugEnabled').value(true)
-      sandbox.stub(Logger, 'debug')
-      sandbox.stub(Logger, 'isErrorEnabled').value(true)
-      sandbox.stub(Logger, 'error')
-      sandbox.stub(Logger, 'isInfoEnabled').value(true)
-      sandbox.stub(Logger, 'info')
+      sandbox.stub(logger, 'isDebugEnabled').value(true)
+      sandbox.stub(logger, 'debug')
+      sandbox.stub(logger, 'isErrorEnabled').value(true)
+      sandbox.stub(logger, 'error')
+      sandbox.stub(logger, 'isInfoEnabled').value(true)
+      sandbox.stub(logger, 'info')
 
       RegisterHandlersStub = {
         registerAllHandlers: sandbox.stub().returns(Promise.resolve()),
@@ -116,7 +116,7 @@ Test('Server Setup', async setupTest => {
         '../lib/config': ConfigStub
       })
     } catch (err) {
-      Logger.error(`setupTest failed with error - ${err}`)
+      logger.error(`setupTest failed with error - ${err}`)
       console.error(err.message)
     }
     test.end()
@@ -163,7 +163,7 @@ Test('Server Setup', async setupTest => {
           test.ok(serverStub.ext.calledOnce, 'server.ext called once')
           test.end()
         } catch (err) {
-          Logger.error(`init failed with error - ${err}`)
+          logger.error(`init failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -202,7 +202,7 @@ Test('Server Setup', async setupTest => {
           test.ok(serverStub.plugins.openapi.setHost.calledOnce, 'server.plugins.openapi.setHost called once')
           test.end()
         } catch (err) {
-          Logger.error(`init failed with error - ${err}`)
+          logger.error(`init failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -237,7 +237,7 @@ Test('Server Setup', async setupTest => {
           test.notok(server, 'not create server object')
           test.end()
         } catch (err) {
-          Logger.error(`init failed with error - ${err}`)
+          logger.error(`init failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -286,7 +286,7 @@ Test('Server Setup', async setupTest => {
           test.ok(RegisterHandlersStub.deferredSettlement.registerSettlementWindowHandler.called)
           test.end()
         } catch (err) {
-          Logger.error(`init failed with error - ${err}`)
+          logger.error(`init failed with error - ${err}`)
           test.fail(`Should have not received an error: ${err}`)
           test.end()
         }
@@ -330,7 +330,7 @@ Test('Server Setup', async setupTest => {
           test.ok(RegisterHandlersStub.grossSettlement.registerTransferSettlementHandler.called)
           test.end()
         } catch (err) {
-          Logger.error(`init failed with error - ${err}`)
+          logger.error(`init failed with error - ${err}`)
           test.fail(`Should have not received an error: ${err}`)
           test.end()
         }
@@ -374,7 +374,7 @@ Test('Server Setup', async setupTest => {
           test.ok(RegisterHandlersStub.rules.registerRulesHandler.called)
           test.end()
         } catch (err) {
-          Logger.error(`init failed with error - ${err}`)
+          logger.error(`init failed with error - ${err}`)
           test.fail(`Should have not received an error: ${err}`)
           test.end()
         }
@@ -418,7 +418,7 @@ Test('Server Setup', async setupTest => {
           test.ok(RegisterHandlersStub.settlementWindow.registerSettlementWindowHandler.called)
           test.end()
         } catch (err) {
-          Logger.error(`init failed with error - ${err}`)
+          logger.error(`init failed with error - ${err}`)
           test.pass(`Should have failed with an error: ${err}`)
           test.end()
         }
@@ -453,7 +453,7 @@ Test('Server Setup', async setupTest => {
           test.ok(RegisterHandlersStub.registerAllHandlers.called)
           test.end()
         } catch (err) {
-          Logger.error(`init failed with error - ${err}`)
+          logger.error(`init failed with error - ${err}`)
           test.fail(`Should have not received an error: ${err}`)
           test.end()
         }
@@ -486,7 +486,7 @@ Test('Server Setup', async setupTest => {
           test.fail(server, 'Invalid service type')
           test.end()
         } catch (err) {
-          Logger.error(`init failed with error - ${err}`)
+          logger.error(`init failed with error - ${err}`)
           test.pass()
           test.end()
         }
@@ -503,7 +503,7 @@ Test('Server Setup', async setupTest => {
           consoleErrorStub.restore()
           test.end()
         } catch (err) {
-          Logger.error(`init failed with error - ${err}`)
+          logger.error(`init failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -518,7 +518,7 @@ Test('Server Setup', async setupTest => {
           test.ok(serverStub.log.withArgs('error', e.message).calledOnce)
           test.end()
         } catch (err) {
-          Logger.error(`init failed with error - ${err}`)
+          logger.error(`init failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -530,7 +530,7 @@ Test('Server Setup', async setupTest => {
           test.ok(EnumsStub[0].withArgs().calledOnce)
           test.end()
         } catch (err) {
-          Logger.error(`init failed with error - ${err}`)
+          logger.error(`init failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -538,7 +538,7 @@ Test('Server Setup', async setupTest => {
 
       await initTest.end()
     } catch (err) {
-      Logger.error(`setupTest failed with error - ${err}`)
+      logger.error(`setupTest failed with error - ${err}`)
       initTest.fail()
       initTest.end()
     }

@@ -32,7 +32,7 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Db = require('../../../../src/lib/db')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const Model = require('../../../../src/models/settlement/settlementModel.js')
 
 Test('SettlementModelModel', async (settlementModelModelTest) => {
@@ -67,7 +67,7 @@ Test('SettlementModelModel', async (settlementModelModelTest) => {
       test.deepEqual(result, settlementModel, 'Results Match')
       test.end()
     } catch (e) {
-      Logger.error(e)
+      logger.error(e)
       test.fail('Error Thrown')
       test.end()
     }
@@ -88,7 +88,7 @@ Test('SettlementModelModel', async (settlementModelModelTest) => {
       test.deepEqual(result[0], settlementModel, 'Results Match')
       test.end()
     } catch (e) {
-      Logger.error(e)
+      logger.error(e)
       test.fail('Error Thrown')
       test.end()
     }

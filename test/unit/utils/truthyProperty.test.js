@@ -29,7 +29,7 @@
 'use strict'
 
 const Test = require('tapes')(require('tape'))
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../src/shared/logger')
 const truthyProperty = require('../../../src/utils/truthyProperty')
 
 Test('truthyProperty utility', (truthyPropertyTest) => {
@@ -45,7 +45,7 @@ Test('truthyProperty utility', (truthyPropertyTest) => {
       test.ok(ok, 'object is not empty')
       test.end()
     } catch (err) {
-      Logger.error(`truthyProperty failed with error - ${err}`)
+      logger.error(`truthyProperty failed with error - ${err}`)
       test.fail()
       test.end()
     }

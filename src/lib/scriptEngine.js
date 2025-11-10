@@ -31,7 +31,7 @@
 const MLNumber = require('@mojaloop/ml-number')
 const Transaction = require('../domain/transactions/index')
 const BigNumber = require('bignumber.js')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../shared/logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Config = require('../../src/lib/config')
 
@@ -43,7 +43,7 @@ async function getTransferFromCentralLedger (transferId) {
     const transferObject = await Transaction.getTransactionObject(entity[0].value)
     return transferObject
   } else {
-    Logger.isErrorEnabled && Logger.error(`No records for transferId ${transferId} was found`)
+    logger.error(`No records for transferId ${transferId} was found`)
     throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No records for transferId ${transferId} was found`)
   }
 }
@@ -60,7 +60,7 @@ function getExtensionValue (list, key) {
 }
 
 function log (message) {
-  Logger.isInfoEnabled && Logger.info(message)
+  logger.info(message)
 }
 
 async function execute (script, payload) {
@@ -88,7 +88,7 @@ async function execute (script, payload) {
     script.runInNewContext(sandbox, { timeout: SCRIPT_TIMEOUT })
     return { ledgerEntries }
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
+    logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }

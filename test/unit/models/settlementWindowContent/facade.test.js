@@ -30,7 +30,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const SettlementWindowContentFacade = require('../../../../src/models/settlementWindowContent/facade')
 const Db = require('../../../../src/lib/db')
 
@@ -114,7 +114,7 @@ Test('SettlementWindowContentFacade', async (settlementWindowContentModelTest) =
 
           test.end()
         } catch (err) {
-          Logger.error(`getApplicableByWindowIdListTest failed with error - ${err}`)
+          logger.error(`getApplicableByWindowIdListTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -122,7 +122,7 @@ Test('SettlementWindowContentFacade', async (settlementWindowContentModelTest) =
 
       await getApplicableByWindowIdListTest.end()
     } catch (err) {
-      Logger.error(`settlementWindowContentModelTest failed with error - ${err}`)
+      logger.error(`settlementWindowContentModelTest failed with error - ${err}`)
       getApplicableByWindowIdListTest.fail()
       getApplicableByWindowIdListTest.end()
     }
@@ -212,7 +212,7 @@ Test('SettlementWindowContentFacade', async (settlementWindowContentModelTest) =
       })
       await getBySettlementWindowContentIdTest.end()
     } catch (err) {
-      Logger.error(`getBySettlementWindowContentIdTest failed with error - ${err}`)
+      logger.error(`getBySettlementWindowContentIdTest failed with error - ${err}`)
       getBySettlementWindowContentIdTest.fail()
       getBySettlementWindowContentIdTest.end()
     }
@@ -263,7 +263,7 @@ Test('SettlementWindowContentFacade', async (settlementWindowContentModelTest) =
       })
       await getBySettlementWindowContentIdTest.end()
     } catch (err) {
-      Logger.error(`getBySettlementWindowContentIdTest failed with error - ${err}`)
+      logger.error(`getBySettlementWindowContentIdTest failed with error - ${err}`)
       getBySettlementWindowContentIdTest.fail()
       getBySettlementWindowContentIdTest.end()
     }

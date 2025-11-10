@@ -30,7 +30,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const TransferFulfilService = require('../../../../src/domain/transferSettlement')
 const TransferFulfilModel = require('../../../../src/models/transferSettlement')
 
@@ -39,8 +39,8 @@ Test('TransferSettlementService', async (transferSettlementServiceTest) => {
 
   transferSettlementServiceTest.beforeEach(test => {
     sandbox = Sinon.createSandbox()
-    sandbox.stub(Logger, 'isDebugEnabled').value(true)
-    sandbox.stub(Logger, 'debug')
+    sandbox.stub(logger, 'isDebugEnabled').value(true)
+    sandbox.stub(logger, 'debug')
     test.end()
   })
 
@@ -62,7 +62,7 @@ Test('TransferSettlementService', async (transferSettlementServiceTest) => {
         test.ok(TransferFulfilModel.updateStateChange.withArgs(transferEventId, transferEventStateStatus).calledOnce, 'TransferFulfilModel.updateStateChange with args ... called once')
         test.end()
       } catch (err) {
-        Logger.error(`processFulfilTest failed with error - ${err}`)
+        logger.error(`processFulfilTest failed with error - ${err}`)
         test.fail()
         test.end()
       }
@@ -76,7 +76,7 @@ Test('TransferSettlementService', async (transferSettlementServiceTest) => {
         test.ok(TransferFulfilModel.updateStateChange.notCalled, 'TransferFulfilModel.updateStateChange is not called')
         test.end()
       } catch (err) {
-        Logger.error(`processFulfilTest failed with error - ${err}`)
+        logger.error(`processFulfilTest failed with error - ${err}`)
         test.fail()
         test.end()
       }
@@ -90,7 +90,7 @@ Test('TransferSettlementService', async (transferSettlementServiceTest) => {
         test.fail()
         test.end()
       } catch (err) {
-        Logger.error(`processFulfilTest failed with error - ${err}`)
+        logger.error(`processFulfilTest failed with error - ${err}`)
         test.pass()
         test.end()
       }

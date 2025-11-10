@@ -32,7 +32,7 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const TestConfig = require('../../integration-config')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const fetch = require('node-fetch')
 const idGenerator = require('@mojaloop/central-services-shared').Util.id
 const generateULID = idGenerator({ type: 'ulid' })
@@ -149,7 +149,7 @@ module.exports = {
                 const res = await fetch(url, opts)
                 test.equal(res.status, 201, 'returned 201 Created')
               } catch (err) {
-                Logger.error(`creating HUB_RECONCILIATION failed with error - ${err}`)
+                logger.error(`creating HUB_RECONCILIATION failed with error - ${err}`)
                 test.fail()
               }
             }
@@ -174,14 +174,14 @@ module.exports = {
                 const res = await fetch(url, opts)
                 test.equal(res.status, 201, 'returned 201 Created')
               } catch (err) {
-                Logger.error(`creating HUB_MULTILATERAL_SETTLEMENT failed with error - ${err}`)
+                logger.error(`creating HUB_MULTILATERAL_SETTLEMENT failed with error - ${err}`)
                 test.fail()
               }
             }
           }
           test.end()
         } catch (err) {
-          Logger.error(`prepareTransferDataTest failed with error - ${err}`)
+          logger.error(`prepareTransferDataTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -210,7 +210,7 @@ module.exports = {
           }
           test.end()
         } catch (err) {
-          Logger.error(`prepareTransferDataTest failed with error - ${err}`)
+          logger.error(`prepareTransferDataTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -243,7 +243,7 @@ module.exports = {
           }
           test.end()
         } catch (err) {
-          Logger.error(`prepareTransferDataTest failed with error - ${err}`)
+          logger.error(`prepareTransferDataTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -270,7 +270,7 @@ module.exports = {
           }
           test.end()
         } catch (err) {
-          Logger.error(`prepareTransferDataTest failed with error - ${err}`)
+          logger.error(`prepareTransferDataTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -295,7 +295,7 @@ module.exports = {
             const res = await fetch(url, opts)
             test.equal(res.status, 201, `returned 201 created endpoint for ${fsp.fspName}`)
           } catch (err) {
-            Logger.error(`prepareTransferDataTest failed with error - ${err}`)
+            logger.error(`prepareTransferDataTest failed with error - ${err}`)
             test.fail()
             test.end()
           }
@@ -322,7 +322,7 @@ module.exports = {
             const res = await fetch(url, opts)
             test.equal(res.status, 201, `returned 201 created endpoint for ${fsp.fspName}`)
           } catch (err) {
-            Logger.error(`prepareTransferDataTest failed with error - ${err}`)
+            logger.error(`prepareTransferDataTest failed with error - ${err}`)
             test.fail()
             test.end()
           }
@@ -381,9 +381,9 @@ module.exports = {
                 }
               } catch (err) {
                 if (err.type === 'invalid-json') {
-                  Logger.info(`Transfer not processed yet. Awaiting ${sleepMilliseconds} ms...`)
+                  logger.info(`Transfer not processed yet. Awaiting ${sleepMilliseconds} ms...`)
                 } else {
-                  Logger.info(err.message)
+                  logger.info(err.message)
                   throw err
                 }
               }
@@ -392,7 +392,7 @@ module.exports = {
             test.ok(transferCommitted, 'transfer successfully COMMITTED by payee fsp')
             test.end()
           } catch (err) {
-            Logger.error(`prepareTransferDataTest failed with error - ${err}`)
+            logger.error(`prepareTransferDataTest failed with error - ${err}`)
             test.fail()
             test.end()
           }
