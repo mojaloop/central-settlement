@@ -32,7 +32,7 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const TestConfig = require('../../integration-config')
-const { logger } = require('../../../../src/shared/logger')
+const logger = require('@mojaloop/central-services-logger')
 const fetch = require('node-fetch')
 const idGenerator = require('@mojaloop/central-services-shared').Util.id
 const generateULID = idGenerator({ type: 'ulid' })

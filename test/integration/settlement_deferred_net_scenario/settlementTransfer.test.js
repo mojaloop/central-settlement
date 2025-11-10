@@ -30,7 +30,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const { logger } = require('../../../../src/shared/logger')
+const logger = require('@mojaloop/central-services-logger')
 const MLNumber = require('@mojaloop/ml-number')
 const SettlementTransferData = require('./settlementTransferData')
 const Models = require('../helpers/models')

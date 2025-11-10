@@ -536,6 +536,26 @@ Test('Server Setup', async setupTest => {
         }
       })
 
+      await initTest.test('should log correct dbLoadedTables when Db._tables is undefined', async test => {
+        try {
+          // Arrange
+          delete DbStub._tables
+          DbStub.connect = sandbox.stub().callsFake(async () => {
+            delete DbStub._tables
+          })
+          delete CLDbStub._tables
+          CLDbStub.connect = sandbox.stub().callsFake(async () => {
+            delete CLDbStub._tables
+          })
+          const port = await getPort()
+          await SetupProxy.initialize({ service: 'api', port })
+          test.end()
+        } catch (err) {
+          logger.error(`init failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
       await initTest.end()
     } catch (err) {
       logger.error(`setupTest failed with error - ${err}`)

@@ -31,7 +31,7 @@
 'use strict'
 
 const Config = require('../config')
-const { logger } = require('../../../../src/shared/logger')
+const logger = require('@mojaloop/central-services-logger')
 const transferParticipantStateChangeService = require('../../../src/domain/transferSettlement')
 const Api = require('../helpers/api')
 const Db = require('../../../src/lib/db')

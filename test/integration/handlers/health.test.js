@@ -30,7 +30,7 @@
 
 const Test = require('tape')
 const Joi = require('joi')
-const { logger } = require('../../../../src/shared/logger')
+const logger = require('@mojaloop/central-services-logger')
 const Db = require('@mojaloop/database-lib').Db
 
 const Config = require('../../../src/lib/config')

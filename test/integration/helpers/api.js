@@ -31,7 +31,7 @@
 const Config = require('../config')
 const axios = require('axios')
 const Utils = require('./utils')
-const { logger } = require('../../../../src/shared/logger')
+const logger = require('@mojaloop/central-services-logger')
 const idGenerator = require('@mojaloop/central-services-shared').Util.id
 const generateULID = idGenerator({ type: 'ulid' })
 
