@@ -55,7 +55,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
     try {
       const params = { settlementWindowId: 1 }
       const enums = {}
-      const options = { logger: logger }
+      const options = { logger }
       const settlementWindowMock = { settlementWindowId: 1, content: { id: 11 } }
       const settlementWindowContentMock = { id: 11 }
 
@@ -161,7 +161,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
     try {
       let params = { query: { participantId: 1, state: 'PENDING_SETTLEMENT' } }
       const enums = {}
-      const options = { logger: logger }
+      const options = { logger }
       const settlementWindowsMock = [{ settlementWindowId: 1 }, { settlementWindowId: 2 }]
       const settlementWindowMock = { settlementWindowId: 1, content: { id: 11 } }
       const settlementWindowContentMock = { id: 11 }
@@ -212,7 +212,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
     try {
       let params = { query: { participantId: 1, state: 'PENDING_SETTLEMENT' } }
       const enums = {}
-      const options = { logger: logger }
+      const options = { logger }
       const settlementWindowsMock = [{ settlementWindowId: 1 }, { settlementWindowId: 2 }]
       const settlementWindowMock = { settlementWindowId: 1, content: { id: 11 } }
 
@@ -264,7 +264,7 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
     try {
       const params = { id: 1, request: { headers: { testHeader: 'testHeader' } } }
       const enums = {}
-      const options = { logger: logger }
+      const options = { logger }
       const settlementWindowIdMock = 1
       const settlementWindowMock = { settlementWindowId: settlementWindowIdMock, state: 'PROCESSING' }
       Producer.produceMessage = sandbox.stub()

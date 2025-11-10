@@ -59,7 +59,7 @@ Test('SettlementService', async (settlementServiceTest) => {
       const settlementWindowId = 1
       const enums = {}
       const options = {
-        logger: logger
+        logger
       }
       const settlementMock = {
         settlementId: 1,
@@ -281,7 +281,7 @@ Test('SettlementService', async (settlementServiceTest) => {
       }
       const enums = {}
       const options = {
-        logger: logger
+        logger
       }
       const settlementWindowContentMock = [
         {
@@ -432,7 +432,7 @@ Test('SettlementService', async (settlementServiceTest) => {
         }
       }
       const options = {
-        logger: logger
+        logger
       }
 
       const settlementModelDataMock = [null, {
@@ -587,7 +587,7 @@ Test('SettlementService', async (settlementServiceTest) => {
       let params = { settlementId, participantId, accountId }
       const enums = {}
       const options = {
-        logger: logger
+        logger
       }
 
       const settlementMock = {
