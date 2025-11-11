@@ -30,7 +30,7 @@
 
 const Test = require('tape')
 const Joi = require('joi')
-const Logger = require('@mojaloop/central-services-logger')
+const logger = require('@mojaloop/central-services-logger')
 const Db = require('@mojaloop/database-lib').Db
 
 const Config = require('../../../src/lib/config')
@@ -92,7 +92,7 @@ Test('Health Handler', async handlersTest => {
       await Db.disconnect()
       assert.pass('database connection closed')
     } catch (err) {
-      Logger.error(`teardown failed with error - ${err}`)
+      logger.error(`teardown failed with error - ${err}`)
       assert.fail()
     }
 

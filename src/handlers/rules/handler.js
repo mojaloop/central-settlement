@@ -37,7 +37,7 @@ const Enum = require('@mojaloop/central-services-shared').Enum
 const ErrorHandling = require('@mojaloop/central-services-error-handling')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../shared/logger')
 const Producer = require('@mojaloop/central-services-stream').Util.Producer
 const RulesService = require('../../domain/rules')
 const scriptsLoader = require('../../lib/scriptsLoader')
@@ -55,13 +55,13 @@ let INJECTED_SCRIPTS = {}
 
 async function processRules (error, messages) {
   if (error) {
-    Logger.isErrorEnabled && Logger.error(error)
+    logger.error(error)
     throw ErrorHandling.Factory.reformatFSPIOPError(error)
   }
-  Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(LOG_LOCATION, messages))
+  logger.info(Utility.breadcrumb(LOG_LOCATION, messages))
   let message = {}
   try {
-    Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(LOG_LOCATION, { method: 'processRules' }))
+    logger.info(Utility.breadcrumb(LOG_LOCATION, { method: 'processRules' }))
     if (Array.isArray(messages)) {
       message = messages[0]
     } else {
@@ -80,18 +80,18 @@ async function processRules (error, messages) {
       : Enum.Events.ActionLetter.unknown
 
     if (!payload) {
-      Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(LOG_LOCATION, `missingPayload--${actionLetter}1`))
+      logger.info(Utility.breadcrumb(LOG_LOCATION, `missingPayload--${actionLetter}1`))
       const fspiopError = ErrorHandling.Factory.createInternalServerFSPIOPError('Rules handler missing payload')
       const eventDetail = { functionality: Enum.Events.Event.Type.NOTIFICATION, action: Enum.Events.Event.Action.SETTLEMENT_WINDOW }
       await Kafka.proceed(Config.KAFKA_CONFIG, params, { CONSUMER_COMMIT, fspiopError: fspiopError.toApiErrorObject(Config.ERROR_HANDLING), eventDetail, FROM_SWITCH })
       throw fspiopError
     }
-    Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(LOG_LOCATION, 'validationPassed'))
+    logger.info(Utility.breadcrumb(LOG_LOCATION, 'validationPassed'))
 
     // execute the rule
-    Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(LOG_LOCATION, 'executing the scripts'))
+    logger.info(Utility.breadcrumb(LOG_LOCATION, 'executing the scripts'))
     const scriptResults = await scriptsLoader.executeScripts(INJECTED_SCRIPTS, transferEventType, transferEventAction, transferEventStateStatus, message.value)
-    Logger.isDebugEnabled && Logger.debug(`Rules Handler - scriptResults: ${JSON.stringify(scriptResults)}`)
+    logger.debug(`Rules Handler - scriptResults: ${JSON.stringify(scriptResults)}`)
 
     const ledgerEntries = scriptResults.ledgerEntries ? scriptResults.ledgerEntries : []
     if (ledgerEntries.length > 0) {
@@ -104,10 +104,10 @@ async function processRules (error, messages) {
         }
       })
     }
-    Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(LOG_LOCATION, `done--${actionLetter}2`))
+    logger.info(Utility.breadcrumb(LOG_LOCATION, `done--${actionLetter}2`))
     return true
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(`${Utility.breadcrumb(LOG_LOCATION)}::${err.message}--0`, err)
+    logger.error(`${Utility.breadcrumb(LOG_LOCATION)}::${err.message}--0`, err)
     return true
   }
 }
@@ -134,7 +134,7 @@ async function registerRules () {
     await Consumer.createHandler(registerRulesHandler.topicName, registerRulesHandler.config, registerRulesHandler.command)
     return true
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
+    logger.error(err)
     throw ErrorHandling.Factory.reformatFSPIOPError(err)
   }
 }
@@ -152,7 +152,7 @@ async function registerAllHandlers () {
     await registerRules()
     return true
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
+    logger.error(err)
     throw ErrorHandling.Factory.reformatFSPIOPError(err)
   }
 }

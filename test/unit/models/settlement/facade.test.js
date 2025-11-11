@@ -32,7 +32,7 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Db = require('../../../../src/lib/db')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const SettlementFacade = require('../../../../src/models/settlement/facade')
 const ParticipantFacade = require('@mojaloop/central-ledger/src/models/participant/facade')
 const idGenerator = require('@mojaloop/central-services-shared').Util.id
@@ -1035,7 +1035,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersPrepare failed with error - ${err}`)
+          logger.error(`settlementTransfersPrepare failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -1118,7 +1118,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersPrepare failed with error - ${err}`)
+          logger.error(`settlementTransfersPrepare failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -1160,7 +1160,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersPrepare failed with error - ${err}`)
+          logger.error(`settlementTransfersPrepare failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -1229,7 +1229,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.equal(result, 0, 'Result for successful operation returned')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersPrepare failed with error - ${err}`)
+          logger.error(`settlementTransfersPrepare failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -1274,7 +1274,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersPrepare failed with error - ${err}`)
+          logger.error(`settlementTransfersPrepare failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -1282,7 +1282,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await settlementTransfersPrepareTest.end()
     } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      logger.error(`settlementFacadeTest failed with error - ${err}`)
       settlementTransfersPrepareTest.fail()
       settlementTransfersPrepareTest.end()
     }
@@ -1304,7 +1304,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersReserve failed with error - ${err}`)
+          logger.error(`settlementTransfersReserve failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -1425,7 +1425,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersReserve failed with error - ${err}`)
+          logger.error(`settlementTransfersReserve failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -1545,7 +1545,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersReserve failed with error - ${err}`)
+          logger.error(`settlementTransfersReserve failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -1657,7 +1657,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersReserve failed with error - ${err}`)
+          logger.error(`settlementTransfersReserve failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -1772,7 +1772,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.equal(result, 0, 'Result for successful operation returned')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersReserve failed with error - ${err}`)
+          logger.error(`settlementTransfersReserve failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -1871,7 +1871,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersReserve failed with error - ${err}`)
+          logger.error(`settlementTransfersReserve failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -1879,7 +1879,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await settlementTransfersReserveTest.end()
     } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      logger.error(`settlementFacadeTest failed with error - ${err}`)
       settlementTransfersReserveTest.fail()
       settlementTransfersReserveTest.end()
     }
@@ -1900,7 +1900,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersAbort failed with error - ${err}`)
+          logger.error(`settlementTransfersAbort failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -2025,7 +2025,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersAbort failed with error - ${err}`)
+          logger.error(`settlementTransfersAbort failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -2135,7 +2135,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersAbort failed with error - ${err}`)
+          logger.error(`settlementTransfersAbort failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -2255,7 +2255,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.equal(result, 0, 'Result for successful operation returned')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersAbort failed with error - ${err}`)
+          logger.error(`settlementTransfersAbort failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -2359,7 +2359,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersAbort failed with error - ${err}`)
+          logger.error(`settlementTransfersAbort failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -2463,7 +2463,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersAbort failed with error - ${err}`)
+          logger.error(`settlementTransfersAbort failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -2471,7 +2471,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await settlementTransfersAbortTest.end()
     } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      logger.error(`settlementFacadeTest failed with error - ${err}`)
       settlementTransfersAbortTest.fail()
       settlementTransfersAbortTest.end()
     }
@@ -2492,7 +2492,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersCommit failed with error - ${err}`)
+          logger.error(`settlementTransfersCommit failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -2597,7 +2597,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersCommit failed with error - ${err}`)
+          logger.error(`settlementTransfersCommit failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -2693,7 +2693,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersCommit failed with error - ${err}`)
+          logger.error(`settlementTransfersCommit failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -2794,7 +2794,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.equal(result, 0, 'Result for successful operation returned')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersCommit failed with error - ${err}`)
+          logger.error(`settlementTransfersCommit failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -2893,7 +2893,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementTransfersCommit failed with error - ${err}`)
+          logger.error(`settlementTransfersCommit failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -2901,7 +2901,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await settlementTransfersCommitTest.end()
     } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      logger.error(`settlementFacadeTest failed with error - ${err}`)
       settlementTransfersCommitTest.fail()
       settlementTransfersCommitTest.end()
     }
@@ -2942,7 +2942,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
         } catch (err) {
           test.ok(err instanceof FSPIOPError)
           test.equal(err.message, 'Settlement not found', 'error message matched')
-          Logger.error(`putById failed with error - ${err}`)
+          logger.error(`putById failed with error - ${err}`)
           test.end()
         }
       })
@@ -3074,7 +3074,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.equal(result.participants[1].accounts[0].errorInformation.errorDescription, 'Generic client error - Participant and account mismatch', 'First account processed for second participant "Participant and account mismatch"')
           test.end()
         } catch (err) {
-          Logger.error(`putById failed with error - ${err}`)
+          logger.error(`putById failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -3187,7 +3187,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.ok(result, 'Result returned')
           test.end()
         } catch (err) {
-          Logger.error(`putById failed with error - ${err}`)
+          logger.error(`putById failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -3300,7 +3300,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.ok(result, 'Result returned')
           test.end()
         } catch (err) {
-          Logger.error(`putById failed with error - ${err}`)
+          logger.error(`putById failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -3438,7 +3438,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.ok(result, 'Result returned')
           test.end()
         } catch (err) {
-          Logger.error(`putById failed with error - ${err}`)
+          logger.error(`putById failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -3551,7 +3551,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.ok(result, 'Result returned')
           test.end()
         } catch (err) {
-          Logger.error(`putById failed with error - ${err}`)
+          logger.error(`putById failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -3689,7 +3689,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.ok(result, 'Result returned')
           test.end()
         } catch (err) {
-          Logger.error(`putById failed with error - ${err}`)
+          logger.error(`putById failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -3724,7 +3724,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error is not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`putById failed with error - ${err}`)
+          logger.error(`putById failed with error - ${err}`)
           test.ok('Error is thrown as expected')
           test.end()
         }
@@ -3732,7 +3732,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await putByIdTest.end()
     } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      logger.error(`settlementFacadeTest failed with error - ${err}`)
       putByIdTest.fail()
       putByIdTest.end()
     }
@@ -3757,7 +3757,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`abortById failed with error - ${err}`)
+          logger.error(`abortById failed with error - ${err}`)
           test.ok('Error thrown')
           test.end()
         }
@@ -3781,7 +3781,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`abortById failed with error - ${err}`)
+          logger.error(`abortById failed with error - ${err}`)
           test.ok('Error thrown')
           test.end()
         }
@@ -3806,7 +3806,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`abortById failed with error - ${err}`)
+          logger.error(`abortById failed with error - ${err}`)
           test.ok('Error thrown')
           test.end()
         }
@@ -3831,7 +3831,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`abortById failed with error - ${err}`)
+          logger.error(`abortById failed with error - ${err}`)
           test.ok('Error thrown')
           test.end()
         }
@@ -3899,7 +3899,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.deepEqual(result, resultMock)
           test.end()
         } catch (err) {
-          Logger.error(`abortById failed with error - ${err}`)
+          logger.error(`abortById failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -3938,7 +3938,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`abortById failed with error - ${err}`)
+          logger.error(`abortById failed with error - ${err}`)
           test.ok('Error thrown')
           test.end()
         }
@@ -4025,7 +4025,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.deepEqual(result, resultMock)
           test.end()
         } catch (err) {
-          Logger.error(`abortById failed with error - ${err}`)
+          logger.error(`abortById failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -4110,7 +4110,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`abortById failed with error - ${err}`)
+          logger.error(`abortById failed with error - ${err}`)
           test.pass('Error thrown after rollback')
           test.end()
         }
@@ -4118,7 +4118,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await abortByIdTest.end()
     } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      logger.error(`settlementFacadeTest failed with error - ${err}`)
       abortByIdTest.fail()
       abortByIdTest.end()
     }
@@ -4155,7 +4155,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.ok(firstStub.calledOnce)
           test.end()
         } catch (err) {
-          Logger.error(`getById failed with error - ${err}`)
+          logger.error(`getById failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -4171,7 +4171,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`getById failed with error - ${err}`)
+          logger.error(`getById failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -4179,7 +4179,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await getByIdTest.end()
     } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      logger.error(`settlementFacadeTest failed with error - ${err}`)
       getByIdTest.fail()
       getByIdTest.end()
     }
@@ -4240,7 +4240,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.equal(Db.settlement.query.callCount, 2, 'settlement query by params executed twice')
           test.end()
         } catch (err) {
-          Logger.error(`getByParams failed with error - ${err}`)
+          logger.error(`getByParams failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -4256,7 +4256,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`getByParams failed with error - ${err}`)
+          logger.error(`getByParams failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -4264,7 +4264,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await getByParamsTest.end()
     } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      logger.error(`settlementFacadeTest failed with error - ${err}`)
       getByParamsTest.fail()
       getByParamsTest.end()
     }
@@ -4384,7 +4384,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.equal(knexStub.callCount, 14, 'Knex called 14 times')
           test.end()
         } catch (err) {
-          Logger.error(`triggerSettlementEvent failed with error - ${err}`)
+          logger.error(`triggerSettlementEvent failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -4410,7 +4410,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`triggerSettlementEvent failed with error - ${err}`)
+          logger.error(`triggerSettlementEvent failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -4418,7 +4418,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await triggerSettlementEventTest.end()
     } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      logger.error(`settlementFacadeTest failed with error - ${err}`)
       triggerSettlementEventTest.fail()
       triggerSettlementEventTest.end()
     }
@@ -4453,7 +4453,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.ok(whereInStub.withArgs('settlementWindow.settlementWindowId', listOfIds).calledOnce)
           test.end()
         } catch (err) {
-          Logger.error(`getByListOfIds failed with error - ${err}`)
+          logger.error(`getByListOfIds failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -4469,7 +4469,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`getByListOfIds failed with error - ${err}`)
+          logger.error(`getByListOfIds failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -4477,7 +4477,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await getByListOfIdsTest.end()
     } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      logger.error(`settlementFacadeTest failed with error - ${err}`)
       getByListOfIdsTest.fail()
       getByListOfIdsTest.end()
     }
@@ -4509,7 +4509,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.ok(andWhereStub.withArgs('pc.participantId', params.participantId).calledOnce)
           test.end()
         } catch (err) {
-          Logger.error(`getAccountsInSettlementByIds failed with error - ${err}`)
+          logger.error(`getAccountsInSettlementByIds failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -4525,7 +4525,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`getAccountsInSettlementByIds failed with error - ${err}`)
+          logger.error(`getAccountsInSettlementByIds failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -4533,7 +4533,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await getAccountsInSettlementByIdsTest.end()
     } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      logger.error(`settlementFacadeTest failed with error - ${err}`)
       getAccountsInSettlementByIdsTest.fail()
       getAccountsInSettlementByIdsTest.end()
     }
@@ -4571,7 +4571,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.ok(whereStub.withArgs(params).calledOnce)
           test.end()
         } catch (err) {
-          Logger.error(`getParticipantCurrencyBySettlementId failed with error - ${err}`)
+          logger.error(`getParticipantCurrencyBySettlementId failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -4587,7 +4587,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`getParticipantCurrencyBySettlementId failed with error - ${err}`)
+          logger.error(`getParticipantCurrencyBySettlementId failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -4595,7 +4595,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await getParticipantCurrencyBySettlementIdTest.end()
     } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      logger.error(`settlementFacadeTest failed with error - ${err}`)
       getParticipantCurrencyBySettlementIdTest.fail()
       getParticipantCurrencyBySettlementIdTest.end()
     }
@@ -4633,7 +4633,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.ok(whereStub.withArgs('settlementParticipantCurrency.settlementParticipantCurrencyId', settlementParticipantCurrencyId).calledOnce)
           test.end()
         } catch (err) {
-          Logger.error(`getSettlementAccountById failed with error - ${err}`)
+          logger.error(`getSettlementAccountById failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -4649,7 +4649,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`getSettlementAccountById failed with error - ${err}`)
+          logger.error(`getSettlementAccountById failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -4657,7 +4657,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await getSettlementAccountByIdTest.end()
     } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      logger.error(`settlementFacadeTest failed with error - ${err}`)
       getSettlementAccountByIdTest.fail()
       getSettlementAccountByIdTest.end()
     }
@@ -4695,7 +4695,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.ok(whereInStub.withArgs('settlementParticipantCurrency.settlementParticipantCurrencyId', settlementParticipantCurrencyIdList).calledOnce)
           test.end()
         } catch (err) {
-          Logger.error(`getSettlementAccountsByListOfIds failed with error - ${err}`)
+          logger.error(`getSettlementAccountsByListOfIds failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -4711,7 +4711,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`getSettlementAccountsByListOfIds failed with error - ${err}`)
+          logger.error(`getSettlementAccountsByListOfIds failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -4719,7 +4719,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await getSettlementAccountsByListOfIdsTest.end()
     } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      logger.error(`settlementFacadeTest failed with error - ${err}`)
       getSettlementAccountsByListOfIdsTest.fail()
       getSettlementAccountsByListOfIdsTest.end()
     }
@@ -4773,7 +4773,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.ok(whereStub.withArgs('settlementSettlementWindow.settlementId', params.settlementId).calledOnce)
           test.end()
         } catch (err) {
-          Logger.error(`getWindowsBySettlementIdAndAccountId failed with error - ${err}`)
+          logger.error(`getWindowsBySettlementIdAndAccountId failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -4789,7 +4789,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`getWindowsBySettlementIdAndAccountId failed with error - ${err}`)
+          logger.error(`getWindowsBySettlementIdAndAccountId failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -4797,7 +4797,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await getWindowsBySettlementIdAndAccountIdTest.end()
     } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      logger.error(`settlementFacadeTest failed with error - ${err}`)
       getWindowsBySettlementIdAndAccountIdTest.fail()
       getWindowsBySettlementIdAndAccountIdTest.end()
     }
@@ -4853,7 +4853,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.ok(whereStub.withArgs('settlementSettlementWindow.settlementId', params.settlementId).calledOnce)
           test.end()
         } catch (err) {
-          Logger.error(`getWindowsBySettlementIdAndParticipantId failed with error - ${err}`)
+          logger.error(`getWindowsBySettlementIdAndParticipantId failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -4870,7 +4870,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`getWindowsBySettlementIdAndParticipantId failed with error - ${err}`)
+          logger.error(`getWindowsBySettlementIdAndParticipantId failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
@@ -4878,7 +4878,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
       await getWindowsBySettlementIdAndParticipantIdTest.end()
     } catch (err) {
-      Logger.error(`settlementFacadeTest failed with error - ${err}`)
+      logger.error(`settlementFacadeTest failed with error - ${err}`)
       getWindowsBySettlementIdAndParticipantIdTest.fail()
       getWindowsBySettlementIdAndParticipantIdTest.end()
     }

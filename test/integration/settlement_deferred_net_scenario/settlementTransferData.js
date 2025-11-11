@@ -31,7 +31,7 @@
 'use strict'
 
 const Config = require('../config')
-const Logger = require('@mojaloop/central-services-logger')
+const logger = require('@mojaloop/central-services-logger')
 const transferParticipantStateChangeService = require('../../../src/domain/transferSettlement')
 const Api = require('../helpers/api')
 const Db = require('../../../src/lib/db')
@@ -106,30 +106,30 @@ for (const currency of currencies) {
  * @return {[type]} [description]
  */
 async function init () {
-  Logger.info('Setting up initial data for settlement transfer test')
+  logger.info('Setting up initial data for settlement transfer test')
   try {
-    Logger.info('Checking that hub accounts exist')
+    logger.info('Checking that hub accounts exist')
     await checkHubAccountsExist()
 
-    Logger.info('Initializing settlement models')
+    logger.info('Initializing settlement models')
     await initSettlementModels()
 
-    Logger.info('Initializing participants')
+    logger.info('Initializing participants')
     await initParticipants()
 
-    Logger.info('Initializing participants endpoints')
+    logger.info('Initializing participants endpoints')
     await initParticipantEndpoints()
 
-    Logger.info('Initializing participants net debit cap')
+    logger.info('Initializing participants net debit cap')
     await initNetDebitCapPositionAndLimits()
 
-    Logger.info('Initializing participants payerFundsIn')
+    logger.info('Initializing participants payerFundsIn')
     await initPayerFundsIn()
 
-    Logger.info('Initializing transfers')
+    logger.info('Initializing transfers')
     await initTransfers()
   } catch (err) {
-    Logger.error(`Error setting up initial settlement data ${err}`)
+    logger.error(`Error setting up initial settlement data ${err}`)
     process.exit(1)
   }
 }
@@ -236,7 +236,7 @@ async function initTransfers () {
       await Api.waitForTransferToBeCommitted(transfer.transferId, SLEEP_MS, 10)
       await transferParticipantStateChangeService.processMsgFulfil(transfer.transferId, 'success')
     } catch (err) {
-      Logger.error(`prepareTransferDataTest failed with error - ${err}`)
+      logger.error(`prepareTransferDataTest failed with error - ${err}`)
     }
   }
 }

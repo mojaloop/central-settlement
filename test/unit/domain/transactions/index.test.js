@@ -32,7 +32,7 @@ const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Db = require('../../../../src/lib/db')
 const IlpPackets = require('../../../../src/models/ilpPackets/ilpPacket')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const base64url = require('base64url')
 
 const TransactionsService = require('../../../../src/domain/transactions/index')
@@ -42,8 +42,8 @@ Test('Transactions Service', async (transactionsTest) => {
 
   transactionsTest.beforeEach(t => {
     sandbox = Sinon.createSandbox()
-    sandbox.stub(Logger, 'isErrorEnabled').value(true)
-    sandbox.stub(Logger, 'error')
+    sandbox.stub(logger, 'isErrorEnabled').value(true)
+    sandbox.stub(logger, 'error')
 
     Db.ilpPacket = {
       find: sandbox.stub()

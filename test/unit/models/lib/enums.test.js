@@ -30,7 +30,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const Enums = require('../../../../src/models/lib/enums')
 const Db = require('../../../../src/lib/db')
 
@@ -71,7 +71,7 @@ Test('Enums', async (enumsTest) => {
           test.notOk(settlementWindowStatesEnum, 'undefined when no record is returned')
           test.end()
         } catch (err) {
-          Logger.error(`settlementWindowStates failed with error - ${err}`)
+          logger.error(`settlementWindowStates failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -84,14 +84,14 @@ Test('Enums', async (enumsTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementWindowStates failed with error - ${err}`)
+          logger.error(`settlementWindowStates failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
       })
       await settlementWindowStatesTest.end()
     } catch (err) {
-      Logger.error(`enumsTest failed with error - ${err}`)
+      logger.error(`enumsTest failed with error - ${err}`)
       settlementWindowStatesTest.fail()
       settlementWindowStatesTest.end()
     }
@@ -114,7 +114,7 @@ Test('Enums', async (enumsTest) => {
           test.notOk(settlementStatesEnum, 'undefined when no record is returned')
           test.end()
         } catch (err) {
-          Logger.error(`settlementStates failed with error - ${err}`)
+          logger.error(`settlementStates failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -127,14 +127,14 @@ Test('Enums', async (enumsTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementStates failed with error - ${err}`)
+          logger.error(`settlementStates failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
       })
       await settlementStatesTest.end()
     } catch (err) {
-      Logger.error(`enumsTest failed with error - ${err}`)
+      logger.error(`enumsTest failed with error - ${err}`)
       settlementStatesTest.fail()
       settlementStatesTest.end()
     }
@@ -163,7 +163,7 @@ Test('Enums', async (enumsTest) => {
           test.notOk(transferStatesEnum, 'undefined when no record is returned')
           test.end()
         } catch (err) {
-          Logger.error(`transferStates failed with error - ${err}`)
+          logger.error(`transferStates failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -176,14 +176,14 @@ Test('Enums', async (enumsTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`transferStates failed with error - ${err}`)
+          logger.error(`transferStates failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
       })
       await transferStatesTest.end()
     } catch (err) {
-      Logger.error(`enumsTest failed with error - ${err}`)
+      logger.error(`enumsTest failed with error - ${err}`)
       transferStatesTest.fail()
       transferStatesTest.end()
     }
@@ -209,7 +209,7 @@ Test('Enums', async (enumsTest) => {
           test.notOk(transferStateEnumsEnum, 'undefined when no record is returned')
           test.end()
         } catch (err) {
-          Logger.error(`transferStateEnums failed with error - ${err}`)
+          logger.error(`transferStateEnums failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -222,14 +222,14 @@ Test('Enums', async (enumsTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`transferStateEnums failed with error - ${err}`)
+          logger.error(`transferStateEnums failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
       })
       await transferStateEnumsTest.end()
     } catch (err) {
-      Logger.error(`enumsTest failed with error - ${err}`)
+      logger.error(`enumsTest failed with error - ${err}`)
       transferStateEnumsTest.fail()
       transferStateEnumsTest.end()
     }
@@ -252,7 +252,7 @@ Test('Enums', async (enumsTest) => {
           test.notOk(ledgerAccountTypesEnum, 'undefined when no record is returned')
           test.end()
         } catch (err) {
-          Logger.error(`ledgerAccountTypes failed with error - ${err}`)
+          logger.error(`ledgerAccountTypes failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -265,14 +265,14 @@ Test('Enums', async (enumsTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`ledgerAccountTypes failed with error - ${err}`)
+          logger.error(`ledgerAccountTypes failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
       })
       await ledgerAccountTypesTest.end()
     } catch (err) {
-      Logger.error(`enumsTest failed with error - ${err}`)
+      logger.error(`enumsTest failed with error - ${err}`)
       ledgerAccountTypesTest.fail()
       ledgerAccountTypesTest.end()
     }
@@ -295,7 +295,7 @@ Test('Enums', async (enumsTest) => {
           test.notOk(ledgerEntryTypesEnum, 'undefined when no record is returned')
           test.end()
         } catch (err) {
-          Logger.error(`ledgerEntryTypes failed with error - ${err}`)
+          logger.error(`ledgerEntryTypes failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -308,14 +308,14 @@ Test('Enums', async (enumsTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`ledgerEntryTypes failed with error - ${err}`)
+          logger.error(`ledgerEntryTypes failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
       })
       await ledgerEntryTypesTest.end()
     } catch (err) {
-      Logger.error(`enumsTest failed with error - ${err}`)
+      logger.error(`enumsTest failed with error - ${err}`)
       ledgerEntryTypesTest.fail()
       ledgerEntryTypesTest.end()
     }
@@ -338,7 +338,7 @@ Test('Enums', async (enumsTest) => {
           test.notOk(transferParticipantRoleTypesEnum, 'undefined when no record is returned')
           test.end()
         } catch (err) {
-          Logger.error(`transferParticipantRoleTypes failed with error - ${err}`)
+          logger.error(`transferParticipantRoleTypes failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -351,14 +351,14 @@ Test('Enums', async (enumsTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`transferParticipantRoleTypes failed with error - ${err}`)
+          logger.error(`transferParticipantRoleTypes failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
       })
       await transferParticipantRoleTypesTest.end()
     } catch (err) {
-      Logger.error(`enumsTest failed with error - ${err}`)
+      logger.error(`enumsTest failed with error - ${err}`)
       transferParticipantRoleTypesTest.fail()
       transferParticipantRoleTypesTest.end()
     }
@@ -379,7 +379,7 @@ Test('Enums', async (enumsTest) => {
           test.notOk(participantLimitTypesEnum, 'undefined when no record is returned')
           test.end()
         } catch (err) {
-          Logger.error(`participantLimitTypes failed with error - ${err}`)
+          logger.error(`participantLimitTypes failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -392,14 +392,14 @@ Test('Enums', async (enumsTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`participantLimitTypes failed with error - ${err}`)
+          logger.error(`participantLimitTypes failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
       })
       await participantLimitTypesTest.end()
     } catch (err) {
-      Logger.error(`enumsTest failed with error - ${err}`)
+      logger.error(`enumsTest failed with error - ${err}`)
       participantLimitTypesTest.fail()
       participantLimitTypesTest.end()
     }
@@ -420,7 +420,7 @@ Test('Enums', async (enumsTest) => {
           test.notOk(settlementDelays, 'undefined when no record is returned')
           test.end()
         } catch (err) {
-          Logger.error(`settlementDelay failed with error - ${err}`)
+          logger.error(`settlementDelay failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -433,14 +433,14 @@ Test('Enums', async (enumsTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementDelay failed with error - ${err}`)
+          logger.error(`settlementDelay failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
       })
       await settlementDelayTest.end()
     } catch (err) {
-      Logger.error(`enumsTest failed with error - ${err}`)
+      logger.error(`enumsTest failed with error - ${err}`)
       settlementDelayTest.fail()
       settlementDelayTest.end()
     }
@@ -461,7 +461,7 @@ Test('Enums', async (enumsTest) => {
           test.notOk(settlementDelayEnum, 'undefined when no record is returned')
           test.end()
         } catch (err) {
-          Logger.error(`settlementDelay failed with error - ${err}`)
+          logger.error(`settlementDelay failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -474,14 +474,14 @@ Test('Enums', async (enumsTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementDelay failed with error - ${err}`)
+          logger.error(`settlementDelay failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
       })
       await settlementDelayEnumTest.end()
     } catch (err) {
-      Logger.error(`enumsTest failed with error - ${err}`)
+      logger.error(`enumsTest failed with error - ${err}`)
       settlementDelayEnumTest.fail()
       settlementDelayEnumTest.end()
     }
@@ -502,7 +502,7 @@ Test('Enums', async (enumsTest) => {
           test.notOk(settlementGranularityList, 'undefined when no record is returned')
           test.end()
         } catch (err) {
-          Logger.error(`settlementGranularity failed with error - ${err}`)
+          logger.error(`settlementGranularity failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -515,14 +515,14 @@ Test('Enums', async (enumsTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementGranularity failed with error - ${err}`)
+          logger.error(`settlementGranularity failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
       })
       await settlementGranularityTest.end()
     } catch (err) {
-      Logger.error(`enumsTest failed with error - ${err}`)
+      logger.error(`enumsTest failed with error - ${err}`)
       settlementGranularityTest.fail()
       settlementGranularityTest.end()
     }
@@ -543,7 +543,7 @@ Test('Enums', async (enumsTest) => {
           test.notOk(settlementGranularityEnum, 'undefined when no record is returned')
           test.end()
         } catch (err) {
-          Logger.error(`settlementGranularity failed with error - ${err}`)
+          logger.error(`settlementGranularity failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -556,14 +556,14 @@ Test('Enums', async (enumsTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementGranularity failed with error - ${err}`)
+          logger.error(`settlementGranularity failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
       })
       await settlementGranularityEnumTest.end()
     } catch (err) {
-      Logger.error(`enumsTest failed with error - ${err}`)
+      logger.error(`enumsTest failed with error - ${err}`)
       settlementGranularityEnumTest.fail()
       settlementGranularityEnumTest.end()
     }
@@ -584,7 +584,7 @@ Test('Enums', async (enumsTest) => {
           test.notOk(settlementInterchangeList, 'undefined when no record is returned')
           test.end()
         } catch (err) {
-          Logger.error(`settlementInterchange failed with error - ${err}`)
+          logger.error(`settlementInterchange failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -597,14 +597,14 @@ Test('Enums', async (enumsTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementInterchange failed with error - ${err}`)
+          logger.error(`settlementInterchange failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
       })
       await settlementInterchangeTest.end()
     } catch (err) {
-      Logger.error(`enumsTest failed with error - ${err}`)
+      logger.error(`enumsTest failed with error - ${err}`)
       settlementInterchangeTest.fail()
       settlementInterchangeTest.end()
     }
@@ -625,7 +625,7 @@ Test('Enums', async (enumsTest) => {
           test.notOk(settlementInterchangeEnum, 'undefined when no record is returned')
           test.end()
         } catch (err) {
-          Logger.error(`settlementInterchange failed with error - ${err}`)
+          logger.error(`settlementInterchange failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -638,14 +638,14 @@ Test('Enums', async (enumsTest) => {
           test.fail('Error not thrown!')
           test.end()
         } catch (err) {
-          Logger.error(`settlementInterchange failed with error - ${err}`)
+          logger.error(`settlementInterchange failed with error - ${err}`)
           test.pass('Error thrown')
           test.end()
         }
       })
       await settlementInterchangeEnumTest.end()
     } catch (err) {
-      Logger.error(`enumsTest failed with error - ${err}`)
+      logger.error(`enumsTest failed with error - ${err}`)
       settlementInterchangeEnumTest.fail()
       settlementInterchangeEnumTest.end()
     }

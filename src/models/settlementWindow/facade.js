@@ -33,7 +33,7 @@
 const Db = require('../../lib/db')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Enum = require('@mojaloop/central-services-shared').Enum
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../shared/logger')
 const SettlementModelModel = require('../settlement/settlementModel')
 
 const Facade = {
@@ -166,12 +166,12 @@ const Facade = {
             .update({ currentStateChangeId: newSettlementWindowStateChangeId })
           return newSettlementWindowId[0]
         } catch (err) {
-          Logger.isErrorEnabled && Logger.error(err)
+          logger.error(err)
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
       })
         .catch((err) => {
-          Logger.isErrorEnabled && Logger.error(err)
+          logger.error(err)
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         })
     }
@@ -314,12 +314,12 @@ const Facade = {
 
           return true
         } catch (err) {
-          Logger.isErrorEnabled && Logger.error(err)
+          logger.error(err)
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
       })
         .catch((err) => {
-          Logger.isErrorEnabled && Logger.error(err)
+          logger.error(err)
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         })
     }
