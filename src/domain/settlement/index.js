@@ -157,7 +157,7 @@ module.exports = {
       if (transferCommittedAccount !== undefined) {
         const error = ErrorHandler.Factory.createFSPIOPError(
           ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR,
-        `At least one settlement transfer is committed for settlement '${settlementId}'. Aborting is not allowed.`
+          `At least one settlement transfer is committed for settlement '${settlementId}'. Aborting is not allowed.`
         )
         logger.error(error)
         throw error
