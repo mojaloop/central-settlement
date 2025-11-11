@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.2.4](https://github.com/mojaloop/central-settlement/compare/v17.2.3...v17.2.4) (2025-11-11)
+
+
+### Chore
+
+* bump dependencies and switch to context logger ([#445](https://github.com/mojaloop/central-settlement/issues/445)) ([ee0dbd3](https://github.com/mojaloop/central-settlement/commit/ee0dbd3ee84d728a9b7f9688044a244ebceb0730))
+* **sbom:** update sbom [skip ci] ([d2a58ce](https://github.com/mojaloop/central-settlement/commit/d2a58ce8b2236668cec0001b4a9ea08785e1163c))
+
 ### [17.2.3](https://github.com/mojaloop/central-settlement/compare/v17.2.2...v17.2.3) (2025-10-16)
 
 
