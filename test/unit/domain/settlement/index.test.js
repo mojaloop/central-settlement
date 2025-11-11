@@ -718,8 +718,9 @@ Test('SettlementService', async (settlementServiceTest) => {
             await SettlementService.getByIdParticipantAccount(params, enums)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
-            test.ok(
-              err.message === "Provided account ID '1' does not match any position account for participant '1' in settlement '1'",
+            test.equal(
+              err.message,
+              "Provided account ID '1' does not match any position account for participant '1' in settlement '1'",
               `Error "${err.message}" thrown as expected`
             )
             test.ok(SettlementModel.getById.withArgs({ settlementId }, enums).calledOnce, 'SettlementModel.getById with args ... called once')

@@ -136,7 +136,7 @@ module.exports = {
     if (!settlementData) {
       const error = ErrorHandler.Factory.createFSPIOPError(
         ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR,
-      `Settlement with ID '${settlementId}' not found`
+        `Settlement with ID '${settlementId}' not found`
       )
       logger.error(error)
       throw error
@@ -146,7 +146,7 @@ module.exports = {
       settlementData.state === enums.settlementStates.SETTLED) {
       const error = ErrorHandler.Factory.createFSPIOPError(
         ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR,
-      `State change is not allowed for settlement '${settlementId}' in state '${settlementData.state}'`
+        `State change is not allowed for settlement '${settlementId}' in state '${settlementData.state}'`
       )
       logger.error(error)
       throw error
