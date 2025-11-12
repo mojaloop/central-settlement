@@ -164,7 +164,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.end()
         } catch (err) {
           logger.error(`getByIdTest failed with error - ${err}`)
-          test.equal(err.message, 'Settlement not found', `Error "${err.message}" thrown`)
+          test.equal(err.message, "Settlement with ID '1' not found", `Error "${err.message}" thrown`)
           test.end()
         }
       })
@@ -382,7 +382,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.end()
         } catch (err) {
           logger.error(`getSettlementsByParamsTest failed with error - ${err}`)
-          test.equal(err.message, 'Settlements not found', `Error "${err.message}" thrown`)
+          test.equal(err.message, 'No settlements found matching the provided parameters: {"state":1}', `Error "${err.message}" thrown`)
           test.end()
         }
       })
@@ -540,7 +540,11 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.end()
         } catch (err) {
           logger.error(`settlementEventTriggerTest failed with error - ${err}`)
-          test.equal(err.message, 'Inapplicable windows 1, 2', `Error "${err.message}" thrown`)
+          test.equal(
+            err.message,
+            'Inapplicable windows: 1, 2. Reasons: Window 1 not found; Window 2 not found',
+            `Error "${err.message}" thrown`
+          )
           test.end()
         }
       })
@@ -553,7 +557,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.end()
         } catch (err) {
           logger.error(`settlementEventTriggerTest failed with error - ${err}`)
-          test.equal(err.message, 'Settlement model not found', `Error "${err.message}" thrown`)
+          test.equal(err.message, 'Settlement model not found: DEFERRED_NET', `Error "${err.message}" thrown`)
           test.end()
         }
       })
@@ -684,7 +688,7 @@ Test('SettlementService', async (settlementServiceTest) => {
             await SettlementService.getByIdParticipantAccount(params, enums)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
-            test.equal(err.message, 'Account not in settlement', `Error "${err.message}" thrown as expected`)
+            test.equal(err.message, "Account ID '1' is not part of settlement '1'", `Error "${err.message}" thrown as expected`)
             test.ok(SettlementModel.getById.withArgs({ settlementId }, enums).calledThrice, 'SettlementModel.getById with args ... called thrice')
             test.ok(SettlementModel.settlementParticipantCurrency.getAccountsInSettlementByIds.withArgs({ settlementId, participantId }, enums).calledThrice, 'SettlementModel.spc.getAccountsInSettlementByIds with args ... called thrice')
             test.ok(SettlementModel.checkParticipantAccountExists.withArgs({ participantId, accountId }, enums).calledTwice, 'SettlementModel.checkParticipantAccountExists with args ... called twice')
@@ -699,7 +703,7 @@ Test('SettlementService', async (settlementServiceTest) => {
             await SettlementService.getByIdParticipantAccount(params, enums)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
-            test.equal(err.message, 'Settlement not found', `Error "${err.message}" thrown as expected`)
+            test.equal(err.message, "Settlement with ID '1' not found", `Error "${err.message}" thrown as expected`)
             test.ok(SettlementModel.getById.withArgs({ settlementId }, enums).calledOnce, 'SettlementModel.getById with args ... called once')
             test.ok(SettlementModel.settlementParticipantCurrency.getAccountsInSettlementByIds.withArgs({ settlementId, participantId }, enums).calledThrice, 'SettlementModel.spc.getAccountsInSettlementByIds with args ... called thrice')
             test.ok(SettlementModel.checkParticipantAccountExists.withArgs({ participantId, accountId }, enums).calledTwice, 'SettlementModel.checkParticipantAccountExists with args ... called twice')
@@ -714,7 +718,11 @@ Test('SettlementService', async (settlementServiceTest) => {
             await SettlementService.getByIdParticipantAccount(params, enums)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
-            test.equal(err.message, 'Provided account does not match any participant position account', `Error "${err.message}" thrown as expected`)
+            test.equal(
+              err.message,
+              "Provided account ID '1' does not match any position account for participant '1' in settlement '1'",
+              `Error "${err.message}" thrown as expected`
+            )
             test.ok(SettlementModel.getById.withArgs({ settlementId }, enums).calledOnce, 'SettlementModel.getById with args ... called once')
             test.equal(SettlementModel.settlementParticipantCurrency.getAccountsInSettlementByIds.withArgs({ settlementId, participantId }, enums).callCount, 4, 'SettlementModel.spc.getAccountsInSettlementByIds with args ... called four times')
             test.ok(SettlementModel.checkParticipantAccountExists.withArgs({ participantId, accountId }, enums).calledOnce, 'SettlementModel.checkParticipantAccountExists with args ... called once')
@@ -728,7 +736,7 @@ Test('SettlementService', async (settlementServiceTest) => {
             await SettlementService.getByIdParticipantAccount(params, enums)
             test.fail('Error expected, but not thrown!')
           } catch (err) {
-            test.equal(err.message, 'Participant not in settlement', `Error "${err.message}" thrown as expected`)
+            test.equal(err.message, "Participant with ID '1' is not part of settlement '1'", `Error "${err.message}" thrown as expected`)
             test.ok(SettlementModel.getById.withArgs({ settlementId }, enums).calledTwice, 'SettlementModel.getById with args ... called twice')
             test.ok(SettlementModel.settlementParticipantCurrency.getAccountsInSettlementByIds.withArgs({ settlementId, participantId }, enums).calledOnce, 'SettlementModel.spc.getAccountsInSettlementByIds with args ... called once')
             test.ok(SettlementModel.checkParticipantAccountExists.withArgs({ participantId, accountId }, enums).calledOnce, 'SettlementModel.checkParticipantAccountExists with args ... called once')
