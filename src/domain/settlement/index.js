@@ -275,16 +275,7 @@ module.exports = {
     const applicableIdList = applicableWindows.map(v => v.settlementWindowId)
     const nonApplicableIdList = arrayDiff(idList, applicableIdList)
     if (nonApplicableIdList.length) {
-      // Get reasons for inapplicability
-      const allWindows = await SettlementWindowModel.getByListOfIds(idList, null, null)
-      const reasons = nonApplicableIdList.map(id => {
-        const win = allWindows.find(w => w.settlementWindowId === id)
-        return win
-          ? `Window ${id} is in state '${win.state}'`
-          : `Window ${id} not found`
-      })
-      const errorMsg = `Inapplicable windows: ${nonApplicableIdList.join(', ')}. Reasons: ${reasons.join('; ')}`
-      const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, errorMsg)
+      const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Inapplicable windows ${nonApplicableIdList.join(', ')}`)
       logger.error(error)
       throw error
     }
