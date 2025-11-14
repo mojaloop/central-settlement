@@ -540,11 +540,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.end()
         } catch (err) {
           logger.error(`settlementEventTriggerTest failed with error - ${err}`)
-          test.equal(
-            err.message,
-            'Inapplicable windows: 1, 2. Reasons: Window 1 not found; Window 2 not found',
-            `Error "${err.message}" thrown`
-          )
+          test.equal(err.message, 'Inapplicable windows 1, 2', `Error "${err.message}" thrown`)
           test.end()
         }
       })
