@@ -1,175 +1,178 @@
 {
-    "name": "central-settlement",
-    "description": "Central settlements hosted by a scheme to record and make settlements.",
-    "version": "17.2.6",
-    "license": "Apache-2.0",
-    "private": false,
-    "author": "ModusBox",
-    "contributors": [
-        "Deon Botha <deon.botha@modusbox.com>",
-        "Georgi Georgiev <georgi.georgiev@modusbox.com>",
-        "Lazola Lucas <lazola.lucas@modusbox.com>",
-        "Miguel de Barros <miguel.debarros@modusbox.com>",
-        "Rajiv Mothilal <rajiv.mothilal@modusbox.com>",
-        "Valentin Genev <valentin.genev@modusbox.com>",
-        "Adrian Enns <adrian.enns@modusbox.com>"
-    ],
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/mojaloop/central-settlement"
+  "name": "central-settlement",
+  "description": "Central settlements hosted by a scheme to record and make settlements.",
+  "version": "17.2.6",
+  "license": "Apache-2.0",
+  "private": false,
+  "author": "ModusBox",
+  "contributors": [
+    "Deon Botha <deon.botha@modusbox.com>",
+    "Georgi Georgiev <georgi.georgiev@modusbox.com>",
+    "Lazola Lucas <lazola.lucas@modusbox.com>",
+    "Miguel de Barros <miguel.debarros@modusbox.com>",
+    "Rajiv Mothilal <rajiv.mothilal@modusbox.com>",
+    "Valentin Genev <valentin.genev@modusbox.com>",
+    "Adrian Enns <adrian.enns@modusbox.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mojaloop/central-settlement"
+  },
+  "bugs": "http://github.com/mojaloop/central-settlement/issues",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "pre-commit": [
+    "lint",
+    "dep:check",
+    "test:unit"
+  ],
+  "scripts": {
+    "start": "run-p start:api",
+    "start:api": "node src/api/index.js",
+    "watch:api": "nodemon src/api/index.js",
+    "start:handlers": "node src/handlers/index.js",
+    "regenerate": "yo swaggerize:test --framework hapi --apiPath './src/interface/swagger.yaml'",
+    "lint": "standard",
+    "lint:fix": "standard --fix",
+    "eslint": "eslint .",
+    "test": "npm run test:unit",
+    "test:unit": "npx tape 'test/unit/**/*.test.js' | tap-spec",
+    "test:xunit": "tape 'test/unit/**/*.test.js' | tap-xunit",
+    "test:coverage": "nyc --reporter=lcov --reporter=text-summary tapes -- 'test/unit/**/**.test.js'",
+    "test:coverage-check": "npm run test:coverage && nyc check-coverage",
+    "test:int": "npx tape 'test/integration/**/*.test.js'",
+    "test:int:spec": "npm run test:int | tap-spec",
+    "test:xint": "npm run test:int | tap-xunit > ./test/results/xunit-integration.xml",
+    "test:functional": "echo 'No functional tests defined'",
+    "test:integration": "./test/scripts/test-integration.sh",
+    "docker:build": "docker build --build-arg NODE_VERSION=\"$(cat .nvmrc)-alpine\" -t mojaloop/central-settlement:local .",
+    "docker:up": "docker-compose -f docker-compose.yml up -d",
+    "docker:stop": "docker-compose -f docker-compose.yml stop",
+    "docker:rm": "docker-compose -f docker-compose.yml rm -f -v",
+    "docker:down": "docker-compose -f docker-compose.yml down -v",
+    "docker:clean": "docker-compose -f docker-compose.yml down --rmi local",
+    "audit:fix": "npm audit fix",
+    "audit:check": "npx audit-ci --config ./audit-ci.jsonc",
+    "dep:check": "npx ncu -e 2",
+    "dep:update": "npx ncu -u",
+    "release": "standard-version --releaseCommitMessageFormat 'chore(release): {{currentTag}} [skip ci]'",
+    "snapshot": "standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'chore(snapshot): {{currentTag}}'",
+    "wait-4-docker": "node ./scripts/_wait4_all.js"
+  },
+  "dependencies": {
+    "@hapi/basic": "7.0.2",
+    "@hapi/boom": "10.0.1",
+    "@hapi/catbox-memory": "5.0.1",
+    "@hapi/good": "9.0.1",
+    "@hapi/hapi": "21.4.4",
+    "@hapi/inert": "7.1.0",
+    "@hapi/vision": "7.0.3",
+    "@mojaloop/central-ledger": "v19.11.3",
+    "@mojaloop/database-lib": "^11.3.4",
+    "@mojaloop/central-services-error-handling": "13.1.5",
+    "@mojaloop/central-services-health": "15.2.1",
+    "@mojaloop/central-services-logger": "11.10.2",
+    "@mojaloop/central-services-shared": "18.34.5",
+    "@mojaloop/central-services-stream": "11.8.13",
+    "@mojaloop/event-sdk": "14.8.2",
+    "@mojaloop/ml-number": "11.4.2",
+    "@mojaloop/sdk-standard-components": "19.18.1",
+    "@now-ims/hapi-now-auth": "2.1.0",
+    "async": "3.2.6",
+    "async-retry": "1.3.3",
+    "bignumber.js": "9.3.1",
+    "blipp": "4.0.2",
+    "hapi-auth-bearer-token": "8.0.0",
+    "hapi-openapi": "3.0.0",
+    "hapi-swagger": "17.3.2",
+    "lodash": "4.17.21",
+    "mustache": "4.2.0",
+    "parse-strings-in-object": "2.0.0",
+    "rc": "1.2.8",
+    "vm": "0.1.0"
+  },
+  "devDependencies": {
+    "joi": "17.13.3",
+    "@mojaloop/central-services-metrics": "12.8.2",
+    "@types/lodash": "4.17.21",
+    "ajv": "8.17.1",
+    "ajv-keywords": "5.1.0",
+    "audit-ci": "7.1.0",
+    "axios": "1.13.2",
+    "bluebird": "3.7.2",
+    "chai": "6.2.1",
+    "chai-exclude": "3.0.1",
+    "chai-subset": "1.6.0",
+    "eslint": "9.39.1",
+    "esm": "3.2.25",
+    "get-port": "7.1.0",
+    "jest": "30.2.0",
+    "jest-junit": "16.0.0",
+    "node-fetch": "3.3.2",
+    "nodemon": "3.1.11",
+    "npm-check-updates": "19.1.2",
+    "nyc": "17.1.0",
+    "pre-commit": "1.2.2",
+    "proxyquire": "2.1.3",
+    "replace": "1.2.2",
+    "rewire": "9.0.1",
+    "sinon": "21.0.0",
+    "standard": "17.1.2",
+    "standard-version": "9.5.0",
+    "supertest": "7.1.4",
+    "swagmock": "1.0.0",
+    "tap-spec": "5.0.0",
+    "tap-xunit": "2.4.1",
+    "tape": "5.9.0",
+    "tapes": "4.1.0"
+  },
+  "overrides": {
+    "@eslint/plugin-kit": "0.3.4",
+    "ansi-regex": "5.0.1",
+    "brace-expansion": "2.0.2",
+    "form-data": "4.0.4",
+    "postcss": {
+      "nanoid": "3.3.8"
     },
-    "bugs": "http://github.com/mojaloop/central-settlement/issues",
-    "publishConfig": {
-        "registry": "https://registry.npmjs.org"
+    "shins": {
+      "ajv": "6.12.3",
+      "ejs": "3.1.10",
+      "sanitize-html": "2.12.1",
+      "jsonpointer": "5.0.0",
+      "markdown-it": "12.3.2",
+      "postcss": "8.4.31"
     },
-    "engines": {
-        "node": "22.x"
+    "widdershins": {
+      "markdown-it": "12.3.2",
+      "swagger2openapi": "7.0.8"
     },
-    "pre-commit": [
-        "lint",
-        "dep:check",
-        "test:unit"
-    ],
+    "jsonwebtoken": "9.0.0",
+    "markdown-it": "12.3.2",
+    "on-headers": "1.1.0",
+    "trim": "0.0.3",
+    "cross-spawn": "7.0.6",
+    "validator": "13.15.20",
+    "yargs-parser": "21.1.1",
+    "glob": "available",
+    "jws": "3.2.3",
+    "js-yaml": "available"
+  },
+  "generator-swaggerize": {
+    "version": "4.1.0"
+  },
+  "main": "./server",
+  "standard": {
+    "ignore": [
+      "test/unit/data/invalidFile/dummyFeeCalculationTestScriptInvalidFile.js"
+    ]
+  },
+  "standard-version": {
     "scripts": {
-        "start": "run-p start:api",
-        "start:api": "node src/api/index.js",
-        "watch:api": "nodemon src/api/index.js",
-        "start:handlers": "node src/handlers/index.js",
-        "regenerate": "yo swaggerize:test --framework hapi --apiPath './src/interface/swagger.yaml'",
-        "lint": "standard",
-        "lint:fix": "standard --fix",
-        "eslint": "eslint .",
-        "test": "npm run test:unit",
-        "test:unit": "npx tape 'test/unit/**/*.test.js' | tap-spec",
-        "test:xunit": "tape 'test/unit/**/*.test.js' | tap-xunit",
-        "test:coverage": "nyc --reporter=lcov --reporter=text-summary tapes -- 'test/unit/**/**.test.js'",
-        "test:coverage-check": "npm run test:coverage && nyc check-coverage",
-        "test:int": "npx tape 'test/integration/**/*.test.js'",
-        "test:int:spec": "npm run test:int | tap-spec",
-        "test:xint": "npm run test:int | tap-xunit > ./test/results/xunit-integration.xml",
-        "test:functional": "echo 'No functional tests defined'",
-        "test:integration": "./test/scripts/test-integration.sh",
-        "docker:build": "docker build --build-arg NODE_VERSION=\"$(cat .nvmrc)-alpine\" -t mojaloop/central-settlement:local .",
-        "docker:up": "docker-compose -f docker-compose.yml up -d",
-        "docker:stop": "docker-compose -f docker-compose.yml stop",
-        "docker:rm": "docker-compose -f docker-compose.yml rm -f -v",
-        "docker:down": "docker-compose -f docker-compose.yml down -v",
-        "docker:clean": "docker-compose -f docker-compose.yml down --rmi local",
-        "audit:fix": "npm audit fix",
-        "audit:check": "npx audit-ci --config ./audit-ci.jsonc",
-        "dep:check": "npx ncu -e 2",
-        "dep:update": "npx ncu -u",
-        "release": "standard-version --releaseCommitMessageFormat 'chore(release): {{currentTag}} [skip ci]'",
-        "snapshot": "standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'chore(snapshot): {{currentTag}}'",
-        "wait-4-docker": "node ./scripts/_wait4_all.js"
-    },
-    "dependencies": {
-        "@hapi/basic": "7.0.2",
-        "@hapi/boom": "10.0.1",
-        "@hapi/catbox-memory": "5.0.1",
-        "@hapi/good": "9.0.1",
-        "@hapi/hapi": "21.4.4",
-        "@hapi/inert": "7.1.0",
-        "@hapi/vision": "7.0.3",
-        "@mojaloop/central-ledger": "v19.11.3",
-        "@mojaloop/database-lib": "^11.3.4",
-        "@mojaloop/central-services-error-handling": "13.1.4",
-        "@mojaloop/central-services-health": "15.2.0",
-        "@mojaloop/central-services-logger": "11.10.1",
-        "@mojaloop/central-services-shared": "18.34.3",
-        "@mojaloop/central-services-stream": "11.8.10",
-        "@mojaloop/event-sdk": "14.8.1",
-        "@mojaloop/ml-number": "11.4.1",
-        "@mojaloop/sdk-standard-components": "19.18.0",
-        "@now-ims/hapi-now-auth": "2.1.0",
-        "async": "3.2.6",
-        "async-retry": "1.3.3",
-        "bignumber.js": "9.3.1",
-        "blipp": "4.0.2",
-        "hapi-auth-bearer-token": "8.0.0",
-        "hapi-openapi": "3.0.0",
-        "hapi-swagger": "17.3.2",
-        "lodash": "4.17.21",
-        "mustache": "4.2.0",
-        "parse-strings-in-object": "2.0.0",
-        "rc": "1.2.8",
-        "vm": "0.1.0"
-    },
-    "devDependencies": {
-        "joi": "17.13.3",
-        "@mojaloop/central-services-metrics": "12.8.1",
-        "@types/lodash": "4.17.20",
-        "ajv": "8.17.1",
-        "ajv-keywords": "5.1.0",
-        "audit-ci": "7.1.0",
-        "axios": "1.13.2",
-        "bluebird": "3.7.2",
-        "chai": "6.2.1",
-        "chai-exclude": "3.0.1",
-        "chai-subset": "1.6.0",
-        "eslint": "9.39.1",
-        "esm": "3.2.25",
-        "get-port": "7.1.0",
-        "jest": "30.2.0",
-        "jest-junit": "16.0.0",
-        "node-fetch": "3.3.2",
-        "nodemon": "3.1.11",
-        "npm-check-updates": "19.1.2",
-        "nyc": "17.1.0",
-        "pre-commit": "1.2.2",
-        "proxyquire": "2.1.3",
-        "replace": "1.2.2",
-        "rewire": "9.0.1",
-        "sinon": "21.0.0",
-        "standard": "17.1.2",
-        "standard-version": "9.5.0",
-        "supertest": "7.1.4",
-        "swagmock": "1.0.0",
-        "tap-spec": "5.0.0",
-        "tap-xunit": "2.4.1",
-        "tape": "5.9.0",
-        "tapes": "4.1.0"
-    },
-    "overrides": {
-        "@eslint/plugin-kit": "0.3.4",
-        "ansi-regex": "5.0.1",
-        "brace-expansion": "2.0.2",
-        "form-data": "4.0.4",
-        "postcss": {
-            "nanoid": "3.3.8"
-        },
-        "shins": {
-            "ajv": "6.12.3",
-            "ejs": "3.1.10",
-            "sanitize-html": "2.12.1",
-            "jsonpointer": "5.0.0",
-            "markdown-it": "12.3.2",
-            "postcss": "8.4.31"
-        },
-        "widdershins": {
-            "markdown-it": "12.3.2",
-            "swagger2openapi": "7.0.8"
-        },
-        "jsonwebtoken": "9.0.0",
-        "markdown-it": "12.3.2",
-        "on-headers": "1.1.0",
-        "trim": "0.0.3",
-        "cross-spawn": "7.0.6",
-        "validator": "13.7.0",
-        "yargs-parser": "21.1.1"
-    },
-    "generator-swaggerize": {
-        "version": "4.1.0"
-    },
-    "main": "./server",
-    "standard": {
-        "ignore": [
-            "test/unit/data/invalidFile/dummyFeeCalculationTestScriptInvalidFile.js"
-        ]
-    },
-    "standard-version": {
-        "scripts": {
-            "postchangelog": "replace '\\[mojaloop/#(\\d+)\\]\\(https://github.com/mojaloop/(.*)/issues/(\\d+)\\)' '[mojaloop/#$1](https://github.com/mojaloop/project/issues/$1)' CHANGELOG.md"
-        }
+      "postchangelog": "replace '\\[mojaloop/#(\\d+)\\]\\(https://github.com/mojaloop/(.*)/issues/(\\d+)\\)' '[mojaloop/#$1](https://github.com/mojaloop/project/issues/$1)' CHANGELOG.md"
     }
+  }
 }
