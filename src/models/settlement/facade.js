@@ -1340,8 +1340,8 @@ const Facade = {
         .innerJoin('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'spc.currentStateChangeId')
         .innerJoin('participantCurrency AS pc', 'pc.participantCurrencyId', 'spc.participantCurrencyId')
         .distinct('settlement.settlementId', 'ssc.settlementStateId', 'ssw.settlementWindowId',
-          'swsc.settlementWindowStateId', 'swsc.reason AS settlementWindowReason', 'sw.createdDate',
-          'swsc.createdDate AS changedDate', 'pc.participantId', 'spc.participantCurrencyId',
+          'swsc.settlementWindowStateId', 'swsc.reason AS settlementWindowReason', 'settlement.createdDate as createdDate',
+          'swsc.createdDate AS changedDate', 'pc.participantId', 'spc.participantCurrencyId', 'sw.createdDate AS settlementWindowCreatedDate',
           'spcsc.reason AS accountReason', 'spcsc.settlementStateId AS accountState',
           'spc.netAmount AS accountAmount', 'pc.currencyId AS accountCurrency')
         .select()
