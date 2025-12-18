@@ -6,6 +6,8 @@
   "allowlist": [ // NOTE: Please add as much information as possible to any items added to the allowList
       // Currently no fixes available for the following
         "GHSA-9965-vmph-33xx", // CVE-2025-56200: validator.js URL validation bypass
-        "GHSA-mh29-5h37-fv8m"  // CVE-2025-64718 js-yaml has prototype pollution in merge
+        "GHSA-mh29-5h37-fv8m", // CVE-2025-64718 js-yaml has prototype pollution in merge
+        "GHSA-5j98-mcp5-4vw2", // @mojaloop/central-ledger>glob
+        "GHSA-vghf-hv5q-vc2g"  // hapi-openapi>swagger-parser>@apidevtools/swagger-parser>z-schema>validator, swagmock>swagger-parser>@apidevtools/swagger-parser>z-schema>validator, z-schema>validator
   ]
 }
