@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.3.0](https://github.com/mojaloop/central-settlement/compare/v17.2.6...v17.3.0) (2025-12-19)
+
+
+### Features
+
+* support ilp4 in settlement rules engine  ([#451](https://github.com/mojaloop/central-settlement/issues/451)) ([75a1710](https://github.com/mojaloop/central-settlement/commit/75a1710360251e6f63d3ef4a1f889e8a496c06c8))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([b687023](https://github.com/mojaloop/central-settlement/commit/b68702386c25936229b26ded19e677e56e269d9e))
+
 ### [17.2.6](https://github.com/mojaloop/central-settlement/compare/v17.2.5...v17.2.6) (2025-11-14)
 
 
