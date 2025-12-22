@@ -23,7 +23,7 @@
         "registry": "https://registry.npmjs.org"
     },
     "engines": {
-        "node": ">=18.x"
+        "node": "22.x"
     },
     "pre-commit": [
         "lint",
