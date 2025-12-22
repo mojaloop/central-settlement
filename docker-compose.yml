@@ -146,7 +146,7 @@ services:
 #      - /opt/wait-for/wait-for-mockserver.sh
 
   kafka:
-    image: docker.io/bitnami/kafka:3.5
+    image: docker.io/bitnamilegacy/kafka:3.5
     container_name: cs_kafka
     networks:
       - cs-mojaloop-net
@@ -180,7 +180,7 @@ services:
     container_name: cs_kafka-provisioning
     networks:
       - cs-mojaloop-net
-    image: docker.io/bitnami/kafka:3.5
+    image: docker.io/bitnamilegacy/kafka:3.5
     depends_on:
       - kafka
     volumes:
