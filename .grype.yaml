@@ -18,6 +18,7 @@ ignore:
     package:
       name: glob
       version: 10.4.5
+  - vulnerability: CVE-2025-60876 # busybox, ssl_client
 
 # Set output format defaults
 output:
