@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.3.2](https://github.com/mojaloop/central-settlement/compare/v17.3.1...v17.3.2) (2026-01-16)
+
+
+### Chore
+
+* **ci:** update CircleCI orb to 1.1.10 ([#457](https://github.com/mojaloop/central-settlement/issues/457)) ([6732b04](https://github.com/mojaloop/central-settlement/commit/6732b04cc773452b306c65d673521690fd59c65e))
+* **sbom:** update sbom [skip ci] ([24de430](https://github.com/mojaloop/central-settlement/commit/24de430ec3d9e46befccec32e25c21e3680283fc))
+
 ### [17.3.1](https://github.com/mojaloop/central-settlement/compare/v17.3.0...v17.3.1) (2026-01-07)
 
 
