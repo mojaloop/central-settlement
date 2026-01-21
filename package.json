@@ -89,7 +89,7 @@
         "hapi-auth-bearer-token": "8.0.0",
         "hapi-openapi": "3.0.0",
         "hapi-swagger": "17.3.2",
-        "lodash": "4.17.21",
+        "lodash": "4.17.23",
         "mustache": "4.2.0",
         "parse-strings-in-object": "2.0.0",
         "rc": "1.2.8",
