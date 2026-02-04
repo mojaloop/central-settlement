@@ -21,6 +21,7 @@
 
  * Mojaloop Foundation
  - Name Surname <name.surname@mojaloop.io>
+ - Shashikant Hirugade <shashi.mojaloop@gmail.com>
  * ModusBox
  - Deon Botha <deon.botha@modusbox.com>
  - Georgi Georgiev <georgi.georgiev@modusbox.com>
@@ -38,6 +39,7 @@ const SettlementWindowContentModel = require('../../models/settlementWindowConte
 const SettlementWindowModel = require('../../models/settlementWindow')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const { logger } = require('../../shared/logger')
+const MLNumber = require('@mojaloop/ml-number')
 
 const prepareParticipantsResult = (participantCurrenciesList) => {
   const participantAccounts = {}
@@ -48,7 +50,7 @@ const prepareParticipantsResult = (participantCurrenciesList) => {
       state: account.state,
       reason: account.reason,
       netSettlementAmount: {
-        amount: account.netAmount,
+        amount: new MLNumber(account.netAmount).toNumber(),
         currency: account.currency
       }
     }
@@ -211,7 +213,7 @@ module.exports = {
             state: s.accountState,
             reason: s.accountReason,
             netSettlementAmount: {
-              amount: s.accountAmount,
+              amount: new MLNumber(s.accountAmount).toNumber(),
               currency: s.accountCurrency
             }
           }
