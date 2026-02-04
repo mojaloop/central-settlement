@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.3.3](https://github.com/mojaloop/central-settlement/compare/v17.3.2...v17.3.3) (2026-02-04)
+
+
+### Bug Fixes
+
+* remove trailing zeros in response amounts [#4302](https://github.com/mojaloop/central-settlement/issues/4302) ([#460](https://github.com/mojaloop/central-settlement/issues/460)) ([7be4dd8](https://github.com/mojaloop/central-settlement/commit/7be4dd804221bd227ef815024d164d0f2ef7072f))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([f2c0ec5](https://github.com/mojaloop/central-settlement/commit/f2c0ec5f508143e1bdf502252a97ae4e7007bed0))
+
 ### [17.3.2](https://github.com/mojaloop/central-settlement/compare/v17.3.1...v17.3.2) (2026-01-16)
 
 
