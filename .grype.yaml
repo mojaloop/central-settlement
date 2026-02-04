@@ -1,30 +1,8 @@
 ignore:
-  - vulnerability: CVE-2025-46394
-    reason: "No fixes to busybox apk available as of 2025-10-16 on Dockerfile base image 22.20.0-alpine3.22"
-  - vulnerability: CVE-2024-58251
-    reason: "No fixes to busybox apk available as of 2025-10-16 on Dockerfile base image 22.20.0-alpine3.22"
-  - vulnerability: CVE-2025-56200
-    include-aliases: true
-    reason: "No fixes available as of 2025-10-16 on validator npm package"
-  - vulnerability: GHSA-vghf-hv5q-vc2g
-    package:
-      name: validator
-      version: 13.7.0
-  - vulnerability: GHSA-5j98-mcp5-4vw2
-    package:
-      name: glob
-      version: 10.4.3
-  - vulnerability: GHSA-5j98-mcp5-4vw2
-    package:
-      name: glob
-      version: 10.4.5
-  - vulnerability: CVE-2025-60876 # busybox, ssl_client
-  - vulnerability: CVE-2025-60876
-    reason: "No fixes available as of 2026-01-14 on Dockerfile base image 22.21.1-alpine3.23"
-  - vulnerability: CVE-2026-22184
-    reason: "No fixes available as of 2026-01-14 on Dockerfile base image 22.21.1-alpine3.23"
-  - vulnerability: CVE-2025-64718
-    reason: "No fixes available as of 2026-01-14 on Dockerfile base image 22.21.1-alpine3.23"
+  - vulnerability: GHSA-34x7-hfp2-rc4v
+  - vulnerability: GHSA-r6q2-hw4h-h46w
+  - vulnerability: GHSA-3966-f6p6-2qr9
+  - vulnerability: GHSA-8qq5-rm4j-mr97
 
 # Set output format defaults
 output:
