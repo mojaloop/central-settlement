@@ -49,7 +49,7 @@ Test('SubServiceHealth test', function (subServiceHealthTest) {
   subServiceHealthTest.beforeEach(t => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Consumer, 'getListOfTopics')
-    sandbox.stub(Consumer, 'isConnected')
+    sandbox.stub(Consumer, 'getConsumer')
     t.end()
   })
 
@@ -109,8 +109,6 @@ Test('SubServiceHealth test', function (subServiceHealthTest) {
     brokerTest.test('broker test passes when there are no topics', async test => {
       // Arrange
       Consumer.getListOfTopics.returns([])
-      // allConnected should not be called if there are no topics
-      const allConnectedStub = sandbox.stub(Consumer, 'allConnected')
       const expected = { name: serviceName.broker, status: statusEnum.OK }
 
       // Act
@@ -118,16 +116,17 @@ Test('SubServiceHealth test', function (subServiceHealthTest) {
 
       // Assert
       test.deepEqual(result, expected, 'getSubServiceHealthBroker should match expected result')
-      test.equal(allConnectedStub.callCount, 0, 'allConnected should not be called')
+      test.equal(Consumer.getConsumer.callCount, 0, 'getConsumer should not be called')
       test.end()
     })
 
-    brokerTest.test('broker test fails when one broker cannot connect', async test => {
+    brokerTest.test('broker test fails when one consumer is not healthy', async test => {
       // Arrange
       Consumer.getListOfTopics.returns(['admin1', 'admin2'])
-      const allConnectedStub = sandbox.stub(Consumer, 'allConnected')
-      allConnectedStub.onFirstCall().resolves(true)
-      allConnectedStub.onSecondCall().resolves(false)
+      const mockConsumer1 = { isHealthy: sandbox.stub().resolves(true) }
+      const mockConsumer2 = { isHealthy: sandbox.stub().resolves(false) }
+      Consumer.getConsumer.onFirstCall().returns(mockConsumer1)
+      Consumer.getConsumer.onSecondCall().returns(mockConsumer2)
       const expected = { name: serviceName.broker, status: statusEnum.DOWN }
 
       // Act
@@ -135,16 +134,16 @@ Test('SubServiceHealth test', function (subServiceHealthTest) {
 
       // Assert
       test.deepEqual(result, expected, 'getSubServiceHealthBroker should match expected result')
-      test.equal(allConnectedStub.callCount, 2, 'allConnected should be called for each topic')
+      test.equal(Consumer.getConsumer.callCount, 2, 'getConsumer should be called for each topic')
       test.end()
     })
 
-    brokerTest.test('broker test fails when allConnected throws for a topic', async test => {
+    brokerTest.test('broker test fails when getConsumer throws for a topic', async test => {
       // Arrange
       Consumer.getListOfTopics.returns(['admin1', 'admin2'])
-      const allConnectedStub = sandbox.stub(Consumer, 'allConnected')
-      allConnectedStub.onFirstCall().resolves(true)
-      allConnectedStub.onSecondCall().throws(new Error('Not connected!'))
+      const mockConsumer = { isHealthy: sandbox.stub().resolves(true) }
+      Consumer.getConsumer.onFirstCall().returns(mockConsumer)
+      Consumer.getConsumer.onSecondCall().throws(new Error('No consumer found'))
       const expected = { name: serviceName.broker, status: statusEnum.DOWN }
 
       // Act
@@ -152,15 +151,33 @@ Test('SubServiceHealth test', function (subServiceHealthTest) {
 
       // Assert
       test.deepEqual(result, expected, 'getSubServiceHealthBroker should match expected result')
-      test.equal(allConnectedStub.callCount, 2, 'allConnected should be called for each topic')
+      test.equal(Consumer.getConsumer.callCount, 2, 'getConsumer should be called for each topic')
       test.end()
     })
 
-    brokerTest.test('Passes when all topics are connected', async test => {
+    brokerTest.test('broker test fails when isHealthy throws for a topic', async test => {
       // Arrange
       Consumer.getListOfTopics.returns(['admin1', 'admin2'])
-      const allConnectedStub = sandbox.stub(Consumer, 'allConnected')
-      allConnectedStub.resolves(true)
+      const mockConsumer1 = { isHealthy: sandbox.stub().resolves(true) }
+      const mockConsumer2 = { isHealthy: sandbox.stub().rejects(new Error('Health check failed')) }
+      Consumer.getConsumer.onFirstCall().returns(mockConsumer1)
+      Consumer.getConsumer.onSecondCall().returns(mockConsumer2)
+      const expected = { name: serviceName.broker, status: statusEnum.DOWN }
+
+      // Act
+      const result = await getSubServiceHealthBroker()
+
+      // Assert
+      test.deepEqual(result, expected, 'getSubServiceHealthBroker should match expected result')
+      test.equal(Consumer.getConsumer.callCount, 2, 'getConsumer should be called for each topic')
+      test.end()
+    })
+
+    brokerTest.test('Passes when all consumers are healthy', async test => {
+      // Arrange
+      Consumer.getListOfTopics.returns(['admin1', 'admin2'])
+      const mockConsumer = { isHealthy: sandbox.stub().resolves(true) }
+      Consumer.getConsumer.returns(mockConsumer)
       const expected = { name: serviceName.broker, status: statusEnum.OK }
 
       // Act
@@ -168,7 +185,7 @@ Test('SubServiceHealth test', function (subServiceHealthTest) {
 
       // Assert
       test.deepEqual(result, expected, 'getSubServiceHealthBroker should match expected result')
-      test.equal(allConnectedStub.callCount, 2, 'allConnected should be called for each topic')
+      test.equal(Consumer.getConsumer.callCount, 2, 'getConsumer should be called for each topic')
       test.end()
     })
 
