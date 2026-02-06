@@ -40,8 +40,12 @@ const MigrationLockModel = require('../../models/misc/migrationLock')
  * @function getSubServiceHealthBroker
  *
  * @description
- *   Gets the health for the broker, by checking that the consumer is
- *   connected for each topic
+ *   Gets the health for the broker, by checking that each consumer is healthy.
+ *   Uses the consumer's isHealthy() method from central-services-stream which performs:
+ *   - isConnected() - basic connection status
+ *   - isAssigned() - consumer has partition assignments
+ *   - isPollHealthy() - last poll was within healthCheckPollInterval
+ *   - getMetadataSync() - all subscribed topics exist in broker metadata
  *
  * @returns Promise<SubServiceHealth> The SubService health object for the broker
  */
@@ -51,17 +55,22 @@ const getSubServiceHealthBroker = async () => {
   try {
     const consumerTopics = Consumer.getListOfTopics()
     const results = await Promise.all(
-      consumerTopics.map(async (t) => {
+      consumerTopics.map(async (topic) => {
         try {
-          return await Consumer.allConnected(t)
+          const consumer = Consumer.getConsumer(topic)
+          const isHealthy = await consumer.isHealthy()
+          if (!isHealthy) {
+            logger.isWarnEnabled && logger.warn(`Consumer is not healthy for topic ${topic}`)
+          }
+          return isHealthy
         } catch (err) {
-          logger.warn(`allConnected threw for topic ${t}: `, err)
+          logger.isWarnEnabled && logger.warn(`isHealthy check failed for topic ${topic}: ${err.message}`)
           return false
         }
       })
     )
 
-    if (results.some(connected => !connected)) {
+    if (results.some(healthy => !healthy)) {
       status = statusEnum.DOWN
     }
   } catch (err) {
