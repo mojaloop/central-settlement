@@ -133,6 +133,7 @@
     },
     "overrides": {
         "@eslint/plugin-kit": "0.3.4",
+        "axios": "1.13.5",
         "ansi-regex": "5.0.1",
         "brace-expansion": "2.0.2",
         "fast-xml-parser": "5.3.4",
