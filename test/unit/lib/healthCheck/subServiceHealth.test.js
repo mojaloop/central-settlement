@@ -59,146 +59,89 @@ Test('SubServiceHealth test', function (subServiceHealthTest) {
   })
 
   subServiceHealthTest.test('getSubServiceHealthDatastore', datastoreTest => {
-    datastoreTest.test('datastore test passes when the database is not migration locked', async test => {
-      // Arrange
-      sandbox.stub(MigrationLockModel, 'getIsMigrationLocked').returns(false)
-      const expected = { name: serviceName.datastore, status: statusEnum.OK }
+    const datastoreTestCases = [
+      { name: 'passes when the database is not migration locked', stubMethod: 'returns', stubArg: false, expectedStatus: statusEnum.OK },
+      { name: 'fails when the database is migration locked', stubMethod: 'returns', stubArg: true, expectedStatus: statusEnum.DOWN },
+      { name: 'fails when getIsMigrationLocked throws', stubMethod: 'throws', stubArg: new Error('Error connecting to db'), expectedStatus: statusEnum.DOWN }
+    ]
 
-      // Act
-      const result = await getSubServiceHealthDatastore()
+    for (const { name, stubMethod, stubArg, expectedStatus } of datastoreTestCases) {
+      datastoreTest.test(name, async test => {
+        sandbox.stub(MigrationLockModel, 'getIsMigrationLocked')[stubMethod](stubArg)
+        const expected = { name: serviceName.datastore, status: expectedStatus }
 
-      // Assert
-      test.deepEqual(result, expected, 'getSubServiceHealthDatastore should match expected result')
-      test.ok(MigrationLockModel.getIsMigrationLocked.called)
-      test.end()
-    })
+        const result = await getSubServiceHealthDatastore()
 
-    datastoreTest.test('datastore test fails when the database is migration locked', async test => {
-      // Arrange
-
-      sandbox.stub(MigrationLockModel, 'getIsMigrationLocked').returns(true)
-      const expected = { name: serviceName.datastore, status: statusEnum.DOWN }
-
-      // Act
-      const result = await getSubServiceHealthDatastore()
-
-      // Assert
-      test.deepEqual(result, expected, 'getSubServiceHealthDatastore should match expected result')
-      test.ok(MigrationLockModel.getIsMigrationLocked.called)
-      test.end()
-    })
-
-    datastoreTest.test('datastore test fails when getIsMigrationLocked throws', async test => {
-      // Arrange
-      sandbox.stub(MigrationLockModel, 'getIsMigrationLocked').throws(new Error('Error connecting to db'))
-      const expected = { name: serviceName.datastore, status: statusEnum.DOWN }
-
-      // Act
-      const result = await getSubServiceHealthDatastore()
-
-      // Assert
-      test.deepEqual(result, expected, 'getSubServiceHealthDatastore should match expected result')
-      test.ok(MigrationLockModel.getIsMigrationLocked.called)
-      test.end()
-    })
+        test.deepEqual(result, expected, 'getSubServiceHealthDatastore should match expected result')
+        test.ok(MigrationLockModel.getIsMigrationLocked.called)
+        test.end()
+      })
+    }
 
     datastoreTest.end()
   })
 
   subServiceHealthTest.test('getSubServiceHealthBroker', brokerTest => {
-    brokerTest.test('broker test passes when there are no topics', async test => {
-      // Arrange
+    brokerTest.test('passes when there are no topics', async test => {
       Consumer.getListOfTopics.returns([])
-      const expected = { name: serviceName.broker, status: statusEnum.OK }
-
-      // Act
       const result = await getSubServiceHealthBroker()
 
-      // Assert
-      test.deepEqual(result, expected, 'getSubServiceHealthBroker should match expected result')
+      test.deepEqual(result, { name: serviceName.broker, status: statusEnum.OK }, 'getSubServiceHealthBroker should match expected result')
       test.equal(Consumer.getConsumer.callCount, 0, 'getConsumer should not be called')
       test.end()
     })
 
-    brokerTest.test('broker test fails when one consumer is not healthy', async test => {
-      // Arrange
-      Consumer.getListOfTopics.returns(['admin1', 'admin2'])
-      const mockConsumer1 = { isHealthy: sandbox.stub().resolves(true) }
-      const mockConsumer2 = { isHealthy: sandbox.stub().resolves(false) }
-      Consumer.getConsumer.onFirstCall().returns(mockConsumer1)
-      Consumer.getConsumer.onSecondCall().returns(mockConsumer2)
-      const expected = { name: serviceName.broker, status: statusEnum.DOWN }
+    const twoTopicBrokerCases = [
+      {
+        name: 'fails when one consumer is not healthy',
+        setup: (sb) => {
+          Consumer.getConsumer.onFirstCall().returns({ isHealthy: sb.stub().resolves(true) })
+          Consumer.getConsumer.onSecondCall().returns({ isHealthy: sb.stub().resolves(false) })
+        },
+        expectedStatus: statusEnum.DOWN
+      },
+      {
+        name: 'fails when getConsumer throws for a topic',
+        setup: (sb) => {
+          Consumer.getConsumer.onFirstCall().returns({ isHealthy: sb.stub().resolves(true) })
+          Consumer.getConsumer.onSecondCall().throws(new Error('No consumer found'))
+        },
+        expectedStatus: statusEnum.DOWN
+      },
+      {
+        name: 'fails when isHealthy rejects for a topic',
+        setup: (sb) => {
+          Consumer.getConsumer.onFirstCall().returns({ isHealthy: sb.stub().resolves(true) })
+          Consumer.getConsumer.onSecondCall().returns({ isHealthy: sb.stub().rejects(new Error('Health check failed')) })
+        },
+        expectedStatus: statusEnum.DOWN
+      },
+      {
+        name: 'passes when all consumers are healthy',
+        setup: (sb) => {
+          Consumer.getConsumer.returns({ isHealthy: sb.stub().resolves(true) })
+        },
+        expectedStatus: statusEnum.OK
+      }
+    ]
 
-      // Act
-      const result = await getSubServiceHealthBroker()
+    for (const { name, setup, expectedStatus } of twoTopicBrokerCases) {
+      brokerTest.test(name, async test => {
+        Consumer.getListOfTopics.returns(['admin1', 'admin2'])
+        setup(sandbox)
+        const result = await getSubServiceHealthBroker()
 
-      // Assert
-      test.deepEqual(result, expected, 'getSubServiceHealthBroker should match expected result')
-      test.equal(Consumer.getConsumer.callCount, 2, 'getConsumer should be called for each topic')
-      test.end()
-    })
+        test.deepEqual(result, { name: serviceName.broker, status: expectedStatus }, 'getSubServiceHealthBroker should match expected result')
+        test.equal(Consumer.getConsumer.callCount, 2, 'getConsumer should be called for each topic')
+        test.end()
+      })
+    }
 
-    brokerTest.test('broker test fails when getConsumer throws for a topic', async test => {
-      // Arrange
-      Consumer.getListOfTopics.returns(['admin1', 'admin2'])
-      const mockConsumer = { isHealthy: sandbox.stub().resolves(true) }
-      Consumer.getConsumer.onFirstCall().returns(mockConsumer)
-      Consumer.getConsumer.onSecondCall().throws(new Error('No consumer found'))
-      const expected = { name: serviceName.broker, status: statusEnum.DOWN }
-
-      // Act
-      const result = await getSubServiceHealthBroker()
-
-      // Assert
-      test.deepEqual(result, expected, 'getSubServiceHealthBroker should match expected result')
-      test.equal(Consumer.getConsumer.callCount, 2, 'getConsumer should be called for each topic')
-      test.end()
-    })
-
-    brokerTest.test('broker test fails when isHealthy throws for a topic', async test => {
-      // Arrange
-      Consumer.getListOfTopics.returns(['admin1', 'admin2'])
-      const mockConsumer1 = { isHealthy: sandbox.stub().resolves(true) }
-      const mockConsumer2 = { isHealthy: sandbox.stub().rejects(new Error('Health check failed')) }
-      Consumer.getConsumer.onFirstCall().returns(mockConsumer1)
-      Consumer.getConsumer.onSecondCall().returns(mockConsumer2)
-      const expected = { name: serviceName.broker, status: statusEnum.DOWN }
-
-      // Act
-      const result = await getSubServiceHealthBroker()
-
-      // Assert
-      test.deepEqual(result, expected, 'getSubServiceHealthBroker should match expected result')
-      test.equal(Consumer.getConsumer.callCount, 2, 'getConsumer should be called for each topic')
-      test.end()
-    })
-
-    brokerTest.test('Passes when all consumers are healthy', async test => {
-      // Arrange
-      Consumer.getListOfTopics.returns(['admin1', 'admin2'])
-      const mockConsumer = { isHealthy: sandbox.stub().resolves(true) }
-      Consumer.getConsumer.returns(mockConsumer)
-      const expected = { name: serviceName.broker, status: statusEnum.OK }
-
-      // Act
-      const result = await getSubServiceHealthBroker()
-
-      // Assert
-      test.deepEqual(result, expected, 'getSubServiceHealthBroker should match expected result')
-      test.equal(Consumer.getConsumer.callCount, 2, 'getConsumer should be called for each topic')
-      test.end()
-    })
-
-    brokerTest.test('broker test fails when getListOfTopics throws', async test => {
-      // Arrange
+    brokerTest.test('fails when getListOfTopics throws', async test => {
       Consumer.getListOfTopics.throws(new Error('Failed to get topics'))
-      const expected = { name: serviceName.broker, status: statusEnum.DOWN }
-
-      // Act
       const result = await getSubServiceHealthBroker()
 
-      // Assert
-      test.deepEqual(result, expected, 'getSubServiceHealthBroker should match expected result')
+      test.deepEqual(result, { name: serviceName.broker, status: statusEnum.DOWN }, 'getSubServiceHealthBroker should match expected result')
       test.end()
     })
 
