@@ -3,5 +3,6 @@ reject: [
   # @hapi/catbox-memory v6 and onwards breaks tests. Needs investigation.
   "@hapi/catbox-memory",
   # joi v18 and onwards, is blocked by hapi-swagger@17.3.2 designed to work with Joi v17
-  "joi"
+  "joi",
+  "eslint"  # eslint v10.x.x was release 4 days ago and is not compatible with standard
 ]
