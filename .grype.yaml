@@ -1,3 +1,5 @@
+scan-type: source
+
 ignore:
   - vulnerability: GHSA-34x7-hfp2-rc4v
   - vulnerability: GHSA-r6q2-hw4h-h46w
