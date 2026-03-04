@@ -35,6 +35,7 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const Enum = require('@mojaloop/central-services-shared').Enum
 const Logger = require('@mojaloop/central-services-logger')
 const SettlementModelModel = require('../settlement/settlementModel')
+const MLNumber = require('@mojaloop/ml-number')
 
 const Facade = {
   getById: async function ({ settlementWindowId }) {
@@ -229,13 +230,14 @@ const Facade = {
             throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `No ledger entries found for this settlement window`);
           }
           
-          let balanced = 0;
+          let balanced = new MLNumber(0);
           const pCurrencyIds = [];
           for (const entry of ledgerEntries) {
-            balanced += Number(entry.change);
+            balanced = balanced.add(entry.change);
             pCurrencyIds.push(entry.participantCurrencyId);
           }
-          if (balanced !== 0) {
+          Logger.info(`balanced is ${balanced.toNumber()}`);
+          if (balanced.toNumber() !== 0) {
             throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Debits and credits are not balanced yet`);
           }
 
