@@ -236,7 +236,6 @@ const Facade = {
             balanced = balanced.add(entry.change);
             pCurrencyIds.push(entry.participantCurrencyId);
           }
-          Logger.info(`balanced is ${balanced.toNumber()}`);
           if (balanced.toNumber() !== 0) {
             throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Debits and credits are not balanced yet`);
           }
