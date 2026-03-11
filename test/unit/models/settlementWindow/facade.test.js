@@ -761,16 +761,170 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
         }
       })
 
-      await closeTest.test('close the specified open window successfully.', async test => {
+      await closeTest.test('close throws when transfers have incomplete position changes', async test => {
         try {
+          sandbox.stub(SettlementModel, 'getAll').resolves([
+            {
+              settlementModelId: 1,
+              name: 'DEFERREDNETUSD',
+              isActive: true,
+              currencyId: 'USD',
+              ledgerAccountTypeId: 'POSITION'
+            }
+          ])
+
           const knexStub = sandbox.stub()
           knexStub.raw = sandbox.stub()
           knexStub.from = sandbox.stub()
           const trxStub = sandbox.stub()
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
           const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
-          const context = sandbox.stub()
-          const context2 = sandbox.stub()
+
+          // Stub completeness check queries
+          const countDistinctStub = sandbox.stub()
+          const firstStub = sandbox.stub()
+          const transactingStub = sandbox.stub()
+
+          // totalTransfers = 5
+          knexStub.withArgs('transferFulfilment AS tf').returns({
+            where: sandbox.stub().returns({
+              countDistinct: countDistinctStub.returns({
+                first: firstStub.returns({
+                  transacting: transactingStub.returns({ cnt: 5 })
+                })
+              })
+            })
+          })
+
+          // completeTransfers = 4 (one incomplete)
+          knexStub.withArgs('transferFulfilment AS tf').onSecondCall().returns({
+            join: sandbox.stub().returns({
+              join: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  countDistinct: sandbox.stub().returns({
+                    first: sandbox.stub().returns({
+                      transacting: sandbox.stub().returns({ cnt: 4 })
+                    })
+                  })
+                })
+              })
+            })
+          })
+
+          // totalFxTransfers = 0
+          knexStub.withArgs('fxTransferFulfilment AS ftf').returns({
+            where: sandbox.stub().returns({
+              countDistinct: sandbox.stub().returns({
+                first: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns({ cnt: 0 })
+                })
+              })
+            })
+          })
+
+          // completeFxTransfers = 0
+          knexStub.withArgs('fxTransferFulfilment AS ftf').onSecondCall().returns({
+            join: sandbox.stub().returns({
+              join: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  countDistinct: sandbox.stub().returns({
+                    first: sandbox.stub().returns({
+                      transacting: sandbox.stub().returns({ cnt: 0 })
+                    })
+                  })
+                })
+              })
+            })
+          })
+
+          Db.getKnex.returns(knexStub)
+          SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
+          await SettlementWindowFacade.close(params, enums)
+
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          test.ok(err.message.includes('pending position changes'), `Error "${err.message}" thrown as expected`)
+          test.end()
+        }
+      })
+
+      await closeTest.test('close throws when aggregation is imbalanced', async test => {
+        try {
+          sandbox.stub(SettlementModel, 'getAll').resolves([{
+            settlementModelId: 1,
+            name: 'DEFERREDNETUSD',
+            isActive: true,
+            currencyId: 'USD',
+            ledgerAccountTypeId: 'POSITION'
+          }])
+
+          const knexStub = sandbox.stub()
+          knexStub.raw = sandbox.stub().returnsThis()
+          const trxStub = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
+
+          // Helper: create chainable query stub resolving to given result
+          const makeChain = (result) => {
+            const chain = {}
+            const methods = ['where', 'join', 'countDistinct', 'first', 'andWhere',
+              'groupBy', 'select', 'sum', 'distinct', 'as', 'unionAll', 'from',
+              'on', 'insert', 'update']
+            for (const m of methods) {
+              chain[m] = sandbox.stub().returns(chain)
+            }
+            chain.transacting = sandbox.stub().resolves(result)
+            return chain
+          }
+
+          // Completeness check: all counts match (passes)
+          knexStub.withArgs('transferFulfilment AS tf').returns(makeChain({ cnt: 3 }))
+          knexStub.withArgs('fxTransferFulfilment AS ftf').returns(makeChain({ cnt: 0 }))
+
+          // swcList (knex.from(fn).as(...)) and aggregation insert (knex.from(raw).insert(...))
+          const fromStub = sandbox.stub()
+          fromStub.returns(makeChain([]))
+          fromStub.onCall(1).returns(makeChain(undefined))
+          knexStub.from = fromStub
+
+          // Balance check: imbalanced result
+          knexStub.withArgs('settlementContentAggregation AS sca').returns(
+            makeChain([{ settlementWindowContentId: 1, totalAmount: '1.0000' }])
+          )
+
+          Db.getKnex = sandbox.stub().returns(knexStub)
+          SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
+          await SettlementWindowFacade.close(params, enums)
+
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          test.ok(err.message.includes('imbalanced'), `Error "${err.message}" thrown as expected`)
+          test.end()
+        }
+      })
+
+      await closeTest.test('close the specified open window successfully.', async test => {
+        try {
+          const knexStub = sandbox.stub()
+          knexStub.raw = sandbox.stub().returnsThis()
+          const trxStub = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
+
+          // Helper: create chainable query stub resolving to given result
+          const makeChain = (result) => {
+            const chain = {}
+            const methods = ['where', 'join', 'countDistinct', 'first', 'andWhere',
+              'groupBy', 'select', 'sum', 'distinct', 'as', 'unionAll', 'from',
+              'on', 'insert', 'update']
+            for (const m of methods) {
+              chain[m] = sandbox.stub().returns(chain)
+            }
+            chain.transacting = sandbox.stub().resolves(result)
+            return chain
+          }
 
           sandbox.stub(SettlementModel, 'getAll').resolves([
             {
@@ -780,7 +934,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
               settlementGranularity: 'NET',
               settlementInterchange: 'MULTILATERAL',
               settlementDelay: 'DEFERRED',
-              currency: 'USD',
+              currencyId: 'USD',
               requireLiquidityCheck: true,
               ledgerAccountTypeId: 'POSITION',
               autoPositionReset: true
@@ -792,74 +946,52 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
               settlementGranularity: 'NET',
               settlementInterchange: 'MULTILATERAL',
               settlementDelay: 'DEFERRED',
-              currency: null,
+              currencyId: null,
               requireLiquidityCheck: true,
               ledgerAccountTypeId: 'POSITION',
               autoPositionReset: true
             }
           ])
 
-          Db.transferParticipant = {
-            join: sandbox.stub()
-          }
-
-          Db.participantCurrency = {
-            join: sandbox.stub()
-          }
-
-          Db.settlementWindowContent = {
-            join: sandbox.stub()
-          }
-
-          Db.transferParticipant.join.callsArgWith(0, builderStub)
-          Db.participantCurrency.join.callsArgWith(0, builderStub)
-          Db.settlementWindowContent.join.callsArgWith(0, builderStub)
-          // Db.transferFulfilment.join.callsArgWith(0, builderStub)
-
-          const infoDataStub = {
-            settlementWindowContentId: 4,
-            settlementWindowContentStateChangeId: 4
-          }
-
           Db.getKnex.returns(knexStub)
 
-          // Insert settlementContentAggregation
-          context2.on = sandbox.stub().returns({
-            on: sandbox.stub().returns({
-              on: sandbox.stub()
-            })
-          })
-          context.from = sandbox.stub().returns({
-            join: sandbox.stub().returns({
-              join: sandbox.stub().returns({
-                join: sandbox.stub().callsArgOn(1, context2).returns({
-                  join: sandbox.stub().returns({
-                    where: sandbox.stub().returns({
-                      andWhere: sandbox.stub().returns({
-                        groupBy: sandbox.stub().returns({
-                          select: sandbox.stub().returns({
-                            sum: sandbox.stub()
-                          })
-                        })
-                      })
-                    })
-                  })
-                }),
-                where: sandbox.stub().returns({
-                  distinct: sandbox.stub()
-                })
-              })
-            }),
+          // Pre-aggregation completeness check stubs (all counts match = passes)
+          knexStub.withArgs('transferFulfilment AS tf').returns(makeChain({ cnt: 2 }))
+          knexStub.withArgs('fxTransferFulfilment AS ftf').returns(makeChain({ cnt: 0 }))
+
+          // Post-aggregation balance validation stub (empty = balanced = passes)
+          knexStub.withArgs('settlementContentAggregation AS sca').returns(makeChain([]))
+
+          // swcList query (call 0), aggregation insert (call 1), state change insert (call 2)
+          const fromStub = sandbox.stub()
+          fromStub.onCall(0).returns(makeChain([
+            {
+              settlementWindowId: 1,
+              ledgerAccountTypeId: 1,
+              currencyId: 'USD',
+              settlementModelId: 1
+            }
+          ]))
+          fromStub.onCall(1).returns(makeChain(undefined))
+          fromStub.onCall(2).returns(makeChain(undefined))
+          knexStub.from = fromStub
+
+          // settlementWindowContent: insert (from forEach) and where/update (from pointer update)
+          const swcStub = {
+            insert: sandbox.stub().returns({ transacting: sandbox.stub() }),
             where: sandbox.stub().returns({
-              select: sandbox.stub()
+              update: sandbox.stub().returns({
+                transacting: sandbox.stub()
+              })
             })
-          })
+          }
+          knexStub.withArgs('settlementWindowContent').returns(swcStub)
 
-          knexStub.from = sandbox.stub().returns({
-            insert: sandbox.stub().callsArgOn(0, context).returns({ transacting: sandbox.stub() })
-          })
-
-          // Update settlementWindowContent pointers to current states, inserted by previous command
+          // Update settlementWindowContent pointers to current states
+          const infoDataStub = [{
+            settlementWindowContentId: 4,
+            settlementWindowContentStateChangeId: 4
+          }]
           knexStub.withArgs('settlementWindowContentStateChange AS swcsc').returns({
             join: sandbox.stub().returns({
               select: sandbox.stub().returns({
@@ -869,63 +1001,27 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
               })
             })
           })
-          knexStub.withArgs('settlementWindowContent').returns({
-            where: sandbox.stub().returns({
-              update: sandbox.stub().returns({
-                transacting: sandbox.stub()
-              })
-            })
-          })
 
           knexStub.withArgs('settlementWindowStateChange').returns({
-            transacting: sandbox.stub().returns({
-              insert: sandbox.stub().returns(1)
+            insert: sandbox.stub().returns({
+              transacting: sandbox.stub().resolves(1)
             })
           })
           knexStub.withArgs('settlementWindow').returns({
-            transacting: sandbox.stub().returns({
-              where: sandbox.stub().returns({
-                update: sandbox.stub().returns(1)
-              })
-            })
-          })
-
-          knexStub.from.withArgs('transferFulfilment AS tf').returns({
-            join: sandbox.stub().returns({
-              join: sandbox.stub().returns({
-                join: sandbox.stub().returns({
-                  where: sandbox.stub().returns({
-                    andWhere: sandbox.stub().returns({
-                      distinct: sandbox.stub().returns({
-                        transacting: sandbox.stub().resolves([
-                          {
-                            settlementWindowId: 31,
-                            ledgerAccountTypeId: 1,
-                            currencyId: 'USD',
-                            settlementModelId: 2
-                          },
-                          {
-                            settlementWindowId: 31,
-                            ledgerAccountTypeId: 1,
-                            currencyId: 'USD',
-                            settlementModelId: 1
-                          }
-                        ])
-                      })
-                    })
-                  })
-                })
+            where: sandbox.stub().returns({
+              update: sandbox.stub().returns({
+                transacting: sandbox.stub().resolves(1)
               })
             })
           })
 
           SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
           const result = await SettlementWindowFacade.close(params, enums)
-          test.ok(result, true)
+          test.ok(result, 'Result returned')
           test.end()
         } catch (err) {
           logger.error('Close settlementwindow failed with error : ' + err)
-          test.pass('Error thrown incorrectly')
+          test.fail(`Error thrown unexpectedly: ${err.message}`)
           test.end()
         }
       })

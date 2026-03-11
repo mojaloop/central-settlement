@@ -196,6 +196,44 @@ const Facade = {
             smMap[sm.settlementModelId] = sm
           }
           const settlementModelCurrenciesList = allSettlementModels.filter(record => record.currencyId !== null).map(record => record.currencyId)
+
+          // Pre-aggregation completeness check: verify all transfers have position changes
+          const totalTransfers = await knex('transferFulfilment AS tf')
+            .where('tf.settlementWindowId', settlementWindowId)
+            .countDistinct('tf.transferId as cnt')
+            .first()
+            .transacting(trx)
+
+          const completeTransfers = await knex('transferFulfilment AS tf')
+            .join('transferStateChange AS tsc', 'tsc.transferId', 'tf.transferId')
+            .join('participantPositionChange AS ppc', 'ppc.transferStateChangeId', 'tsc.transferStateChangeId')
+            .where('tf.settlementWindowId', settlementWindowId)
+            .countDistinct('tf.transferId as cnt')
+            .first()
+            .transacting(trx)
+
+          const totalFxTransfers = await knex('fxTransferFulfilment AS ftf')
+            .where('ftf.settlementWindowId', settlementWindowId)
+            .countDistinct('ftf.commitRequestId as cnt')
+            .first()
+            .transacting(trx)
+
+          const completeFxTransfers = await knex('fxTransferFulfilment AS ftf')
+            .join('fxTransferStateChange AS ftsc', 'ftsc.commitRequestId', 'ftf.commitRequestId')
+            .join('participantPositionChange AS ppc', 'ppc.fxTransferStateChangeId', 'ftsc.fxTransferStateChangeId')
+            .where('ftf.settlementWindowId', settlementWindowId)
+            .countDistinct('ftf.commitRequestId as cnt')
+            .first()
+            .transacting(trx)
+
+          if (totalTransfers.cnt !== completeTransfers.cnt || totalFxTransfers.cnt !== completeFxTransfers.cnt) {
+            const incompleteCount = (totalTransfers.cnt - completeTransfers.cnt) + (totalFxTransfers.cnt - completeFxTransfers.cnt)
+            throw ErrorHandler.Factory.createFSPIOPError(
+              ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR,
+              `Window ${settlementWindowId} has ${incompleteCount} transfers with pending position changes`
+            )
+          }
+
           const swcList = await knex
             .from(/* istanbul ignore next */ function () {
               this.select('tf.settlementWindowId', 'ppc.participantCurrencyId')
@@ -266,6 +304,23 @@ const Facade = {
             })
             .transacting(trx)
           await builder
+
+          // Post-aggregation balance validation
+          const balanceCheck = await knex('settlementContentAggregation AS sca')
+            .join('settlementWindowContent AS swc', 'swc.settlementWindowContentId', 'sca.settlementWindowContentId')
+            .where('swc.settlementWindowId', settlementWindowId)
+            .groupBy('swc.settlementWindowContentId')
+            .select('swc.settlementWindowContentId')
+            .sum('sca.amount AS totalAmount')
+            .transacting(trx)
+
+          const imbalanced = balanceCheck.filter(row => parseFloat(row.totalAmount) !== 0)
+          if (imbalanced.length > 0) {
+            throw ErrorHandler.Factory.createFSPIOPError(
+              ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR,
+              `Window ${settlementWindowId} has imbalanced aggregation for content IDs: ${imbalanced.map(r => r.settlementWindowContentId).join(', ')}`
+            )
+          }
 
           // Insert settlementWindowContentStateChange
           builder = knex
