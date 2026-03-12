@@ -214,30 +214,30 @@ const Facade = {
           const ledgerEntries = await knex
             .select('ppc.participantCurrencyId', 'ppc.change')
             .from('transferFulfilment AS tf')
-                .join('transferStateChange AS tsc', 'tsc.transferId', 'tf.transferId')
-                .join('participantPositionChange AS ppc', 'ppc.transferStateChangeId', 'tsc.transferStateChangeId')
-                .where('tf.settlementWindowId', settlementWindowId)
-                .unionAll(/* istanbul ignore next */ function () {
-                  this.select('ppc.participantCurrencyId', 'ppc.change')
-                    .from('fxTransferFulfilment AS fxtf')
-                    .join('fxTransferStateChange AS fxtsc', 'fxtsc.commitRequestId', 'fxtf.commitRequestId')
-                    .join('participantPositionChange AS ppc', 'ppc.fxTransferStateChangeId', 'fxtsc.fxTransferStateChangeId')
-                    .where('fxtf.settlementWindowId', settlementWindowId)
-                })
-                .transacting(trx);
-          
+            .join('transferStateChange AS tsc', 'tsc.transferId', 'tf.transferId')
+            .join('participantPositionChange AS ppc', 'ppc.transferStateChangeId', 'tsc.transferStateChangeId')
+            .where('tf.settlementWindowId', settlementWindowId)
+            .unionAll(/* istanbul ignore next */ function () {
+              this.select('ppc.participantCurrencyId', 'ppc.change')
+                .from('fxTransferFulfilment AS fxtf')
+                .join('fxTransferStateChange AS fxtsc', 'fxtsc.commitRequestId', 'fxtf.commitRequestId')
+                .join('participantPositionChange AS ppc', 'ppc.fxTransferStateChangeId', 'fxtsc.fxTransferStateChangeId')
+                .where('fxtf.settlementWindowId', settlementWindowId)
+            })
+            .transacting(trx)
+
           if (!ledgerEntries.length) {
-            throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `No ledger entries found for this settlement window`);
+            throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'No ledger entries found for this settlement window')
           }
-          
-          let balanced = new MLNumber(0);
-          const pCurrencyIds = [];
+
+          let balanced = new MLNumber(0)
+          const pCurrencyIds = []
           for (const entry of ledgerEntries) {
-            balanced = balanced.add(entry.change);
-            pCurrencyIds.push(entry.participantCurrencyId);
+            balanced = balanced.add(entry.change)
+            pCurrencyIds.push(entry.participantCurrencyId)
           }
           if (balanced.toNumber() !== 0) {
-            throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `Debits and credits are not balanced yet`);
+            throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Debits and credits are not balanced yet')
           }
 
           const transactionTimestamp = new Date()
