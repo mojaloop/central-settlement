@@ -30,7 +30,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const SettlementWindowStateChangeModel = require('../../../../src/models/settlementWindow/settlementWindowStateChange')
 const Db = require('../../../../src/lib/db')
 
@@ -82,7 +82,7 @@ Test('SettlementModel', async (settlementWindowStateChangeModelTest) => {
           }
           test.end()
         } catch (err) {
-          Logger.error(`createTest failed with error - ${err}`)
+          logger.error(`createTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -90,7 +90,7 @@ Test('SettlementModel', async (settlementWindowStateChangeModelTest) => {
 
       await createTest.end()
     } catch (err) {
-      Logger.error(`settlementWindowStateChangeModelTest failed with error - ${err}`)
+      logger.error(`settlementWindowStateChangeModelTest failed with error - ${err}`)
       createTest.fail()
       createTest.end()
     }
@@ -154,7 +154,7 @@ Test('SettlementModel', async (settlementWindowStateChangeModelTest) => {
 
       await getBySettlementWindowIdTest.end()
     } catch (err) {
-      Logger.error(`getBySettlementWindowIdTest failed with error - ${err}`)
+      logger.error(`getBySettlementWindowIdTest failed with error - ${err}`)
       getBySettlementWindowIdTest.fail()
       getBySettlementWindowIdTest.end()
     }

@@ -30,7 +30,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const SettlementModel = require('../../../../src/models/settlement/settlement')
 const Db = require('../../../../src/lib/db')
 
@@ -80,7 +80,7 @@ Test('SettlementModel', async (settlementModelTest) => {
           }
           test.end()
         } catch (err) {
-          Logger.error(`createTest failed with error - ${err}`)
+          logger.error(`createTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -88,7 +88,7 @@ Test('SettlementModel', async (settlementModelTest) => {
 
       await createTest.end()
     } catch (err) {
-      Logger.error(`settlementModelTest failed with error - ${err}`)
+      logger.error(`settlementModelTest failed with error - ${err}`)
       createTest.fail()
       createTest.end()
     }
@@ -131,7 +131,7 @@ Test('SettlementModel', async (settlementModelTest) => {
           test.deepEqual(result, settlement, 'results match')
           test.end()
         } catch (err) {
-          Logger.error(`getByIdTest failed with error - ${err}`)
+          logger.error(`getByIdTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -139,7 +139,7 @@ Test('SettlementModel', async (settlementModelTest) => {
 
       await getByIdTest.end()
     } catch (err) {
-      Logger.error(`settlementModelTest failed with error - ${err}`)
+      logger.error(`settlementModelTest failed with error - ${err}`)
       getByIdTest.fail()
       getByIdTest.end()
     }

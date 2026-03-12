@@ -32,7 +32,7 @@ const Sinon = require('sinon')
 const Mockgen = require('../../../../data/mockgen.js')
 const Base = require('../../../base')
 const Enums = require('../../../../../src/models/lib/enums')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../../src/shared/logger')
 const settlement = require('../../../../../src/domain/settlement/index')
 const Db = require('../../../../../src/lib/db')
 const CLDb = require('@mojaloop/central-ledger/src/lib/db')
@@ -107,7 +107,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       t.equal(response.statusCode, 200, 'Ok response status')
       t.end()
     } catch (e) {
-      Logger.error(`testing error ${e}`)
+      logger.error(`testing error ${e}`)
       t.fail()
       t.end()
     }
@@ -154,7 +154,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       t.equal(response.statusCode, 500, 'Ok response status')
       t.end()
     } catch (e) {
-      Logger.error(`testing error ${e}`)
+      logger.error(`testing error ${e}`)
       t.fail()
       t.end()
     }
@@ -213,7 +213,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       t.equal(response.statusCode, 200, 'Ok response status')
       t.end()
     } catch (e) {
-      Logger.error(`testing error ${e}`)
+      logger.error(`testing error ${e}`)
       t.fail()
       t.end()
     }
@@ -271,7 +271,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       t.equal(response.statusCode, 200, 'Ok response status')
       t.end()
     } catch (e) {
-      Logger.error(`testing error ${e}`)
+      logger.error(`testing error ${e}`)
       t.fail()
       t.end()
     }
@@ -331,7 +331,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       t.equal(response.result.errorInformation.errorDescription, 'Generic validation error - Invalid request payload input', 'Response result message matched')
       t.end()
     } catch (e) {
-      Logger.error(`testing error ${e}`)
+      logger.error(`testing error ${e}`)
       t.fail()
       t.end()
     }
@@ -388,7 +388,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       t.equal(response.statusCode, 400, 'Bad Request response status')
       t.end()
     } catch (e) {
-      Logger.error(`testing error ${e}`)
+      logger.error(`testing error ${e}`)
       t.fail()
       t.end()
     }
@@ -445,7 +445,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       t.equal(response.statusCode, 500, 'Bad Request response status')
       t.end()
     } catch (e) {
-      Logger.error(`testing error ${e}`)
+      logger.error(`testing error ${e}`)
       t.fail()
       t.end()
     }
@@ -498,7 +498,7 @@ Test('/settlements/{id}', async (settlementTest) => {
       t.equal(response.statusCode, 400, 'Bad Request response status')
       t.end()
     } catch (e) {
-      Logger.error(`testing error ${e}`)
+      logger.error(`testing error ${e}`)
       t.fail()
       t.end()
     }

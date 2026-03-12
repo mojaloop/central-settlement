@@ -41,7 +41,7 @@ const KafkaUtil = require('@mojaloop/central-services-shared').Util.Kafka
 const SettlementWindowModel = require('../../models/settlementWindow')
 const SettlementWindowContentModel = require('../../models/settlementWindowContent')
 const StreamingProtocol = require('@mojaloop/central-services-shared').Util.StreamingProtocol
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../shared/logger')
 const idGenerator = require('@mojaloop/central-services-shared').Util.id
 const generateULID = idGenerator({ type: 'ulid' })
 
@@ -57,12 +57,12 @@ module.exports = {
         return settlementWindow
       } else {
         const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No records for settlementWidowContentId : ${params.settlementWindowId} found`)
-        Logger.isErrorEnabled && Logger.error(error)
+        logger.error(error)
         throw error
       }
     } else {
       const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No record for settlementWindowId: ${params.settlementWindowId} found`)
-      Logger.isErrorEnabled && Logger.error(error)
+      logger.error(error)
       throw error
     }
   },
@@ -78,19 +78,19 @@ module.exports = {
             settlementWindow.content = settlementWindowContent
           } else {
             const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, `No records for settlementWidowContentId : ${settlementWindow.settlementWindowId} found`)
-            Logger.isErrorEnabled && Logger.error(error)
+            logger.error(error)
             throw error
           }
         }
         return settlementWindows
       } else {
         const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
-        Logger.isErrorEnabled && Logger.error(error)
+        logger.error(error)
         throw error
       }
     } else {
       const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Use at least one parameter: participantId, state, fromDateTime, toDateTime, currency')
-      Logger.isErrorEnabled && Logger.error(error)
+      logger.error(error)
       throw error
     }
   },

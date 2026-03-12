@@ -35,7 +35,7 @@ const Sinon = require('sinon')
 const Config = require('../../../src/lib/config')
 const Proxyquire = require('proxyquire')
 const Routes = require('../../../src/api/handlerRoutes')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../src/shared/logger')
 
 Test('cli', async (cliTest) => {
   cliTest.test('Commander should', async (commanderTest) => {
@@ -44,8 +44,8 @@ Test('cli', async (cliTest) => {
 
     commanderTest.beforeEach(test => {
       sandbox = Sinon.createSandbox()
-      sandbox.stub(Logger, 'isDebugEnabled').value(true)
-      sandbox.stub(Logger, 'debug')
+      sandbox.stub(logger, 'isDebugEnabled').value(true)
+      sandbox.stub(logger, 'debug')
       SetupStub = {
         initialize: sandbox.stub().returns(Promise.resolve())
       }

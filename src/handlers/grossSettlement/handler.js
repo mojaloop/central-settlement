@@ -39,7 +39,7 @@ const Enum = require('@mojaloop/central-services-shared').Enum
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const EventSdk = require('@mojaloop/event-sdk')
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../shared/logger')
 const Producer = require('@mojaloop/central-services-stream').Util.Producer
 const retry = require('async-retry')
 const transferSettlementService = require('../../domain/transferSettlement')
@@ -57,16 +57,16 @@ const RETRY_OPTIONS = {
 
 async function processTransferSettlement (error, messages) {
   if (error) {
-    Logger.isErrorEnabled && Logger.error(error)
+    logger.error(error)
     throw ErrorHandler.Factory.reformatFSPIOPError(error)
   }
-  Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(LOG_LOCATION, messages))
+  logger.info(Utility.breadcrumb(LOG_LOCATION, messages))
   const message = Array.isArray(messages) ? messages[0] : messages
   const contextFromMessage = EventSdk.Tracer.extractContextFromMessage(message.value)
   const span = EventSdk.Tracer.createChildSpanFromContext('cs_process_transfer_settlement_window', contextFromMessage)
 
   try {
-    Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(LOG_LOCATION, { method: 'processTransferSettlement' }))
+    logger.info(Utility.breadcrumb(LOG_LOCATION, { method: 'processTransferSettlement' }))
     const payload = message.value.content.payload
     const uriParams = message.value.content.uriParams
     const headers = message.value.content.headers
@@ -91,13 +91,13 @@ async function processTransferSettlement (error, messages) {
       : Enum.Events.ActionLetter.unknown
 
     if (!payload) {
-      Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(LOG_LOCATION, `missingPayload--${actionLetter}1`))
+      logger.info(Utility.breadcrumb(LOG_LOCATION, `missingPayload--${actionLetter}1`))
       const fspiopError = ErrorHandler.Factory.createInternalServerFSPIOPError('TransferSettlement handler missing payload')
       const eventDetail = { functionality: Enum.Events.Event.Type.NOTIFICATION, action: Enum.Events.Event.Action.SETTLEMENT_WINDOW }
       await Kafka.proceed(Config.KAFKA_CONFIG, params, { CONSUMER_COMMIT, fspiopError: fspiopError.toApiErrorObject(Config.ERROR_HANDLING), eventDetail, FROM_SWITCH })
       throw fspiopError
     }
-    Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(LOG_LOCATION, 'validationPassed'))
+    logger.info(Utility.breadcrumb(LOG_LOCATION, 'validationPassed'))
 
     if (transferEventAction === Enum.Events.Event.Action.COMMIT) {
       await retry(async () => { // use bail(new Error('to break before max retries'))
@@ -109,13 +109,13 @@ async function processTransferSettlement (error, messages) {
             throw ErrorHandler.Factory.reformatFSPIOPError(err)
           }
         })
-        Logger.isInfoEnabled && Logger.info(Utility.breadcrumb(LOG_LOCATION, `done--${actionLetter}2`))
+        logger.info(Utility.breadcrumb(LOG_LOCATION, `done--${actionLetter}2`))
         return true
       }, RETRY_OPTIONS)
       return true
     }
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(`${Utility.breadcrumb(LOG_LOCATION)}::${err.message}--0`, err)
+    logger.error(`${Utility.breadcrumb(LOG_LOCATION)}::${err.message}--0`, err)
     const fspiopError = ErrorHandler.Factory.reformatFSPIOPError(err)
     const state = new EventSdk.EventStateMetadata(
       EventSdk.EventStatusType.failed,
@@ -150,7 +150,7 @@ async function registerTransferSettlement () {
     await Consumer.createHandler(transferFulfillHandler.topicName, transferFulfillHandler.config, transferFulfillHandler.command)
     return true
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
+    logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
@@ -168,7 +168,7 @@ async function registerAllHandlers () {
     await registerTransferSettlement()
     return true
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
+    logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }

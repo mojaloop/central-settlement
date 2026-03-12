@@ -33,20 +33,35 @@ const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 const ilpPacket = require('ilp-packet')
 const base64url = require('base64url')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../shared/logger')
 
 const getById = async (id) => {
   try {
     return await IlpPacket.getById(id)
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
+    logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
+
 const decodeIlpPacket = async (inputIlpPacket) => {
   const binaryPacket = Buffer.from(inputIlpPacket, 'base64')
-  return ilpPacket.deserializeIlpPayment(binaryPacket)
+
+  // Try ILPv4 first
+  try {
+    return ilpPacket.deserializeIlpPrepare(binaryPacket)
+  } catch (v4Error) {
+    logger.debug('Failed to decode as ILPv4, attempting ILPv1')
+    // Fall back to ILPv1
+    try {
+      return ilpPacket.deserializeIlpPayment(binaryPacket)
+    } catch (v1Error) {
+      logger.error('Failed to decode ILP packet as both v4 and v1', { v4Error, v1Error })
+      throw v1Error
+    }
+  }
 }
+
 /**
  * Get the transaction object in the data field of an Ilp packet
  *
@@ -58,7 +73,7 @@ const getTransactionObject = async function (inputIlpPacket) {
     const decodedData = base64url.decode(jsonPacket.data.toString())
     return JSON.parse(decodedData)
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
+    logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }

@@ -30,7 +30,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
+const logger = require('@mojaloop/central-services-logger')
 const MLNumber = require('@mojaloop/ml-number')
 const SettlementTransferData = require('./settlementTransferData')
 const Models = require('../helpers/models')
@@ -170,7 +170,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
 
       test.end()
     } catch (err) {
-      Logger.error(`settlementTransferTest failed with error - ${err}`)
+      logger.error(`settlementTransferTest failed with error - ${err}`)
       test.fail()
       test.end()
     }
@@ -209,7 +209,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       test.equal(settlementState.settlementStateId, enums.settlementStates.PENDING_SETTLEMENT, '#19 settlement state is PENDING_SETTLEMENT')
       test.end()
     } catch (err) {
-      Logger.error(`settlementTransferTest failed with error - ${err}`)
+      logger.error(`settlementTransferTest failed with error - ${err}`)
       test.fail()
       test.end()
     }
@@ -281,7 +281,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       test.ok(hubTransferParticipant.amount > 0, `#25 CR settlement transfer for SETTLEMENT_NET_SENDER is positive for hub ${hubTransferParticipant.amount}`)
       test.end()
     } catch (err) {
-      Logger.error(`settlementTransferTest failed with error - ${err}`)
+      logger.error(`settlementTransferTest failed with error - ${err}`)
       test.fail()
       test.end()
     }
@@ -334,7 +334,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
 
       test.end()
     } catch (err) {
-      Logger.error(`settlementTransferTest failed with error - ${err}`)
+      logger.error(`settlementTransferTest failed with error - ${err}`)
       test.fail()
       test.end()
     }
@@ -395,7 +395,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
 
       test.end()
     } catch (err) {
-      Logger.error(`settlementTransferTest failed with error - ${err}`)
+      logger.error(`settlementTransferTest failed with error - ${err}`)
       test.fail()
       test.end()
     }
@@ -459,7 +459,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
 
       test.end()
     } catch (err) {
-      Logger.error(`settlementTransferTest failed with error - ${err}`)
+      logger.error(`settlementTransferTest failed with error - ${err}`)
       test.fail()
       test.end()
     }
@@ -496,7 +496,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
 
       test.end()
     } catch (err) {
-      Logger.error(`settlementTransferTest failed with error - ${err}`)
+      logger.error(`settlementTransferTest failed with error - ${err}`)
       test.fail()
       test.end()
     }
@@ -530,7 +530,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       test.equal(payerSettlementParticipantCurrencyRecord.externalReference, externalReferenceSample, '#56 External reference recorded')
       test.end()
     } catch (err) {
-      Logger.error(`settlementTransferTest failed with error - ${err}`)
+      logger.error(`settlementTransferTest failed with error - ${err}`)
       test.fail()
       test.end()
     }
@@ -570,7 +570,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
 
       test.end()
     } catch (err) {
-      Logger.error(`settlementTransferTest failed with error - ${err}`)
+      logger.error(`settlementTransferTest failed with error - ${err}`)
       test.fail()
       test.end()
     }
@@ -630,7 +630,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
 
       test.end()
     } catch (err) {
-      Logger.error(`settlementTransferTest failed with error - ${err}`)
+      logger.error(`settlementTransferTest failed with error - ${err}`)
       test.fail()
       test.end()
     }
@@ -693,7 +693,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
 
       test.end()
     } catch (err) {
-      Logger.error(`settlementTransferTest failed with error - ${err}`)
+      logger.error(`settlementTransferTest failed with error - ${err}`)
       test.fail()
       test.end()
     }
@@ -710,7 +710,7 @@ Test('SettlementTransfer should', async settlementTransferTest => {
       test.pass('producer to topic-deferredsettlement-close disconnected')
       test.end()
     } catch (err) {
-      Logger.error(`settlementTransferTest failed with error - ${err}`)
+      logger.error(`settlementTransferTest failed with error - ${err}`)
       test.fail()
       test.end()
     }

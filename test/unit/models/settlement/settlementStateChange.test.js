@@ -30,7 +30,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const SettlementStateChangeModel = require('../../../../src/models/settlement/settlementStateChange.js')
 const Db = require('../../../../src/lib/db')
 
@@ -105,7 +105,7 @@ Test('SettlementStateChangeModel', async (SettlementStateChangeModelTest) => {
           test.deepEqual(result, settlementState, 'results match')
           test.end()
         } catch (err) {
-          Logger.error(`getBySettlementIdTest failed with error - ${err}`)
+          logger.error(`getBySettlementIdTest failed with error - ${err}`)
           test.fail('Error thrown')
           test.end()
         }
@@ -113,7 +113,7 @@ Test('SettlementStateChangeModel', async (SettlementStateChangeModelTest) => {
 
       await getBySettlementIdTest.end()
     } catch (err) {
-      Logger.error(`SettlementStateChangeModelTest failed with error - ${err}`)
+      logger.error(`SettlementStateChangeModelTest failed with error - ${err}`)
       getBySettlementIdTest.fail()
       getBySettlementIdTest.end()
     }

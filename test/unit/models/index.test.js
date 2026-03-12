@@ -28,14 +28,14 @@
 'use strict'
 
 const Test = require('tapes')(require('tape'))
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../src/shared/logger')
 const Db = require('../../../src/lib/db')
 
 Test('Central Services Database', (test) => {
   try {
     test.equal(Db.constructor.name, 'Database', 'db module is loaded')
   } catch (err) {
-    Logger.error(`test failed with error - ${err}`)
+    logger.error(`test failed with error - ${err}`)
     test.fail()
   }
   test.end()

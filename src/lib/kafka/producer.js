@@ -35,7 +35,7 @@
  */
 
 const Producer = require('@mojaloop/central-services-stream').Kafka.Producer
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../shared/logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
 const listOfProducers = {}
@@ -58,21 +58,21 @@ const produceMessage = async (messageProtocol, topicConf, config) => {
     if (listOfProducers[topicConf.topicName]) {
       producer = listOfProducers[topicConf.topicName]
     } else {
-      Logger.isInfoEnabled && Logger.info('Producer::start::topic=' + topicConf.topicName)
+      logger.info('Producer::start::topic=' + topicConf.topicName)
       producer = new Producer(config)
-      Logger.isInfoEnabled && Logger.info('Producer::connect::start')
+      logger.info('Producer::connect::start')
       await producer.connect()
-      Logger.isInfoEnabled && Logger.info('Producer::connect::end')
+      logger.info('Producer::connect::end')
       listOfProducers[topicConf.topicName] = producer
     }
-    Logger.isInfoEnabled && Logger.info(`Producer.sendMessage:: messageProtocol:'${JSON.stringify(messageProtocol)}'`)
+    logger.info(`Producer.sendMessage:: messageProtocol:'${JSON.stringify(messageProtocol)}'`)
     await producer.sendMessage(messageProtocol, topicConf)
-    Logger.isInfoEnabled && Logger.info('Producer::end')
+    logger.info('Producer::end')
     return true
   } catch (err) {
-    Logger.isInfoEnabled && Logger.info('Producer error has occurred')
+    logger.info('Producer error has occurred')
     const error = ErrorHandler.Factory.createInternalServerFSPIOPError('Producer error has occurred', err)
-    Logger.isErrorEnabled && Logger.error(err)
+    logger.error(err)
     throw error
   }
 }
@@ -98,19 +98,19 @@ const disconnect = async (topicName = null) => {
       try {
         await getProducer(tpName).disconnect()
       } catch (err) {
-        Logger.isErrorEnabled && Logger.error(err)
+        logger.error(err)
         isError = true
         errorTopicList.push({ topic: tpName, error: err.toString() })
       }
     }
     if (isError) {
       const error = ErrorHandler.Factory.createInternalServerFSPIOPError(`The following Producers could not be disconnected: ${JSON.stringify(errorTopicList)}`)
-      Logger.isErrorEnabled && Logger.error(error)
+      logger.error(error)
       throw error
     }
   } else {
     const error = ErrorHandler.Factory.createInternalServerFSPIOPError(`Unable to disconnect Producer: ${topicName}`)
-    Logger.isErrorEnabled && Logger.error(error)
+    logger.error(error)
     throw error
   }
 }
@@ -130,7 +130,7 @@ const getProducer = (topicName) => {
     return listOfProducers[topicName]
   } else {
     const error = ErrorHandler.Factory.createInternalServerFSPIOPError(`No producer found for topic ${topicName}`)
-    Logger.isErrorEnabled && Logger.error(error)
+    logger.error(error)
     throw error
   }
 }

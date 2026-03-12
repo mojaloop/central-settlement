@@ -30,7 +30,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const SettlementTransferParticipantModel = require('../../../../src/models/settlement/settlementTransferParticipant')
 const Db = require('../../../../src/lib/db')
 
@@ -94,7 +94,7 @@ Test('SettlementTransferParticipantModel', async (settlementTransferParticipantM
           }
           test.end()
         } catch (err) {
-          Logger.error(`getBySettlementIdTest failed with error - ${err}`)
+          logger.error(`getBySettlementIdTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -102,7 +102,7 @@ Test('SettlementTransferParticipantModel', async (settlementTransferParticipantM
 
       await getBySettlementIdTest.end()
     } catch (err) {
-      Logger.error(`settlementTransferParticipantModelTest failed with error - ${err}`)
+      logger.error(`settlementTransferParticipantModelTest failed with error - ${err}`)
       getBySettlementIdTest.fail()
       getBySettlementIdTest.end()
     }

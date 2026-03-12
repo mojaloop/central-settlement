@@ -31,7 +31,7 @@
 'use strict'
 
 const { statusEnum, serviceName } = require('@mojaloop/central-services-shared').HealthCheck.HealthCheckEnums
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../shared/logger')
 const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
 
 const MigrationLockModel = require('../../models/misc/migrationLock')
@@ -40,8 +40,12 @@ const MigrationLockModel = require('../../models/misc/migrationLock')
  * @function getSubServiceHealthBroker
  *
  * @description
- *   Gets the health for the broker, by checking that the consumer is
- *   connected for each topic
+ *   Gets the health for the broker, by checking that each consumer is healthy.
+ *   Uses the consumer's isHealthy() method from central-services-stream which performs:
+ *   - isConnected() - basic connection status
+ *   - isAssigned() - consumer has partition assignments
+ *   - isPollHealthy() - last poll was within healthCheckPollInterval
+ *   - getMetadataSync() - all subscribed topics exist in broker metadata
  *
  * @returns Promise<SubServiceHealth> The SubService health object for the broker
  */
@@ -51,21 +55,26 @@ const getSubServiceHealthBroker = async () => {
   try {
     const consumerTopics = Consumer.getListOfTopics()
     const results = await Promise.all(
-      consumerTopics.map(async (t) => {
+      consumerTopics.map(async (topic) => {
         try {
-          return await Consumer.allConnected(t)
+          const consumer = Consumer.getConsumer(topic)
+          const isHealthy = await consumer.isHealthy()
+          if (!isHealthy) {
+            logger.isWarnEnabled && logger.warn(`Consumer is not healthy for topic ${topic}`)
+          }
+          return isHealthy
         } catch (err) {
-          Logger.isWarnEnabled && Logger.warn(`allConnected threw for topic ${t}: ${err.message}`)
+          logger.isWarnEnabled && logger.warn(`isHealthy check failed for topic ${topic}: ${err.message}`)
           return false
         }
       })
     )
 
-    if (results.some(connected => !connected)) {
+    if (results.some(healthy => !healthy)) {
       status = statusEnum.DOWN
     }
   } catch (err) {
-    Logger.isWarnEnabled && Logger.warn(`getSubServiceHealthBroker failed with error ${err.message}.`)
+    logger.isWarnEnabled && logger.warn('getSubServiceHealthBroker failed with error.', err)
     status = statusEnum.DOWN
   }
 
@@ -93,7 +102,7 @@ const getSubServiceHealthDatastore = async () => {
       status = statusEnum.DOWN
     }
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(`getSubServiceHealthDatastore failed with error ${err.message}.`)
+    logger.error('getSubServiceHealthDatastore failed with error.', err)
     status = statusEnum.DOWN
   }
 

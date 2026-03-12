@@ -2,6 +2,95 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.3.4](https://github.com/mojaloop/central-settlement/compare/v17.3.3...v17.3.4) (2026-02-26)
+
+
+### Chore
+
+* **ci:** update CircleCI orb to 1.1.16 ([#466](https://github.com/mojaloop/central-settlement/issues/466)) ([51ed133](https://github.com/mojaloop/central-settlement/commit/51ed133e9f0e09053343fabd6417b93d52e9809f))
+* **docker:** update base image to 22.22.0-alpine3.23 ([#462](https://github.com/mojaloop/central-settlement/issues/462)) ([9260759](https://github.com/mojaloop/central-settlement/commit/9260759173c94f22e89b691c4dd7b5f6f8c61b2c))
+* **sbom:** update sbom [skip ci] ([bf758b1](https://github.com/mojaloop/central-settlement/commit/bf758b1feefb955fe9aae049c9faa388c91779b3))
+
+### [17.3.3](https://github.com/mojaloop/central-settlement/compare/v17.3.2...v17.3.3) (2026-02-04)
+
+
+### Bug Fixes
+
+* remove trailing zeros in response amounts [#4302](https://github.com/mojaloop/central-settlement/issues/4302) ([#460](https://github.com/mojaloop/central-settlement/issues/460)) ([7be4dd8](https://github.com/mojaloop/central-settlement/commit/7be4dd804221bd227ef815024d164d0f2ef7072f))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([f2c0ec5](https://github.com/mojaloop/central-settlement/commit/f2c0ec5f508143e1bdf502252a97ae4e7007bed0))
+
+### [17.3.2](https://github.com/mojaloop/central-settlement/compare/v17.3.1...v17.3.2) (2026-01-16)
+
+
+### Chore
+
+* **ci:** update CircleCI orb to 1.1.10 ([#457](https://github.com/mojaloop/central-settlement/issues/457)) ([6732b04](https://github.com/mojaloop/central-settlement/commit/6732b04cc773452b306c65d673521690fd59c65e))
+* **sbom:** update sbom [skip ci] ([24de430](https://github.com/mojaloop/central-settlement/commit/24de430ec3d9e46befccec32e25c21e3680283fc))
+
+### [17.3.1](https://github.com/mojaloop/central-settlement/compare/v17.3.0...v17.3.1) (2026-01-07)
+
+
+### Bug Fixes
+
+* update dependencies to fix a settlement issue CSI-1091 ([#455](https://github.com/mojaloop/central-settlement/issues/455)) ([96a9697](https://github.com/mojaloop/central-settlement/commit/96a969705fbacd96664a725899e7593ee2cc8d8a))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([0af7dff](https://github.com/mojaloop/central-settlement/commit/0af7dff5c2f3e424aa98f9cb4071d00df4b590e1))
+
+## [17.3.0](https://github.com/mojaloop/central-settlement/compare/v17.2.6...v17.3.0) (2025-12-19)
+
+
+### Features
+
+* support ilp4 in settlement rules engine  ([#451](https://github.com/mojaloop/central-settlement/issues/451)) ([75a1710](https://github.com/mojaloop/central-settlement/commit/75a1710360251e6f63d3ef4a1f889e8a496c06c8))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([b687023](https://github.com/mojaloop/central-settlement/commit/b68702386c25936229b26ded19e677e56e269d9e))
+
+### [17.2.6](https://github.com/mojaloop/central-settlement/compare/v17.2.5...v17.2.6) (2025-11-14)
+
+
+### Bug Fixes
+
+* revert broken error message logic ([#447](https://github.com/mojaloop/central-settlement/issues/447)) ([9431b54](https://github.com/mojaloop/central-settlement/commit/9431b549f70ebc24b7d9e6ce498c19134860a401))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([63f7e11](https://github.com/mojaloop/central-settlement/commit/63f7e11f10f0e07aeb9ae41e40f7e07d9e3f8351))
+
+### [17.2.5](https://github.com/mojaloop/central-settlement/compare/v17.2.4...v17.2.5) (2025-11-12)
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([b2b2411](https://github.com/mojaloop/central-settlement/commit/b2b24118f14a545d7470353b6e5e93bf05c7268d))
+* update error logging detail for settlement domain ([#446](https://github.com/mojaloop/central-settlement/issues/446)) ([2d1287d](https://github.com/mojaloop/central-settlement/commit/2d1287dcac2afcd5b53cabd422ce1bc6abbc01a0))
+
+### [17.2.4](https://github.com/mojaloop/central-settlement/compare/v17.2.3...v17.2.4) (2025-11-11)
+
+
+### Chore
+
+* bump dependencies and switch to context logger ([#445](https://github.com/mojaloop/central-settlement/issues/445)) ([ee0dbd3](https://github.com/mojaloop/central-settlement/commit/ee0dbd3ee84d728a9b7f9688044a244ebceb0730))
+* **sbom:** update sbom [skip ci] ([d2a58ce](https://github.com/mojaloop/central-settlement/commit/d2a58ce8b2236668cec0001b4a9ea08785e1163c))
+
+### [17.2.3](https://github.com/mojaloop/central-settlement/compare/v17.2.2...v17.2.3) (2025-10-16)
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([1c363ed](https://github.com/mojaloop/central-settlement/commit/1c363ed75864de68398958c1c2f6ea5289471280))
+* update orb, node version, Docker image, add grype ignore ([#444](https://github.com/mojaloop/central-settlement/issues/444)) ([75654a9](https://github.com/mojaloop/central-settlement/commit/75654a96d6862c216587ad647b31bfef4cd398df))
+
 ### [17.2.2](https://github.com/mojaloop/central-settlement/compare/v17.2.1...v17.2.2) (2025-07-30)
 
 

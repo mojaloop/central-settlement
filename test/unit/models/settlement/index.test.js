@@ -30,7 +30,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const SettlementModel = require('../../../../src/models/settlement')
 const Proxyquire = require('proxyquire')
 
@@ -68,7 +68,7 @@ Test('Settlement Model Index', async (settlementIndexTest) => {
           test.ok(SettlementModelProxy.create.withArgs(settlement).calledOnce, 'once with settlement model create proxy')
           test.end()
         } catch (err) {
-          Logger.error(`create failed with error - ${err}`)
+          logger.error(`create failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -76,7 +76,7 @@ Test('Settlement Model Index', async (settlementIndexTest) => {
 
       await createTest.end()
     } catch (err) {
-      Logger.error(`settlementIndexTest failed with error - ${err}`)
+      logger.error(`settlementIndexTest failed with error - ${err}`)
       createTest.fail()
       createTest.end()
     }

@@ -31,7 +31,7 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Db = require('../../../../src/lib/db')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const IlpPacketsModel = require('../../../../src/models/ilpPackets/ilpPacket')
 
 Test('IlpPackets', async (IlpPacketsTest) => {
@@ -74,7 +74,7 @@ Test('IlpPackets', async (IlpPacketsTest) => {
       assert.deepEqual(JSON.stringify(result), JSON.stringify(expected))
       assert.end()
     } catch (err) {
-      Logger.error(`get IlpPackets with transferId failed with error - ${err}`)
+      logger.error(`get IlpPackets with transferId failed with error - ${err}`)
       assert.fail()
       assert.end()
     }

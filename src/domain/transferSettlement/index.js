@@ -31,26 +31,26 @@
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 const TransferSettlementModel = require('../../models/transferSettlement')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../shared/logger')
 const Enum = require('@mojaloop/central-services-shared').Enum.Settlements
 
 module.exports = {
   processMsgFulfil: async function (transferEventId, transferEventStateStatus, trx) {
-    Logger.isDebugEnabled && Logger.debug(`transferSettlement::processMsgFulfil(transferEventId=${transferEventId}, transferEventStateStatus=${transferEventStateStatus}) - start`)
+    logger.debug(`transferSettlement::processMsgFulfil(transferEventId=${transferEventId}, transferEventStateStatus=${transferEventStateStatus}) - start`)
     try {
       // Get the 'GROSS' settlement model by transfer
       const grossSettlementModel = await TransferSettlementModel.getSettlementModelByTransferId(transferEventId, Enum.settlementGranularityName.GROSS)
-      Logger.isDebugEnabled && Logger.debug(`transferSettlement::processMsgFulfil - result grossSettlementModel=${JSON.stringify(grossSettlementModel)}`)
-      Logger.isDebugEnabled && Logger.debug(`transferSettlement::processMsgFulfil - grossSettlementModel.length=${grossSettlementModel.length}`)
+      logger.debug(`transferSettlement::processMsgFulfil - result grossSettlementModel=${JSON.stringify(grossSettlementModel)}`)
+      logger.debug(`transferSettlement::processMsgFulfil - grossSettlementModel.length=${grossSettlementModel.length}`)
       if (grossSettlementModel.length > 0) {
-        Logger.isDebugEnabled && Logger.debug(`transferSettlement::processMsgFulfil - updateStateChange(transferEventId=${transferEventId}, transferEventStateStatus=${transferEventStateStatus}) - start`)
+        logger.debug(`transferSettlement::processMsgFulfil - updateStateChange(transferEventId=${transferEventId}, transferEventStateStatus=${transferEventStateStatus}) - start`)
         await TransferSettlementModel.updateStateChange(transferEventId, transferEventStateStatus, trx)
-        Logger.isDebugEnabled && Logger.debug('transferSettlement::processMsgFulfil - updateStateChange - end')
+        logger.debug('transferSettlement::processMsgFulfil - updateStateChange - end')
       }
-      Logger.isDebugEnabled && Logger.debug('transferSettlement::processMsgFulfil - end')
+      logger.debug('transferSettlement::processMsgFulfil - end')
       return true
     } catch (err) {
-      Logger.isErrorEnabled && Logger.error('transferSettlement::processMsgFulfil - error!', err)
+      logger.error('transferSettlement::processMsgFulfil - error!', err)
       throw ErrorHandler.Factory.reformatFSPIOPError(err)
     }
   }

@@ -36,7 +36,7 @@ const KafkaProducer = require('@mojaloop/central-services-stream').Kafka.Produce
 const Producer = require('../../../../src/lib/kafka/producer')
 const P = require('bluebird')
 const idGenerator = require('@mojaloop/central-services-shared').Util.id
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const FSPIOPError = require('@mojaloop/central-services-error-handling').Factory.FSPIOPError
 
 const generateULID = idGenerator({ type: 'ulid' })
@@ -179,7 +179,7 @@ Test('Producer', producerTest => {
         test.ok(Producer.getProducer('undefined'))
         test.fail('Error not thrown!')
       } catch (e) {
-        Logger.info(e.message)
+        logger.info(e.message)
         test.ok(e.message === 'No producer found for topic undefined')
       }
       test.end()

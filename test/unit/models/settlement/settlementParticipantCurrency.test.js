@@ -31,7 +31,7 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../../src/shared/logger')
 const SettlementParticipantCurrencyModel = require('../../../../src/models/settlement/settlementParticipantCurrency')
 const Db = require('../../../../src/lib/db')
 
@@ -92,7 +92,7 @@ Test('SettlementParticipantCurrencyModel', async (settlementParticipantCurrencyM
           }
           test.end()
         } catch (err) {
-          Logger.error(`getAccountInSettlementTest failed with error - ${err}`)
+          logger.error(`getAccountInSettlementTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -100,7 +100,7 @@ Test('SettlementParticipantCurrencyModel', async (settlementParticipantCurrencyM
 
       await getAccountInSettlementTest.end()
     } catch (err) {
-      Logger.error(`settlementParticipantCurrencyModelTest failed with error - ${err}`)
+      logger.error(`settlementParticipantCurrencyModelTest failed with error - ${err}`)
       getAccountInSettlementTest.fail()
       getAccountInSettlementTest.end()
     }
@@ -161,7 +161,7 @@ Test('SettlementParticipantCurrencyModel', async (settlementParticipantCurrencyM
           }
           test.end()
         } catch (err) {
-          Logger.error(`getAccountInSettlementTest failed with error - ${err}`)
+          logger.error(`getAccountInSettlementTest failed with error - ${err}`)
           test.fail()
           test.end()
         }
@@ -169,7 +169,7 @@ Test('SettlementParticipantCurrencyModel', async (settlementParticipantCurrencyM
 
       await getAccountInSettlementTest.end()
     } catch (err) {
-      Logger.error(`settlementParticipantCurrencyModelTest failed with error - ${err}`)
+      logger.error(`settlementParticipantCurrencyModelTest failed with error - ${err}`)
       getAccountInSettlementTest.fail()
       getAccountInSettlementTest.end()
     }

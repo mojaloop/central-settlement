@@ -33,7 +33,7 @@
 'use strict'
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../../shared/logger')
 const Settlements = require('../../../domain/settlement/index')
 const Utility = require('@mojaloop/central-services-shared').Util
 const Enum = require('@mojaloop/central-services-shared').Enum
@@ -103,7 +103,7 @@ module.exports = {
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'No other properties are allowed when participants is provided')
       } else if ((p.state && !p.reason) || (!p.state && p.reason)) {
         const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.MISSING_ELEMENT, 'State and reason are mandatory')
-        Logger.isErrorEnabled && Logger.error(error)
+        logger.error(error)
         throw error
       }
       const Enums = {
@@ -122,7 +122,7 @@ module.exports = {
         return await Settlements.abortById(settlementId, request.payload, Enums)
       } else {
         const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Invalid request payload input')
-        Logger.isErrorEnabled && Logger.error(error)
+        logger.error(error)
         throw error
       }
     } catch (err) {

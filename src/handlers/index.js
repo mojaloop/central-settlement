@@ -34,7 +34,7 @@
  * Cli run command eg : node src/handlers/index.js handler --transferSettlement
  */
 
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../shared/logger')
 const Config = require('../lib/config')
 const Setup = require('../shared/setup')
 const PJson = require('../../package.json')
@@ -57,7 +57,7 @@ Program.command('handler') // sub-command name, coffeeType = type, required
   .action(async (args) => {
     const handlerList = []
     if (args.deferredSettlement === true) {
-      Logger.isDebugEnabled && Logger.debug('CLI: Executing --deferredSettlement')
+      logger.debug('CLI: Executing --deferredSettlement')
       const handler = {
         type: 'deferredSettlement',
         enabled: true
@@ -66,7 +66,7 @@ Program.command('handler') // sub-command name, coffeeType = type, required
     }
 
     if (args.grossSettlement === true) {
-      Logger.isDebugEnabled && Logger.debug('CLI: Executing --grossSettlement')
+      logger.debug('CLI: Executing --grossSettlement')
       const handler = {
         type: 'grossSettlement',
         enabled: true
@@ -75,7 +75,7 @@ Program.command('handler') // sub-command name, coffeeType = type, required
     }
 
     if (args.rules === true) {
-      Logger.isDebugEnabled && Logger.debug('CLI: Executing --rules')
+      logger.debug('CLI: Executing --rules')
       const handler = {
         type: 'rules',
         enabled: true

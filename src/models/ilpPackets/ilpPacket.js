@@ -30,13 +30,13 @@
 
 const Db = require('../../lib/db')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
-const Logger = require('@mojaloop/central-services-logger')
+const { logger } = require('../../shared/logger')
 
 exports.getById = async (id) => {
   try {
     return await Db.from('ilpPacket').find({ transferId: id })
   } catch (err) {
-    Logger.isErrorEnabled && Logger.error(err)
+    logger.error(err)
     throw ErrorHandler.Factory.reformatFSPIOPError(err)
   }
 }
