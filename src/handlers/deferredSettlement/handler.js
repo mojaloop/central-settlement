@@ -107,7 +107,9 @@ const closeSettlementWindow = async (error, messages) => {
       const settlementWindow = await SettlementWindowService.close(settlementWindowId, reason)
       if (!settlementWindow || settlementWindow.state !== Enum.Settlements.SettlementWindowState.CLOSED) {
         logger.info(Utility.breadcrumb(location, { path: 'windowCloseRetry' }))
-        const errorDescription = `Settlement window close failed after max retry count ${retryCount} has been exhausted in ${retryCount * retryDelay / 1000}s`
+        const errorDescription = `Settlement window ${settlementWindowId} close failed after max retry count ${retryCount} has been exhausted in ${retryCount * retryDelay / 1000}s. ` +
+          'Window remains in PROCESSING state and requires manual intervention. ' +
+          'This may indicate transfers with pending position changes (race condition between fulfil and position handlers).'
         throw ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR, errorDescription)
       }
       logger.info(Utility.breadcrumb(location, `done--${actionLetter}2`))
