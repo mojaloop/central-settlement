@@ -198,36 +198,30 @@ const Facade = {
           const settlementModelCurrenciesList = allSettlementModels.filter(record => record.currencyId !== null).map(record => record.currencyId)
 
           // Pre-aggregation completeness check: verify all transfers have position changes
-          const totalTransfers = await knex('transferFulfilment AS tf')
+          const transferCounts = await knex('transferFulfilment AS tf')
+            .leftJoin('transferStateChange AS tsc', 'tsc.transferId', 'tf.transferId')
+            .leftJoin('participantPositionChange AS ppc', 'ppc.transferStateChangeId', 'tsc.transferStateChangeId')
             .where('tf.settlementWindowId', settlementWindowId)
-            .countDistinct('tf.transferId as cnt')
+            .select(
+              knex.raw('COUNT(DISTINCT tf.transferId) as total'),
+              knex.raw('COUNT(DISTINCT CASE WHEN ppc.participantPositionChangeId IS NOT NULL THEN tf.transferId END) as complete')
+            )
             .first()
             .transacting(trx)
 
-          const completeTransfers = await knex('transferFulfilment AS tf')
-            .join('transferStateChange AS tsc', 'tsc.transferId', 'tf.transferId')
-            .join('participantPositionChange AS ppc', 'ppc.transferStateChangeId', 'tsc.transferStateChangeId')
-            .where('tf.settlementWindowId', settlementWindowId)
-            .countDistinct('tf.transferId as cnt')
-            .first()
-            .transacting(trx)
-
-          const totalFxTransfers = await knex('fxTransferFulfilment AS ftf')
+          const fxTransferCounts = await knex('fxTransferFulfilment AS ftf')
+            .leftJoin('fxTransferStateChange AS ftsc', 'ftsc.commitRequestId', 'ftf.commitRequestId')
+            .leftJoin('participantPositionChange AS ppc', 'ppc.fxTransferStateChangeId', 'ftsc.fxTransferStateChangeId')
             .where('ftf.settlementWindowId', settlementWindowId)
-            .countDistinct('ftf.commitRequestId as cnt')
+            .select(
+              knex.raw('COUNT(DISTINCT ftf.commitRequestId) as total'),
+              knex.raw('COUNT(DISTINCT CASE WHEN ppc.participantPositionChangeId IS NOT NULL THEN ftf.commitRequestId END) as complete')
+            )
             .first()
             .transacting(trx)
 
-          const completeFxTransfers = await knex('fxTransferFulfilment AS ftf')
-            .join('fxTransferStateChange AS ftsc', 'ftsc.commitRequestId', 'ftf.commitRequestId')
-            .join('participantPositionChange AS ppc', 'ppc.fxTransferStateChangeId', 'ftsc.fxTransferStateChangeId')
-            .where('ftf.settlementWindowId', settlementWindowId)
-            .countDistinct('ftf.commitRequestId as cnt')
-            .first()
-            .transacting(trx)
-
-          if (totalTransfers.cnt !== completeTransfers.cnt || totalFxTransfers.cnt !== completeFxTransfers.cnt) {
-            const incompleteCount = (totalTransfers.cnt - completeTransfers.cnt) + (totalFxTransfers.cnt - completeFxTransfers.cnt)
+          if (transferCounts.total !== transferCounts.complete || fxTransferCounts.total !== fxTransferCounts.complete) {
+            const incompleteCount = (transferCounts.total - transferCounts.complete) + (fxTransferCounts.total - fxTransferCounts.complete)
             throw ErrorHandler.Factory.createFSPIOPError(
               ErrorHandler.Enums.FSPIOPErrorCodes.INTERNAL_SERVER_ERROR,
               `Window ${settlementWindowId} has ${incompleteCount} transfers with pending position changes`

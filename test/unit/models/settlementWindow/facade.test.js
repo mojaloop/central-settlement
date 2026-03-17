@@ -642,6 +642,19 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
       const params = { settlementWindowId, reason }
       const enums = { OPEN: 'OPEN' }
 
+      // Helper: create chainable query stub resolving to given result
+      const makeChain = (result) => {
+        const chain = {}
+        const methods = ['where', 'join', 'leftJoin', 'countDistinct', 'first', 'andWhere',
+          'groupBy', 'select', 'sum', 'distinct', 'as', 'unionAll', 'from',
+          'on', 'insert', 'update']
+        for (const m of methods) {
+          chain[m] = sandbox.stub().returns(chain)
+        }
+        chain.transacting = sandbox.stub().resolves(result)
+        return chain
+      }
+
       await closeTest.test('close the specified open window will throw an error if the current state is undefined.', async test => {
         try {
           const knexStub = sandbox.stub()
@@ -780,62 +793,10 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
           const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
 
-          // Stub completeness check queries
-          const countDistinctStub = sandbox.stub()
-          const firstStub = sandbox.stub()
-          const transactingStub = sandbox.stub()
-
-          // totalTransfers = 5
-          knexStub.withArgs('transferFulfilment AS tf').returns({
-            where: sandbox.stub().returns({
-              countDistinct: countDistinctStub.returns({
-                first: firstStub.returns({
-                  transacting: transactingStub.returns({ cnt: 5 })
-                })
-              })
-            })
-          })
-
-          // completeTransfers = 4 (one incomplete)
-          knexStub.withArgs('transferFulfilment AS tf').onSecondCall().returns({
-            join: sandbox.stub().returns({
-              join: sandbox.stub().returns({
-                where: sandbox.stub().returns({
-                  countDistinct: sandbox.stub().returns({
-                    first: sandbox.stub().returns({
-                      transacting: sandbox.stub().returns({ cnt: 4 })
-                    })
-                  })
-                })
-              })
-            })
-          })
-
-          // totalFxTransfers = 0
-          knexStub.withArgs('fxTransferFulfilment AS ftf').returns({
-            where: sandbox.stub().returns({
-              countDistinct: sandbox.stub().returns({
-                first: sandbox.stub().returns({
-                  transacting: sandbox.stub().returns({ cnt: 0 })
-                })
-              })
-            })
-          })
-
-          // completeFxTransfers = 0
-          knexStub.withArgs('fxTransferFulfilment AS ftf').onSecondCall().returns({
-            join: sandbox.stub().returns({
-              join: sandbox.stub().returns({
-                where: sandbox.stub().returns({
-                  countDistinct: sandbox.stub().returns({
-                    first: sandbox.stub().returns({
-                      transacting: sandbox.stub().returns({ cnt: 0 })
-                    })
-                  })
-                })
-              })
-            })
-          })
+          // transferCounts: 5 total, 4 complete (one incomplete)
+          knexStub.withArgs('transferFulfilment AS tf').returns(makeChain({ total: 5, complete: 4 }))
+          // fxTransferCounts: 0 total, 0 complete
+          knexStub.withArgs('fxTransferFulfilment AS ftf').returns(makeChain({ total: 0, complete: 0 }))
 
           Db.getKnex.returns(knexStub)
           SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
@@ -865,22 +826,9 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
           const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
 
-          // Helper: create chainable query stub resolving to given result
-          const makeChain = (result) => {
-            const chain = {}
-            const methods = ['where', 'join', 'countDistinct', 'first', 'andWhere',
-              'groupBy', 'select', 'sum', 'distinct', 'as', 'unionAll', 'from',
-              'on', 'insert', 'update']
-            for (const m of methods) {
-              chain[m] = sandbox.stub().returns(chain)
-            }
-            chain.transacting = sandbox.stub().resolves(result)
-            return chain
-          }
-
           // Completeness check: all counts match (passes)
-          knexStub.withArgs('transferFulfilment AS tf').returns(makeChain({ cnt: 3 }))
-          knexStub.withArgs('fxTransferFulfilment AS ftf').returns(makeChain({ cnt: 0 }))
+          knexStub.withArgs('transferFulfilment AS tf').returns(makeChain({ total: 3, complete: 3 }))
+          knexStub.withArgs('fxTransferFulfilment AS ftf').returns(makeChain({ total: 0, complete: 0 }))
 
           // swcList (knex.from(fn).as(...)) and aggregation insert (knex.from(raw).insert(...))
           const fromStub = sandbox.stub()
@@ -913,19 +861,6 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
           const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
 
-          // Helper: create chainable query stub resolving to given result
-          const makeChain = (result) => {
-            const chain = {}
-            const methods = ['where', 'join', 'countDistinct', 'first', 'andWhere',
-              'groupBy', 'select', 'sum', 'distinct', 'as', 'unionAll', 'from',
-              'on', 'insert', 'update']
-            for (const m of methods) {
-              chain[m] = sandbox.stub().returns(chain)
-            }
-            chain.transacting = sandbox.stub().resolves(result)
-            return chain
-          }
-
           sandbox.stub(SettlementModel, 'getAll').resolves([
             {
               settlementModelId: 1,
@@ -956,8 +891,8 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           Db.getKnex.returns(knexStub)
 
           // Pre-aggregation completeness check stubs (all counts match = passes)
-          knexStub.withArgs('transferFulfilment AS tf').returns(makeChain({ cnt: 2 }))
-          knexStub.withArgs('fxTransferFulfilment AS ftf').returns(makeChain({ cnt: 0 }))
+          knexStub.withArgs('transferFulfilment AS tf').returns(makeChain({ total: 2, complete: 2 }))
+          knexStub.withArgs('fxTransferFulfilment AS ftf').returns(makeChain({ total: 0, complete: 0 }))
 
           // Post-aggregation balance validation stub (empty = balanced = passes)
           knexStub.withArgs('settlementContentAggregation AS sca').returns(makeChain([]))
