@@ -1,9 +1,9 @@
 {
   "name": "central-settlement",
+  "private": true,
   "description": "Central settlements hosted by a scheme to record and make settlements.",
   "version": "17.3.4",
   "license": "Apache-2.0",
-  "private": false,
   "author": "ModusBox",
   "contributors": [
     "Deon Botha <deon.botha@modusbox.com>",
