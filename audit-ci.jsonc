@@ -4,6 +4,6 @@
   // Only use one of ["low": true, "moderate": true, "high": true, "critical": true]
   "moderate": true,
   "allowlist": [ // NOTE: Please add as much information as possible to any items added to the allowList
-    "GHSA-2g4f-4pwh-qvx6"
+    "GHSA-2g4f-4pwh-qvx6" // ajv ReDoS via $data option - unfixable transitive via @mojaloop/inter-scheme-proxy-cache-lib and @mojaloop/ml-schema-transformer-lib (moderate severity)
   ]
 }
