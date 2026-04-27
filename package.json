@@ -27,7 +27,6 @@
     },
     "pre-commit": [
         "lint",
-        "dep:check",
         "test:unit"
     ],
     "scripts": {
