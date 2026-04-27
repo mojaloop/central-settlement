@@ -230,7 +230,12 @@ Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
     }
 
     SettlementWindowHandler = Proxyquire('../../../../src/handlers/deferredSettlement/handler', {
-      '@mojaloop/event-sdk': EventSdkStub
+      '@mojaloop/event-sdk': EventSdkStub,
+      '../../lib/config': {
+        WINDOW_AGGREGATION_RETRY_COUNT: 3,
+        WINDOW_AGGREGATION_RETRY_INTERVAL: 3000,
+        WINDOW_AGGREGATION_CLOSE_DELAY_MS: 0
+      }
     })
     test.end()
   })
@@ -273,7 +278,12 @@ Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
 
       const retryStub = sandbox.stub().callsArg(0)
       const SettlementWindowHandlerProxy = Proxyquire('../../../../src/handlers/deferredSettlement/handler', {
-        'async-retry': retryStub
+        'async-retry': retryStub,
+        '../../lib/config': {
+          WINDOW_AGGREGATION_RETRY_COUNT: 3,
+          WINDOW_AGGREGATION_RETRY_INTERVAL: 3000,
+          WINDOW_AGGREGATION_CLOSE_DELAY_MS: 0
+        }
       })
 
       const result = await SettlementWindowHandlerProxy.closeSettlementWindow(null, localMessages[0])
@@ -292,7 +302,12 @@ Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
 
       const retryStub = sandbox.stub().callsArg(0)
       const SettlementWindowHandlerProxy = Proxyquire('../../../../src/handlers/deferredSettlement/handler', {
-        'async-retry': retryStub
+        'async-retry': retryStub,
+        '../../lib/config': {
+          WINDOW_AGGREGATION_RETRY_COUNT: 3,
+          WINDOW_AGGREGATION_RETRY_INTERVAL: 3000,
+          WINDOW_AGGREGATION_CLOSE_DELAY_MS: 0
+        }
       })
 
       const result = await SettlementWindowHandlerProxy.closeSettlementWindow(null, localMessages[0])
@@ -312,6 +327,35 @@ Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
         test.end()
       }
     })
+    closeSettlementWindowTest.test('waits for WINDOW_AGGREGATION_CLOSE_DELAY_MS before closing the window', async (test) => {
+      const localMessages = Util.clone(messages)
+      await Consumer.createHandler(topicName, config, command)
+      Kafka.proceed.returns(true)
+      SettlementWindowService.close.returns(Promise.resolve(settlementWindow))
+
+      const delayMs = 100
+      const SettlementWindowHandlerWithDelay = Proxyquire('../../../../src/handlers/deferredSettlement/handler', {
+        '@mojaloop/event-sdk': {
+          Tracer: {
+            extractContextFromMessage: sandbox.stub().returns({}),
+            createChildSpanFromContext: sandbox.stub().returns(SpanStub)
+          }
+        },
+        '../../lib/config': {
+          WINDOW_AGGREGATION_RETRY_COUNT: 3,
+          WINDOW_AGGREGATION_RETRY_INTERVAL: 3000,
+          WINDOW_AGGREGATION_CLOSE_DELAY_MS: delayMs
+        }
+      })
+
+      const start = Date.now()
+      await SettlementWindowHandlerWithDelay.closeSettlementWindow(null, localMessages)
+      const elapsed = Date.now() - start
+
+      test.ok(elapsed >= delayMs, `Should have waited at least ${delayMs}ms, actually waited ${elapsed}ms`)
+      test.end()
+    })
+
     closeSettlementWindowTest.test('throw -Settlement window handler missing payload- when the payload is missing', async (test) => {
       const localMessages = Util.clone(messagesMissingPayload)
       await Consumer.createHandler(topicName, config, command)
