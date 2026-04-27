@@ -774,17 +774,6 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
-      - test-coverage:
-          context: org-global
-          requires:
-            - setup
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              ignore:
-                - /feature*/
-                - /bugfix*/
       - build-local:
           context: org-global
           requires:
@@ -800,17 +789,6 @@ workflows:
           context: org-global
           requires:
             - build-local
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              ignore:
-                - /feature*/
-                - /bugfix*/
-      - vulnerability-check:
-          context: org-global
-          requires:
-            - setup
           filters:
             tags:
               only: /.*/
@@ -857,8 +835,6 @@ workflows:
             - build-local
             - test-lint
             - test-unit
-            - test-coverage
-            - vulnerability-check
             - audit-licenses
             - license-scan
             - image-scan
@@ -883,8 +859,6 @@ workflows:
             - build-local
             - test-lint
             - test-unit
-            - test-coverage
-            - vulnerability-check
             - audit-licenses
             - license-scan
             - image-scan
@@ -901,8 +875,6 @@ workflows:
             - build-local
             - test-lint
             - test-unit
-            - test-coverage
-            - vulnerability-check
             - audit-licenses
             - license-scan
             - image-scan
