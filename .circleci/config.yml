@@ -23,7 +23,8 @@ defaults_docker_Dependencies: &defaults_docker_Dependencies |
   apk --no-cache add ca-certificates
   apk --no-cache add curl
   apk --no-cache add openssh-client
-  apk --no-cache add -t build-dependencies make gcc g++ python3 py3-setuptools libtool autoconf automake jq
+  apk --no-cache add -t build-dependencies make gcc g++ python3 py3-setuptools py3-pip libtool autoconf automake jq
+  pip3 install --upgrade setuptools
   apk --no-cache add -t openssl ncurses coreutils libgcc linux-headers grep util-linux binutils findutils
   apk --no-cache add librdkafka-dev
 
@@ -136,7 +137,7 @@ defaults_environment: &defaults_environment
   ## env var for nx to set main branch
   MAIN_BRANCH_NAME: main
   ## Disable LIBRDKAFKA build since we install it via general dependencies
-  # BUILD_LIBRDKAFKA: 0
+  BUILD_LIBRDKAFKA: 0
 
 ##
 # Executors
