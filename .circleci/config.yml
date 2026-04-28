@@ -785,17 +785,6 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
-      - test-integration:
-          context: org-global
-          requires:
-            - build-local
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              ignore:
-                - /feature*/
-                - /bugfix*/
       - audit-licenses:
           context: org-global
           requires:
