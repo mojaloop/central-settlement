@@ -2985,14 +2985,12 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             }),
             leftJoin: sandbox.stub().returns({
-              join: sandbox.stub().returns({
-                select: sandbox.stub().returns({
-                  where: sandbox.stub().returns({
-                    transacting: sandbox.stub().returns({
-                      forUpdate: sandbox.stub().returns(
-                        Promise.resolve(stubData.putById[0].settlementAccountList)
-                      )
-                    })
+              select: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns({
+                    forUpdate: sandbox.stub().returns(
+                      Promise.resolve(stubData.putById[0].settlementAccountList)
+                    )
                   })
                 })
               })
@@ -3006,6 +3004,11 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                     )
                   })
                 })
+              }),
+              whereIn: sandbox.stub().returns({
+                transacting: sandbox.stub().returns(
+                  Promise.resolve(stubData.putById[0].settlementAccountList)
+                )
               })
             }),
             insert: sandbox.stub().returns({
@@ -3046,7 +3049,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
 
           const result = await SettlementFacade.putById(1, payload.putById[0], enums)
           test.ok(result, 'Result returned')
-          test.equal(knexStub.callCount, 9, 'Knex called 9 times')
+          test.equal(knexStub.callCount, 10, 'Knex called 10 times')
           test.equal(result.state, 'PENDING_SETTLEMENT', 'Settlement should remain in PENDING_SETTLEMENT state')
           test.equal(result.settlementWindows.length, 2, 'Exactly two settlement windows are expected to be affected')
           test.equal(result.participants.length, 2, 'Two participants are affected')
@@ -3118,14 +3121,12 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             }),
             leftJoin: sandbox.stub().returns({
-              join: sandbox.stub().returns({
-                select: sandbox.stub().returns({
-                  where: sandbox.stub().returns({
-                    transacting: sandbox.stub().returns({
-                      forUpdate: sandbox.stub().returns(
-                        Promise.resolve(stubData.putById[1].settlementAccountList)
-                      )
-                    })
+              select: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns({
+                    forUpdate: sandbox.stub().returns(
+                      Promise.resolve(stubData.putById[1].settlementAccountList)
+                    )
                   })
                 })
               })
@@ -3139,6 +3140,11 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                     )
                   })
                 })
+              }),
+              whereIn: sandbox.stub().returns({
+                transacting: sandbox.stub().returns(
+                  Promise.resolve(stubData.putById[1].settlementAccountList)
+                )
               })
             }),
             insert: sandbox.stub().returns({
@@ -3231,14 +3237,12 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             }),
             leftJoin: sandbox.stub().returns({
-              join: sandbox.stub().returns({
-                select: sandbox.stub().returns({
-                  where: sandbox.stub().returns({
-                    transacting: sandbox.stub().returns({
-                      forUpdate: sandbox.stub().returns(
-                        Promise.resolve(stubData.putById[2].settlementAccountList)
-                      )
-                    })
+              select: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns({
+                    forUpdate: sandbox.stub().returns(
+                      Promise.resolve(stubData.putById[2].settlementAccountList)
+                    )
                   })
                 })
               })
@@ -3252,6 +3256,11 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                     )
                   })
                 })
+              }),
+              whereIn: sandbox.stub().returns({
+                transacting: sandbox.stub().returns(
+                  Promise.resolve(stubData.putById[2].settlementAccountList)
+                )
               })
             }),
             insert: sandbox.stub().returns({
@@ -3344,14 +3353,12 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             }),
             leftJoin: sandbox.stub().returns({
-              join: sandbox.stub().returns({
-                select: sandbox.stub().returns({
-                  where: sandbox.stub().returns({
-                    transacting: sandbox.stub().returns({
-                      forUpdate: sandbox.stub().returns(
-                        Promise.resolve(stubData.putById[3].settlementAccountList)
-                      )
-                    })
+              select: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns({
+                    forUpdate: sandbox.stub().returns(
+                      Promise.resolve(stubData.putById[3].settlementAccountList)
+                    )
                   })
                 })
               })
@@ -3365,6 +3372,11 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                     )
                   })
                 })
+              }),
+              whereIn: sandbox.stub().returns({
+                transacting: sandbox.stub().returns(
+                  Promise.resolve(stubData.putById[3].settlementAccountList)
+                )
               })
             }),
             insert: sandbox.stub().returns({
@@ -3482,14 +3494,12 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             }),
             leftJoin: sandbox.stub().returns({
-              join: sandbox.stub().returns({
-                select: sandbox.stub().returns({
-                  where: sandbox.stub().returns({
-                    transacting: sandbox.stub().returns({
-                      forUpdate: sandbox.stub().returns(
-                        Promise.resolve(stubData.putById[4].settlementAccountList)
-                      )
-                    })
+              select: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns({
+                    forUpdate: sandbox.stub().returns(
+                      Promise.resolve(stubData.putById[4].settlementAccountList)
+                    )
                   })
                 })
               })
@@ -3503,6 +3513,11 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                     )
                   })
                 })
+              }),
+              whereIn: sandbox.stub().returns({
+                transacting: sandbox.stub().returns(
+                  Promise.resolve(stubData.putById[4].settlementAccountList)
+                )
               })
             }),
             insert: sandbox.stub().returns({
@@ -3595,14 +3610,12 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             }),
             leftJoin: sandbox.stub().returns({
-              join: sandbox.stub().returns({
-                select: sandbox.stub().returns({
-                  where: sandbox.stub().returns({
-                    transacting: sandbox.stub().returns({
-                      forUpdate: sandbox.stub().returns(
-                        Promise.resolve(stubData.putById[5].settlementAccountList)
-                      )
-                    })
+              select: sandbox.stub().returns({
+                where: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns({
+                    forUpdate: sandbox.stub().returns(
+                      Promise.resolve(stubData.putById[5].settlementAccountList)
+                    )
                   })
                 })
               })
@@ -3616,6 +3629,11 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                     )
                   })
                 })
+              }),
+              whereIn: sandbox.stub().returns({
+                transacting: sandbox.stub().returns(
+                  Promise.resolve(stubData.putById[5].settlementAccountList)
+                )
               })
             }),
             insert: sandbox.stub().returns({
