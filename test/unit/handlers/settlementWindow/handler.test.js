@@ -21,6 +21,7 @@
 
  * Mojaloop Foundation
  - Name Surname <name.surname@mojaloop.io>
+ - Shashikant Hirugade <shashi.mojaloop@gmail.com>
 
  * ModusBox
  - Georgi Georgiev <georgi.georgiev@modusbox.com>
@@ -193,6 +194,10 @@ const settlementWindow = {
 
 const command = () => {}
 
+const ConfigStub = {
+  WINDOW_AGGREGATION_CLOSE_DELAY_MS: 0
+}
+
 Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
   let sandbox
   let SpanStub
@@ -235,7 +240,8 @@ Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
     }
 
     SettlementWindowHandler = Proxyquire('../../../../src/handlers/deferredSettlement/handler', {
-      '@mojaloop/event-sdk': EventSdkStub
+      '@mojaloop/event-sdk': EventSdkStub,
+      '../../lib/config': ConfigStub
     })
     test.end()
   })
@@ -278,7 +284,8 @@ Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
 
       const retryStub = sandbox.stub().callsArg(0)
       const SettlementWindowHandlerProxy = Proxyquire('../../../../src/handlers/deferredSettlement/handler', {
-        'async-retry': retryStub
+        'async-retry': retryStub,
+        '../../lib/config': ConfigStub
       })
 
       const result = await SettlementWindowHandlerProxy.closeSettlementWindow(null, localMessages[0])
@@ -297,7 +304,8 @@ Test('SettlementWindowHandler', async (settlementWindowHandlerTest) => {
 
       const retryStub = sandbox.stub().callsArg(0)
       const SettlementWindowHandlerProxy = Proxyquire('../../../../src/handlers/deferredSettlement/handler', {
-        'async-retry': retryStub
+        'async-retry': retryStub,
+        '../../lib/config': ConfigStub
       })
 
       const result = await SettlementWindowHandlerProxy.closeSettlementWindow(null, localMessages[0])
