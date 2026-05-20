@@ -354,7 +354,11 @@ const Facade = {
         } catch (err) {
           logger.error(err)
           // Best-effort cleanup so the pooled connection does not carry the temp table forward
-          try { await knex.raw('DROP TEMPORARY TABLE IF EXISTS tmp_swc_agg').transacting(trx) } catch (_) {}
+          try {
+            await knex.raw('DROP TEMPORARY TABLE IF EXISTS tmp_swc_agg').transacting(trx)
+          } catch (cleanupErr) {
+            logger.warn('Failed to drop temp table during cleanup', cleanupErr)
+          }
           throw ErrorHandler.Factory.reformatFSPIOPError(err)
         }
       })
