@@ -1194,7 +1194,14 @@
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "FSP identifier",
+                    "example": 1
+                },
+                "name": {
+                    "$ref": "#/definitions/FspId",
+                    "description": "FSPIOP identifier name",
+                    "example": "payerFsp"
                 },
                 "accounts": {
                     "type": "array",
@@ -1203,6 +1210,13 @@
                     }
                 }
             }
+        },
+        "FspId": {
+            "title": "FspId",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "description": "FSP identifier"
         },
         "Settlements": {
             "type": "array",
