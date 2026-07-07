@@ -106,7 +106,7 @@ Test('Server Setup', async setupTest => {
       EngineStub = sandbox.stub()
 
       SetupProxy = Proxyquire('../../../src/shared/setup', {
-        '@hapi/catbox-memory': EngineStub,
+        '@hapi/catbox-memory': { Engine: EngineStub },
         '@hapi/hapi': HapiStub,
         'hapi-openapi': HapiOpenAPIStub,
         path: PathStub,
@@ -141,7 +141,7 @@ Test('Server Setup', async setupTest => {
           }
 
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             '@hapi/hapi': HapiStubThrowError,
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
@@ -181,7 +181,7 @@ Test('Server Setup', async setupTest => {
           }
 
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             '@hapi/hapi': HapiStubThrowError,
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
@@ -222,7 +222,7 @@ Test('Server Setup', async setupTest => {
           const Config2Stub = Object.assign({}, ConfigStub)
           Config2Stub.HANDLERS_API_DISABLED = true
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             '@hapi/hapi': HapiStubThrowError,
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
@@ -256,7 +256,7 @@ Test('Server Setup', async setupTest => {
 
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
             '../handlers/register': RegisterHandlersStub,
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
@@ -305,7 +305,7 @@ Test('Server Setup', async setupTest => {
 
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
             '../handlers/register': RegisterHandlersStub,
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             '@hapi/hapi': HapiStubThrowError,
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
@@ -349,7 +349,7 @@ Test('Server Setup', async setupTest => {
 
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
             '../handlers/register': RegisterHandlersStub,
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             '@hapi/hapi': HapiStubThrowError,
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
@@ -393,7 +393,7 @@ Test('Server Setup', async setupTest => {
 
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
             '../handlers/register': RegisterHandlersStub,
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             '@hapi/hapi': HapiStubThrowError,
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
@@ -437,7 +437,7 @@ Test('Server Setup', async setupTest => {
 
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
             '../handlers/register': RegisterHandlersStub,
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             '@hapi/hapi': HapiStubThrowError,
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
@@ -471,7 +471,7 @@ Test('Server Setup', async setupTest => {
           }
 
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             '@hapi/hapi': HapiStubThrowError,
             'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,

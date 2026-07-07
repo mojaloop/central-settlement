@@ -80,7 +80,7 @@ const createServer = async function (port, modules) {
       cache: [
         {
           provider: {
-            constructor: require('@hapi/catbox-memory'),
+            constructor: require('@hapi/catbox-memory').Engine,
             options: {
               partition: 'cache'
             }
