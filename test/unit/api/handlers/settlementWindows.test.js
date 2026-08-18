@@ -29,7 +29,6 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Mockgen = require('../../../data/mockgen.js')
 const Base = require('../../base')
 const Enums = require('../../../../src/models/lib/enums')
 const { logger } = require('../../../../src/shared/logger')
@@ -73,16 +72,7 @@ Test('/settlementWindows', async (settlementWindowTest) => {
       changedDate: '2018-09-01T16:24:37.000Z'
     })
     try {
-      const requests = new Promise((resolve, reject) => {
-        Mockgen().requests({
-          path: '/settlementWindows',
-          operation: 'get'
-        }, function (error, mock) {
-          return error ? reject(error) : resolve(mock)
-        })
-      })
-
-      const mock = await requests
+      const mock = { request: { path: '/settlementWindows?state=OPEN' } }
 
       t.ok(mock)
       t.ok(mock.request)
@@ -120,16 +110,7 @@ Test('/settlementWindows', async (settlementWindowTest) => {
     sandbox.stub(Enums, 'settlementWindowStates').returns({})
     sandbox.stub(settlementWindows, 'getByParams').throws()
     try {
-      const requests = new Promise((resolve, reject) => {
-        Mockgen().requests({
-          path: '/settlementWindows',
-          operation: 'get'
-        }, function (error, mock) {
-          return error ? reject(error) : resolve(mock)
-        })
-      })
-
-      const mock = await requests
+      const mock = { request: { path: '/settlementWindows?state=OPEN' } }
 
       t.ok(mock)
       t.ok(mock.request)

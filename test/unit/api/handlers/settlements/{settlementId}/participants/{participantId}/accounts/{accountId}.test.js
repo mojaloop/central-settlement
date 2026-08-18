@@ -31,7 +31,6 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Mockgen = require('../../../../../../../../data/mockgen.js')
 const Base = require('../../../../../../../base')
 const Enums = require('../../../../../../../../../src/models/lib/enums')
 const { logger } = require('../../../../../../../../../src/shared/logger')
@@ -61,16 +60,7 @@ Test('/settlements/{sid}/participants/{pid}/account/{aid}', async (settlementTes
     sandbox.stub(Enums, 'ledgerAccountTypes').returns({})
     sandbox.stub(settlement, 'getByIdParticipantAccount').returns({})
     try {
-      const requests = new Promise((resolve, reject) => {
-        Mockgen().requests({
-          path: '/settlements/{sid}/participants/{pid}/accounts/{aid}',
-          operation: 'get'
-        }, function (error, mock) {
-          return error ? reject(error) : resolve(mock)
-        })
-      })
-
-      const mock = await requests
+      const mock = { request: { path: '/settlements/1/participants/2/accounts/3' } }
 
       t.ok(mock)
       t.ok(mock.request)
@@ -109,16 +99,7 @@ Test('/settlements/{sid}/participants/{pid}/account/{aid}', async (settlementTes
     sandbox.stub(Enums, 'ledgerAccountTypes').returns({})
     sandbox.stub(settlement, 'getByIdParticipantAccount').throws()
     try {
-      const requests = new Promise((resolve, reject) => {
-        Mockgen().requests({
-          path: '/settlements/{sid}/participants/{pid}/accounts/{aid}',
-          operation: 'get'
-        }, function (error, mock) {
-          return error ? reject(error) : resolve(mock)
-        })
-      })
-
-      const mock = await requests
+      const mock = { request: { path: '/settlements/1/participants/2/accounts/3' } }
 
       t.ok(mock)
       t.ok(mock.request)
@@ -162,16 +143,7 @@ Test('/settlements/{sid}/participants/{pid}/account/{aid}', async (settlementTes
     sandbox.stub(Enums, 'transferStates').returns({})
     sandbox.stub(settlement, 'putById').returns({})
     try {
-      const requests = new Promise((resolve, reject) => {
-        Mockgen().requests({
-          path: '/settlements/{sid}/participants/{pid}/accounts/{aid}',
-          operation: 'put'
-        }, function (error, mock) {
-          return error ? reject(error) : resolve(mock)
-        })
-      })
-
-      const mock = await requests
+      const mock = { request: { path: '/settlements/1/participants/2/accounts/3', body: { state: 'SETTLED', reason: 'reason', externalReference: 'ref' } } }
 
       t.ok(mock)
       t.ok(mock.request)
@@ -216,16 +188,7 @@ Test('/settlements/{sid}/participants/{pid}/account/{aid}', async (settlementTes
     sandbox.stub(Enums, 'transferStates').returns({})
     sandbox.stub(settlement, 'putById').throws()
     try {
-      const requests = new Promise((resolve, reject) => {
-        Mockgen().requests({
-          path: '/settlements/{sid}/participants/{pid}/accounts/{aid}',
-          operation: 'put'
-        }, function (error, mock) {
-          return error ? reject(error) : resolve(mock)
-        })
-      })
-
-      const mock = await requests
+      const mock = { request: { path: '/settlements/1/participants/2/accounts/3', body: { state: 'SETTLED', reason: 'reason', externalReference: 'ref' } } }
 
       t.ok(mock)
       t.ok(mock.request)
