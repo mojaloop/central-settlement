@@ -31,143 +31,126 @@
 const Path = require('path')
 const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
 const Handlers = require('./handlers')
-
-// The API is served under the base path defined by the API definition's
-// `servers` url. openapi-backend matches operations against the definition
-// paths, so the base path is stripped before handing over the request.
-const basePath = '/v2'
-
-/**
- * Request handler
- *
- * @param {object} api OpenAPIBackend instance
- * @param {object} req Request
- * @param {object} h   Response handle
- */
-const handleRequest = (api, req, h) => api.handleRequest(
-  {
-    method: req.method,
-    path: req.path.replace(new RegExp(`^${basePath}`), ''),
-    body: req.payload,
-    query: req.query,
-    headers: req.headers
-  }, req, h)
+const { getBasePath, handleRequest } = require('./openapiRouting')
 
 /**
  * Core API Routes
  *
  * @param {object} api OpenAPIBackend instance
  */
-const apiRoutes = (api) => [
-  {
-    method: 'GET',
-    path: `${basePath}/health`,
-    handler: (req, h) => handleRequest(api, req, h),
-    options: {
-      tags: ['api', 'getHealth'],
-      description: 'Gets the health of the service and sub-services (i.e. database).'
+const apiRoutes = (api) => {
+  const basePath = getBasePath(api)
+  return [
+    {
+      method: 'GET',
+      path: `${basePath}/health`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'getHealth'],
+        description: 'Gets the health of the service and sub-services (i.e. database).'
+      }
+    },
+    {
+      method: 'GET',
+      path: `${basePath}/settlementWindows/{id}`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'getSettlementWindowById', 'sampled'],
+        description: 'Returns a Settlement Window by id.'
+      }
+    },
+    {
+      method: 'POST',
+      path: `${basePath}/settlementWindows/{id}`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'closeSettlementWindow', 'sampled'],
+        description: 'Closes requested window and opens a new one.'
+      }
+    },
+    {
+      method: 'GET',
+      path: `${basePath}/settlementWindows`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'getSettlementWindowsByParams', 'sampled'],
+        description: 'Returns Settlement Windows as per parameter(s).'
+      }
+    },
+    {
+      method: 'GET',
+      path: `${basePath}/settlements`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'getSettlementsByParams', 'sampled'],
+        description: 'Returns Settlements as per parameter(s).'
+      }
+    },
+    {
+      method: 'POST',
+      path: `${basePath}/settlements`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'createSettlement', 'sampled'],
+        description: 'Triggers settlement creation. Returns settlement report.'
+      }
+    },
+    {
+      method: 'GET',
+      path: `${basePath}/settlements/{id}`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'getSettlementById', 'sampled'],
+        description: 'Returns Settlement(s) as per parameters/filter criteria.'
+      }
+    },
+    {
+      method: 'PUT',
+      path: `${basePath}/settlements/{id}`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'updateSettlementById', 'sampled'],
+        description: 'Acknowledgement of settlement by updating with Settlement Id.'
+      }
+    },
+    {
+      method: 'GET',
+      path: `${basePath}/settlements/{sid}/participants/{pid}`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'getSettlementBySettlementParticipant', 'sampled'],
+        description: 'Returns Settlement(s) as per filter criteria.'
+      }
+    },
+    {
+      method: 'PUT',
+      path: `${basePath}/settlements/{sid}/participants/{pid}`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'updateSettlementBySettlementParticipant', 'sampled'],
+        description: 'Acknowledgement of settlement by updating the reason and state by SP.'
+      }
+    },
+    {
+      method: 'GET',
+      path: `${basePath}/settlements/{sid}/participants/{pid}/accounts/{aid}`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'getSettlementBySettlementParticipantAccount', 'sampled'],
+        description: 'Returns Settlement(s) as per filter criteria.'
+      }
+    },
+    {
+      method: 'PUT',
+      path: `${basePath}/settlements/{sid}/participants/{pid}/accounts/{aid}`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'updateSettlementBySettlementParticipantAccount', 'sampled'],
+        description: 'Acknowledgement of settlement by updating the reason and state by SPA.'
+      }
     }
-  },
-  {
-    method: 'GET',
-    path: `${basePath}/settlementWindows/{id}`,
-    handler: (req, h) => handleRequest(api, req, h),
-    options: {
-      tags: ['api', 'getSettlementWindowById', 'sampled'],
-      description: 'Returns a Settlement Window by id.'
-    }
-  },
-  {
-    method: 'POST',
-    path: `${basePath}/settlementWindows/{id}`,
-    handler: (req, h) => handleRequest(api, req, h),
-    options: {
-      tags: ['api', 'closeSettlementWindow', 'sampled'],
-      description: 'Closes requested window and opens a new one.'
-    }
-  },
-  {
-    method: 'GET',
-    path: `${basePath}/settlementWindows`,
-    handler: (req, h) => handleRequest(api, req, h),
-    options: {
-      tags: ['api', 'getSettlementWindowsByParams', 'sampled'],
-      description: 'Returns Settlement Windows as per parameter(s).'
-    }
-  },
-  {
-    method: 'GET',
-    path: `${basePath}/settlements`,
-    handler: (req, h) => handleRequest(api, req, h),
-    options: {
-      tags: ['api', 'getSettlementsByParams', 'sampled'],
-      description: 'Returns Settlements as per parameter(s).'
-    }
-  },
-  {
-    method: 'POST',
-    path: `${basePath}/settlements`,
-    handler: (req, h) => handleRequest(api, req, h),
-    options: {
-      tags: ['api', 'createSettlement', 'sampled'],
-      description: 'Triggers settlement creation. Returns settlement report.'
-    }
-  },
-  {
-    method: 'GET',
-    path: `${basePath}/settlements/{id}`,
-    handler: (req, h) => handleRequest(api, req, h),
-    options: {
-      tags: ['api', 'getSettlementById', 'sampled'],
-      description: 'Returns Settlement(s) as per parameters/filter criteria.'
-    }
-  },
-  {
-    method: 'PUT',
-    path: `${basePath}/settlements/{id}`,
-    handler: (req, h) => handleRequest(api, req, h),
-    options: {
-      tags: ['api', 'updateSettlementById', 'sampled'],
-      description: 'Acknowledgement of settlement by updating with Settlement Id.'
-    }
-  },
-  {
-    method: 'GET',
-    path: `${basePath}/settlements/{sid}/participants/{pid}`,
-    handler: (req, h) => handleRequest(api, req, h),
-    options: {
-      tags: ['api', 'getSettlementBySettlementParticipant', 'sampled'],
-      description: 'Returns Settlement(s) as per filter criteria.'
-    }
-  },
-  {
-    method: 'PUT',
-    path: `${basePath}/settlements/{sid}/participants/{pid}`,
-    handler: (req, h) => handleRequest(api, req, h),
-    options: {
-      tags: ['api', 'updateSettlementBySettlementParticipant', 'sampled'],
-      description: 'Acknowledgement of settlement by updating the reason and state by SP.'
-    }
-  },
-  {
-    method: 'GET',
-    path: `${basePath}/settlements/{sid}/participants/{pid}/accounts/{aid}`,
-    handler: (req, h) => handleRequest(api, req, h),
-    options: {
-      tags: ['api', 'getSettlementBySettlementParticipantAccount', 'sampled'],
-      description: 'Returns Settlement(s) as per filter criteria.'
-    }
-  },
-  {
-    method: 'PUT',
-    path: `${basePath}/settlements/{sid}/participants/{pid}/accounts/{aid}`,
-    handler: (req, h) => handleRequest(api, req, h),
-    options: {
-      tags: ['api', 'updateSettlementBySettlementParticipantAccount', 'sampled'],
-      description: 'Acknowledgement of settlement by updating the reason and state by SPA.'
-    }
-  }
-]
+  ]
+}
 
 module.exports = {
   plugin: {
