@@ -108,7 +108,7 @@
     "chai": "6.2.2",
     "chai-exclude": "3.0.1",
     "chai-subset": "1.6.0",
-    "eslint": "10.8.1",
+    "eslint": "10.9.0",
     "esm": "3.2.25",
     "get-port": "7.2.0",
     "jest": "30.4.2",
