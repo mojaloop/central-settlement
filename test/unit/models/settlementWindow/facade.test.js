@@ -766,6 +766,67 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
         }
       })
 
+      await closeTest.test('close the specified open window will throw an error if debit/credit not balanced.', async test => {
+        try {
+          const knexStub = sandbox.stub()
+          const trxStub = sandbox.stub()
+          knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
+          const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
+
+          sandbox.stub(SettlementModel, 'getAll').resolves([
+            {
+              settlementModelId: 1,
+              name: 'DEFERREDNETUSD',
+              isActive: true,
+              settlementGranularity: 'NET',
+              settlementInterchange: 'MULTILATERAL',
+              settlementDelay: 'DEFERRED',
+              currencyId: 'USD',
+              requireLiquidityCheck: true,
+              ledgerAccountTypeId: 1,
+              autoPositionReset: true
+            },
+            {
+              settlementModelId: 2,
+              name: 'DEFAULTDEFERREDNETUSD',
+              isActive: true,
+              settlementGranularity: 'NET',
+              settlementInterchange: 'MULTILATERAL',
+              settlementDelay: 'DEFERRED',
+              currencyId: null,
+              requireLiquidityCheck: true,
+              ledgerAccountTypeId: 1,
+              autoPositionReset: true
+            }
+          ])
+
+          // knex.raw() — DROP(0), CREATE(1), SELECT DISTINCT(2), INSERT INTO(3), DROP(4), DROP at end(5)
+          // Also called as knex.from(knex.raw(...)) argument — not chained with .transacting() directly
+          const rawTransactingStub = sandbox.stub()
+          rawTransactingStub.onCall(2).resolves([[
+            { ledgerAccountTypeId: 1, currencyId: 'USD', settlementModelId: 1 }
+          ]])
+          rawTransactingStub.resolves()
+          knexStub.raw = sandbox.stub().returns({ transacting: rawTransactingStub })
+
+          // knex.from(knex.raw('settlementWindowContentStateChange ...')).insert(fn).transacting(trx)
+          knexStub.from = sandbox.stub().returns({
+            sum: sandbox.stub().returns({ first: sandbox.stub().returns({ transacting: sandbox.stub().resolves({ balanced: 1 }) }) }),
+            insert: sandbox.stub().returns({ transacting: sandbox.stub().resolves() })
+          })
+
+          Db.getKnex.returns(knexStub)
+          SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
+          await SettlementWindowFacade.close(params, enums)
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
+          logger.error('Close settlementwindow failed with error : ' + err)
+          test.pass('Error thrown as expected')
+          test.end()
+        }
+      })
+
       await closeTest.test('close the specified open window should throw an error.', async test => {
         try {
           sandbox.stub(SettlementModel, 'getAll').resolves([

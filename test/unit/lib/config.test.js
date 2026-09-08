@@ -30,5 +30,29 @@ Test('Config should', configTest => {
     test.end()
   })
 
+  configTest.test('DEADLOCK.RETRIES is not set', async function (test) {
+    const DefaultsStub = { ...Defaults }
+    DefaultsStub.DEADLOCK.RETRIES = undefined
+
+    const Config = Proxyquire('../../../src/lib/config', {
+      '../../config/default.json': DefaultsStub
+    })
+
+    test.ok(Config.SETTLEMENT_DEADLOCK_RETRIES === 3)
+    test.end()
+  })
+
+  configTest.test('DEADLOCK.RETRY_DELAY_MS is not set', async function (test) {
+    const DefaultsStub = { ...Defaults }
+    DefaultsStub.DEADLOCK.RETRY_DELAY_MS = undefined
+
+    const Config = Proxyquire('../../../src/lib/config', {
+      '../../config/default.json': DefaultsStub
+    })
+
+    test.ok(Config.SETTLEMENT_DEADLOCK_RETRY_DELAY_MS === 50)
+    test.end()
+  })
+
   configTest.end()
 })
