@@ -15,8 +15,8 @@ FROM node:${NODE_VERSION} as builder
 WORKDIR /opt/app/
 
 RUN apk --no-cache add git
-RUN apk add --no-cache -t build-dependencies make gcc g++ python3 py3-setuptools libtool openssl-dev autoconf automake bash \
-    && cd $(npm root -g)/npm
+RUN apk add --no-cache -t build-dependencies \
+    autoconf automake bash g++ gcc libtool make openssl-dev py3-setuptools python3
 
 COPY package.json package-lock.json* /opt/app/
 # Lifecycle scripts are skipped for supply-chain safety (docker:S6505); node-rdkafka
