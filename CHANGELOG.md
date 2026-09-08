@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.5.0](https://github.com/mojaloop/central-settlement/compare/v17.4.0...v17.5.0) (2026-09-08)
+
+
+### Features
+
+* migrate admin and settlement APIs to OpenAPI 3.0.3 and openapi-backend ([#487](https://github.com/mojaloop/central-settlement/issues/487)) ([8ebc12b](https://github.com/mojaloop/central-settlement/commit/8ebc12b61d55c346bbf840d53133d6f6d9fdc8e7)), closes [mojaloop/#4479](https://github.com/mojaloop/project/issues/4479)
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([cffa280](https://github.com/mojaloop/central-settlement/commit/cffa280b4e2d5a831416384c9fef50dc8c9812da))
+
 ## [17.4.0](https://github.com/mojaloop/central-settlement/compare/v17.3.4...v17.4.0) (2026-05-25)
 
 
