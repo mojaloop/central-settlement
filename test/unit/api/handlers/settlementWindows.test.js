@@ -1,7 +1,7 @@
 /*****
  License
  --------------
- Copyright © 2020-2025 Mojaloop Foundation
+ Copyright © 2020-2026 Mojaloop Foundation
  The Mojaloop files are made available by the Mojaloop Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
 
  http://www.apache.org/licenses/LICENSE-2.0
@@ -29,7 +29,6 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Mockgen = require('../../../data/mockgen.js')
 const Base = require('../../base')
 const Enums = require('../../../../src/models/lib/enums')
 const { logger } = require('../../../../src/shared/logger')
@@ -73,16 +72,7 @@ Test('/settlementWindows', async (settlementWindowTest) => {
       changedDate: '2018-09-01T16:24:37.000Z'
     })
     try {
-      const requests = new Promise((resolve, reject) => {
-        Mockgen().requests({
-          path: '/settlementWindows',
-          operation: 'get'
-        }, function (error, mock) {
-          return error ? reject(error) : resolve(mock)
-        })
-      })
-
-      const mock = await requests
+      const mock = { request: { path: '/settlementWindows?state=OPEN' } }
 
       t.ok(mock)
       t.ok(mock.request)
@@ -120,16 +110,7 @@ Test('/settlementWindows', async (settlementWindowTest) => {
     sandbox.stub(Enums, 'settlementWindowStates').returns({})
     sandbox.stub(settlementWindows, 'getByParams').throws()
     try {
-      const requests = new Promise((resolve, reject) => {
-        Mockgen().requests({
-          path: '/settlementWindows',
-          operation: 'get'
-        }, function (error, mock) {
-          return error ? reject(error) : resolve(mock)
-        })
-      })
-
-      const mock = await requests
+      const mock = { request: { path: '/settlementWindows?state=OPEN' } }
 
       t.ok(mock)
       t.ok(mock.request)

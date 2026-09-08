@@ -1,7 +1,7 @@
 /*****
  License
  --------------
- Copyright © 2020-2025 Mojaloop Foundation
+ Copyright © 2020-2026 Mojaloop Foundation
  The Mojaloop files are made available by the Mojaloop Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
 
  http://www.apache.org/licenses/LICENSE-2.0
@@ -28,13 +28,137 @@
  ******/
 'use strict'
 
-const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
+const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
+const Handlers = require('./handlers')
+const { getBasePath, handleRequest, assertHandlersRegistered } = require('./openapiRouting')
+
+/**
+ * Core API Routes
+ *
+ * @param {object} api OpenAPIBackend instance
+ */
+const apiRoutes = (api) => {
+  const basePath = getBasePath(api)
+  return [
+    {
+      method: 'GET',
+      path: `${basePath}/health`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'getHealth'],
+        description: 'Gets the health of the service and sub-services (i.e. database).'
+      }
+    },
+    {
+      method: 'GET',
+      path: `${basePath}/settlementWindows/{id}`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'getSettlementWindowById', 'sampled'],
+        description: 'Returns a Settlement Window by id.'
+      }
+    },
+    {
+      method: 'POST',
+      path: `${basePath}/settlementWindows/{id}`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'closeSettlementWindow', 'sampled'],
+        description: 'Closes requested window and opens a new one.'
+      }
+    },
+    {
+      method: 'GET',
+      path: `${basePath}/settlementWindows`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'getSettlementWindowsByParams', 'sampled'],
+        description: 'Returns Settlement Windows as per parameter(s).'
+      }
+    },
+    {
+      method: 'GET',
+      path: `${basePath}/settlements`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'getSettlementsByParams', 'sampled'],
+        description: 'Returns Settlements as per parameter(s).'
+      }
+    },
+    {
+      method: 'POST',
+      path: `${basePath}/settlements`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'createSettlement', 'sampled'],
+        description: 'Triggers settlement creation. Returns settlement report.'
+      }
+    },
+    {
+      method: 'GET',
+      path: `${basePath}/settlements/{id}`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'getSettlementById', 'sampled'],
+        description: 'Returns Settlement(s) as per parameters/filter criteria.'
+      }
+    },
+    {
+      method: 'PUT',
+      path: `${basePath}/settlements/{id}`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'updateSettlementById', 'sampled'],
+        description: 'Acknowledgement of settlement by updating with Settlement Id.'
+      }
+    },
+    {
+      method: 'GET',
+      path: `${basePath}/settlements/{sid}/participants/{pid}`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'getSettlementBySettlementParticipant', 'sampled'],
+        description: 'Returns Settlement(s) as per filter criteria.'
+      }
+    },
+    {
+      method: 'PUT',
+      path: `${basePath}/settlements/{sid}/participants/{pid}`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'updateSettlementBySettlementParticipant', 'sampled'],
+        description: 'Acknowledgement of settlement by updating the reason and state by SP.'
+      }
+    },
+    {
+      method: 'GET',
+      path: `${basePath}/settlements/{sid}/participants/{pid}/accounts/{aid}`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'getSettlementBySettlementParticipantAccount', 'sampled'],
+        description: 'Returns Settlement(s) as per filter criteria.'
+      }
+    },
+    {
+      method: 'PUT',
+      path: `${basePath}/settlements/{sid}/participants/{pid}/accounts/{aid}`,
+      handler: (req, h) => handleRequest(api, req, h),
+      options: {
+        tags: ['api', 'updateSettlementBySettlementParticipantAccount', 'sampled'],
+        description: 'Acknowledgement of settlement by updating the reason and state by SPA.'
+      }
+    }
+  ]
+}
 
 module.exports = {
-  plugin: HapiOpenAPI,
-  options: {
-    api: Path.resolve(__dirname, '../interface/swagger.json'),
-    handlers: Path.resolve(__dirname, './handlers')
+  plugin: {
+    name: 'api-routes',
+    register: async function (server) {
+      const api = await OpenapiBackend.initialise(Path.resolve(__dirname, '../interface/swagger.json'), Handlers)
+      assertHandlersRegistered(api)
+      server.route(apiRoutes(api))
+    }
   }
 }

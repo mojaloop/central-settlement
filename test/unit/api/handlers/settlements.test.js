@@ -1,7 +1,7 @@
 /*****
  License
  --------------
- Copyright © 2020-2025 Mojaloop Foundation
+ Copyright © 2020-2026 Mojaloop Foundation
  The Mojaloop files are made available by the Mojaloop Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
 
  http://www.apache.org/licenses/LICENSE-2.0
@@ -29,7 +29,6 @@
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
-const Mockgen = require('../../../data/mockgen.js')
 const Base = require('../../base')
 const Enums = require('../../../../src/models/lib/enums')
 const { logger } = require('../../../../src/shared/logger')
@@ -67,16 +66,7 @@ Test('/settlements', async (settlementTest) => {
     sandbox.stub(Enums, 'settlementStates').returns({})
     sandbox.stub(settlement, 'getSettlementsByParams').returns({})
     try {
-      const requests = new Promise((resolve, reject) => {
-        Mockgen().requests({
-          path: '/settlements',
-          operation: 'get'
-        }, function (error, mock) {
-          return error ? reject(error) : resolve(mock)
-        })
-      })
-
-      const mock = await requests
+      const mock = { request: { path: '/settlements?state=SETTLED' } }
 
       t.ok(mock)
       t.ok(mock.request)
@@ -114,16 +104,7 @@ Test('/settlements', async (settlementTest) => {
     sandbox.stub(Enums, 'settlementStates').returns({})
     sandbox.stub(settlement, 'getSettlementsByParams').throws()
     try {
-      const requests = new Promise((resolve, reject) => {
-        Mockgen().requests({
-          path: '/settlements',
-          operation: 'get'
-        }, function (error, mock) {
-          return error ? reject(error) : resolve(mock)
-        })
-      })
-
-      const mock = await requests
+      const mock = { request: { path: '/settlements?state=SETTLED' } }
 
       t.ok(mock)
       t.ok(mock.request)
@@ -167,16 +148,7 @@ Test('/settlements', async (settlementTest) => {
     sandbox.stub(Enums, 'transferStates').returns({})
     sandbox.stub(settlement, 'settlementEventTrigger').returns({})
     try {
-      const requests = new Promise((resolve, reject) => {
-        Mockgen().requests({
-          path: '/settlements',
-          operation: 'post'
-        }, function (error, mock) {
-          return error ? reject(error) : resolve(mock)
-        })
-      })
-
-      const mock = await requests
+      const mock = { request: { path: '/settlements', body: { settlementModel: 'DEFERREDNET', reason: 'reason', settlementWindows: [{ id: 1 }] } } }
 
       t.ok(mock)
       t.ok(mock.request)
@@ -218,16 +190,7 @@ Test('/settlements', async (settlementTest) => {
     sandbox.stub(Enums, 'ledgerEntryTypes').returns({})
     sandbox.stub(settlement, 'settlementEventTrigger').throws()
     try {
-      const requests = new Promise((resolve, reject) => {
-        Mockgen().requests({
-          path: '/settlements',
-          operation: 'post'
-        }, function (error, mock) {
-          return error ? reject(error) : resolve(mock)
-        })
-      })
-
-      const mock = await requests
+      const mock = { request: { path: '/settlements', body: { settlementModel: 'DEFERREDNET', reason: 'reason', settlementWindows: [{ id: 1 }] } } }
 
       t.ok(mock)
       t.ok(mock.request)
