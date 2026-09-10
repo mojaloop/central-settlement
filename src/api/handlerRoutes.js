@@ -28,13 +28,43 @@
  ******/
 'use strict'
 
-const HapiOpenAPI = require('hapi-openapi')
 const Path = require('path')
+const { Util } = require('@mojaloop/central-services-shared')
+const { buildHandlerMap } = require('./handlerMap')
 
+const OpenapiBackend = Util.OpenapiBackend
+
+const DOCUMENT = Path.resolve(__dirname, '../interface/openapi-handler.json')
+const HANDLERS = Path.resolve(__dirname, './handlers')
+
+/** The handler service's own surface: a liveness probe and nothing else. */
 module.exports = {
-  plugin: HapiOpenAPI,
-  options: {
-    api: Path.resolve(__dirname, '../interface/swagger-handler.json'),
-    handlers: Path.resolve(__dirname, './handlers')
+  plugin: {
+    name: 'openapi-handler',
+    version: '1.0.0',
+    register: async function (server) {
+      const openapi = await OpenapiBackend.initialise(DOCUMENT, {
+        ...buildHandlerMap(DOCUMENT, HANDLERS),
+        validationFail: OpenapiBackend.validationFail,
+        notFound: OpenapiBackend.notFound,
+        methodNotAllowed: OpenapiBackend.methodNotAllowed
+      })
+
+      server.route({
+        method: ['GET'],
+        path: '/{path*}',
+        handler: (request, h) => openapi.handleRequest(
+          {
+            method: request.method,
+            path: request.path,
+            body: request.payload,
+            query: request.query,
+            headers: request.headers
+          },
+          request,
+          h
+        )
+      })
+    }
   }
 }

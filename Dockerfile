@@ -1,5 +1,5 @@
 # Arguments
-ARG NODE_VERSION="22.22.0-alpine3.23"
+ARG NODE_VERSION="24.19.0-alpine3.24"
 # NOTE: Ensure you set NODE_VERSION Build Argument as follows...
 #
 #  export NODE_VERSION="$(cat .nvmrc)-alpine" \
@@ -39,6 +39,7 @@ RUN adduser -D app-user
 USER app-user
 
 COPY --chown=app-user --from=builder /opt/app/ .
+
 RUN npm prune --production
 
 EXPOSE 3007

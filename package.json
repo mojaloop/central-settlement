@@ -23,7 +23,7 @@
     "registry": "https://registry.npmjs.org"
   },
   "engines": {
-    "node": ">=22.x"
+    "node": ">=24.x"
   },
   "pre-commit": [
     "lint",
@@ -35,7 +35,6 @@
     "start:api": "node src/api/index.js",
     "watch:api": "nodemon src/api/index.js",
     "start:handlers": "node src/handlers/index.js",
-    "regenerate": "yo swaggerize:test --framework hapi --apiPath './src/interface/swagger.yaml'",
     "lint": "standard",
     "lint:fix": "standard --fix",
     "eslint": "eslint .",
@@ -87,7 +86,6 @@
     "bignumber.js": "11.1.1",
     "blipp": "4.0.2",
     "hapi-auth-bearer-token": "8.0.0",
-    "hapi-openapi": "3.0.0",
     "hapi-swagger": "17.3.2",
     "lodash": "4.18.1",
     "lodash-es": "4.18.1",
@@ -176,9 +174,6 @@
     "path-to-regexp": "0.1.13",
     "yaml@1": "1.10.3",
     "yaml@2": "2.8.3"
-  },
-  "generator-swaggerize": {
-    "version": "4.1.0"
   },
   "main": "./server",
   "standard": {

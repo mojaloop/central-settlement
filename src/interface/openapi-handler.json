@@ -1,0 +1,36 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "version": "2.0",
+    "title": "MOJALOOP Central Settlements Handlers service API",
+    "description": "API of Settlements handlers to provide health service"
+  },
+  "servers": [
+    {
+      "url": "/v2"
+    }
+  ],
+  "x-authz": {
+    "service": "settlement-handler"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "Reports whether the handler service and its dependencies are up",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "A valid and health service."
+          },
+          "502": {
+            "description": "API is live, but error connecting to required sub-service."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {}
+  }
+}

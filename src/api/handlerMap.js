@@ -20,26 +20,42 @@
  optionally within square brackets <email>.
 
  * Mojaloop Foundation
- - Name Surname <name.surname@mojaloop.io>
-
- * Valentin Genev <valentin.genev@modusbox.com>
- * Deon Botha <deon.botha@modusbox.com>
- * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- * Miguel de Barros <miguel.debarros@modusbox.com>
 
  --------------
  ******/
 
 'use strict'
-const Swagmock = require('swagmock')
-const Path = require('path')
-const apiPath = Path.resolve(__dirname, '../../src/interface/openapi.json')
-let mockgen
 
-module.exports = function () {
-  /**
-     * Cached mock generator
-     */
-  mockgen = mockgen || Swagmock(apiPath)
-  return mockgen
+const Path = require('path')
+
+const METHODS = ['get', 'post', 'put', 'delete', 'patch']
+
+/**
+ * Handlers live in files named after the path they serve and export one
+ * function per method. The API document is what says which operationId that
+ * pair answers to, so the map is built from the document and a missing or
+ * misnamed handler is a startup failure.
+ */
+const buildHandlerMap = (documentPath, handlersDir) => {
+  const document = require(documentPath)
+  const handlers = {}
+
+  for (const [path, item] of Object.entries(document.paths)) {
+    // '/settlements/{sid}/participants/{pid}' -> 'settlements/{sid}/participants/{pid}'
+    const modulePath = Path.join(handlersDir, path.replace(/^\//, ''))
+    for (const method of METHODS) {
+      const operation = item[method]
+      if (!operation) continue
+
+      const module = require(modulePath)
+      const handler = module[method]
+      if (typeof handler !== 'function') {
+        throw new Error(`${modulePath} exports no ${method} for ${operation.operationId}`)
+      }
+      handlers[operation.operationId] = handler
+    }
+  }
+  return handlers
 }
+
+module.exports = { buildHandlerMap }
