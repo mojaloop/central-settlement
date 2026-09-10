@@ -20,33 +20,31 @@
  optionally within square brackets <email>.
 
  * Mojaloop Foundation
- - Name Surname <name.surname@mojaloop.io>
 
- * ModusBox
- - Georgi Georgiev <georgi.georgiev@modusbox.com>
-
- * VesselsTech
- - Lewis Daly <lewis@vesselstech.com>
  --------------
  ******/
 'use strict'
 
-const HealthCheck = require('@mojaloop/central-services-shared').HealthCheck.HealthCheck
-const { defaultHealthHandler } = require('@mojaloop/central-services-health')
+const Path = require('path')
+const { createGuard } = require('@mojaloop/authz')
 
-const packageJson = require('../../../package.json')
-const {
-  getSubServiceHealthDatastore,
-  getSubServiceHealthBroker
-} = require('../../lib/healthCheck/subServiceHealth')
+const DOCUMENT = Path.resolve(__dirname, '../interface/openapi.json')
 
-const healthCheck = new HealthCheck(packageJson, [
-  getSubServiceHealthDatastore,
-  getSubServiceHealthBroker
-])
+let guard
 
-const reportHealth = defaultHealthHandler(healthCheck)
-
-module.exports = {
-  get: (context, request, h) => reportHealth(request, h)
+const initialize = async () => {
+  guard = await createGuard(DOCUMENT)
 }
+
+const asRequest = (request) => ({
+  method: request.method,
+  url: request.path,
+  headers: request.headers
+})
+
+const participantNames = (request) => {
+  const visible = guard(asRequest(request), 'participants')
+  return visible.restricted ? visible.ids : undefined
+}
+
+module.exports = { initialize, participantNames }

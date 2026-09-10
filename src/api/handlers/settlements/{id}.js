@@ -33,6 +33,7 @@
 'use strict'
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Authz = require('../../../lib/authz')
 const { logger } = require('../../../shared/logger')
 const Settlements = require('../../../domain/settlement/index')
 const Utility = require('@mojaloop/central-services-shared').Util
@@ -50,8 +51,9 @@ module.exports = {
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-  get: async function getSettlementById (request, h) {
-    const settlementId = request.params.id
+  get: async function getSettlementById (context, request, h) {
+    const settlementId = context.request.params.id
+    const participantNames = Authz.participantNames(request)
     try {
       const { span, headers } = request
       const spanTags = Utility.EventFramework.getSpanTags(
@@ -64,12 +66,12 @@ module.exports = {
       span.setTags(spanTags)
       await span.audit({
         headers: request.headers,
-        params: request.params
+        params: context.request.params
       }, EventSdk.AuditEventAction.start)
 
       const Enums = await request.server.methods.enums('settlementStates')
       request.server.log('info', `get settlement by Id requested with id ${settlementId}`)
-      const settlementResult = await Settlements.getById({ settlementId }, Enums)
+      const settlementResult = await Settlements.getById({ settlementId, participantNames }, Enums)
       return h.response(settlementResult)
     } catch (err) {
       request.server.log('error', err)
@@ -84,8 +86,8 @@ module.exports = {
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-  put: async function updateSettlementById (request) {
-    const settlementId = request.params.id
+  put: async function updateSettlementById (context, request) {
+    const settlementId = context.request.params.id
     try {
       const { span, headers } = request
       const spanTags = Utility.EventFramework.getSpanTags(

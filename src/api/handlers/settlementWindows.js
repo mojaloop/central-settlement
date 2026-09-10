@@ -49,7 +49,7 @@ module.exports = {
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-  get: async function getSettlementWindowsByParams (request, h) {
+  get: async function getSettlementWindowsByParams (context, request, h) {
     try {
       const { span, headers } = request
       const spanTags = Utility.EventFramework.getSpanTags(
@@ -63,11 +63,11 @@ module.exports = {
       span.setTags(spanTags)
       await span.audit({
         headers: request.headers,
-        params: request.params
+        params: context.request.params
       }, EventSdk.AuditEventAction.start)
 
       const Enums = await request.server.methods.enums('settlementWindowStates')
-      const settlementWindowResult = await settlementWindows.getByParams({ query: request.query }, Enums)
+      const settlementWindowResult = await settlementWindows.getByParams({ query: context.request.query }, Enums)
       return h.response(settlementWindowResult)
     } catch (err) {
       request.server.log('error', err)

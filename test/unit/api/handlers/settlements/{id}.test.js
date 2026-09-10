@@ -34,6 +34,7 @@ const Base = require('../../../base')
 const Enums = require('../../../../../src/models/lib/enums')
 const { logger } = require('../../../../../src/shared/logger')
 const settlement = require('../../../../../src/domain/settlement/index')
+const Authz = require('../../../../../src/lib/authz')
 const Db = require('../../../../../src/lib/db')
 const CLDb = require('@mojaloop/central-ledger/src/lib/db')
 
@@ -55,6 +56,7 @@ Test('/settlements/{id}', async (settlementTest) => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
     sandbox.stub(CLDb, 'connect').returns(Promise.resolve({}))
+    sandbox.stub(Authz, 'participantNames').returns(undefined)
     server = await Base.setup()
     t.end()
   })
@@ -100,8 +102,8 @@ Test('/settlements/{id}', async (settlementTest) => {
         options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
       }
       // If headers are present, set the headers.
-      if (mock.request.headers && mock.request.headers.length > 0) {
-        options.headers = mock.request.headers
+      if (mock.request.headers) {
+        options.headers = { ...options.headers, ...mock.request.headers }
       }
       const response = await server.inject(options)
       t.equal(response.statusCode, 200, 'Ok response status')
@@ -147,8 +149,8 @@ Test('/settlements/{id}', async (settlementTest) => {
         options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
       }
       // If headers are present, set the headers.
-      if (mock.request.headers && mock.request.headers.length > 0) {
-        options.headers = mock.request.headers
+      if (mock.request.headers) {
+        options.headers = { ...options.headers, ...mock.request.headers }
       }
       const response = await server.inject(options)
       t.equal(response.statusCode, 500, 'Ok response status')
@@ -201,8 +203,8 @@ Test('/settlements/{id}', async (settlementTest) => {
         options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
       }
       // If headers are present, set the headers.
-      if (mock.request.headers && mock.request.headers.length > 0) {
-        options.headers = mock.request.headers
+      if (mock.request.headers) {
+        options.headers = { ...options.headers, ...mock.request.headers }
       }
 
       delete options.payload.state
@@ -261,8 +263,8 @@ Test('/settlements/{id}', async (settlementTest) => {
         options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
       }
       // If headers are present, set the headers.
-      if (mock.request.headers && mock.request.headers.length > 0) {
-        options.headers = mock.request.headers
+      if (mock.request.headers) {
+        options.headers = { ...options.headers, ...mock.request.headers }
       }
 
       delete options.payload.participants
@@ -319,8 +321,8 @@ Test('/settlements/{id}', async (settlementTest) => {
         options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
       }
       // If headers are present, set the headers.
-      if (mock.request.headers && mock.request.headers.length > 0) {
-        options.headers = mock.request.headers
+      if (mock.request.headers) {
+        options.headers = { ...options.headers, ...mock.request.headers }
       }
 
       delete options.payload.participants
@@ -377,8 +379,8 @@ Test('/settlements/{id}', async (settlementTest) => {
         options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
       }
       // If headers are present, set the headers.
-      if (mock.request.headers && mock.request.headers.length > 0) {
-        options.headers = mock.request.headers
+      if (mock.request.headers) {
+        options.headers = { ...options.headers, ...mock.request.headers }
       }
 
       delete options.payload.participants
@@ -434,8 +436,8 @@ Test('/settlements/{id}', async (settlementTest) => {
         options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
       }
       // If headers are present, set the headers.
-      if (mock.request.headers && mock.request.headers.length > 0) {
-        options.headers = mock.request.headers
+      if (mock.request.headers) {
+        options.headers = { ...options.headers, ...mock.request.headers }
       }
 
       options.payload.state = 'ABORTED'
@@ -491,8 +493,8 @@ Test('/settlements/{id}', async (settlementTest) => {
         options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
       }
       // If headers are present, set the headers.
-      if (mock.request.headers && mock.request.headers.length > 0) {
-        options.headers = mock.request.headers
+      if (mock.request.headers) {
+        options.headers = { ...options.headers, ...mock.request.headers }
       }
       const response = await server.inject(options)
       t.equal(response.statusCode, 400, 'Bad Request response status')

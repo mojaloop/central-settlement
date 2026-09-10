@@ -50,21 +50,27 @@ module.exports = {
         methodNotAllowed: OpenapiBackend.methodNotAllowed
       })
 
-      server.route({
-        method: ['GET'],
-        path: '/{path*}',
-        handler: (request, h) => openapi.handleRequest(
-          {
-            method: request.method,
-            path: request.path,
-            body: request.payload,
-            query: request.query,
-            headers: request.headers
-          },
-          request,
-          h
-        )
-      })
+      const handler = (request, h) => openapi.handleRequest(
+        {
+          method: request.method,
+          path: request.path,
+          body: request.payload,
+          query: request.query,
+          headers: request.headers
+        },
+        request,
+        h
+      )
+
+      server.route(openapi.router.getOperations().map(operation => ({
+        method: operation.method.toUpperCase(),
+        path: operation.path,
+        handler,
+        options: {
+          tags: ['api', ...(operation.tags ?? [])],
+          description: operation.summary ?? operation.operationId
+        }
+      })))
     }
   }
 }

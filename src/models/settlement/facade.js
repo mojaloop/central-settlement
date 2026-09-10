@@ -820,8 +820,9 @@ const Facade = {
           const pcMap = {}
           if (spcList.length > 0) {
             const pcRows = await knex('participantCurrency')
-              .select('participantCurrencyId', 'participantId', 'currencyId')
-              .whereIn('participantCurrencyId', spcList.map(r => r.participantCurrencyId))
+              .select('participantCurrency.participantCurrencyId', 'p.name AS participantId', 'participantCurrency.currencyId')
+              .join('participant AS p', 'p.participantId', 'participantCurrency.participantId')
+              .whereIn('participantCurrency.participantCurrencyId', spcList.map(r => r.participantCurrencyId))
               .transacting(trx)
             for (const pc of pcRows) {
               pcMap[pc.participantCurrencyId] = pc
@@ -1244,8 +1245,9 @@ const Facade = {
         const pcMap = {}
         if (spcList.length > 0) {
           const pcRows = await knex('participantCurrency')
-            .select('participantCurrencyId', 'participantId', 'currencyId')
-            .whereIn('participantCurrencyId', spcList.map(r => r.participantCurrencyId))
+            .select('participantCurrency.participantCurrencyId', 'p.name AS participantId', 'participantCurrency.currencyId')
+            .join('participant AS p', 'p.participantId', 'participantCurrency.participantId')
+            .whereIn('participantCurrency.participantCurrencyId', spcList.map(r => r.participantCurrencyId))
             .transacting(trx)
           for (const pc of pcRows) {
             pcMap[pc.participantCurrencyId] = pc
@@ -1372,7 +1374,7 @@ const Facade = {
     })
   },
 
-  getByParams: async function ({ state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId }) {
+  getByParams: async function ({ state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId, participantNames }) {
     return Db.from('settlement').query(builder => {
       const b = builder
         .innerJoin('settlementStateChange AS ssc', 'ssc.settlementStateChangeId', 'settlement.currentStateChangeId')
@@ -1383,9 +1385,10 @@ const Facade = {
         .innerJoin('settlementParticipantCurrency AS spc', 'spc.settlementId', 'sca.settlementId')
         .innerJoin('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'spc.currentStateChangeId')
         .innerJoin('participantCurrency AS pc', 'pc.participantCurrencyId', 'spc.participantCurrencyId')
+        .innerJoin('participant AS p', 'p.participantId', 'pc.participantId')
         .distinct('settlement.settlementId', 'ssc.settlementStateId', 'ssw.settlementWindowId',
           'swsc.settlementWindowStateId', 'swsc.reason AS settlementWindowReason', 'sw.createdDate',
-          'swsc.createdDate AS changedDate', 'pc.participantId', 'spc.participantCurrencyId',
+          'swsc.createdDate AS changedDate', 'p.name AS participantId', 'spc.participantCurrencyId',
           'spcsc.reason AS accountReason', 'spcsc.settlementStateId AS accountState',
           'spc.netAmount AS accountAmount', 'pc.currencyId AS accountCurrency')
         .select()
@@ -1396,8 +1399,9 @@ const Facade = {
       if (settlementWindowId) { b.where('ssw.settlementWindowId', settlementWindowId) }
       if (fromSettlementWindowDateTime) { b.where('sw.createdDate', '>=', fromSettlementWindowDateTime) }
       if (toSettlementWindowDateTime) { b.where('sw.createdDate', '<=', toSettlementWindowDateTime) }
-      if (participantId) { b.where('pc.participantId', participantId) }
+      if (participantId) { b.where('p.name', participantId) }
       if (accountId) { b.where('spc.participantCurrencyId', accountId) }
+      if (participantNames) { b.whereIn('p.name', participantNames) }
       return b
     })
   },
@@ -1588,19 +1592,21 @@ const Facade = {
       return Db.from('settlementParticipantCurrency').query(builder => {
         return builder
           .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
+          .join('participant AS p', 'p.participantId', 'pc.participantId')
           .select('settlementParticipantCurrencyId')
           .where({ settlementId })
-          .andWhere('pc.participantId', participantId)
+          .andWhere('p.name', participantId)
       })
     },
 
-    getParticipantCurrencyBySettlementId: async function ({ settlementId }) {
+    getParticipantCurrencyBySettlementId: async function ({ settlementId, participantNames }) {
       return Db.from('settlementParticipantCurrency').query(builder => {
-        return builder
+        const b = builder
           .leftJoin('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
           .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
+          .join('participant AS p', 'p.participantId', 'pc.participantId')
           .select(
-            'pc.participantId AS id',
+            'p.name AS id',
             'settlementParticipantCurrency.participantCurrencyId AS participantCurrencyId',
             'spcsc.settlementStateId AS state',
             'spcsc.reason AS reason',
@@ -1609,6 +1615,8 @@ const Facade = {
             'settlementParticipantCurrency.settlementParticipantCurrencyId AS key'
           )
           .where({ settlementId })
+        if (participantNames) { b.whereIn('p.name', participantNames) }
+        return b
       })
     },
 
@@ -1617,8 +1625,9 @@ const Facade = {
         return builder
           .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
           .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
+          .join('participant AS p', 'p.participantId', 'pc.participantId')
           .select(
-            'pc.participantId AS id',
+            'p.name AS id',
             'settlementParticipantCurrency.participantCurrencyId',
             'spcsc.settlementStateId AS state',
             'spcsc.reason AS reason',
@@ -1634,8 +1643,9 @@ const Facade = {
         return builder
           .join('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId')
           .join('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId')
+          .join('participant AS p', 'p.participantId', 'pc.participantId')
           .select(
-            'pc.participantId AS id',
+            'p.name AS id',
             'settlementParticipantCurrency.participantCurrencyId',
             'spcsc.settlementStateId AS state',
             'spcsc.reason AS reason',
@@ -1669,7 +1679,12 @@ const Facade = {
     },
 
     getWindowsBySettlementIdAndParticipantId: async function ({ settlementId, participantId }, enums) {
-      const participantAccountList = (await Db.from('participantCurrency').find({ participantId, ledgerAccountTypeId: enums.ledgerAccountTypes.POSITION })).map(record => record.participantCurrencyId)
+      const participantAccountList = (await Db.from('participantCurrency').query(builder => builder
+        .join('participant AS p', 'p.participantId', 'participantCurrency.participantId')
+        .select('participantCurrency.participantCurrencyId')
+        .where('p.name', participantId)
+        .andWhere('participantCurrency.ledgerAccountTypeId', enums.ledgerAccountTypes.POSITION)
+      )).map(record => record.participantCurrencyId)
       return Db.from('settlementSettlementWindow').query(builder => {
         return builder
           .join('settlementWindow', 'settlementWindow.settlementWindowId', 'settlementSettlementWindow.settlementWindowId')

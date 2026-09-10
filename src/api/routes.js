@@ -30,6 +30,7 @@
 
 const Path = require('path')
 const { Util } = require('@mojaloop/central-services-shared')
+const Authz = require('../lib/authz')
 const { buildHandlerMap } = require('./handlerMap')
 
 const OpenapiBackend = Util.OpenapiBackend
@@ -37,12 +38,38 @@ const OpenapiBackend = Util.OpenapiBackend
 const DOCUMENT = Path.resolve(__dirname, '../interface/openapi.json')
 const HANDLERS = Path.resolve(__dirname, './handlers')
 
-const METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
-
 // The document's paths are relative to the server URL, so the served prefix
 // comes off the request before an operation is matched.
 const basePath = (require(DOCUMENT).servers?.[0]?.url ?? '/').replace(/\/$/, '')
 const relative = (path) => path.startsWith(basePath) ? path.slice(basePath.length) || '/' : path
+
+/**
+ * One route per operation the document declares, each carrying that
+ * operation's tags, which is what decides whether a request is traced.
+ */
+const routesFor = (openapi) => {
+  const handler = (request, h) => openapi.handleRequest(
+    {
+      method: request.method,
+      path: relative(request.path),
+      body: request.payload,
+      query: request.query,
+      headers: request.headers
+    },
+    request,
+    h
+  )
+
+  return openapi.router.getOperations().map(operation => ({
+    method: operation.method.toUpperCase(),
+    path: `${basePath}${operation.path}`,
+    handler,
+    options: {
+      tags: ['api', ...(operation.tags ?? [])],
+      description: operation.summary ?? operation.operationId
+    }
+  }))
+}
 
 /**
  * Routes every request through the API document: it matches the operation,
@@ -54,6 +81,7 @@ module.exports = {
     name: 'openapi',
     version: '1.0.0',
     register: async function (server) {
+      await Authz.initialize()
       const openapi = await OpenapiBackend.initialise(DOCUMENT, {
         ...buildHandlerMap(DOCUMENT, HANDLERS),
         validationFail: OpenapiBackend.validationFail,
@@ -61,21 +89,7 @@ module.exports = {
         methodNotAllowed: OpenapiBackend.methodNotAllowed
       })
 
-      server.route({
-        method: METHODS,
-        path: `${basePath}/{path*}`,
-        handler: (request, h) => openapi.handleRequest(
-          {
-            method: request.method,
-            path: relative(request.path),
-            body: request.payload,
-            query: request.query,
-            headers: request.headers
-          },
-          request,
-          h
-        )
-      })
+      server.route(routesFor(openapi))
     }
   }
 }

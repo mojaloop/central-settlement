@@ -86,47 +86,51 @@ const groupSettlementWindowContentBySettlementWindow = (records) => {
 }
 
 module.exports = {
-  getById: async function ({ settlementId }, enums) {
-    const settlement = await SettlementModel.getById({ settlementId }, enums)
-    if (settlement) {
-      const settlementWindowsList = await SettlementWindowModel.getBySettlementId({ settlementId }, enums)
-      const participantCurrenciesList = await SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({ settlementId }, enums)
-      const participants = prepareParticipantsResult(participantCurrenciesList)
-
-      // Build settlement window content array and insert into settlement window list object
-      const windowContentRecords = []
-      let windowContentResponseData = {}
-
-      for (const key of Object.keys(settlementWindowsList)) {
-        const windowContentRecord = await SettlementWindowContentModel.getBySettlementAndWindowId(settlementId, settlementWindowsList[key].id)
-        windowContentResponseData = {
-          id: windowContentRecord[0].id,
-          state: windowContentRecord[0].state,
-          ledgerAccountType: windowContentRecord[0].ledgerAccountType,
-          currencyId: windowContentRecord[0].currencyId,
-          createdDate: windowContentRecord[0].createdDate,
-          changedDate: windowContentRecord[0].changedDate
-        }
-        windowContentRecords.push(windowContentResponseData)
-        settlementWindowsList[key].content = windowContentRecords
-      }
-
-      return {
-        id: settlement.settlementId,
-        state: settlement.state,
-        reason: settlement.reason,
-        createdDate: settlement.createdDate,
-        changedDate: settlement.changedDate,
-        settlementWindows: settlementWindowsList,
-        participants
-      }
-    } else {
+  getById: async function ({ settlementId, participantNames }, enums) {
+    const notFound = () => {
       const error = ErrorHandler.Factory.createFSPIOPError(
         ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR,
         `Settlement with ID '${settlementId}' not found`
       )
       logger.error(error)
-      throw error
+      return error
+    }
+
+    const settlement = await SettlementModel.getById({ settlementId }, enums)
+    if (!settlement) throw notFound()
+
+    const participantCurrenciesList = await SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId({ settlementId, participantNames }, enums)
+    if (participantCurrenciesList.length === 0) throw notFound()
+
+    const settlementWindowsList = await SettlementWindowModel.getBySettlementId({ settlementId }, enums)
+    const participants = prepareParticipantsResult(participantCurrenciesList)
+
+    // Build settlement window content array and insert into settlement window list object
+    const windowContentRecords = []
+    let windowContentResponseData = {}
+
+    for (const key of Object.keys(settlementWindowsList)) {
+      const windowContentRecord = await SettlementWindowContentModel.getBySettlementAndWindowId(settlementId, settlementWindowsList[key].id)
+      windowContentResponseData = {
+        id: windowContentRecord[0].id,
+        state: windowContentRecord[0].state,
+        ledgerAccountType: windowContentRecord[0].ledgerAccountType,
+        currencyId: windowContentRecord[0].currencyId,
+        createdDate: windowContentRecord[0].createdDate,
+        changedDate: windowContentRecord[0].changedDate
+      }
+      windowContentRecords.push(windowContentResponseData)
+      settlementWindowsList[key].content = windowContentRecords
+    }
+
+    return {
+      id: settlement.settlementId,
+      state: settlement.state,
+      reason: settlement.reason,
+      createdDate: settlement.createdDate,
+      changedDate: settlement.changedDate,
+      settlementWindows: settlementWindowsList,
+      participants
     }
   },
 
@@ -174,7 +178,7 @@ module.exports = {
       const settlements = {}
       let settlement
       let participant
-      const settlementsData = await SettlementModel.getByParams(params.query, enums)
+      const settlementsData = await SettlementModel.getByParams({ ...params.query, participantNames: params.participantNames }, enums)
       if (settlementsData && settlementsData.length > 0) {
         for (const s of settlementsData) {
           if (!settlements[s.settlementId]) {

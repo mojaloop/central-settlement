@@ -247,10 +247,10 @@
           {
             "in": "query",
             "name": "participantId",
-            "description": "A valid participant Id to filter on.\n",
+            "description": "A participant's name to filter on.\n",
             "required": false,
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           },
           {
@@ -378,7 +378,7 @@
           }
         ],
         "x-authz": {
-          "scopedBy": []
+          "scopedBy": ["participants"]
         },
         "parameters": [
           {
@@ -393,10 +393,10 @@
           {
             "in": "query",
             "name": "participantId",
-            "description": "A valid participant Id to filter on.\n",
+            "description": "A participant's name to filter on.\n",
             "required": false,
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           },
           {
@@ -645,7 +645,7 @@
           }
         ],
         "x-authz": {
-          "scopedBy": []
+          "scopedBy": ["participants"]
         },
         "parameters": [
           {
@@ -856,9 +856,9 @@
             "in": "path",
             "name": "pid",
             "required": true,
-            "description": "A valid Participant Id.\n",
+            "description": "A participant's name, which is the id it is known by.\n",
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           }
         ],
@@ -956,10 +956,10 @@
           {
             "in": "path",
             "name": "pid",
-            "description": "A valid Participant Id.",
+            "description": "A participant's name, which is the id it is known by.",
             "required": true,
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           }
         ],
@@ -1071,9 +1071,9 @@
             "in": "path",
             "name": "pid",
             "required": true,
-            "description": "A valid Participant Id.\n",
+            "description": "A participant's name, which is the id it is known by.\n",
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           },
           {
@@ -1180,10 +1180,10 @@
           {
             "in": "path",
             "name": "pid",
-            "description": "A valid Participant Id.",
+            "description": "A participant's name, which is the id it is known by.",
             "required": true,
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           },
           {
@@ -1322,8 +1322,8 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
-            "description": "Participant Id"
+            "type": "string",
+            "description": "The participant's name, which is the id it is known by"
           },
           "accounts": {
             "type": "array",
@@ -1560,7 +1560,8 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer"
+            "type": "string",
+            "description": "The participant's name, which is the id it is known by"
           },
           "accounts": {
             "type": "array",

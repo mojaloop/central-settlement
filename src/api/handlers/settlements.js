@@ -33,6 +33,7 @@
 'use strict'
 
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
+const Authz = require('../../lib/authz')
 const Settlements = require('../../domain/settlement/index')
 const Utility = require('@mojaloop/central-services-shared').Util
 const Enum = require('@mojaloop/central-services-shared').Enum
@@ -49,7 +50,8 @@ module.exports = {
      * produces: application/json
      * responses: 200, 400, 401, 404, 415, default
      */
-  get: async function getSettlementsByParams (request, h) {
+  get: async function getSettlementsByParams (context, request, h) {
+    const participantNames = Authz.participantNames(request)
     try {
       const { span, headers } = request
       const spanTags = Utility.EventFramework.getSpanTags(
@@ -62,11 +64,11 @@ module.exports = {
       span.setTags(spanTags)
       await span.audit({
         headers: request.headers,
-        params: request.params
+        params: context.request.params
       }, EventSdk.AuditEventAction.start)
 
       const Enums = await request.server.methods.enums('settlementStates')
-      const settlementResult = await Settlements.getSettlementsByParams({ query: request.query }, Enums)
+      const settlementResult = await Settlements.getSettlementsByParams({ query: context.request.query, participantNames }, Enums)
       return h.response(settlementResult)
     } catch (err) {
       request.server.log('error', err)
@@ -81,7 +83,7 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
 
-  post: async function createSettlementEvent (request, h) {
+  post: async function createSettlementEvent (context, request, h) {
     try {
       const { span, payload, headers } = request
       const spanTags = Utility.EventFramework.getSpanTags(

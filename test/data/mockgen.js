@@ -31,15 +31,44 @@
  ******/
 
 'use strict'
-const Swagmock = require('swagmock')
+const OpenApiSampler = require('openapi-sampler')
 const Path = require('path')
-const apiPath = Path.resolve(__dirname, '../../src/interface/openapi.json')
-let mockgen
+
+const document = require(Path.resolve(__dirname, '../../src/interface/openapi.json'))
+
+const sample = (schema) => OpenApiSampler.sample(schema, {}, document)
+
+const parametersOf = (item, operation) => [...(item.parameters ?? []), ...(operation.parameters ?? [])]
+
+const requestFor = (path, method) => {
+  const item = document.paths[path]
+  const operation = item?.[method]
+  if (!operation) throw new Error(`${method.toUpperCase()} ${path} is not an operation this document declares`)
+
+  const parameters = parametersOf(item, operation)
+  const request = { path }
+
+  for (const parameter of parameters.filter(p => p.in === 'path')) {
+    request.path = request.path.replace(`{${parameter.name}}`, encodeURIComponent(sample(parameter.schema)))
+  }
+
+  const query = parameters.filter(p => p.in === 'query' && p.required)
+  if (query.length > 0) request.query = Object.fromEntries(query.map(p => [p.name, sample(p.schema)]))
+
+  const body = operation.requestBody?.content?.['application/json']?.schema
+  if (body !== undefined) request.body = sample(body)
+
+  return request
+}
 
 module.exports = function () {
-  /**
-     * Cached mock generator
-     */
-  mockgen = mockgen || Swagmock(apiPath)
-  return mockgen
+  return {
+    requests ({ path, operation }, callback) {
+      try {
+        callback(null, { request: requestFor(path, operation) })
+      } catch (err) {
+        callback(err)
+      }
+    }
+  }
 }

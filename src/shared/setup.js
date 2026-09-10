@@ -119,7 +119,8 @@ const createServer = async function (port, modules) {
     server.log('info', `Server running on ${server.info.host}:${server.info.port}`)
     return server
   } catch (e) {
-    console.error(e)
+    logger.error(e)
+    throw e
   }
 }
 

@@ -3023,10 +3023,12 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                   })
                 })
               }),
-              whereIn: sandbox.stub().returns({
-                transacting: sandbox.stub().returns(
-                  Promise.resolve(stubData.putById[0].pcRows)
-                )
+              join: sandbox.stub().returns({
+                whereIn: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns(
+                    Promise.resolve(stubData.putById[0].pcRows)
+                  )
+                })
               })
             }),
             insert: sandbox.stub().returns({
@@ -3159,10 +3161,12 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                   })
                 })
               }),
-              whereIn: sandbox.stub().returns({
-                transacting: sandbox.stub().returns(
-                  Promise.resolve(stubData.putById[1].pcRows)
-                )
+              join: sandbox.stub().returns({
+                whereIn: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns(
+                    Promise.resolve(stubData.putById[1].pcRows)
+                  )
+                })
               })
             }),
             insert: sandbox.stub().returns({
@@ -3275,10 +3279,12 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                   })
                 })
               }),
-              whereIn: sandbox.stub().returns({
-                transacting: sandbox.stub().returns(
-                  Promise.resolve(stubData.putById[2].pcRows)
-                )
+              join: sandbox.stub().returns({
+                whereIn: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns(
+                    Promise.resolve(stubData.putById[2].pcRows)
+                  )
+                })
               })
             }),
             insert: sandbox.stub().returns({
@@ -3391,10 +3397,12 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                   })
                 })
               }),
-              whereIn: sandbox.stub().returns({
-                transacting: sandbox.stub().returns(
-                  Promise.resolve(stubData.putById[3].pcRows)
-                )
+              join: sandbox.stub().returns({
+                whereIn: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns(
+                    Promise.resolve(stubData.putById[3].pcRows)
+                  )
+                })
               })
             }),
             insert: sandbox.stub().returns({
@@ -3532,10 +3540,12 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                   })
                 })
               }),
-              whereIn: sandbox.stub().returns({
-                transacting: sandbox.stub().returns(
-                  Promise.resolve(stubData.putById[4].pcRows)
-                )
+              join: sandbox.stub().returns({
+                whereIn: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns(
+                    Promise.resolve(stubData.putById[4].pcRows)
+                  )
+                })
               })
             }),
             insert: sandbox.stub().returns({
@@ -3648,10 +3658,12 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                   })
                 })
               }),
-              whereIn: sandbox.stub().returns({
-                transacting: sandbox.stub().returns(
-                  Promise.resolve(stubData.putById[5].pcRows)
-                )
+              join: sandbox.stub().returns({
+                whereIn: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns(
+                    Promise.resolve(stubData.putById[5].pcRows)
+                  )
+                })
               })
             }),
             insert: sandbox.stub().returns({
@@ -4040,8 +4052,10 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             }),
             select: sandbox.stub().returns({
-              whereIn: sandbox.stub().returns({
-                transacting: sandbox.stub().returns(Promise.resolve(pcRowsMock))
+              join: sandbox.stub().returns({
+                whereIn: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns(Promise.resolve(pcRowsMock))
+                })
               })
             }),
             insert: sandbox.stub().returns({
@@ -4128,8 +4142,10 @@ Test('Settlement facade', async (settlementFacadeTest) => {
               })
             }),
             select: sandbox.stub().returns({
-              whereIn: sandbox.stub().returns({
-                transacting: sandbox.stub().returns(Promise.resolve(pcRowsMock))
+              join: sandbox.stub().returns({
+                whereIn: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns(Promise.resolve(pcRowsMock))
+                })
               })
             }),
             insert: sandbox.stub().returns({
@@ -4236,7 +4252,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           const settlementWindowId = 1
           const fromSettlementWindowDateTime = new Date() - 3600
           const toSettlementWindowDateTime = new Date()
-          const participantId = 1
+          const participantId = 'payerfsp'
           const accountId = 1
           const query = { state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId }
 
@@ -4258,9 +4274,11 @@ Test('Settlement facade', async (settlementFacadeTest) => {
                     innerJoin: sandbox.stub().returns({
                       innerJoin: sandbox.stub().returns({
                         innerJoin: sandbox.stub().returns({
-                          distinct: sandbox.stub().returns({
-                            select: sandbox.stub().returns({
-                              where: sandbox.stub()
+                          innerJoin: sandbox.stub().returns({
+                            distinct: sandbox.stub().returns({
+                              select: sandbox.stub().returns({
+                                where: sandbox.stub()
+                              })
                             })
                           })
                         })
@@ -4527,26 +4545,30 @@ Test('Settlement facade', async (settlementFacadeTest) => {
     try {
       await getAccountsInSettlementByIdsTest.test('retrieve accounts in settlement data by ids', async test => {
         try {
-          const params = { settlementId: 1, participantId: 1 }
+          const params = { settlementId: 1, participantId: 'payerfsp' }
           Db.settlementParticipantCurrency = { query: sandbox.stub() }
           const builderStub = sandbox.stub()
           Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
           builderStub.join = sandbox.stub()
+          const participantJoinStub = sandbox.stub()
           const selectStub = sandbox.stub()
           const whereStub = sandbox.stub()
           const andWhereStub = sandbox.stub()
           builderStub.join.returns({
-            select: selectStub.returns({
-              where: whereStub.returns({
-                andWhere: andWhereStub
+            join: participantJoinStub.returns({
+              select: selectStub.returns({
+                where: whereStub.returns({
+                  andWhere: andWhereStub
+                })
               })
             })
           })
           await SettlementFacade.settlementParticipantCurrency.getAccountsInSettlementByIds(params)
           test.ok(builderStub.join.withArgs('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId').calledOnce)
+          test.ok(participantJoinStub.withArgs('participant AS p', 'p.participantId', 'pc.participantId').calledOnce)
           test.ok(selectStub.withArgs('settlementParticipantCurrencyId').calledOnce)
           test.ok(whereStub.withArgs({ settlementId: params.settlementId }).calledOnce)
-          test.ok(andWhereStub.withArgs('pc.participantId', params.participantId).calledOnce)
+          test.ok(andWhereStub.withArgs('p.name', params.participantId).calledOnce)
           test.end()
         } catch (err) {
           logger.error(`getAccountsInSettlementByIds failed with error - ${err}`)
@@ -4589,19 +4611,23 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           Db.settlementParticipantCurrency.query.callsArgWith(0, builderStub)
           builderStub.leftJoin = sandbox.stub()
           const joinStub = sandbox.stub()
+          const participantJoinStub = sandbox.stub()
           const selectStub = sandbox.stub()
           const whereStub = sandbox.stub()
           builderStub.leftJoin.returns({
             join: joinStub.returns({
-              select: selectStub.returns({
-                where: whereStub
+              join: participantJoinStub.returns({
+                select: selectStub.returns({
+                  where: whereStub
+                })
               })
             })
           })
           await SettlementFacade.settlementParticipantCurrency.getParticipantCurrencyBySettlementId(params)
           test.ok(builderStub.leftJoin.withArgs('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId').calledOnce)
           test.ok(joinStub.withArgs('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId').calledOnce)
-          test.ok(selectStub.withArgs('pc.participantId AS id',
+          test.ok(participantJoinStub.withArgs('participant AS p', 'p.participantId', 'pc.participantId').calledOnce)
+          test.ok(selectStub.withArgs('p.name AS id',
             'settlementParticipantCurrency.participantCurrencyId AS participantCurrencyId',
             'spcsc.settlementStateId AS state',
             'spcsc.reason AS reason',
@@ -4653,18 +4679,22 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           const joinStub = sandbox.stub()
           const selectStub = sandbox.stub()
           const whereStub = sandbox.stub()
+          const participantJoinStub = sandbox.stub()
           builderStub.join.returns({
             join: joinStub.returns({
-              select: selectStub.returns({
-                where: whereStub
+              join: participantJoinStub.returns({
+                select: selectStub.returns({
+                  where: whereStub
+                })
               })
             })
           })
           await SettlementFacade.settlementParticipantCurrency.getSettlementAccountById(settlementParticipantCurrencyId)
           test.ok(builderStub.join.withArgs('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId').calledOnce)
           test.ok(joinStub.withArgs('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId').calledOnce)
+          test.ok(participantJoinStub.withArgs('participant AS p', 'p.participantId', 'pc.participantId').calledOnce)
           test.ok(selectStub.withArgs(
-            'pc.participantId AS id',
+            'p.name AS id',
             'settlementParticipantCurrency.participantCurrencyId',
             'spcsc.settlementStateId AS state',
             'spcsc.reason AS reason',
@@ -4715,18 +4745,22 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           const joinStub = sandbox.stub()
           const selectStub = sandbox.stub()
           const whereInStub = sandbox.stub()
+          const participantJoinStub = sandbox.stub()
           builderStub.join.returns({
             join: joinStub.returns({
-              select: selectStub.returns({
-                whereIn: whereInStub
+              join: participantJoinStub.returns({
+                select: selectStub.returns({
+                  whereIn: whereInStub
+                })
               })
             })
           })
           await SettlementFacade.settlementParticipantCurrency.getSettlementAccountsByListOfIds(settlementParticipantCurrencyIdList)
           test.ok(builderStub.join.withArgs('settlementParticipantCurrencyStateChange AS spcsc', 'spcsc.settlementParticipantCurrencyStateChangeId', 'settlementParticipantCurrency.currentStateChangeId').calledOnce)
           test.ok(joinStub.withArgs('participantCurrency AS pc', 'pc.participantCurrencyId', 'settlementParticipantCurrency.participantCurrencyId').calledOnce)
+          test.ok(participantJoinStub.withArgs('participant AS p', 'p.participantId', 'pc.participantId').calledOnce)
           test.ok(selectStub.withArgs(
-            'pc.participantId AS id',
+            'p.name AS id',
             'settlementParticipantCurrency.participantCurrencyId',
             'spcsc.settlementStateId AS state',
             'spcsc.reason AS reason',
@@ -4847,7 +4881,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
     try {
       await getWindowsBySettlementIdAndParticipantIdTest.test('retrieve settlement window by settlement id and account id', async test => {
         try {
-          const params = { settlementId: 1, accountId: 1 }
+          const params = { settlementId: 1, participantId: 'payerfsp', accountId: 1 }
           const enums = { ledgerAccountTypes: { POSITION: 1 } }
           Db.settlementSettlementWindow = { query: sandbox.stub() }
           const builderStub = sandbox.stub()
@@ -4860,7 +4894,19 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           context.on.returns({
             onIn: onInStub
           })
-          Db.participantCurrency = { find: sandbox.stub().returns([{ participantCurrencyId: 1 }]) }
+          const pcBuilderStub = sandbox.stub()
+          const pcJoinStub = sandbox.stub()
+          const pcWhereStub = sandbox.stub()
+          const pcAndWhereStub = sandbox.stub()
+          pcBuilderStub.join = pcJoinStub.returns({
+            select: sandbox.stub().returns({
+              where: pcWhereStub.returns({
+                andWhere: pcAndWhereStub
+              })
+            })
+          })
+          Db.participantCurrency = { query: sandbox.stub().returns([{ participantCurrencyId: 1 }]) }
+          Db.participantCurrency.query.callsArgWith(0, pcBuilderStub)
           const join3Stub = sandbox.stub()
           join3Stub.callsArgOn(1, context)
           const distinctStub = sandbox.stub()
@@ -4891,6 +4937,9 @@ Test('Settlement facade', async (settlementFacadeTest) => {
             'swsc.createdDate as changedDate').calledOnce)
           test.ok(selectStub.calledOnce)
           test.ok(whereStub.withArgs('settlementSettlementWindow.settlementId', params.settlementId).calledOnce)
+          test.ok(pcJoinStub.withArgs('participant AS p', 'p.participantId', 'participantCurrency.participantId').calledOnce)
+          test.ok(pcWhereStub.withArgs('p.name', params.participantId).calledOnce)
+          test.ok(pcAndWhereStub.withArgs('participantCurrency.ledgerAccountTypeId', enums.ledgerAccountTypes.POSITION).calledOnce)
           test.end()
         } catch (err) {
           logger.error(`getWindowsBySettlementIdAndParticipantId failed with error - ${err}`)

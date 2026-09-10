@@ -133,7 +133,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.ok(result, 'Result returned')
           test.ok(SettlementModel.getById.withArgs({ settlementId }, enums).calledOnce, 'SettlementModel.getById with args ... called once')
           test.ok(SettlementWindowModel.getBySettlementId.withArgs({ settlementId }, enums).calledOnce, 'SettlementWindowModel.getBySettlementId with args ... called once')
-          test.ok(SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId.withArgs({ settlementId }, enums).calledOnce, 'SettlementModel.spc.getParticipantCurrencyBySettlementId with args ... called once')
+          test.ok(SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId.withArgs({ settlementId, participantNames: undefined }, enums).calledOnce, 'SettlementModel.spc.getParticipantCurrencyBySettlementId with args ... called once')
           test.ok(SettlementWindowContentModel.getBySettlementAndWindowId.withArgs(settlementId, settlementWindowId).calledOnce, 'SettlementWindowContentModel.getBySettlementAndWindowId with args ... called once')
           test.end()
         } catch (err) {
@@ -151,7 +151,7 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.end()
         } catch (err) {
           logger.error(`getByIdTest failed with error - ${err}`)
-          test.equal(err.message, 'participantCurrenciesList is not iterable', `Error "${err.message}" thrown`)
+          test.equal(err.message, "Cannot read properties of undefined (reading 'length')", `Error "${err.message}" thrown`)
           test.end()
         }
       })
@@ -164,6 +164,37 @@ Test('SettlementService', async (settlementServiceTest) => {
           test.end()
         } catch (err) {
           logger.error(`getByIdTest failed with error - ${err}`)
+          test.equal(err.message, "Settlement with ID '1' not found", `Error "${err.message}" thrown`)
+          test.end()
+        }
+      })
+
+      await getByIdTest.test('ask for only the participants the caller may reach', async test => {
+        try {
+          SettlementModel.getById = sandbox.stub().returns(settlementMock)
+          SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId = sandbox.stub().returns(participantCurrenciesListMock)
+          await SettlementService.getById({ settlementId, participantNames: ['payerfsp'] }, enums, options)
+          test.ok(
+            SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId
+              .withArgs({ settlementId, participantNames: ['payerfsp'] }, enums).calledOnce,
+            'SettlementModel.spc.getParticipantCurrencyBySettlementId asked for the caller\'s participants'
+          )
+          test.end()
+        } catch (err) {
+          logger.error(`getByIdTest failed with error - ${err}`)
+          test.fail()
+          test.end()
+        }
+      })
+
+      await getByIdTest.test('answer not found when the caller reaches none of its participants', async test => {
+        try {
+          SettlementModel.getById = sandbox.stub().returns(settlementMock)
+          SettlementModel.settlementParticipantCurrency.getParticipantCurrencyBySettlementId = sandbox.stub().returns([])
+          await SettlementService.getById({ settlementId, participantNames: ['other'] }, enums, options)
+          test.fail('Error not thrown!')
+          test.end()
+        } catch (err) {
           test.equal(err.message, "Settlement with ID '1' not found", `Error "${err.message}" thrown`)
           test.end()
         }
@@ -346,7 +377,7 @@ Test('SettlementService', async (settlementServiceTest) => {
         try {
           const result = await SettlementService.getSettlementsByParams(params, enums, options)
           test.ok(result, 'Result returned')
-          test.ok(SettlementModel.getByParams.withArgs(params.query, enums).calledOnce, 'SettlementModel.getByParams with params ... called once')
+          test.ok(SettlementModel.getByParams.withArgs({ ...params.query, participantNames: undefined }, enums).calledOnce, 'SettlementModel.getByParams with params ... called once')
           test.equal(result[0].id, settlementsMockData[0].settlementId)
           test.equal(result[0].state, settlementsMockData[0].settlementStateId)
           test.equal(result[0].settlementWindows.length, 1)
@@ -395,6 +426,22 @@ Test('SettlementService', async (settlementServiceTest) => {
         } catch (err) {
           logger.error(`getSettlementsByParamsTest failed with error - ${err}`)
           test.pass(`Error "${err.message.substr(0, 50)} ..." thrown`)
+          test.end()
+        }
+      })
+
+      await getSettlementsByParamsTest.test('query for only the participants the caller may reach', async test => {
+        try {
+          SettlementModel.getByParams = sandbox.stub().returns(settlementsMockData)
+          await SettlementService.getSettlementsByParams({ ...params, participantNames: ['payerfsp'] }, enums, options)
+          test.ok(
+            SettlementModel.getByParams.withArgs({ ...params.query, participantNames: ['payerfsp'] }, enums).calledOnce,
+            'SettlementModel.getByParams queried for the caller\'s participants'
+          )
+          test.end()
+        } catch (err) {
+          logger.error(`getSettlementsByParamsTest failed with error - ${err}`)
+          test.fail()
           test.end()
         }
       })

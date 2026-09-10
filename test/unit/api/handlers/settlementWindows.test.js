@@ -103,8 +103,8 @@ Test('/settlementWindows', async (settlementWindowTest) => {
         options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
       }
       // If headers are present, set the headers.
-      if (mock.request.headers && mock.request.headers.length > 0) {
-        options.headers = mock.request.headers
+      if (mock.request.headers) {
+        options.headers = { ...options.headers, ...mock.request.headers }
       }
       const response = await server.inject(options)
       t.equal(response.statusCode, 200, 'Ok response status')
@@ -150,8 +150,8 @@ Test('/settlementWindows', async (settlementWindowTest) => {
         options.headers['Content-Type'] = 'application/x-www-form-urlencoded'
       }
       // If headers are present, set the headers.
-      if (mock.request.headers && mock.request.headers.length > 0) {
-        options.headers = mock.request.headers
+      if (mock.request.headers) {
+        options.headers = { ...options.headers, ...mock.request.headers }
       }
       const response = await server.inject(options)
       t.equal(response.statusCode, 500, 'Ok response status')

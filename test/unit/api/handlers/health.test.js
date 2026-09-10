@@ -63,7 +63,7 @@ Test('/health', async healthTest => {
       // Act
       const {
         responseCode
-      } = await unwrapResponse((reply) => getHealth(createRequest({ query: { detailed: true } }), reply))
+      } = await unwrapResponse((reply) => getHealth({}, createRequest({ query: { detailed: true } }), reply))
 
       // Assert
       test.deepEqual(responseCode, expectedResponseCode, 'The response code matches')
@@ -78,7 +78,7 @@ Test('/health', async healthTest => {
       // Act
       const {
         responseCode
-      } = await unwrapResponse((reply) => getHealth(createRequest({ query: { detailed: true } }), reply))
+      } = await unwrapResponse((reply) => getHealth({}, createRequest({ query: { detailed: true } }), reply))
 
       // Assert
       test.deepEqual(responseCode, expectedResponseCode, 'The response code matches')

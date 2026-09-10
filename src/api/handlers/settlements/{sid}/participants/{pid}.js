@@ -50,10 +50,10 @@ module.exports = {
      * responses: 200, 400, 401, 404, 415, default
      */
 
-  get: async function getSettlementBySettlementParticipantAccount (request, h) {
+  get: async function getSettlementBySettlementParticipantAccount (context, request, h) {
     try {
-      const settlementId = request.params.sid
-      const participantId = request.params.pid
+      const settlementId = context.request.params.sid
+      const participantId = context.request.params.pid
       const { span, headers } = request
       const spanTags = Utility.EventFramework.getSpanTags(
         Enum.Events.Event.Type.SETTLEMENT,
@@ -65,7 +65,7 @@ module.exports = {
       span.setTags(spanTags)
       await span.audit({
         headers: request.headers,
-        params: request.params
+        params: context.request.params
       }, EventSdk.AuditEventAction.start)
       const Enums = {
         settlementWindowStates: await request.server.methods.enums('settlementWindowStates'),
@@ -86,9 +86,9 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 404, 415, default
    */
-  put: async function updateSettlementById (request) {
-    const settlementId = request.params.sid
-    const participantId = request.params.pid
+  put: async function updateSettlementById (context, request) {
+    const settlementId = context.request.params.sid
+    const participantId = context.request.params.pid
     try {
       const { span, headers } = request
       const spanTags = Utility.EventFramework.getSpanTags(

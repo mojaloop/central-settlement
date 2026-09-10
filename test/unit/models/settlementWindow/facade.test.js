@@ -53,6 +53,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
   let leftJoin2Stub
   let leftJoin3Stub
   let leftJoin4Stub
+  let leftJoin5Stub
   let join2Stub
 
   settlementWindowFacadeTest.beforeEach(test => {
@@ -103,12 +104,16 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
     leftJoin2Stub = sandbox.stub()
     leftJoin3Stub = sandbox.stub()
     leftJoin4Stub = sandbox.stub()
+    leftJoin5Stub = sandbox.stub()
     builderStub.leftJoin.returns({
       select: selectStub.returns(selectStubResult),
       leftJoin: leftJoin2Stub.returns({
         leftJoin: leftJoin3Stub.returns({
           leftJoin: leftJoin4Stub.returns({
-            select: selectStub.returns(selectStubResult)
+            select: selectStub.returns(selectStubResult),
+            leftJoin: leftJoin5Stub.returns({
+              select: selectStub.returns(selectStubResult)
+            })
           })
         })
       })
@@ -260,7 +265,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
 
   await settlementWindowFacadeTest.test('getByParams should', async getByParamsTest => {
     try {
-      const participantId = 1
+      const participantId = 'payerfsp'
       const state = 'PENDING_SETTLEMENT'
       const fromDateTime = new Date('01-01-1970').toISOString()
       const toDateTime = new Date().toISOString()
@@ -293,7 +298,8 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
             'swsc.createdDate as changedDate').calledOnce)
           test.ok(orderByStub.withArgs('changedDate', 'desc').calledOnce)
           test.ok(distinctStub.calledOnce)
-          test.ok(whereStub.withArgs('pc.participantId', participantId).calledOnce)
+          test.ok(leftJoin5Stub.withArgs('participant AS p', 'p.participantId', 'pc.participantId').calledOnce)
+          test.ok(whereStub.withArgs('p.name', participantId).calledOnce)
           test.ok(whereStub.withArgs('swsc.settlementWindowStateId', state).calledOnce)
           test.ok(whereStub.withArgs('settlementWindow.createdDate', '>=', fromDateTime).calledOnce)
           test.ok(whereStub.withArgs('settlementWindow.createdDate', '<=', toDateTime).calledOnce)
@@ -324,7 +330,8 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
             'swsc.createdDate as changedDate').calledOnce)
           test.ok(orderByStub.withArgs('changedDate', 'desc').calledOnce)
           test.ok(distinctStub.calledOnce)
-          test.ok(whereStub.withArgs('pc.participantId', participantId).calledOnce)
+          test.ok(leftJoin5Stub.withArgs('participant AS p', 'p.participantId', 'pc.participantId').calledOnce)
+          test.ok(whereStub.withArgs('p.name', participantId).calledOnce)
           test.ok(whereStub.withArgs('swsc.settlementWindowStateId', state).notCalled)
           test.ok(whereStub.withArgs('settlementWindow.createdDate', '>=', fromDateTime).notCalled)
           test.ok(whereStub.withArgs('settlementWindow.createdDate', '<=', toDateTime).notCalled)

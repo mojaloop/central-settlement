@@ -111,6 +111,7 @@ const Facade = {
           .leftJoin('transferFulfilment AS tf', 'tf.settlementWindowId', 'settlementWindow.settlementWindowId')
           .leftJoin('transferParticipant AS tp', 'tp.transferId', 'tf.transferId')
           .leftJoin('participantCurrency AS pc', 'pc.participantCurrencyId', 'tp.participantCurrencyId')
+          .leftJoin('participant AS p', 'p.participantId', 'pc.participantId')
           .select(
             'settlementWindow.settlementWindowId',
             'swsc.settlementWindowStateId as state',
@@ -119,7 +120,7 @@ const Facade = {
             'swsc.createdDate as changedDate'
           )
           .orderBy('changedDate', 'desc').distinct()
-          .where('pc.participantId', participantId)
+          .where('p.name', participantId)
         if (state) { b.where('swsc.settlementWindowStateId', state) }
         if (fromDateTime) { b.where('settlementWindow.createdDate', '>=', fromDateTime) }
         if (toDateTime) { b.where('settlementWindow.createdDate', '<=', toDateTime) }
