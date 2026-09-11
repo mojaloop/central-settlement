@@ -74,7 +74,7 @@ Test('Health Handler', async handlersTest => {
       const {
         responseBody,
         responseCode
-      } = await unwrapResponse((reply) => healthHandler.get(createRequest({}), reply))
+      } = await unwrapResponse((reply) => healthHandler.get({}, createRequest({}), reply))
 
       // Assert
       const validationResult = Joi.object().validate(responseBody, expectedSchema) // We use Joi to validate the results as they rely on timestamps that are variable
