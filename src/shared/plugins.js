@@ -47,7 +47,7 @@ const registerPlugins = async (server) => {
     await server.register({
       plugin: APIDocumentation,
       options: {
-        documentPath: Path.resolve(__dirname, '../interface/openapi.json')
+        pathToSwaggerFile: Path.resolve(__dirname, '../interface/openapi.json')
       }
     })
   }

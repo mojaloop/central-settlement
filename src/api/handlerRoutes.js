@@ -37,6 +37,11 @@ const OpenapiBackend = Util.OpenapiBackend
 const DOCUMENT = Path.resolve(__dirname, '../interface/openapi-handler.json')
 const HANDLERS = Path.resolve(__dirname, './handlers')
 
+// The document's paths are relative to the server URL, so the served prefix
+// comes off the request before an operation is matched.
+const basePath = (require(DOCUMENT).servers?.[0]?.url ?? '/').replace(/\/$/, '')
+const relative = (path) => path.startsWith(basePath) ? path.slice(basePath.length) || '/' : path
+
 /** The handler service's own surface: a liveness probe and nothing else. */
 module.exports = {
   plugin: {
@@ -53,7 +58,7 @@ module.exports = {
       const handler = (request, h) => openapi.handleRequest(
         {
           method: request.method,
-          path: request.path,
+          path: relative(request.path),
           body: request.payload,
           query: request.query,
           headers: request.headers
@@ -64,7 +69,7 @@ module.exports = {
 
       server.route(openapi.router.getOperations().map(operation => ({
         method: operation.method.toUpperCase(),
-        path: operation.path,
+        path: `${basePath}${operation.path}`,
         handler,
         options: {
           tags: ['api', ...(operation.tags ?? [])],
