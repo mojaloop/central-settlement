@@ -1,7 +1,7 @@
 /*****
  License
  --------------
- Copyright © 2020-2025 Mojaloop Foundation
+ Copyright © 2020-2026 Mojaloop Foundation
  The Mojaloop files are made available by the Mojaloop Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
 
  http://www.apache.org/licenses/LICENSE-2.0
@@ -80,7 +80,7 @@ const createServer = async function (port, modules) {
       cache: [
         {
           provider: {
-            constructor: require('@hapi/catbox-memory'),
+            constructor: require('@hapi/catbox-memory').Engine,
             options: {
               partition: 'cache'
             }
@@ -115,15 +115,8 @@ const createServer = async function (port, modules) {
     await Plugins.registerPlugins(server)
     await server.register(modules)
     await server.start()
-
-    try {
-      server.plugins.openapi.setHost(server.info.host + ':' + server.info.port)
-      server.log('info', `Server running on ${server.info.host}:${server.info.port}`)
-      return server
-    } catch (e) {
-      server.log('error', e.message)
-      throw e
-    }
+    server.log('info', `Server running on ${server.info.host}:${server.info.port}`)
+    return server
   } catch (e) {
     console.error(e)
   }

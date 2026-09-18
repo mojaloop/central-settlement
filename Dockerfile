@@ -1,5 +1,5 @@
 # Arguments
-ARG NODE_VERSION="22.22.0-alpine3.23"
+ARG NODE_VERSION="24.18.0-alpine3.24"
 # NOTE: Ensure you set NODE_VERSION Build Argument as follows...
 #
 #  export NODE_VERSION="$(cat .nvmrc)-alpine" \
@@ -15,12 +15,17 @@ FROM node:${NODE_VERSION} as builder
 WORKDIR /opt/app/
 
 RUN apk --no-cache add git
-RUN apk add --no-cache -t build-dependencies make gcc g++ python3 libtool openssl-dev autoconf automake bash \
-    && cd $(npm root -g)/npm \
-    && npm install -g node-gyp
+RUN apk add --no-cache --virtual .build-deps \
+    autoconf automake bash g++ gcc libtool make openssl-dev py3-setuptools python3
 
 COPY package.json package-lock.json* /opt/app/
-RUN npm ci
+# Lifecycle scripts are skipped for supply-chain safety (docker:S6505); node-rdkafka
+# is the only production dependency that needs its native build, so run it explicitly.
+# node-gyp ships with npm, so there is no separate unpinned global install (docker:S8543).
+# Dev dependencies are omitted here rather than pruned from the runtime image: `npm prune`
+# re-extracts node-rdkafka and would throw away the native build made just above.
+RUN npm ci --omit=dev --ignore-scripts
+RUN npm rebuild node-rdkafka
 
 COPY config /opt/app/config
 COPY scripts /opt/app/scripts
@@ -39,7 +44,6 @@ RUN adduser -D app-user
 USER app-user
 
 COPY --chown=app-user --from=builder /opt/app/ .
-RUN npm prune --production
 
 EXPOSE 3007
 CMD ["node" "src/handlers/index.js" "h" "--transfersettlement"]

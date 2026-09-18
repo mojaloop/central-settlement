@@ -21,56 +21,39 @@
 
  * Mojaloop Foundation
  - Name Surname <name.surname@mojaloop.io>
-
- * ModusBox
- - Georgi Georgiev <georgi.georgiev@modusbox.com>
  --------------
  ******/
 'use strict'
 
-const Path = require('path')
 const OpenapiBackend = require('@mojaloop/central-services-shared').Util.OpenapiBackend
-const health = require('./handlers/health')
-const { getBasePath, handleRequest, assertHandlersRegistered } = require('./openapiRouting')
+
+const health = require('./health')
+const settlementWindows = require('./settlementWindows')
+const settlementWindowById = require('./settlementWindows/{id}')
+const settlements = require('./settlements')
+const settlementById = require('./settlements/{id}')
+const settlementParticipant = require('./settlements/{sid}/participants/{pid}')
+const settlementParticipantAccount = require('./settlements/{sid}/participants/{pid}/accounts/{aid}')
 
 /**
  * Map of API definition operationIds to route handlers, consumed by
- * openapi-backend.
+ * openapi-backend. The route handlers keep the hapi `(request, h)`
+ * signature, so the openapi-backend context is dropped here.
  */
-const Handlers = {
+module.exports = {
   getHealth: (context, request, h) => health.get(request, h),
+  getSettlementWindowById: (context, request, h) => settlementWindowById.get(request, h),
+  closeSettlementWindow: (context, request, h) => settlementWindowById.post(request, h),
+  getSettlementWindowsByParams: (context, request, h) => settlementWindows.get(request, h),
+  getSettlementsByParams: (context, request, h) => settlements.get(request, h),
+  createSettlement: (context, request, h) => settlements.post(request, h),
+  getSettlementById: (context, request, h) => settlementById.get(request, h),
+  updateSettlementById: (context, request, h) => settlementById.put(request, h),
+  getSettlementBySettlementParticipant: (context, request, h) => settlementParticipant.get(request, h),
+  updateSettlementBySettlementParticipant: (context, request, h) => settlementParticipant.put(request, h),
+  getSettlementBySettlementParticipantAccount: (context, request, h) => settlementParticipantAccount.get(request, h),
+  updateSettlementBySettlementParticipantAccount: (context, request, h) => settlementParticipantAccount.put(request, h),
   validationFail: OpenapiBackend.validationFail,
   notFound: OpenapiBackend.notFound,
   methodNotAllowed: OpenapiBackend.methodNotAllowed
-}
-
-/**
- * Handlers service API Routes
- *
- * @param {object} api OpenAPIBackend instance
- */
-const apiRoutes = (api) => {
-  const basePath = getBasePath(api)
-  return [
-    {
-      method: 'GET',
-      path: `${basePath}/health`,
-      handler: (req, h) => handleRequest(api, req, h),
-      options: {
-        tags: ['api', 'getHealth'],
-        description: 'Gets the health of the service and sub-services (i.e. database).'
-      }
-    }
-  ]
-}
-
-module.exports = {
-  plugin: {
-    name: 'handler-api-routes',
-    register: async function (server) {
-      const api = await OpenapiBackend.initialise(Path.resolve(__dirname, '../interface/swagger-handler.json'), Handlers)
-      assertHandlersRegistered(api)
-      server.route(apiRoutes(api))
-    }
-  }
 }

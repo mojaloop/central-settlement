@@ -1,7 +1,7 @@
 /*****
  License
  --------------
- Copyright © 2020-2025 Mojaloop Foundation
+ Copyright © 2020-2026 Mojaloop Foundation
  The Mojaloop files are made available by the Mojaloop Foundation under the Apache License, Version 2.0 (the "License") and you may not use these files except in compliance with the License. You may obtain a copy of the License at
 
  http://www.apache.org/licenses/LICENSE-2.0
@@ -41,7 +41,6 @@ Test('Server Setup', async setupTest => {
   let sandbox
   let serverStub
   let HapiStub
-  let HapiOpenAPIStub
   let PathStub
   let DbStub
   let CLDbStub
@@ -79,11 +78,6 @@ Test('Server Setup', async setupTest => {
         method: sandbox.stub(),
         start: sandbox.stub(),
         log: sandbox.stub(),
-        plugins: {
-          openapi: {
-            setHost: sandbox.stub()
-          }
-        },
         info: {
           host: Config.HOSTNAME,
           port: Config.PORT
@@ -99,16 +93,14 @@ Test('Server Setup', async setupTest => {
       CLDbStub = {
         connect: sandbox.stub().returns(Promise.resolve())
       }
-      HapiOpenAPIStub = sandbox.stub()
       PathStub = Path
       EnumsStub = [sandbox.stub()]
       ConfigStub = Config
       EngineStub = sandbox.stub()
 
       SetupProxy = Proxyquire('../../../src/shared/setup', {
-        '@hapi/catbox-memory': EngineStub,
+        '@hapi/catbox-memory': { Engine: EngineStub },
         '@hapi/hapi': HapiStub,
-        'hapi-openapi': HapiOpenAPIStub,
         path: PathStub,
         '../lib/db': DbStub,
         '@mojaloop/central-ledger/src/lib/db': CLDbStub,
@@ -141,9 +133,8 @@ Test('Server Setup', async setupTest => {
           }
 
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             '@hapi/hapi': HapiStubThrowError,
-            'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
             '@mojaloop/central-ledger/src/lib/db': CLDbStub,
@@ -159,7 +150,6 @@ Test('Server Setup', async setupTest => {
           test.equal(serverStub.register.callCount, 7, 'server.register called 7 times')
           test.ok(serverStub.method.calledOnce, 'server.method called once')
           test.ok(serverStub.start.calledOnce, 'server.start called once')
-          test.ok(serverStub.plugins.openapi.setHost.calledOnce, 'server.plugins.openapi.setHost called once')
           test.ok(serverStub.ext.calledOnce, 'server.ext called once')
           test.end()
         } catch (err) {
@@ -181,9 +171,8 @@ Test('Server Setup', async setupTest => {
           }
 
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             '@hapi/hapi': HapiStubThrowError,
-            'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
             '@mojaloop/central-ledger/src/lib/db': CLDbStub,
@@ -199,7 +188,6 @@ Test('Server Setup', async setupTest => {
           test.equal(serverStub.register.callCount, 7, 'server.register called 7 times')
           test.ok(serverStub.method.calledOnce, 'server.method called once')
           test.ok(serverStub.start.calledOnce, 'server.start called once')
-          test.ok(serverStub.plugins.openapi.setHost.calledOnce, 'server.plugins.openapi.setHost called once')
           test.end()
         } catch (err) {
           logger.error(`init failed with error - ${err}`)
@@ -222,9 +210,8 @@ Test('Server Setup', async setupTest => {
           const Config2Stub = Object.assign({}, ConfigStub)
           Config2Stub.HANDLERS_API_DISABLED = true
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             '@hapi/hapi': HapiStubThrowError,
-            'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
             '@mojaloop/central-ledger/src/lib/db': CLDbStub,
@@ -256,8 +243,7 @@ Test('Server Setup', async setupTest => {
 
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
             '../handlers/register': RegisterHandlersStub,
-            '@hapi/catbox-memory': EngineStub,
-            'hapi-openapi': HapiOpenAPIStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             path: PathStub,
             '../lib/db': DbStub,
             '@mojaloop/central-ledger/src/lib/db': CLDbStub,
@@ -305,9 +291,8 @@ Test('Server Setup', async setupTest => {
 
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
             '../handlers/register': RegisterHandlersStub,
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             '@hapi/hapi': HapiStubThrowError,
-            'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
             '@mojaloop/central-ledger/src/lib/db': CLDbStub,
@@ -349,9 +334,8 @@ Test('Server Setup', async setupTest => {
 
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
             '../handlers/register': RegisterHandlersStub,
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             '@hapi/hapi': HapiStubThrowError,
-            'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
             '@mojaloop/central-ledger/src/lib/db': CLDbStub,
@@ -393,9 +377,8 @@ Test('Server Setup', async setupTest => {
 
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
             '../handlers/register': RegisterHandlersStub,
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             '@hapi/hapi': HapiStubThrowError,
-            'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
             '@mojaloop/central-ledger/src/lib/db': CLDbStub,
@@ -437,9 +420,8 @@ Test('Server Setup', async setupTest => {
 
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
             '../handlers/register': RegisterHandlersStub,
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             '@hapi/hapi': HapiStubThrowError,
-            'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
             '@mojaloop/central-ledger/src/lib/db': CLDbStub,
@@ -471,9 +453,8 @@ Test('Server Setup', async setupTest => {
           }
 
           const SetupProxy1 = Proxyquire('../../../src/shared/setup', {
-            '@hapi/catbox-memory': EngineStub,
+            '@hapi/catbox-memory': { Engine: EngineStub },
             '@hapi/hapi': HapiStubThrowError,
-            'hapi-openapi': HapiOpenAPIStub,
             path: PathStub,
             '../lib/db': DbStub,
             '@mojaloop/central-ledger/src/lib/db': CLDbStub,
@@ -509,13 +490,15 @@ Test('Server Setup', async setupTest => {
         }
       })
 
-      await initTest.test('should catch errors after server.start and use server.log', async test => {
+      await initTest.test('should catch errors after server.start and console.error output', async test => {
         try {
-          const e = new Error('setHost error')
-          serverStub.plugins.openapi.setHost = sandbox.stub().throws(e)
+          const e = new Error('server start error')
+          serverStub.start = sandbox.stub().throws(e)
+          const consoleErrorStub = sandbox.stub(console, 'error')
           const port = await getPort()
           await SetupProxy.initialize({ service: 'api', port })
-          test.ok(serverStub.log.withArgs('error', e.message).calledOnce)
+          test.ok(consoleErrorStub.withArgs(e).calledOnce)
+          consoleErrorStub.restore()
           test.end()
         } catch (err) {
           logger.error(`init failed with error - ${err}`)
