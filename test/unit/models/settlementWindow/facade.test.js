@@ -730,14 +730,40 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
       const params = { settlementWindowId, reason }
       const enums = { OPEN: 'OPEN' }
 
-      await closeTest.test('close the specified open window will throw an error if the current state is undefined.', async test => {
+      await closeTest.test('close the specified open window will throw an error if the window is undefined".', async test => {
         try {
+          const mockedWindowRow = undefined
+          const mockedStateRow = { settlementWindowStateId: 'PROCESSING' }
           const knexStub = sandbox.stub()
           const trxStub = sandbox.stub()
-          trxStub.commit = sandbox.stub()
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
 
-          SettlementWindowFacade.getById = sandbox.stub().returns(undefined)
+          // For window state check with x-lock and
+          // window state change insert
+          knexStub.withArgs('settlementWindow').returns({
+            where: sandbox.stub().returns({
+              forUpdate: sandbox.stub().returns({
+                first: sandbox.stub().returns({
+                  transacting: sandbox.stub().resolves(mockedWindowRow)
+                })
+              }),
+              update: sandbox.stub().returns({
+                transacting: sandbox.stub().resolves()
+              })
+            })
+          })
+          knexStub.withArgs('settlementWindowStateChange').returns({
+            where: sandbox.stub().returns({
+              first: sandbox.stub().returns({
+                transacting: sandbox.stub().resolves(mockedStateRow)
+              })
+            }),
+            insert: sandbox.stub().returns({
+              transacting: sandbox.stub().resolves(1)
+            })
+          })
+
+          Db.getKnex.returns(knexStub)
           await SettlementWindowFacade.close(params, enums)
           test.fail('Error not thrown!')
           test.end()
@@ -750,12 +776,38 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
 
       await closeTest.test('close the specified open window will throw an error if the current state is not "PROCESSING".', async test => {
         try {
+          const mockedWindowRow = { currentStateChangeId: 0 }
+          const mockedStateRow = { settlementWindowStateId: 'INVALID STATE' }
           const knexStub = sandbox.stub()
           const trxStub = sandbox.stub()
-          trxStub.commit = sandbox.stub()
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
 
-          SettlementWindowFacade.getById = sandbox.stub().returns('INVALID STATE')
+          // For window state check with x-lock and
+          // window state change insert
+          knexStub.withArgs('settlementWindow').returns({
+            where: sandbox.stub().returns({
+              forUpdate: sandbox.stub().returns({
+                first: sandbox.stub().returns({
+                  transacting: sandbox.stub().resolves(mockedWindowRow)
+                })
+              }),
+              update: sandbox.stub().returns({
+                transacting: sandbox.stub().resolves()
+              })
+            })
+          })
+          knexStub.withArgs('settlementWindowStateChange').returns({
+            where: sandbox.stub().returns({
+              first: sandbox.stub().returns({
+                transacting: sandbox.stub().resolves(mockedStateRow)
+              })
+            }),
+            insert: sandbox.stub().returns({
+              transacting: sandbox.stub().resolves(1)
+            })
+          })
+
+          Db.getKnex.returns(knexStub)
           await SettlementWindowFacade.close(params, enums)
           test.fail('Error not thrown!')
           test.end()
@@ -768,10 +820,36 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
 
       await closeTest.test('close the specified open window will throw an error if debit/credit not balanced.', async test => {
         try {
+          const mockedWindowRow = { currentStateChangeId: 0 }
+          const mockedStateRow = { settlementWindowStateId: 'PROCESSING' }
           const knexStub = sandbox.stub()
           const trxStub = sandbox.stub()
           knexStub.transaction = sandbox.stub().callsArgWith(0, trxStub)
-          const settlementWindowCurrentStateMock = { state: 'PROCESSING' }
+
+          // For window state check with x-lock and
+          // window state change insert
+          knexStub.withArgs('settlementWindow').returns({
+            where: sandbox.stub().returns({
+              forUpdate: sandbox.stub().returns({
+                first: sandbox.stub().returns({
+                  transacting: sandbox.stub().resolves(mockedWindowRow)
+                })
+              }),
+              update: sandbox.stub().returns({
+                transacting: sandbox.stub().resolves()
+              })
+            })
+          })
+          knexStub.withArgs('settlementWindowStateChange').returns({
+            where: sandbox.stub().returns({
+              first: sandbox.stub().returns({
+                transacting: sandbox.stub().resolves(mockedStateRow)
+              })
+            }),
+            insert: sandbox.stub().returns({
+              transacting: sandbox.stub().resolves(1)
+            })
+          })
 
           sandbox.stub(SettlementModel, 'getAll').resolves([
             {
@@ -816,7 +894,6 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           })
 
           Db.getKnex.returns(knexStub)
-          SettlementWindowFacade.getById = sandbox.stub().returns(settlementWindowCurrentStateMock)
           await SettlementWindowFacade.close(params, enums)
           test.fail('Error not thrown!')
           test.end()
@@ -953,7 +1030,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
             where: sandbox.stub().returns({
               forUpdate: sandbox.stub().returns({
                 first: sandbox.stub().returns({
-                  transacting: trxStub.resolves(mockedWindowRow)
+                  transacting: sandbox.stub().resolves(mockedWindowRow)
                 })
               }),
               update: sandbox.stub().returns({
@@ -964,7 +1041,7 @@ Test('Settlement Window facade', async (settlementWindowFacadeTest) => {
           knexStub.withArgs('settlementWindowStateChange').returns({
             where: sandbox.stub().returns({
               first: sandbox.stub().returns({
-                transacting: trxStub.resolves(mockedStateRow)
+                transacting: sandbox.stub().resolves(mockedStateRow)
               })
             }),
             insert: sandbox.stub().returns({
