@@ -47,7 +47,6 @@ const participantNames = (request) => {
   return visible.restricted ? visible.ids : undefined
 }
 
-/** The route the platform reads this service's document at, answered by the guard that enforces it. */
 const documentRoute = () => {
   const expose = guard.expose()
   return {
