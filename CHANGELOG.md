@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.5.1](https://github.com/mojaloop/central-settlement/compare/v17.5.0...v17.5.1) (2026-09-25)
+
+
+### Bug Fixes
+
+* **facade:** debit/credit balance check added before content aggregation ([#490](https://github.com/mojaloop/central-settlement/issues/490)) ([60ecdc2](https://github.com/mojaloop/central-settlement/commit/60ecdc261223cbb38d9c2e41dae9cd78488c7acf))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([5f1df41](https://github.com/mojaloop/central-settlement/commit/5f1df4177a5b5da4e7e5e49a0d02b9c208c2c65e))
+
 ## [17.5.0](https://github.com/mojaloop/central-settlement/compare/v17.4.0...v17.5.0) (2026-09-08)
 
 
