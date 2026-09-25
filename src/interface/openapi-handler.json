@@ -10,9 +10,6 @@
       "url": "/v2"
     }
   ],
-  "x-authz": {
-    "service": "settlement-handler"
-  },
   "paths": {
     "/health": {
       "get": {

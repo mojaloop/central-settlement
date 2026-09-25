@@ -23,41 +23,46 @@
 
  --------------
  ******/
+
 'use strict'
 
-const Path = require('path')
-const { createGuard } = require('@mojaloop/authz')
+const Test = require('tapes')(require('tape'))
+const Sinon = require('sinon')
+const Base = require('../base')
+const Db = require('../../../src/lib/db')
+const CLDb = require('@mojaloop/central-ledger/src/lib/db')
 
-const DOCUMENT = Path.resolve(__dirname, '../interface/openapi.json')
+Test('the API document', async (documentTest) => {
+  let server
+  let sandbox
+  documentTest.beforeEach(async t => {
+    sandbox = Sinon.createSandbox()
+    sandbox.stub(Db, 'connect').returns(Promise.resolve({}))
+    sandbox.stub(CLDb, 'connect').returns(Promise.resolve({}))
+    server = await Base.setup()
+    t.end()
+  })
 
-let guard
+  documentTest.afterEach(async t => {
+    await server.stop()
+    sandbox.restore()
+    t.end()
+  })
 
-const initialize = async () => {
-  guard = await createGuard(DOCUMENT)
-}
+  await documentTest.test('is served where the platform reads it', async t => {
+    const res = await server.inject({ method: 'GET', url: '/.authz/openapi' })
+    t.equal(res.statusCode, 200)
+    t.equal(res.headers['content-type'], 'application/json')
+    t.ok(JSON.parse(res.payload).openapi.startsWith('3.1'))
 
-const asRequest = (request) => ({
-  method: request.method,
-  url: request.path,
-  headers: request.headers
+    const again = await server.inject({
+      method: 'GET',
+      url: '/.authz/openapi',
+      headers: { 'if-none-match': res.headers.etag }
+    })
+    t.equal(again.statusCode, 304)
+    t.end()
+  })
+
+  await documentTest.end()
 })
-
-const participantNames = (request) => {
-  const visible = guard(asRequest(request), 'participants')
-  return visible.restricted ? visible.ids : undefined
-}
-
-/** The route the platform reads this service's document at, answered by the guard that enforces it. */
-const documentRoute = () => {
-  const expose = guard.expose()
-  return {
-    method: 'GET',
-    path: guard.path,
-    handler: (request, h) => {
-      expose(request.raw.req, request.raw.res)
-      return h.abandon
-    }
-  }
-}
-
-module.exports = { initialize, participantNames, documentRoute }

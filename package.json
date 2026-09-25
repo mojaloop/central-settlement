@@ -70,7 +70,7 @@
     "@hapi/hapi": "21.4.10",
     "@hapi/inert": "7.1.2",
     "@hapi/vision": "7.0.3",
-    "@mojaloop/authz": "^0.11.0",
+    "@mojaloop/authz": "^0.13.2",
     "@mojaloop/central-ledger": "v19.14.0",
     "@mojaloop/central-services-error-handling": "13.2.0",
     "@mojaloop/central-services-health": "15.2.3",

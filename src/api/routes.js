@@ -89,7 +89,7 @@ module.exports = {
         methodNotAllowed: OpenapiBackend.methodNotAllowed
       })
 
-      server.route(routesFor(openapi))
+      server.route([Authz.documentRoute(), ...routesFor(openapi)])
     }
   }
 }
