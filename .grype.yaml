@@ -1,130 +1,60 @@
 scan-type: source
 ignore:
-  - vulnerability: GHSA-mwp4-54f8-5fhr
+  - vulnerability: CVE-2026-85091
     include-aliases: true
     reason: >-
-      Base image npm package: ip-address - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-10-02 (high severity)
-  - vulnerability: GHSA-rgw5-rvv9-x895
-    include-aliases: true
-    reason: >-
-      Base image npm package: brace-expansion - bundled in Node.js base image, not fixable via application dependencies
-      as of 2026-10-02 (high severity)
+      Alpine base image package (apk): zlib 1.3.2-r0 - base image node:24.21.0-alpine3.24, no fix in image as of
+      2026-09-18 (high severity)
   - vulnerability: GHSA-mh99-v99m-4gvg
     include-aliases: true
     reason: >-
-      Base image npm package: brace-expansion - bundled in Node.js base image, not fixable via application dependencies
-      as of 2026-10-02 (high severity)
-  - vulnerability: CVE-2026-85091
+      Base image npm package: brace-expansion 5.0.7 (bundled in npm) - base image node:24.21.0-alpine3.24, no fix in
+      image as of 2026-09-18 (high severity)
+  - vulnerability: GHSA-rgw5-rvv9-x895
     include-aliases: true
-    reason: 'Alpine base image package (apk): zlib - no npm fix available as of 2026-10-02 (high severity)'
+    reason: >-
+      Base image npm package: brace-expansion 5.0.7 (bundled in npm) - base image node:24.21.0-alpine3.24, no fix in
+      image as of 2026-09-18 (high severity)
+  - vulnerability: GHSA-mwp4-54f8-5fhr
+    include-aliases: true
+    reason: >-
+      Base image npm package: ip-address 10.2.0 (bundled in npm) - base image node:24.21.0-alpine3.24, no fix in image
+      as of 2026-09-18 (high severity)
   - vulnerability: GHSA-r292-9mhp-454m
     include-aliases: true
     reason: >-
-      Base image npm package: tar - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-10-02 (high severity)
-  - vulnerability: GHSA-rfgv-xxqx-mfg5
+      Base image npm package: tar 7.5.19 (bundled in npm) - base image node:24.21.0-alpine3.24, no fix in image as of
+      2026-09-18 (high severity)
+  - vulnerability: CVE-2025-60876
     include-aliases: true
     reason: >-
-      Base image npm package: undici - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-10-02 (high severity)
-  - vulnerability: GHSA-4xrf-jv44-h6hh
-    include-aliases: true
-    reason: >-
-      Base image npm package: ip-address - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-10-02 (moderate severity)
-  - vulnerability: GHSA-6j4f-fj2g-mc7p
-    include-aliases: true
-    reason: >-
-      Base image npm package: brace-expansion - bundled in Node.js base image, not fixable via application dependencies
-      as of 2026-10-02 (high severity)
-  - vulnerability: GHSA-qhr7-859c-m2p7
-    include-aliases: true
-    reason: >-
-      Base image npm package: brace-expansion - bundled in Node.js base image, not fixable via application dependencies
-      as of 2026-10-02 (high severity)
+      Alpine base image package (apk): busybox / busybox-binsh / ssl_client 1.37.0-r31 - base image
+      node:24.21.0-alpine3.24, no fix in image as of 2026-09-18 (medium severity)
   - vulnerability: GHSA-22jq-vg5j-6vgg
     include-aliases: true
     reason: >-
-      Base image npm package: ip-address - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-10-02 (moderate severity)
-  - vulnerability: GHSA-2vr4-cq9g-pvrc
+      Base image npm package: ip-address 10.2.0 (bundled in npm) - base image node:24.21.0-alpine3.24, no fix in image
+      as of 2026-09-18 (medium severity)
+  - vulnerability: GHSA-4xrf-jv44-h6hh
     include-aliases: true
     reason: >-
-      Base image npm package: ip-address - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-10-02 (moderate severity)
-  - vulnerability: GHSA-3wwx-pv8p-q78v
-    include-aliases: true
-    reason: >-
-      Base image npm package: undici - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-10-02 (moderate severity)
-  - vulnerability: GHSA-rpw4-54j3-4h4q
-    include-aliases: true
-    reason: >-
-      Base image npm package: ip-address - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-10-02 (moderate severity)
-  - vulnerability: GHSA-j6r3-76f7-8jcv
-    include-aliases: true
-    reason: >-
-      Base image npm package: ip-address - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-10-02 (moderate severity)
-  - vulnerability: GHSA-h3mg-xc3c-68pw
-    include-aliases: true
-    reason: >-
-      Base image npm package: ip-address - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-10-02 (moderate severity)
-  - vulnerability: CVE-2025-60876
-    include-aliases: true
-    reason: 'Alpine base image package (apk): busybox - no npm fix available as of 2026-10-02 (moderate severity)'
-  - vulnerability: GHSA-q2hr-2g5m-vwhr
-    include-aliases: true
-    reason: >-
-      Base image npm package: brace-expansion - bundled in Node.js base image, not fixable via application dependencies
-      as of 2026-10-02 (moderate severity)
-  - vulnerability: GHSA-v3r7-h72x-cjcm
-    include-aliases: true
-    reason: >-
-      Base image npm package: undici - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-10-02 (moderate severity)
-  - vulnerability: GHSA-m8rv-5g2x-5cg5
-    include-aliases: true
-    reason: >-
-      Base image npm package: undici - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-10-02 (moderate severity)
+      Base image npm package: ip-address 10.2.0 (bundled in npm) - base image node:24.21.0-alpine3.24, no fix in image
+      as of 2026-09-18 (medium severity)
   - vulnerability: GHSA-8xcm-r25x-g524
     include-aliases: true
     reason: >-
-      Base image npm package: undici - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-10-02 (moderate severity)
-  - vulnerability: GHSA-r53p-7pc4-xj5r
+      Base image npm package: undici 6.27.0 (bundled in npm) - base image node:24.21.0-alpine3.24, no fix in image as of
+      2026-09-18 (medium severity)
+  - vulnerability: GHSA-m8rv-5g2x-5cg5
     include-aliases: true
     reason: >-
-      Base image npm package: undici - bundled in Node.js base image, not fixable via application dependencies as of
-      2026-10-02 (low severity)
-  - vulnerability: GHSA-253c-mchw-3w2r
+      Base image npm package: undici 6.27.0 (bundled in npm) - base image node:24.21.0-alpine3.24, no fix in image as of
+      2026-09-18 (medium severity)
+  - vulnerability: GHSA-v3r7-h72x-cjcm
     include-aliases: true
-    reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-10-02'
-  - vulnerability: GHSA-pmjh-fq2x-6v4x
-    include-aliases: true
-    reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-10-02'
-  - vulnerability: GHSA-3xpg-4rpp-hhhm
-    include-aliases: true
-    reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-10-02'
-  - vulnerability: GHSA-2jfj-6hjv-fm6j
-    include-aliases: true
-    reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-10-02'
-  - vulnerability: GHSA-2gqq-gqf2-x968
-    include-aliases: true
-    reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-10-02'
-  - vulnerability: GHSA-w293-vg96-wgc3
-    include-aliases: true
-    reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-10-02'
-  - vulnerability: GHSA-8436-99hf-9mmv
-    include-aliases: true
-    reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-10-02'
-  - vulnerability: GHSA-rx4f-c7p8-82vq
-    include-aliases: true
-    reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-10-02'
+    reason: >-
+      Base image npm package: undici 6.27.0 (bundled in npm) - base image node:24.21.0-alpine3.24, no fix in image as of
+      2026-09-18 (medium severity)
 output:
   - table
   - json
