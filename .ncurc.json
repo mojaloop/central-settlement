@@ -1,0 +1,10 @@
+{
+  "reject": [
+    "joi",
+    "why-joi: the latest hapi-swagger still requires the joi 17.x line (carried over from the yaml config)",
+    "@types/node",
+    "why-types-node: its major must match the Node runtime major in .nvmrc (24); a higher major only weakens type checking; bump together with the runtime",
+    "@mojaloop/central-ledger",
+    "why-central-ledger: v20.x ships src/lib/config as TypeScript (index.ts) while its own src/models/transfer/facade.js still does require('../../lib/config'), so every JS consumer dies with MODULE_NOT_FOUND - the whole tape suite fails on require of src/shared/setup.js. Hold at v19.14.0 until a release publishes compiled JS (reproduced with v20.3.0 on 2026-10-02)"
+  ]
+}
