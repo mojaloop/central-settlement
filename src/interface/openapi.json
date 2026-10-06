@@ -19,6 +19,9 @@
         "operationId": "getHealth",
         "summary": "Reports whether the service and its database are up",
         "description": "Gets the health of the service and sub-services (i.e. database).",
+        "x-authz": {
+          "internal": true
+        },
         "tags": [
           "getHealth"
         ],
