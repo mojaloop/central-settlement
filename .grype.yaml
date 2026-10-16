@@ -105,6 +105,67 @@ ignore:
     reason: >-
       Base image npm package: undici - bundled in Node.js base image, not fixable via application dependencies as of
       2026-10-02 (low severity)
+  - vulnerability: GHSA-ch52-4w7c-c8xp
+    include-aliases: true
+    reason: >-
+      Base image npm package: http-cache-semantics - bundled in Node.js base image, not fixable via application
+      dependencies as of 2026-10-16 (high severity)
+  - vulnerability: CVE-2026-54873
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-10-16 (high severity)'
+  - vulnerability: CVE-2026-84782
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-10-16 (high severity)'
+  - vulnerability: CVE-2026-84784
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-10-16 (high severity)'
+  - vulnerability: GHSA-rj75-hqrm-r3gf
+    include-aliases: true
+    reason: >-
+      Base image npm package: postcss-selector-parser - bundled in Node.js base image, not fixable via application
+      dependencies as of 2026-10-16 (moderate severity)
+  - vulnerability: CVE-2026-72897
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-10-16 (high severity)'
+  - vulnerability: CVE-2026-75806
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-10-16 (moderate severity)'
+  - vulnerability: CVE-2026-75804
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-10-16 (moderate severity)'
+  - vulnerability: CVE-2026-42772
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-10-16 (moderate severity)'
+  - vulnerability: CVE-2026-35189
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-10-16 (moderate severity)'
+  - vulnerability: CVE-2026-35191
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-10-16 (low severity)'
+  - vulnerability: CVE-2026-75805
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-10-16 (moderate severity)'
+  - vulnerability: CVE-2026-54875
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-10-16 (low severity)'
+  - vulnerability: CVE-2026-54872
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-10-16 (low severity)'
+  - vulnerability: CVE-2026-77696
+    include-aliases: true
+    reason: 'Alpine base image package (apk): libcrypto3 - no npm fix available as of 2026-10-16 (low severity)'
+  - vulnerability: GHSA-vfj7-8cjw-p6xm
+    include-aliases: true
+    reason: 'Unfixable npm transitive vulnerability: braces (high severity) as of 2026-10-16'
+  - vulnerability: GHSA-hp3w-g68c-fv3c
+    include-aliases: true
+    reason: 'Unfixable npm transitive vulnerability: sprintf-js (moderate severity) as of 2026-10-16'
+  - vulnerability: GHSA-hrr3-gc8f-f4qj
+    include-aliases: true
+    reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-10-16'
+  - vulnerability: GHSA-p9pc-299p-vxgp
+    include-aliases: true
+    reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-10-16'
 output:
   - table
   - json
