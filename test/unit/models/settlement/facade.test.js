@@ -1409,13 +1409,11 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           knexStub.withArgs('participantLimit').returns({
             select: sandbox.stub().returns({
               where: sandbox.stub().returns({
-                andWhere: sandbox.stub().returns({
-                  first: sandbox.stub().returns({
-                    transacting: sandbox.stub().returns({
-                      forUpdate: sandbox.stub().returns(
-                        Promise.resolve({ netDebitCap: 1000 })
-                      )
-                    })
+                first: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns({
+                    forUpdate: sandbox.stub().returns(
+                      Promise.resolve({ netDebitCap: 1000 })
+                    )
                   })
                 })
               })
@@ -1433,7 +1431,7 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           test.equal(knexStub.withArgs('participantLimit').callCount, 2)
           test.equal(knexStub.withArgs('participantPosition').callCount, 8)
           test.equal(knexStub.withArgs('transferFulfilment').callCount, 0)
-          test.equal(knexStub.withArgs('participantPositionChange').callCount, 5)
+          test.equal(knexStub.withArgs('participantPositionChange').callCount, 4)
 
           test.end()
         } catch (err) {
@@ -1765,13 +1763,11 @@ Test('Settlement facade', async (settlementFacadeTest) => {
           knexStub.withArgs('participantLimit').returns({
             select: sandbox.stub().returns({
               where: sandbox.stub().returns({
-                andWhere: sandbox.stub().returns({
-                  first: sandbox.stub().returns({
-                    transacting: sandbox.stub().returns({
-                      forUpdate: sandbox.stub().returns(
-                        Promise.resolve({ netDebitCap: 1000 })
-                      )
-                    })
+                first: sandbox.stub().returns({
+                  transacting: sandbox.stub().returns({
+                    forUpdate: sandbox.stub().returns(
+                      Promise.resolve({ netDebitCap: 1000 })
+                    )
                   })
                 })
               })

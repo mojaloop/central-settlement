@@ -311,21 +311,24 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             // Select dfsp NET_DEBIT_CAP limit
             const { netDebitCap } = await knex('participantLimit')
               .select('value AS netDebitCap')
-              .where('participantCurrencyId', dfspAccountId)
-              .andWhere('participantLimitTypeId', enums.participantLimitTypes.NET_DEBIT_CAP)
+              .where({
+                participantCurrencyId: dfspAccountId,
+                participantLimitTypeId: enums.participantLimitTypes.NET_DEBIT_CAP,
+                isActive: 1
+              })
               .first()
               .transacting(trx)
               .forUpdate()
             isLimitExceeded = netDebitCap - dfspPositionValue - dfspReservedValue - dfspAmount < 0
 
             if (isLimitExceeded) {
-              /* let { startAfterParticipantPositionChangeId } = */
+              /* let { startAfterParticipantPositionChangeId } =
               await knex('participantPositionChange')
                 .select('participantPositionChangeId AS startAfterParticipantPositionChangeId')
                 .where('participantPositionId', dfspPositionId)
                 .orderBy('participantPositionChangeId', 'desc')
                 .first()
-                .transacting(trx)
+                .transacting(trx) */
 
               // TODO:: notify dfsp for NDC change
               // TODO:: insert new limit with correct value for startAfterParticipantPositionChangeId
