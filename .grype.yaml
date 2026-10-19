@@ -1,6 +1,8 @@
 scan-type: source
 
 ignore:
+  - vulnerability: CVE-2026-97058 # sprintf-js - no patched release
+  - vulnerability: CVE-2026-93687 # braces - no patched release
 
 output:
   - table
