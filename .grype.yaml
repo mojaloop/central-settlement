@@ -1,6 +1,12 @@
 scan-type: source
 
 ignore:
+  - vulnerability: GHSA-hp3w-g68c-fv3c
+    include-aliases: true
+    reason: "sprintf-js transitive vulnerability; no patched release is available as of 2026-10-19"
+  - vulnerability: GHSA-vfj7-8cjw-p6xm
+    include-aliases: true
+    reason: "braces transitive vulnerability; no patched release is available as of 2026-10-19"
 
 output:
   - table
