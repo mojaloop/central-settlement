@@ -322,14 +322,6 @@ const settlementTransfersReserve = async function (settlementId, transactionTime
             isLimitExceeded = netDebitCap - dfspPositionValue - dfspReservedValue - dfspAmount < 0
 
             if (isLimitExceeded) {
-              /* let { startAfterParticipantPositionChangeId } =
-              await knex('participantPositionChange')
-                .select('participantPositionChangeId AS startAfterParticipantPositionChangeId')
-                .where('participantPositionId', dfspPositionId)
-                .orderBy('participantPositionChangeId', 'desc')
-                .first()
-                .transacting(trx) */
-
               // TODO:: notify dfsp for NDC change
               // TODO:: insert new limit with correct value for startAfterParticipantPositionChangeId
               await ParticipantFacade.adjustLimits(dfspAccountId, {
