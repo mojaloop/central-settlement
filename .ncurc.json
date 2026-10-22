@@ -1,0 +1,10 @@
+{
+  "reject": [
+    "joi",
+    "why-joi: hapi-swagger 17.3.2 (latest) declares a joi@17.x peer dependency, so npm ci rejects joi 18 as a direct dependency; the nested central-services-shared copies are on 18.3.0 via the joi@18 override (re-tested 2026-10-20)",
+    "@mojaloop/central-ledger",
+    "why-central-ledger: v20.x ships src/lib/config/index.ts instead of a compiled JS module, so this JavaScript consumer fails with Cannot find module ../../lib/config at require time (re-tested 2026-10-20 with v20.3.0)",
+    "@types/node",
+    "why-types-node: its major must match the Node runtime major in .nvmrc (24); a higher major only weakens type checking; bump together with the runtime"
+  ]
+}
