@@ -1,0 +1,8 @@
+{
+  "exceptions": {
+    "argparse@3.0.3": {
+      "reason": "PSF-2.0 license reviewed and approved for argparse",
+      "expires": "2027-01-01"
+    }
+  }
+}
