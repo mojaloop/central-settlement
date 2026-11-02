@@ -19,6 +19,7 @@ RUN apk add --no-cache --virtual .build-deps \
     autoconf automake bash g++ gcc libtool make openssl-dev py3-setuptools python3
 
 COPY package.json package-lock.json* /opt/app/
+RUN npm install --global npm@"$(node -p "require('./package.json').devEngines.packageManager.version")"
 # Lifecycle scripts are skipped for supply-chain safety (docker:S6505); node-rdkafka
 # is the only production dependency that needs its native build, so run it explicitly.
 # node-gyp ships with npm, so there is no separate unpinned global install (docker:S8543).
@@ -33,6 +34,7 @@ COPY src /opt/app/src
 COPY README.md /opt/app
 
 FROM node:${NODE_VERSION}
+COPY --from=builder /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
 WORKDIR /opt/app/
 
 # Create empty log file & link stdout to the application log file
@@ -46,4 +48,4 @@ USER app-user
 COPY --chown=app-user --from=builder /opt/app/ .
 
 EXPOSE 3007
-CMD ["node" "src/handlers/index.js" "h" "--transfersettlement"]
+CMD ["npm", "start"]

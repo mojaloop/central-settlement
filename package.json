@@ -25,13 +25,20 @@
   "engines": {
     "node": ">=22.x"
   },
+  "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": "12.2.1",
+      "onFail": "error"
+    }
+  },
   "pre-commit": [
     "lint",
     "dep:check",
     "test:unit"
   ],
   "scripts": {
-    "start": "run-p start:api",
+    "start": "npm run start:api",
     "start:api": "node src/api/index.js",
     "watch:api": "nodemon src/api/index.js",
     "start:handlers": "node src/handlers/index.js",
@@ -68,7 +75,7 @@
     "@hapi/boom": "10.0.1",
     "@hapi/catbox-memory": "6.0.2",
     "@hapi/good": "9.0.1",
-    "@hapi/hapi": "21.4.11",
+    "@hapi/hapi": "21.4.12",
     "@hapi/inert": "7.1.3",
     "@hapi/vision": "7.0.3",
     "@mojaloop/central-ledger": "v19.14.0",
@@ -104,12 +111,12 @@
     "@mojaloop/central-services-metrics": "12.8.9",
     "@types/lodash": "4.17.27",
     "audit-ci": "7.1.0",
-    "axios": "1.20.0",
+    "axios": "1.21.0",
     "bluebird": "3.7.2",
     "chai": "6.3.0",
     "chai-exclude": "3.0.1",
     "chai-subset": "1.6.0",
-    "eslint": "10.13.0",
+    "eslint": "10.14.0",
     "esm": "3.2.25",
     "get-port": "7.2.0",
     "jest": "30.5.2",
@@ -134,7 +141,7 @@
   "overrides": {
     "@grpc/grpc-js": "1.14.5",
     "@hapi/inert": "7.1.3",
-    "axios": "1.20.0",
+    "axios": "1.21.0",
     "ajv@6": "6.14.0",
     "ajv@8": "8.20.0",
     "fast-xml-parser": "5.10.1",
@@ -206,5 +213,12 @@
     "scripts": {
       "postchangelog": "replace '\\[mojaloop/#(\\d+)\\]\\(https://github.com/mojaloop/(.*)/issues/(\\d+)\\)' '[mojaloop/#$1](https://github.com/mojaloop/project/issues/$1)' CHANGELOG.md"
     }
+  },
+  "allowScripts": {
+    "node-rdkafka@3.6.1": true,
+    "pre-commit@2.0.0": true,
+    "@scarf/scarf": false,
+    "unrs-resolver": false,
+    "@parcel/watcher": false
   }
 }

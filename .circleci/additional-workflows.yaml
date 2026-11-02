@@ -1,0 +1,2846 @@
+orbs:
+  build:
+    version: 2.1
+    description: mojaloop/build is a CircleCI orb for build jobs in Mojaloop CI/CD pipelines
+    display:
+      home_url: https://mojaloop.io
+      source_url: https://github.com/mojaloop/ci-config-orb-build
+    orbs:
+      continuation: circleci/continuation@1.0.0
+      gh: circleci/github-cli@2.2.0
+      ghpr: narrativescience/ghpr@1.1.6
+      slack: circleci/slack@4.13.3
+    commands:
+      aws_dependencies:
+        description: |
+          Install the AWS CLI dependencies.
+        steps:
+          - run:
+              command: |
+                apk --no-cache add aws-cli
+              name: Install AWS CLI dependencies
+      check_dockerfile:
+        description: |
+          Check if a Dockerfile exists and exit the job if it does not.
+        steps:
+          - run:
+              command: |
+                if [ ! -f Dockerfile ]; then
+                  echo "No Dockerfile, skipping job."
+                  circleci-agent step halt
+                fi
+              name: Check for Dockerfile
+      check_npm_private:
+        description: |
+          Check if the package is private and exit the job if it is.
+        steps:
+          - run:
+              command: |
+                if jq -e '.private == true' package.json > /dev/null; then
+                  echo "Package is private, skipping job."
+                  circleci-agent step halt
+                fi
+              name: Check for private package
+      check_security_txt_expiry:
+        description: |
+          Validates the `Expires` field of `.well-known/security.txt` (RFC 9116).
+          If no security.txt file exists in the repo, the step halts (passes) so repos that haven't adopted one yet are unaffected. If the file exists but has no `Expires` field, this passes with a warning (the field is recommended, not universally adopted yet). If `Expires` is present and its date is in the past, the step fails the job.
+        steps:
+          - run:
+              command: |
+                SECURITY_TXT=".well-known/security.txt"
+
+                if [ ! -f "$SECURITY_TXT" ]; then
+                  echo "No $SECURITY_TXT found, skipping check."
+                  circleci-agent step halt
+                  exit 0
+                fi
+
+                node -e '
+                  const fs = require("fs");
+                  const path = ".well-known/security.txt";
+                  const content = fs.readFileSync(path, "utf8");
+                  const match = content.match(/^Expires:\s*(.+)$/mi);
+
+                  if (!match) {
+                    console.warn("WARNING: " + path + " has no Expires field (RFC 9116 requires one). Skipping.");
+                    process.exit(0);
+                  }
+
+                  const raw = match[1].trim();
+                  const expires = new Date(raw);
+
+                  if (isNaN(expires.getTime())) {
+                    console.error("ERROR: could not parse Expires value in " + path + ": \"" + raw + "\"");
+                    console.error("Expected an RFC 3339 date-time, e.g. 2027-09-18T00:00:00.000Z");
+                    process.exit(1);
+                  }
+
+                  const now = new Date();
+                  const daysDiff = Math.floor((expires.getTime() - now.getTime()) / 86400000);
+
+                  if (expires.getTime() < now.getTime()) {
+                    console.error("FAIL: " + path + " expired on " + expires.toISOString() + " (" + Math.abs(daysDiff) + " day(s) ago).");
+                    console.error("Update the Expires field in " + path + ".");
+                    process.exit(1);
+                  }
+
+                  console.log("OK: " + path + " valid until " + expires.toISOString() + " (" + daysDiff + " day(s) remaining).");
+                '
+              name: Check security.txt expiration
+      configure_git:
+        description: |
+          Configure git.
+        steps:
+          - run:
+              command: |
+                git config user.email ${GIT_CI_EMAIL}
+                git config user.name ${GIT_CI_USER}
+              name: Configure git
+      configure_npm:
+        description: |
+          Install the npm version the project declares in package.json devEngines.packageManager. With onFail error, npm refuses every command in the project (ci, install, run, exec, npx, version, pack, publish) under any other version; a global install is the one it allows.
+        steps:
+          - run:
+              command: |
+                if type nvm >/dev/null 2>&1; then nvm use default; fi
+                if [ ! -f package.json ]; then
+                  echo "==> No package.json, keeping npm $(npm --version)"
+                  exit 0
+                fi
+                NPM_DECLARED=$(node -p "[].concat(require('./package.json').devEngines?.packageManager ?? []).find((m) => m.name === 'npm')?.version ?? ''")
+                if [ -z "$NPM_DECLARED" ]; then
+                  echo "==> package.json declares no npm, keeping npm $(npm --version)"
+                  exit 0
+                fi
+                echo "==> Installing npm $NPM_DECLARED"
+                npm install --global "npm@$NPM_DECLARED"
+                echo "npm: $(npm --version)"
+              name: Configure npm
+      configure_nvm:
+        description: Configure NVM.
+        steps:
+          - run:
+              command: |
+                cd $HOME
+                export ENV_DOT_PROFILE=$HOME/.profile
+                touch $ENV_DOT_PROFILE
+                echo "1. Check/Set NVM_DIR env variable"
+                if [ -z "$NVM_DIR" ]; then
+                  export NVM_DIR="$HOME/.nvm"
+                  echo "==> NVM_DIR has been exported - $NVM_DIR"
+                else
+                  echo "==> NVM_DIR already exists - $NVM_DIR"
+                fi
+                echo "2. Check/Set NVMRC_VERSION env variable"
+                if [ -z "$NVMRC_VERSION" ]; then
+                  echo "==> Configuring NVMRC_VERSION!"
+                  export NVMRC_VERSION=$(cat $CIRCLE_WORKING_DIRECTORY/.nvmrc)
+                  echo "export NVMRC_VERSION=$NVMRC_VERSION" >> $ENV_DOT_PROFILE
+                fi
+                echo "3. Configure NVM"
+                ## Lets check if an existing NVM_DIR exists, if it does lets skil
+                if [ -e "$NVM_DIR" ]; then
+                  echo "==> $NVM_DIR exists. Skipping steps 3!"
+                  # echo "5. Executing $NVM_DIR/nvm.sh"
+                  # [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                else
+                  echo "==> $NVM_DIR does not exists. Executing steps 4-5!"
+                  echo "4. Installing NVM"
+                  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+                  echo "5. Executing $NVM_DIR/nvm.sh"
+                  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                fi
+                ## Ref: https://github.com/nvm-sh/nvm/issues/1102#issuecomment-550572252
+                if [ ! -z "$NVM_ARCH_UNOFFICIAL_OVERRIDE" ]; then
+                  echo "==> Handle NVM_ARCH_UNOFFICIAL_OVERRIDE=$NVM_ARCH_UNOFFICIAL_OVERRIDE!"
+                  echo "nvm_get_arch() { nvm_echo \"${NVM_ARCH_UNOFFICIAL_OVERRIDE}\"; }" >> $ENV_DOT_PROFILE
+                  echo "export NVM_NODEJS_ORG_MIRROR=https://unofficial-builds.nodejs.org/download/release" >> $ENV_DOT_PROFILE
+                  source $ENV_DOT_PROFILE
+                fi
+                echo "6. Setup Node version"
+                if [ -n "$NVMRC_VERSION" ]; then
+                  echo "==> Installing Node version: $NVMRC_VERSION"
+                  nvm install $NVMRC_VERSION
+                  nvm alias default $NVMRC_VERSION
+                  nvm use $NVMRC_VERSION
+                  cd $CIRCLE_WORKING_DIRECTORY
+                  if [ -f "yarn.lock" ]; then
+                    echo "==> Installing Yarn"
+                    npm install -g yarn
+                  fi
+                else
+                  echo "==> ERROR - NVMRC_VERSION has not been set! - NVMRC_VERSION: $NVMRC_VERSION"
+                  exit 1
+                fi
+              name: Configure NVM
+          - configure_npm
+      configure_nvmrc:
+        description: |
+          Configure the NVMRC_VERSION environment variable
+          based on the .nvmrc file in the project root directory.
+        steps:
+          - run:
+              command: |
+                if [ -z "$NVMRC_VERSION" ]; then
+                  echo "==> Configuring NVMRC_VERSION!"
+
+                  export ENV_DOT_PROFILE=$HOME/.profile
+                  touch $ENV_DOT_PROFILE
+
+                  export NVMRC_VERSION=$(cat $CIRCLE_WORKING_DIRECTORY/.nvmrc)
+                  echo "export NVMRC_VERSION=$NVMRC_VERSION" >> $ENV_DOT_PROFILE
+                fi
+                echo "NVMRC_VERSION=$NVMRC_VERSION"
+              name: Configure NVMRC
+      display_versions:
+        description: |
+          Display the versions of Nodejs, Yarn, NPM, and NVM.
+        steps:
+          - run:
+              command: |
+                echo "What is the active version of Nodejs?"
+                echo "node: $(node --version)"
+                echo "yarn: $(yarn --version)"
+                echo "npm: $(npm --version)"
+                echo "nvm: $(nvm --version)"
+              name: Display Versions
+      docker_dependencies:
+        description: |
+          Install general dependencies.
+        steps:
+          - run:
+              command: |
+                apk --no-cache add bash
+                apk --no-cache add git
+                apk --no-cache add ca-certificates
+                apk --no-cache add curl
+                apk --no-cache add openssh-client
+                apk --no-cache add -t build-dependencies make gcc g++ python3 py3-setuptools libtool autoconf automake jq
+                apk --no-cache add -t openssl ncurses coreutils libgcc linux-headers grep util-linux binutils findutils
+                apk --no-cache add librdkafka-dev
+              name: Install general dependencies
+      export_version_from_package:
+        description: |
+          Format the changelog into the github release body and get release tag.
+        steps:
+          - run:
+              command: |
+                git diff --no-indent-heuristic ${CIRCLE_BRANCH}~1 HEAD CHANGELOG.md | sed -n '/^+[^+]/ s/^+//p' > /tmp/changes
+                echo 'export RELEASE_CHANGES=`cat /tmp/changes`' >> $BASH_ENV
+                echo 'export RELEASE_TAG=`cat package.json | jq -r .version`' >> $BASH_ENV
+              name: Format the changelog into the github release body and get release tag
+      generate_sbom:
+        description: |
+          Generate a CycloneDX 1.6 SBOM with Syft for a given target and write it to disk. The target is substituted into the shell command, so image references that contain env vars (e.g. "$DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:local") are expanded at runtime. Works on both the Alpine docker executor (root, /bin/sh) and the Ubuntu machine executor (sudo). Reused by the license gate and, optionally, by grype_scan.
+        parameters:
+          output:
+            default: /tmp/sbom.cdx.json
+            description: Path to write the CycloneDX JSON SBOM.
+            type: string
+          syft_version:
+            default: v1.45.0
+            description: Pinned Syft release installed when syft is not already present.
+            type: string
+          target:
+            default: dir:.
+            description: |
+              Syft scan target. Use "dir:." for a source tree, or an image reference such as "$DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:local" for a loaded image.
+            type: string
+        steps:
+          - run:
+              command: |
+                set -e
+                if command -v syft >/dev/null 2>&1; then syft version; exit 0; fi
+                if command -v apk >/dev/null 2>&1; then apk add --no-cache curl tar >/dev/null; fi
+                BINDIR=/usr/local/bin
+                if [ -w "$BINDIR" ]; then SUDO=; else SUDO=sudo; fi
+                curl -sSfL "https://raw.githubusercontent.com/anchore/syft/<< parameters.syft_version >>/install.sh" \
+                  | $SUDO sh -s -- -b "$BINDIR" "<< parameters.syft_version >>"
+                syft version
+              name: Install Syft (pinned) if missing
+          - run:
+              command: |
+                set -e
+                syft "<< parameters.target >>" -o cyclonedx-json="<< parameters.output >>"
+                echo "Wrote CycloneDX SBOM to << parameters.output >>"
+              name: Generate CycloneDX SBOM for << parameters.target >>
+      license_gate:
+        description: |
+          Gate a CycloneDX SBOM against the Mojaloop license allowlist using the published @mojaloop/license-scanner-tool package (Node). Fails the build on any npm dependency whose licence is not on the allowlist or cannot be resolved to an SPDX id. Requires node + npm on the executor (present on the Alpine node image; ensure via configure_nvm on the machine executor).
+        parameters:
+          sbom:
+            default: /tmp/sbom.cdx.json
+            description: Path to the CycloneDX SBOM to gate (produced by generate_sbom).
+            type: string
+          version:
+            default: 1.1.2
+            description: |
+              Exact published @mojaloop/license-scanner-tool version to run. Pin exactly (not a range) for supply-chain safety; bump deliberately per orb release to the current released tool version.
+            type: string
+        steps:
+          - run:
+              command: |
+                set -e
+                npx --yes @mojaloop/license-scanner-tool@<< parameters.version >> "<< parameters.sbom >>"
+              name: License gate (@mojaloop/license-scanner-tool)
+      machine_dependencies:
+        description: |
+          Install general dependencies
+        steps:
+          - run:
+              command: |
+                ## Add Package Repos
+                ## Ref: https://docs.confluent.io/platform/current/installation/installing_cp/deb-ubuntu.html#get-the-software
+                sudo install -d -m 0755 /etc/apt/keyrings
+                sudo wget -qO /etc/apt/keyrings/confluent-clients.asc https://packages.confluent.io/clients/deb/archive.key
+                printf 'Types: deb\nURIs: https://packages.confluent.io/clients/deb\nSuites: %s\nComponents: main\nSigned-By: /etc/apt/keyrings/confluent-clients.asc\n' "$(lsb_release -cs)" \
+                  | sudo tee /etc/apt/sources.list.d/confluent-clients.sources
+                sudo apt-get update
+
+                ## Install deps
+                sudo apt-get install -y librdkafka-dev curl bash musl-dev libsasl2-dev
+                sudo ln -s /usr/lib/x86_64-linux-musl/libc.so /lib/libc.musl-x86_64.so.1
+              name: Install general dependencies
+      npm_auth:
+        description: |
+          Update NPM registry auth token
+        steps:
+          - run:
+              command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
+              name: Update NPM registry auth token
+      npm_publish:
+        description: |
+          Publish the NPM artifact.
+        steps:
+          - run:
+              command: |
+                source $BASH_ENV
+                if type nvm >/dev/null 2>&1; then nvm use default; fi
+                echo "Publishing tag $RELEASE_TAG"
+                npm publish --tag $RELEASE_TAG --access public
+              name: Publish NPM $RELEASE_TAG artifact
+      pr_title_check:
+        description: |
+          Validate a GitHub pull request title against the Conventional Commits spec using commitlint with @commitlint/config-conventional (pinned). There is no runtime clone of mojaloop/ci-config and no bespoke package — the ruleset comes from upstream commitlint. The PR title is fetched from the GitHub API authenticated with GH_TOKEN / GITHUB_TOKEN (matches the post-#44 behavior: authenticated requests use GitHub's 5,000/hr limit rather than the 60/hr unauthenticated, per-IP limit). Requires node + npm on the executor (present on the Alpine node image).
+        parameters:
+          ci-config-branch:
+            default: ""
+            description: |
+              [DEPRECATED] No longer used. pr-title now runs upstream commitlint instead of cloning mojaloop/ci-config. Retained as an accepted-but-ignored parameter for backward compatibility with callers that still pass it.
+            type: string
+          commitlint-version:
+            default: 21.0.2
+            description: |
+              Exact @commitlint/cli and @commitlint/config-conventional version to install and run. Pin exactly (not a range) for supply-chain safety; bump deliberately per orb release.
+            type: string
+          fail-silently-when-no-pr:
+            default: true
+            description: |
+              Pass (exit 0) when CIRCLE_PULL_REQUEST is unset — e.g. tag or branch builds not associated with a pull request.
+            type: boolean
+          get-help-url:
+            default: https://docs.mojaloop.io/community/standards/creating-new-features.html
+            description: Help URL surfaced to the contributor when a PR title is invalid.
+            type: string
+        steps:
+          - run:
+              command: |
+                set -eu
+
+                echo "CIRCLE_PULL_REQUEST: ${CIRCLE_PULL_REQUEST:-<none>}"
+
+                # Skip on builds with no associated PR (tag builds, direct branch builds).
+                if [ -z "${CIRCLE_PULL_REQUEST:-}" ]; then
+                  if [ "${FAIL_SILENTLY_WHEN_NO_PR}" = "true" ]; then
+                    echo "No PR associated with this build; skipping PR-title check."
+                    exit 0
+                  fi
+                  echo "ERROR: No CIRCLE_PULL_REQUEST and fail-silently-when-no-pr is false."
+                  exit 1
+                fi
+
+                # Fetch the PR title from the GitHub API, authenticated via the org-global
+                # token (GH_TOKEN / GITHUB_TOKEN). Authenticated => 5,000 req/hr, matching
+                # the post-#44 behavior and avoiding the 60/hr unauthenticated per-IP limit.
+                TITLE="$(node -e '
+                  var https = require("https");
+                  var url = process.env.CIRCLE_PULL_REQUEST || "";
+                  var m = url.match(/github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/);
+                  if (!m) { console.error("Could not parse PR URL: " + url); process.exit(2); }
+                  var owner = m[1], repo = m[2], num = m[3];
+                  var token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "";
+                  var headers = { "User-Agent": "mojaloop-build", "Accept": "application/vnd.github+json" };
+                  if (token) { headers.Authorization = "Bearer " + token; }
+                  https.get("https://api.github.com/repos/" + owner + "/" + repo + "/pulls/" + num, { headers: headers }, function (res) {
+                    var body = "";
+                    res.on("data", function (d) { body += d; });
+                    res.on("end", function () {
+                      if (res.statusCode !== 200) {
+                        var hint = (res.statusCode === 403 || res.statusCode === 429) ? " (rate limit / auth - ensure GH_TOKEN or GITHUB_TOKEN is set in the context)" : "";
+                        console.error("GitHub API returned " + res.statusCode + hint + ": " + body.slice(0, 300));
+                        process.exit(1);
+                      }
+                      try { process.stdout.write(JSON.parse(body).title); }
+                      catch (e) { console.error("Could not parse GitHub API response."); process.exit(1); }
+                    });
+                  }).on("error", function (e) { console.error("Request failed: " + e.message); process.exit(1); });
+                ')"
+                echo "PR title: ${TITLE}"
+
+                # Lint with pinned commitlint. @commitlint/resolve-extends loads
+                # config-conventional from the CWD's node_modules, so install both into a
+                # throwaway dir and run commitlint from there.
+                WORKDIR="$(mktemp -d)"
+                cd "${WORKDIR}"
+                npm init -y >/dev/null 2>&1
+                npm install --no-audit --no-fund \
+                  "@commitlint/cli@${COMMITLINT_VERSION}" \
+                  "@commitlint/config-conventional@${COMMITLINT_VERSION}" >/dev/null
+
+                if printf '%s' "${TITLE}" | ./node_modules/.bin/commitlint --extends @commitlint/config-conventional; then
+                  echo "PR title is valid."
+                else
+                  echo ""
+                  echo "PR title '${TITLE}' does not follow the Conventional Commits spec."
+                  echo "See: ${GET_HELP_URL}"
+                  exit 1
+                fi
+              environment:
+                COMMITLINT_VERSION: << parameters.commitlint-version >>
+                FAIL_SILENTLY_WHEN_NO_PR: << parameters.fail-silently-when-no-pr >>
+                GET_HELP_URL: << parameters.get-help-url >>
+              name: Validate PR title (Conventional Commits)
+      restore_cache_command:
+        description: |
+          Restore the cache of dependencies.
+        parameters:
+          yarn_lock:
+            type: string
+        steps:
+          - when:
+              condition:
+                not: << parameters.yarn_lock >>
+              steps:
+                - restore_cache:
+                    keys:
+                      - dependency-cache-{{ .Environment.CIRCLE_SHA1 }}
+          - when:
+              condition: << parameters.yarn_lock >>
+              steps:
+                - restore_cache:
+                    key: yarn-packages-{{ checksum "yarn.lock" }}
+      sign_docker_image:
+        description: |
+          Sign a published Docker image using Cosign and the image's immutable digest. Requires a CircleCI environment CLI that supports `circleci run oidc get --claims`. Minimum tested CircleCI Build Agent version: 1.0.347365-0fcae425.
+        parameters:
+          cosign_version:
+            default: v3.1.3
+            description: Pinned Cosign release used for Docker image signing.
+            type: string
+        steps:
+          - run:
+              command: |
+                set -euo pipefail
+
+                COSIGN_VERSION="<< parameters.cosign_version >>"
+
+                # Verification flow adapted from the official
+                # sigstore/cosign-installer implementation.
+                # BOOTSTRAP_SHA256 is tied to cosign version "v3.0.6"; change this when the bootstrap version changes
+                BOOTSTRAP_VERSION="v3.0.6"
+                BOOTSTRAP_SHA256="c956e5dfcac53d52bcf058360d579472f0c1d2d9b69f55209e256fe7783f4c74"
+                # The Sigstore release public key is a long-lived KMS key, stable across v3.x releases.
+                # Update this hash only if Sigstore rotates their release signing key.
+                RELEASE_KEY_SHA256="f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126"
+
+                if ! [[ "$COSIGN_VERSION" =~ ^v3\.[0-9]+\.[0-9]+$ ]]; then
+                  echo "ERROR: Unsupported Cosign version: $COSIGN_VERSION"
+                  echo "This installer currently supports Cosign v3 releases."
+                  exit 1
+                fi
+
+                VERSION_NUM="${COSIGN_VERSION#v}"
+
+                if [ "$(printf '%s\n' "3.0.3" "$VERSION_NUM" | sort -V | head -n1)" != "3.0.3" ]; then
+                  echo "ERROR: Cosign versions below v3.0.3 are not supported."
+                  exit 1
+                fi
+
+                BINDIR="/usr/local/bin"
+                WORKDIR="$(mktemp -d)"
+
+                cleanup() {
+                  rm -rf "$WORKDIR"
+                }
+
+                trap cleanup EXIT
+
+                if [ -w "$BINDIR" ]; then
+                  SUDO=""
+                else
+                  SUDO="sudo"
+                fi
+
+                #
+                # Download and verify the trusted bootstrap Cosign binary.
+                #
+                curl --retry 3 \
+                  --proto '=https' \
+                  --proto-redir '=https' \
+                  --tlsv1.2 \
+                  -fsSL \
+                  "https://github.com/sigstore/cosign/releases/download/${BOOTSTRAP_VERSION}/cosign-linux-amd64" \
+                  -o "${WORKDIR}/cosign-bootstrap"
+
+                BOOTSTRAP_ACTUAL_SHA256="$(
+                  sha256sum "${WORKDIR}/cosign-bootstrap" | awk '{print $1}'
+                )"
+
+                if [ "$BOOTSTRAP_ACTUAL_SHA256" != "$BOOTSTRAP_SHA256" ]; then
+                  echo "ERROR: Cosign bootstrap SHA256 verification failed"
+                  exit 1
+                fi
+
+                chmod +x "${WORKDIR}/cosign-bootstrap"
+
+                #
+                # If the requested version is the trusted bootstrap version,
+                # install it directly.
+                #
+                if [ "$COSIGN_VERSION" = "$BOOTSTRAP_VERSION" ]; then
+                  $SUDO install "${WORKDIR}/cosign-bootstrap" "$BINDIR/cosign"
+                  cosign version
+                  exit 0
+                fi
+
+                #
+                # Download requested Cosign release.
+                #
+                curl --retry 3 \
+                  --proto '=https' \
+                  --proto-redir '=https' \
+                  --tlsv1.2 \
+                  -fsSL \
+                  "https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-linux-amd64" \
+                  -o "${WORKDIR}/cosign"
+
+                #
+                # Download and verify the Cosign release public key.
+                #
+                curl --retry 3 \
+                  --proto '=https' \
+                  --proto-redir '=https' \
+                  --tlsv1.2 \
+                  -fsSL \
+                  "https://raw.githubusercontent.com/sigstore/cosign/${COSIGN_VERSION}/release/release-cosign.pub" \
+                  -o "${WORKDIR}/release-cosign.pub"
+
+                RELEASE_KEY_ACTUAL_SHA256="$(
+                  sha256sum "${WORKDIR}/release-cosign.pub" | awk '{print $1}'
+                )"
+
+                if [ "$RELEASE_KEY_ACTUAL_SHA256" != "$RELEASE_KEY_SHA256" ]; then
+                  echo "ERROR: Cosign release public key SHA256 verification failed"
+                  exit 1
+                fi
+
+                #
+                # Verify the keyless Sigstore release bundle.
+                #
+                curl --retry 3 \
+                  --proto '=https' \
+                  --proto-redir '=https' \
+                  --tlsv1.2 \
+                  -fsSL \
+                  "https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-linux-amd64.sigstore.json" \
+                  -o "${WORKDIR}/cosign-linux-amd64.sigstore.json"
+
+                "${WORKDIR}/cosign-bootstrap" verify-blob \
+                  --certificate-identity="keyless@projectsigstore.iam.gserviceaccount.com" \
+                  --certificate-oidc-issuer="https://accounts.google.com" \
+                  --bundle "${WORKDIR}/cosign-linux-amd64.sigstore.json" \
+                  "${WORKDIR}/cosign"
+
+                #
+                # Verify the KMS-backed Sigstore release bundle.
+                #
+                curl --retry 3 \
+                  --proto '=https' \
+                  --proto-redir '=https' \
+                  --tlsv1.2 \
+                  -fsSL \
+                  "https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-linux-amd64-kms.sigstore.json" \
+                  -o "${WORKDIR}/cosign-linux-amd64-kms.sigstore.json"
+
+                "${WORKDIR}/cosign-bootstrap" verify-blob \
+                  --key "${WORKDIR}/release-cosign.pub" \
+                  --bundle "${WORKDIR}/cosign-linux-amd64-kms.sigstore.json" \
+                  "${WORKDIR}/cosign"
+
+                #
+                # Install only after verification succeeds.
+                #
+                $SUDO install "${WORKDIR}/cosign" "$BINDIR/cosign"
+
+                cosign version
+              name: Install and verify Cosign
+          - run:
+              command: |
+                set -euo pipefail
+
+                echo "Preparing CircleCI OIDC token for keyless signing..."
+
+                SIGSTORE_ID_TOKEN="$(circleci run oidc get --claims '{"aud":"sigstore"}')"
+
+                if [[ -z "$SIGSTORE_ID_TOKEN" ]]; then
+                  echo "ERROR: Failed to obtain CircleCI OIDC token"
+                  exit 1
+                fi
+
+                export SIGSTORE_ID_TOKEN
+
+                cosign sign \
+                  --yes \
+                  "$IMAGE_DIGEST"
+
+                unset SIGSTORE_ID_TOKEN
+              name: Sign Docker image (keyless)
+      slack_pass_fail:
+        description: |
+          Send slack notifications.
+        steps:
+          - slack/notify:
+              event: pass
+              template: SLACK_TEMP_RELEASE_SUCCESS
+          - slack/notify:
+              event: fail
+              template: SLACK_TEMP_RELEASE_FAILURE
+      trigger_downstream:
+        description: |
+          Trigger downstream workflows
+        steps:
+          - run:
+              command: |
+                for var in $(compgen -A variable | grep "^DOWNSTREAM_IMAGE_"); do
+                    REPO_NAME=$(echo ${!var} | cut -d: -f1)
+                    echo "Triggering downstream workflow for $REPO_NAME"
+                    curl -L \
+                        -X POST \
+                        -H "Accept: application/vnd.github+json" \
+                        -H "Authorization: Bearer $(echo ${!var} | cut -d: -f2)" \
+                        https://api.github.com/repos/$REPO_NAME/actions/workflows/docker-image.yaml/dispatches \
+                        -d '{"ref":"main","inputs":{"upstream":"'$CIRCLE_BUILD_URL'","image":"'${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:v${PACKAGE_VERSION}'","tag":"'$RELEASE_TAG'"}}'
+                done
+              name: Trigger downstream workflows
+    executors:
+      docker:
+        description: |
+          This is a sample executor using Docker and Node. If you want to provide a custom environment in your orb, insert your image here. If you do not require an executor, you can simply delete this directory.
+        docker:
+          - image: node:24.15.0-alpine3.23
+        environment:
+          BASH_ENV: /etc/profile
+          NVM_ARCH_UNOFFICIAL_OVERRIDE: x64-musl
+        parameters:
+          resource_class:
+            default: medium
+            description: The resource class to use for the executor
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+        resource_class: << parameters.resource_class >>
+        shell: /bin/sh -leo pipefail
+        working_directory: /home/circleci/project
+      machine:
+        description: |
+          Ubuntu 26.04 machine executor.
+        environment:
+          BUILD_LIBRDKAFKA: 0
+        machine:
+          image: ubuntu-2604:2026.07.1
+        parameters:
+          resource_class:
+            default: medium
+            description: The resource class to use for the executor
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+        resource_class: << parameters.resource_class >>
+        shell: /bin/bash -leo pipefail
+        working_directory: /home/circleci/project
+    jobs:
+      build_local:
+        description: |
+          This job builds a local Docker image of the project.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: machine
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          yarn_lock:
+            default: ""
+            type: string
+        steps:
+          - checkout
+          - check_dockerfile
+          - configure_nvm
+          - display_versions
+          - run:
+              command: |
+                nvm use default
+                if [[ $CIRCLE_BRANCH =~ ^(major|minor|patch)/(.*)$ ]]; then
+                  echo "Pre-releasing ${BASH_REMATCH[1]} version ${BASH_REMATCH[2]}"
+                  npx standard-version --prerelease "${BASH_REMATCH[2]}" --release-as "${BASH_REMATCH[1]}" --message "chore(release): [ci skip] %s" --skip.changelog --no-verify
+                fi
+              name: Setup for pre-release
+          - run:
+              command: |
+                source ~/.profile
+                export DOCKER_NODE_VERSION="$NVMRC_VERSION-alpine"
+                echo "export DOCKER_NODE_VERSION=$NVMRC_VERSION-alpine" >> $BASH_ENV
+                echo "Building Docker image: ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:local --build-arg NODE_VERSION=$DOCKER_NODE_VERSION"
+                docker build -t ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:local --build-arg NODE_VERSION=$DOCKER_NODE_VERSION .
+              name: Build Docker local image
+          - run:
+              command: docker save -o /tmp/docker-image.tar ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:local
+              name: Save docker image to workspace
+          - run:
+              command: |
+                nvm use default
+                SCRIPTS=$(npm run)
+                if printf '%s\n' "$SCRIPTS" | grep -q "release:assets"; then
+                  echo "Found release:assets script, building assets..."
+                  mkdir -p /tmp/release-assets
+                  npm run release:assets -- /tmp/release-assets
+                  echo "Assets built:"
+                  ls -la /tmp/release-assets
+                else
+                  echo "No release:assets script found, skipping..."
+                fi
+              name: Build Release Assets
+          - persist_to_workspace:
+              paths:
+                - ./docker-image.tar
+                - ./release-assets
+              root: /tmp
+      check_security_txt_expiry:
+        description: |
+          Validates that .well-known/security.txt (RFC 9116), if present in the repo, has not expired. Passes with no effect for repos that don't have one yet.
+        executor:
+          name: docker
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+        steps:
+          - docker_dependencies
+          - checkout
+          - check_security_txt_expiry
+      github_prerelease:
+        description: |
+          This job creates a Github pre-release for the project when a prerelease tag
+          (e.g. v1.2.3-snapshot.1, v1.2.3-hotfix.1, v1.2.3-perf.1) is pushed.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: machine
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+        shell: /bin/bash -eo pipefail
+        steps:
+          - run:
+              command: |
+                sudo apt-get update && sudo apt-get install -y git
+              name: Install git
+          - gh/install
+          - checkout
+          - attach_workspace:
+              at: /tmp
+          - run:
+              command: |
+                git diff --no-indent-heuristic HEAD~1 HEAD CHANGELOG.md 2>/dev/null | sed -n '/^+[^+]/ s/^+//p' > /tmp/changes || true
+                # changelog updates are skipped for snapshots, so the diff is usually empty
+                if [ ! -s /tmp/changes ]; then
+                  echo "Prerelease" > /tmp/changes
+                fi
+                echo 'export RELEASE_CHANGES=`cat /tmp/changes`' >> $BASH_ENV
+                echo 'export RELEASE_TAG=`cat package.json | jq -r .version`' >> $BASH_ENV
+              name: Format the changelog into the github release body and get release tag
+          - run:
+              command: |
+                echo "Changes are: ${RELEASE_CHANGES}"
+              name: Check the release changes
+          - run:
+              command: |
+                gh release create "v${RELEASE_TAG}" --prerelease --repo ${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME} --title "v${RELEASE_TAG} Release" --draft=false --notes "${RELEASE_CHANGES}" ./CHANGELOG.md
+              name: Create Pre-release
+          - run:
+              command: |
+                RELEASE_ASSETS_DIR="/tmp/release-assets"
+                if [ -d "$RELEASE_ASSETS_DIR" ] && [ "$(ls -A $RELEASE_ASSETS_DIR 2>/dev/null)" ]; then
+                  echo "Found release assets in workspace:"
+                  ls -la "$RELEASE_ASSETS_DIR"
+                  for asset in "$RELEASE_ASSETS_DIR"/*; do
+                    if [ -f "$asset" ]; then
+                      echo "Uploading: $(basename "$asset")"
+                      gh release upload "v${RELEASE_TAG}" "$asset" --repo ${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+                    fi
+                  done
+                else
+                  echo "No release assets found in workspace, skipping..."
+                fi
+              name: Upload Release Assets
+      github_release:
+        description: |
+          This job creates a Github release for the project.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: machine
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          slack:
+            default: ""
+            type: string
+        shell: /bin/bash -eo pipefail
+        steps:
+          - run:
+              command: |
+                sudo apt-get update && sudo apt-get install -y git
+              name: Install git
+          - gh/install
+          - checkout
+          - configure_nvm
+          - attach_workspace:
+              at: /tmp
+          - configure_git
+          - run:
+              command: |
+                git fetch origin
+                git checkout origin/${CIRCLE_BRANCH}
+              name: Fetch updated release branch
+          - export_version_from_package
+          - run:
+              command: |
+                echo "Changes are: ${RELEASE_CHANGES}"
+              name: Check the release changes
+          - run:
+              command: |
+                echo "export SLACK_PROJECT_NAME=${CIRCLE_PROJECT_REPONAME}" >> $BASH_ENV
+                echo "export SLACK_RELEASE_TYPE='Github Release'" >> $BASH_ENV
+                echo "export SLACK_RELEASE_TAG=v${RELEASE_TAG}" >> $BASH_ENV
+                echo "export SLACK_RELEASE_URL=https://github.com/mojaloop/${CIRCLE_PROJECT_REPONAME}/releases/tag/v${RELEASE_TAG}" >> $BASH_ENV
+                echo "export SLACK_BUILD_ID=${CIRCLE_BUILD_NUM}" >> $BASH_ENV
+                echo "export SLACK_CI_URL=${CIRCLE_BUILD_URL}" >> $BASH_ENV
+              name: Setup Slack config
+          - run:
+              command: |
+                nvm use default
+                if ls | grep -Eq '^sbom-v[0-9]+\.[0-9]+\.[0-9]+\.csv$'; then
+                  git fetch origin "$CIRCLE_BRANCH"
+                  git checkout -B "$CIRCLE_BRANCH" "origin/$CIRCLE_BRANCH"
+                  git pull --rebase origin "${CIRCLE_BRANCH}" || echo "Git pull failed"
+                  echo "Found SBOM file"
+                  rm -f sbom-*.csv
+                  # Generate new SBOM
+                  if [ -f yarn.lock ]; then
+                    echo "Generating SBOM using Yarn"
+                    npx -y --package @mojaloop/ml-depcheck-utility@1.1.3 generate-sbom-yarn
+                  else
+                    echo "Generating SBOM using NPM"
+                    npx -y --package @mojaloop/ml-depcheck-utility@1.1.3 generate-sbom-npm
+                  fi
+                  # Quoted pathspec so git (not the shell) resolves the glob — this stages
+                  # the removal of any old sbom-*.csv already deleted from disk above,
+                  # not just the newly generated file.
+                  git add -A -- 'sbom-*.csv'
+                  git checkout -- . 2>/dev/null || true
+                  git commit -m "chore(sbom): update sbom [skip ci]" || echo "No changes to commit"
+                  git push origin "${CIRCLE_BRANCH}" || echo "Git push failed"
+                else
+                  echo "No matching sbom-<version>.csv found. Skipping SBOM generation."
+                fi
+              name: Generate SBOM
+          - run:
+              command: |
+                gh release create "v${RELEASE_TAG}" --repo ${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME} --title "v${RELEASE_TAG} Release" --draft=false --notes "${RELEASE_CHANGES}" ./CHANGELOG.md
+              name: Create Release
+          - run:
+              command: |
+                RELEASE_ASSETS_DIR="/tmp/release-assets"
+                if [ -d "$RELEASE_ASSETS_DIR" ] && [ "$(ls -A $RELEASE_ASSETS_DIR 2>/dev/null)" ]; then
+                  echo "Found release assets in workspace:"
+                  ls -la "$RELEASE_ASSETS_DIR"
+                  for asset in "$RELEASE_ASSETS_DIR"/*; do
+                    if [ -f "$asset" ]; then
+                      echo "Uploading: $(basename "$asset")"
+                      gh release upload "v${RELEASE_TAG}" "$asset" --repo ${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+                    fi
+                  done
+                else
+                  echo "No release assets found in workspace, skipping..."
+                fi
+              name: Upload Release Assets
+          - when:
+              condition: << parameters.slack >>
+              steps:
+                - slack_pass_fail
+      grype_scan:
+        description: |
+          This job performs vulnerability scanning using Grype.
+          By default, it performs source code scanning. To scan a Docker image instead,
+          set scan-type: image in .grype.yaml (requires Build job to complete first).
+        executor:
+          name: machine
+          resource_class: << parameters.resource_class >>
+        parameters:
+          grype_version:
+            default: v0.114.0
+            type: string
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          syft_version:
+            default: v1.45.0
+            type: string
+        steps:
+          - checkout
+          - attach_workspace:
+              at: /tmp
+          - run:
+              command: |
+                if [ ! -f .grype.yaml ]; then
+                  echo "Error: .grype.yaml configuration file not found in repository at root level."
+                  echo "Please add a .grype.yaml file with appropriate vulnerability ignore rules."
+                  exit 1
+                fi
+
+                # Check if scan is disabled (handle various YAML formats)
+                if grep -E '^\s*disabled:\s*(true|True|TRUE|yes|Yes|YES)\s*$' .grype.yaml; then
+                  echo "Grype scan is disabled in .grype.yaml"
+                  circleci-agent step halt
+                fi
+
+                # Determine scan type
+                SCAN_TYPE=""
+
+                # Check explicit scan-type configuration (handle spaces, quotes, etc.)
+                if grep -E "^\s*scan-type:\s*[\"']?source[\"']?\s*$" .grype.yaml; then
+                  SCAN_TYPE="source"
+                  echo "scan-type: source found in .grype.yaml"
+                elif grep -E "^\s*scan-type:\s*[\"']?image[\"']?\s*$" .grype.yaml; then
+                  SCAN_TYPE="image"
+                  echo "scan-type: image found in .grype.yaml"
+                else
+                  # Default to source scan for all repos
+                  SCAN_TYPE="source"
+                  if [ -f Dockerfile ]; then
+                    echo "Dockerfile found but no scan-type specified - defaulting to source scan"
+                    echo "Set scan-type: image in .grype.yaml to scan the Docker image instead"
+                  else
+                    echo "No Dockerfile found - defaulting to source scan"
+                  fi
+                fi
+
+                echo "export GRYPE_SCAN_TYPE=$SCAN_TYPE" >> $BASH_ENV
+                echo "Scan type determined: $SCAN_TYPE"
+              name: Check for Grype config and determine scan type
+          - run:
+              command: |
+                if ! command -v jq &> /dev/null; then
+                  echo "jq could not be found, installing..."
+                  sudo apt-get update && sudo apt-get install -y jq
+                fi
+              name: Check dependencies
+          - run:
+              command: |
+                if [ "$GRYPE_SCAN_TYPE" = "image" ]; then
+                  if [ -f /tmp/docker-image.tar ]; then
+                    docker load -i /tmp/docker-image.tar
+                    echo "Docker image loaded successfully"
+                  else
+                    echo "Error: Docker image tar not found at /tmp/docker-image.tar."
+                    echo "scan-type: image requires the Build job to complete before Grype scan."
+                    echo ""
+                    echo "Since grype_scan runs in parallel with Build by default, image scan repos"
+                    echo "must ensure Build completes first. Options:"
+                    echo "  1. Add a custom workflow override via .circleci/additional-workflows.yaml"
+                    echo "     to make grype_scan require Build"
+                    echo "  2. Switch to source scan (the default) by removing scan-type: image"
+                    echo "     from .grype.yaml"
+                    exit 1
+                  fi
+                fi
+              name: Load Docker image if image scan
+          - run:
+              command: |
+                echo "Installing Grype vulnerability scanner..."
+                curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sudo sh -s -- -b /usr/local/bin << parameters.grype_version >>
+
+                # Verify installation succeeded
+                if ! command -v grype &> /dev/null; then
+                  echo "Error: Grype installation failed - command not found"
+                  exit 1
+                fi
+
+                # Display version for debugging
+                echo "Grype installed successfully:"
+                grype version
+              name: Install Grype
+          - run:
+              command: |
+                set -e  # Exit on error
+
+                if [ "$GRYPE_SCAN_TYPE" = "image" ]; then
+                  IMAGE_NAME="${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:local"
+                  echo "Scanning Docker image: $IMAGE_NAME"
+
+                  # Verify image exists before scanning
+                  if ! docker images | grep -q "$CIRCLE_PROJECT_REPONAME.*local"; then
+                    echo "Error: Docker image $IMAGE_NAME not found"
+                    echo "Available images:"
+                    docker images
+                    exit 1
+                  fi
+
+                  # Run scan with error handling (table)
+                  if ! grype $IMAGE_NAME -c .grype.yaml -o table > grype-results.txt 2>&1; then
+                    echo "Error: Grype image scan failed"
+                    cat grype-results.txt
+                    exit 1
+                  fi
+
+                  # Generate JSON output (stderr to separate file to avoid JSON corruption)
+                  if ! grype $IMAGE_NAME -c .grype.yaml -o json > grype-results.json 2>grype-json-errors.log; then
+                    echo "Error: Failed to generate JSON output"
+                    cat grype-json-errors.log
+                    exit 1
+                  fi
+                else
+                  echo "Scanning source code in current directory (SBOM-first)"
+
+                  # Ensure syft is present (install if missing)
+                  if ! command -v syft &> /dev/null; then
+                    echo "syft not found — installing..."
+                    curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sudo sh -s -- -b /usr/local/bin << parameters.syft_version >>
+                  fi
+
+                  # Generate SBOM
+                  echo "Generating SBOM with syft..."
+                  syft dir:. -o json > sbom.json
+                  echo "sbom.json created: $(stat -c%s sbom.json || true) bytes"
+
+                  # Detect and remove any artifacts with empty/non-pkg purls (defensive)
+                  jq -c '.artifacts[] | select((.purl // "") == "" or ((.purl // "") | test("^pkg:") | not))' sbom.json > bad-purls.json || true
+                  if [ -s bad-purls.json ]; then
+                    echo "Warning: sbom.json contains artifacts with empty/invalid purl; creating sbom.fixed.json with those removed"
+                    jq 'del(.artifacts[] | select((.purl // "") == "" or ((.purl // "") | test("^pkg:") | not)))' sbom.json > sbom.fixed.json
+                  else
+                    cp sbom.json sbom.fixed.json
+                  fi
+
+                  # Validate cleaned SBOM JSON
+                  if ! jq empty sbom.fixed.json 2>/dev/null; then
+                    echo "Error: sbom.fixed.json is invalid JSON"
+                    head -n 40 sbom.fixed.json || true
+                    exit 1
+                  fi
+
+                  # Run a human-readable table output first (to keep original behavior)
+                  if ! grype sbom:sbom.fixed.json -c .grype.yaml -o table > grype-results.txt 2>&1; then
+                    echo "Warning: Grype sbom table output failed; will still attempt JSON run (see grype-results.txt)"
+                    cat grype-results.txt || true
+                  fi
+
+                  # Primary: run grype against the cleaned SBOM and capture stderr separately
+                  echo "Running grype (JSON) against sbom.fixed.json..."
+                  if grype sbom:sbom.fixed.json -c .grype.yaml -o json > grype-results.json 2>grype-json-errors.log; then
+                    echo "grype sbom scan (json) completed"
+                  else
+                    echo "Warning: grype sbom JSON run failed; printing stderr and attempting fallback to 'grype dir:.'"
+                    echo "=== grype-json-errors.log (first 200 lines) ==="
+                    sed -n '1,200p' grype-json-errors.log || true
+
+                    # Fallback: attempt original directory scan but still capture stderr separately (prevents stdout corruption)
+                    echo "Attempting fallback: grype dir:. -o json"
+                    if ! grype dir:. -c .grype.yaml -o json > grype-results.json 2>grype-json-errors.log; then
+                      echo "Error: Fallback grype dir: JSON run failed; see grype-json-errors.log"
+                      sed -n '1,200p' grype-json-errors.log || true
+                      exit 1
+                    fi
+                  fi
+                fi
+
+                # Verify scan produced valid results
+                if [ ! -s grype-results.json ]; then
+                  echo "Error: Grype scan produced empty results"
+                  exit 1
+                fi
+
+                # Validate JSON format AND schema.
+                # jq -e fails if grype-results.json is invalid JSON OR if '.matches' is not an
+                # array (null/missing) — catching valid-but-wrong-shape output that would
+                # otherwise break the downstream '.matches[]?' vulnerability counting.
+                if ! jq -e '.matches | type == "array"' grype-results.json >/dev/null 2>&1; then
+                  echo "Error: Grype scan produced invalid output or missing 'matches' array"
+                  echo "=== grype-results.json (first 20 lines) ==="
+                  head -20 grype-results.json || true
+                  echo "=== grype-json-errors.log (first 200 lines) ==="
+                  sed -n '1,200p' grype-json-errors.log || true
+                  exit 1
+                fi
+
+                # Display any warnings from the scan
+                if [ -f grype-json-errors.log ] && [ -s grype-json-errors.log ]; then
+                  echo "=== Grype Scan Warnings ==="
+                  cat grype-json-errors.log
+                fi
+
+                echo "=== Grype Scan Results ==="
+                cat grype-results.txt
+                echo ""
+                echo "Scan completed successfully"
+              name: Run Grype scan
+          - run:
+              command: |
+                set -euo pipefail
+
+                # Validate JSON before processing
+                if ! jq empty grype-results.json 2>/dev/null; then
+                  echo "Error: Invalid JSON in grype-results.json"
+                  exit 1
+                fi
+
+                CRITICAL_COUNT=$(jq '[.matches[]? | select(.vulnerability.severity == "Critical")] | length' grype-results.json)
+                HIGH_COUNT=$(jq '[.matches[]? | select(.vulnerability.severity == "High")] | length' grype-results.json)
+                MEDIUM_COUNT=$(jq '[.matches[]? | select(.vulnerability.severity == "Medium")] | length' grype-results.json)
+
+                echo "Critical vulnerabilities found: $CRITICAL_COUNT"
+                echo "High vulnerabilities found: $HIGH_COUNT"
+                echo "Medium vulnerabilities found: $MEDIUM_COUNT"
+
+                # List remaining critical, high and medium vulnerabilities for awareness
+                if [ "$CRITICAL_COUNT" -gt 0 ]; then
+                  echo ""
+                  echo "Critical severity vulnerabilities:"
+                  jq -r '.matches[]? | select(.vulnerability.severity == "Critical") | "- \(.artifact.name // "unknown") \(.artifact.version // "unknown"): \(.vulnerability.id)"' grype-results.json
+                fi
+
+                if [ "$HIGH_COUNT" -gt 0 ]; then
+                  echo ""
+                  echo "High severity vulnerabilities:"
+                  jq -r '.matches[]? | select(.vulnerability.severity == "High") | "- \(.artifact.name // "unknown") \(.artifact.version // "unknown"): \(.vulnerability.id)"' grype-results.json
+                fi
+
+                if [ "$MEDIUM_COUNT" -gt 0 ]; then
+                  echo ""
+                  echo "Medium severity vulnerabilities:"
+                  jq -r '.matches[]? | select(.vulnerability.severity == "Medium") | "- \(.artifact.name // "unknown") \(.artifact.version // "unknown"): \(.vulnerability.id)"' grype-results.json
+                fi
+
+                # Fail if any critical, high, or medium vulnerabilities are found
+                if [ "$CRITICAL_COUNT" -gt 0 ] || [ "$HIGH_COUNT" -gt 0 ] || [ "$MEDIUM_COUNT" -gt 0 ]; then
+                  echo ""
+                  echo "Critical, High, or Medium vulnerabilities found. Failing the build."
+                  exit 1
+                fi
+              name: Check for critical, high and medium vulnerabilities
+          - store_artifacts:
+              destination: grype-scan/scan-results.json
+              path: grype-results.json
+          - store_artifacts:
+              destination: grype-scan/scan-results.txt
+              path: grype-results.txt
+      license_scan:
+        description: |
+          Checks the licenses of the project's dependencies (source scan).
+
+          The orb generates a CycloneDX SBOM from the source tree with Syft
+          (generate_sbom), then gates it with @mojaloop/license-scanner-tool against the
+          Mojaloop SPDX allowlist (license_gate). The SBOM is kept and stored as an artifact.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: docker
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          yarn_lock:
+            default: ""
+            type: string
+        steps:
+          - docker_dependencies
+          - checkout
+          - configure_nvm
+          - restore_cache_command:
+              yarn_lock: << parameters.yarn_lock >>
+          - generate_sbom:
+              output: /tmp/sbom.cdx.json
+              target: dir:.
+          - store_artifacts:
+              destination: sbom
+              path: /tmp/sbom.cdx.json
+          - license_gate:
+              sbom: /tmp/sbom.cdx.json
+      pr_title_check:
+        executor:
+          name: docker
+          resource_class: << parameters.resource_class >>
+        parameters:
+          ci-config-branch:
+            default: ""
+            description: |
+              [DEPRECATED] No longer used. pr-title now runs upstream commitlint instead of cloning mojaloop/ci-config. Retained for backward compatibility with callers that still pass it.
+            type: string
+          commitlint-version:
+            default: 21.0.2
+            description: |
+              Exact @commitlint/cli + config-conventional version to run (pin exactly; see the pr_title_check command).
+            type: string
+          fail-silently-when-no-pr:
+            default: true
+            description: |
+              Pass (exit 0) when CIRCLE_PULL_REQUEST is unset — e.g. tag or branch builds not associated with a pull request.
+            type: boolean
+          get-help-url:
+            default: https://docs.mojaloop.io/community/standards/creating-new-features.html
+            description: Help URL surfaced to the contributor when a PR title is invalid.
+            type: string
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+        steps:
+          - pr_title_check:
+              ci-config-branch: << parameters.ci-config-branch >>
+              commitlint-version: << parameters.commitlint-version >>
+              fail-silently-when-no-pr: << parameters.fail-silently-when-no-pr >>
+              get-help-url: << parameters.get-help-url >>
+      publish_docker:
+        description: |
+          This job publishes the Docker image built in the previous job to Docker Hub.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: machine
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          slack:
+            default: ""
+            type: string
+        shell: /bin/bash -eo pipefail
+        steps:
+          - checkout
+          - check_dockerfile
+          - run:
+              command: |
+                echo "export RELEASE_TAG=$RELEASE_TAG_PROD" >> $BASH_ENV
+                echo "RELEASE_TAG=$RELEASE_TAG_PROD"
+
+                PACKAGE_VERSION=$(cat package.json | jq -r .version)
+                echo "export PACKAGE_VERSION=${PACKAGE_VERSION}" >> $BASH_ENV
+                echo "PACKAGE_VERSION=${PACKAGE_VERSION}"
+              name: Setup for LATEST release
+          - run:
+              command: |
+                echo "export SLACK_PROJECT_NAME=${CIRCLE_PROJECT_REPONAME}" >> $BASH_ENV
+                echo "export SLACK_RELEASE_TYPE='Docker Release'" >> $BASH_ENV
+                echo "export SLACK_RELEASE_TAG=v${CIRCLE_TAG:1}" >> $BASH_ENV
+                echo "export SLACK_BUILD_ID=${CIRCLE_BUILD_NUM}" >> $BASH_ENV
+                echo "export SLACK_CI_URL=${CIRCLE_BUILD_URL}" >> $BASH_ENV
+              name: Setup Slack config
+          - attach_workspace:
+              at: /tmp
+          - run:
+              command: |
+                docker load -i /tmp/docker-image.tar
+              name: Load the pre-built docker image from workspace
+          - run:
+              command: echo $DOCKER_PASS | docker login $PUBLISH_CONTAINER_REGISTRY -u $DOCKER_USER --password-stdin
+              name: Login to container registry
+          - run:
+              command: |
+                docker tag ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:local ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
+                docker tag ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:local ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG
+              name: Re-tag pre built image
+          - run:
+              command: |
+                echo "Publishing ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG"
+                docker push ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
+                echo "Publishing ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG"
+                docker push ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG
+              name: Publish Docker image $CIRCLE_TAG & Latest tag to container registry
+          - run:
+              command: |
+                IMAGE_DIGEST=$(docker inspect ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:v${CIRCLE_TAG:1} | jq -r '.[0].RepoDigests | .[]')
+                echo "IMAGE_DIGEST=${IMAGE_DIGEST}"
+                echo "export IMAGE_DIGEST=${IMAGE_DIGEST}" >> $BASH_ENV
+              name: Set Image Digest
+          - sign_docker_image
+          - trigger_downstream
+          - run:
+              command: |
+                echo "export SLACK_RELEASE_URL='https://hub.docker.com/layers/${CIRCLE_PROJECT_REPONAME}/${DOCKER_ORG}/${CIRCLE_PROJECT_REPONAME}/v${CIRCLE_TAG:1}/images/${IMAGE_DIGEST}?context=explore'" | sed -r "s/${DOCKER_ORG}\/${CIRCLE_PROJECT_REPONAME}@sha256:/sha256-/g" >> $BASH_ENV
+              name: Update Slack config
+          - when:
+              condition: << parameters.slack >>
+              steps:
+                - slack_pass_fail
+      publish_docker_prerelease:
+        description: |
+          This job is responsible for publishing the docker image pre-release to Docker Hub.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: machine
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          slack:
+            default: ""
+            type: string
+        shell: /bin/bash -eo pipefail
+        steps:
+          - checkout
+          - check_dockerfile
+          - attach_workspace:
+              at: /tmp
+          - run:
+              command: |
+                cat /tmp/prerelease.env >> $BASH_ENV
+              name: Read the prerelease variables
+          - run:
+              command: |
+                echo "export SLACK_PROJECT_NAME=${CIRCLE_PROJECT_REPONAME}" >> $BASH_ENV
+                echo "export SLACK_RELEASE_TYPE='Docker pre-release'" >> $BASH_ENV
+                echo "export SLACK_RELEASE_TAG='v${PACKAGE_VERSION}, ${RELEASE_TAG}'" >> $BASH_ENV
+                echo "export SLACK_BUILD_ID=${CIRCLE_BUILD_NUM}" >> $BASH_ENV
+                echo "export SLACK_CI_URL=${CIRCLE_BUILD_URL}" >> $BASH_ENV
+              name: Setup Slack config
+          - run:
+              command: |
+                docker load -i /tmp/docker-image.tar
+              name: Load the pre-built docker image from workspace
+          - run:
+              command: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+              name: Login to Docker Hub
+          - run:
+              command: |
+                docker tag ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:local ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:v${PACKAGE_VERSION}
+                docker tag ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:local ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG
+              name: Re-tag pre built image
+          - run:
+              command: |
+                echo "Publishing ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:v${PACKAGE_VERSION}"
+                docker push ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:v${PACKAGE_VERSION}
+                echo "Publishing ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG"
+                docker push ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG
+              name: Publish Docker image v${PACKAGE_VERSION} & Latest tag to Docker Hub
+          - run:
+              command: |
+                IMAGE_DIGEST=$(docker inspect ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:v${PACKAGE_VERSION} | jq -r '.[0].RepoDigests | .[]')
+                echo "IMAGE_DIGEST=${IMAGE_DIGEST}"
+                echo "export IMAGE_DIGEST=${IMAGE_DIGEST}" >> $BASH_ENV
+              name: Set Image Digest
+          - sign_docker_image
+          - trigger_downstream
+          - run:
+              command: |
+                echo "export SLACK_RELEASE_URL='https://hub.docker.com/layers/${CIRCLE_PROJECT_REPONAME}/${DOCKER_ORG}/${CIRCLE_PROJECT_REPONAME}/v${PACKAGE_VERSION}/images/${IMAGE_DIGEST}?context=explore'" | sed -r "s/${DOCKER_ORG}\/${CIRCLE_PROJECT_REPONAME}@sha256:/sha256-/g" >> $BASH_ENV
+              name: Update Slack config
+          - when:
+              condition: << parameters.slack >>
+              steps:
+                - slack_pass_fail
+      publish_docker_snapshot:
+        description: |
+          This job is responsible for publishing the docker image snapshot to Docker Hub.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: machine
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          slack:
+            default: ""
+            type: string
+        shell: /bin/bash -eo pipefail
+        steps:
+          - checkout
+          - check_dockerfile
+          - run:
+              command: |
+                echo "export RELEASE_TAG=$RELEASE_TAG_SNAPSHOT" >> $BASH_ENV
+                echo "RELEASE_TAG=$RELEASE_TAG_SNAPSHOT"
+
+                PACKAGE_VERSION=$(cat package.json | jq -r .version)
+                echo "export PACKAGE_VERSION=${PACKAGE_VERSION}" >> $BASH_ENV
+                echo "PACKAGE_VERSION=${PACKAGE_VERSION}"
+              name: Setup for SNAPSHOT release
+          - run:
+              command: |
+                echo "export SLACK_PROJECT_NAME=${CIRCLE_PROJECT_REPONAME}" >> $BASH_ENV
+                echo "export SLACK_RELEASE_TYPE='Docker Release'" >> $BASH_ENV
+                echo "export SLACK_RELEASE_TAG=v${CIRCLE_TAG:1}" >> $BASH_ENV
+                echo "export SLACK_BUILD_ID=${CIRCLE_BUILD_NUM}" >> $BASH_ENV
+                echo "export SLACK_CI_URL=${CIRCLE_BUILD_URL}" >> $BASH_ENV
+              name: Setup Slack config
+          - attach_workspace:
+              at: /tmp
+          - run:
+              command: |
+                docker load -i /tmp/docker-image.tar
+              name: Load the pre-built docker image from workspace
+          - run:
+              command: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+              name: Login to Docker Hub
+          - run:
+              command: |
+                docker tag ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:local ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
+                docker tag ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:local ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG
+              name: Re-tag pre built image
+          - run:
+              command: |
+                echo "Publishing ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG"
+                docker push ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
+                echo "Publishing ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG"
+                docker push ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG
+              name: Publish Docker image $CIRCLE_TAG & Latest tag to Docker Hub
+          - run:
+              command: |
+                IMAGE_DIGEST=$(docker inspect ${DOCKER_ORG:-mojaloop}/$CIRCLE_PROJECT_REPONAME:v${CIRCLE_TAG:1} | jq -r '.[0].RepoDigests | .[]')
+                echo "IMAGE_DIGEST=${IMAGE_DIGEST}"
+                echo "export IMAGE_DIGEST=${IMAGE_DIGEST}" >> $BASH_ENV
+              name: Set Image Digest
+          - sign_docker_image
+          - run:
+              command: |
+                echo "export SLACK_RELEASE_URL='https://hub.docker.com/layers/${CIRCLE_PROJECT_REPONAME}/${DOCKER_ORG}/${CIRCLE_PROJECT_REPONAME}/v${CIRCLE_TAG:1}/images/${IMAGE_DIGEST}?context=explore'" | sed -r "s/${DOCKER_ORG}\/${CIRCLE_PROJECT_REPONAME}@sha256:/sha256-/g" >> $BASH_ENV
+              name: Update Slack config
+          - when:
+              condition: << parameters.slack >>
+              steps:
+                - slack_pass_fail
+      publish_npm:
+        description: |
+          This job publishes to npm.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: docker
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          slack:
+            default: ""
+            type: string
+          yarn_lock:
+            default: ""
+            type: string
+        steps:
+          - docker_dependencies
+          - checkout
+          - configure_nvm
+          - check_npm_private
+          - restore_cache_command:
+              yarn_lock: << parameters.yarn_lock >>
+          - run:
+              command: |
+                echo "export RELEASE_TAG=$RELEASE_TAG_PROD" >> $BASH_ENV
+                echo "RELEASE_TAG=$RELEASE_TAG_PROD"
+                PACKAGE_VERSION=$(cat package.json | jq -r .version)
+                echo "export PACKAGE_VERSION=${PACKAGE_VERSION}" >> $BASH_ENV
+                echo "PACKAGE_VERSION=${PACKAGE_VERSION}"
+              name: Setup for LATEST release
+          - run:
+              command: |
+                echo "export SLACK_PROJECT_NAME=${CIRCLE_PROJECT_REPONAME}" >> $BASH_ENV
+                echo "export SLACK_RELEASE_TYPE='NPM Release'" >> $BASH_ENV
+                echo "export SLACK_RELEASE_TAG=v${CIRCLE_TAG:1}" >> $BASH_ENV
+                echo "export SLACK_RELEASE_URL=https://www.npmjs.com/package/@mojaloop/${CIRCLE_PROJECT_REPONAME}/v/${CIRCLE_TAG:1}" >> $BASH_ENV
+                echo "export SLACK_BUILD_ID=${CIRCLE_BUILD_NUM}" >> $BASH_ENV
+                echo "export SLACK_CI_URL=${CIRCLE_BUILD_URL}" >> $BASH_ENV
+              name: Setup Slack config
+          - npm_auth
+          - npm_publish
+          - when:
+              condition: << parameters.slack >>
+              steps:
+                - slack_pass_fail
+      publish_npm_prerelease:
+        description: |
+          This job publishes a pre-release to NPM.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: machine
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          slack:
+            default: ""
+            type: string
+          yarn_lock:
+            default: ""
+            type: string
+        shell: /bin/bash -eo pipefail
+        steps:
+          - run:
+              command: |
+                sudo apt-get update && sudo apt-get install -y git
+              name: Install git
+          - gh/install
+          - checkout
+          - configure_nvm
+          - restore_cache_command:
+              yarn_lock: << parameters.yarn_lock >>
+          - configure_git
+          - run:
+              command: |
+                nvm use default
+                if [[ $CIRCLE_BRANCH =~ ^(major|minor|patch)/(.*)$ ]]; then
+                  echo "export RELEASE_TAG=${BASH_REMATCH[1]}-${BASH_REMATCH[2]}" > /tmp/prerelease.env
+                  echo "RELEASE_TAG=${BASH_REMATCH[1]}-${BASH_REMATCH[2]}"
+                  echo "Pre-releasing ${BASH_REMATCH[1]} version ${BASH_REMATCH[2]}"
+                  npx standard-version --prerelease "${BASH_REMATCH[2]}" --release-as "${BASH_REMATCH[1]}" --message "chore(release): [ci skip] %s" --skip.changelog --no-verify
+
+                  PACKAGE_VERSION=$(cat package.json | jq -r .version)
+                  echo "export PACKAGE_VERSION=${PACKAGE_VERSION}" >> /tmp/prerelease.env
+                  echo "PACKAGE_VERSION=${PACKAGE_VERSION}"
+                else
+                  echo "unsupported branch $CIRCLE_BRANCH for pre-release"
+                  exit 1
+                fi
+                cat /tmp/prerelease.env >> $BASH_ENV
+              name: Setup for pre-release
+          - persist_to_workspace:
+              paths:
+                - prerelease.env
+              root: /tmp
+          - run:
+              command: git push --follow-tags origin ${CIRCLE_BRANCH}
+              name: Push the pre-release
+          - check_npm_private
+          - run:
+              command: |
+                echo "export SLACK_PROJECT_NAME=${CIRCLE_PROJECT_REPONAME}" >> $BASH_ENV
+                echo "export SLACK_RELEASE_TYPE='NPM pre-release'" >> $BASH_ENV
+                echo "export SLACK_RELEASE_TAG=${RELEASE_TAG}" >> $BASH_ENV
+                echo "export SLACK_RELEASE_URL=https://www.npmjs.com/package/@mojaloop/${CIRCLE_PROJECT_REPONAME}/v/${PACKAGE_VERSION}" >> $BASH_ENV
+                echo "export SLACK_BUILD_ID=${CIRCLE_BUILD_NUM}" >> $BASH_ENV
+                echo "export SLACK_CI_URL=${CIRCLE_BUILD_URL}" >> $BASH_ENV
+              name: Setup Slack config
+          - npm_auth
+          - npm_publish
+          - run:
+              command: |
+                for var in $(compgen -A variable | grep "^DOWNSTREAM_PACKAGE_"); do
+                    REPO_NAME=$(echo ${!var} | cut -d: -f1)
+                    echo "Triggering downstream workflow for $REPO_NAME"
+                    curl -L \
+                        -X POST \
+                        -H "Accept: application/vnd.github+json" \
+                        -H "Authorization: Bearer $(echo ${!var} | cut -d: -f2)" \
+                        https://api.github.com/repos/$REPO_NAME/actions/workflows/npm-package.yaml/dispatches \
+                        -d '{"ref":"main","inputs":{"version":"${PACKAGE_VERSION}","tag":"${RELEASE_TAG}"}}'
+                done
+              name: Trigger downstream workflows
+          - when:
+              condition: << parameters.slack >>
+              steps:
+                - slack_pass_fail
+      publish_npm_snapshot:
+        description: |
+          This job publishes a snapshot pre-release to NPM.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: docker
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          slack:
+            default: ""
+            type: string
+          yarn_lock:
+            default: ""
+            type: string
+        steps:
+          - docker_dependencies
+          - checkout
+          - configure_nvm
+          - check_npm_private
+          - restore_cache_command:
+              yarn_lock: << parameters.yarn_lock >>
+          - run:
+              command: |
+                echo "export RELEASE_TAG=${RELEASE_TAG_SNAPSHOT}" >> $BASH_ENV
+                echo "RELEASE_TAG=${RELEASE_TAG_SNAPSHOT}"
+                echo "Override package version: ${CIRCLE_TAG:1}"
+                npx standard-version --skip.tag --skip.commit --skip.changelog --release-as ${CIRCLE_TAG:1}
+                PACKAGE_VERSION=$(cat package.json | jq -r .version)
+                echo "export PACKAGE_VERSION=${PACKAGE_VERSION}" >> $BASH_ENV
+                echo "PACKAGE_VERSION=${PACKAGE_VERSION}"
+              name: Setup for SNAPSHOT release
+          - run:
+              command: |
+                echo "export SLACK_PROJECT_NAME=${CIRCLE_PROJECT_REPONAME}" >> $BASH_ENV
+                echo "export SLACK_RELEASE_TYPE='NPM Snapshot'" >> $BASH_ENV
+                echo "export SLACK_RELEASE_TAG=v${CIRCLE_TAG:1}" >> $BASH_ENV
+                echo "export SLACK_RELEASE_URL=https://www.npmjs.com/package/@mojaloop/${CIRCLE_PROJECT_REPONAME}/v/${CIRCLE_TAG:1}" >> $BASH_ENV
+                echo "export SLACK_BUILD_ID=${CIRCLE_BUILD_NUM}" >> $BASH_ENV
+                echo "export SLACK_CI_URL=${CIRCLE_BUILD_URL}" >> $BASH_ENV
+              name: Setup Slack config
+          - npm_auth
+          - npm_publish
+          - when:
+              condition: << parameters.slack >>
+              steps:
+                - slack_pass_fail
+      release:
+        description: |
+          This job publishes a release to GitHub.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: docker
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          slack:
+            default: ""
+            type: string
+          yarn_lock:
+            default: ""
+            type: string
+        steps:
+          - docker_dependencies
+          - checkout
+          - configure_nvm
+          - restore_cache_command:
+              yarn_lock: << parameters.yarn_lock >>
+          - configure_git
+          - run:
+              command: |
+                echo "export SLACK_PROJECT_NAME=${CIRCLE_PROJECT_REPONAME}" >> $BASH_ENV
+                echo "export SLACK_RELEASE_TYPE='GitHub Release'" >> $BASH_ENV
+                echo "export SLACK_RELEASE_TAG='${RELEASE_TAG} on ${CIRCLE_BRANCH} branch'" >> $BASH_ENV
+                echo "export SLACK_BUILD_ID=${CIRCLE_BUILD_NUM}" >> $BASH_ENV
+                echo "export SLACK_CI_URL=${CIRCLE_BUILD_URL}" >> $BASH_ENV
+              name: Setup Slack config
+          - run:
+              command: npm run release -- --no-verify
+              name: Generate changelog and bump package version
+          - run:
+              command: git push --follow-tags origin ${CIRCLE_BRANCH}
+              name: Push the release
+          - when:
+              condition: << parameters.slack >>
+              steps:
+                - slack/notify:
+                    event: fail
+                    template: SLACK_TEMP_RELEASE_FAILURE
+      setup:
+        description: |
+          Setup node.js and install dependencies.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: docker
+          resource_class: << parameters.resource_class >>
+        parameters:
+          git_tag:
+            default: ""
+            type: string
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          yarn_lock:
+            default: ""
+            type: string
+        steps:
+          - docker_dependencies
+          - when:
+              condition:
+                matches:
+                  pattern: ^v\d+(\.\d+){2}-(minor|major|patch)\.\d+$
+                  value: << parameters.git_tag >>
+              steps:
+                - ghpr/build-prospective-branch
+          - when:
+              condition:
+                not:
+                  matches:
+                    pattern: ^v\d+(\.\d+){2}-(minor|major|patch)\.\d+$
+                    value: << parameters.git_tag >>
+              steps:
+                - checkout
+          - configure_nvm
+          - display_versions
+          - when:
+              condition:
+                not: << parameters.yarn_lock >>
+              steps:
+                - run:
+                    command: npm ci
+                    name: NPM install
+                - save_cache:
+                    key: dependency-cache-{{ .Environment.CIRCLE_SHA1 }}
+                    paths:
+                      - node_modules
+          - when:
+              condition: << parameters.yarn_lock >>
+              steps:
+                - run:
+                    command: |
+                      yarn install --immutable
+                      yarn run build
+                    name: Yarn install
+                - save_cache:
+                    key: yarn-packages-{{ checksum "yarn.lock" }}
+                    name: Save Yarn Package Cache
+                    paths:
+                      - .yarn
+                      - .yarn/unplugged
+                      - node_modules
+      test_coverage:
+        description: Run code coverage check
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: docker
+          resource_class: << parameters.resource_class >>
+        parameters:
+          aws:
+            default: ""
+            type: string
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          yarn_lock:
+            default: ""
+            type: string
+        steps:
+          - docker_dependencies
+          - when:
+              condition: << parameters.aws >>
+              steps:
+                - aws_dependencies
+          - checkout
+          - configure_nvm
+          - display_versions
+          - restore_cache_command:
+              yarn_lock: << parameters.yarn_lock >>
+          - run:
+              command: npm -s run test:coverage-check
+              name: Execute code coverage check
+          - store_artifacts:
+              destination: test
+              path: coverage
+          - store_test_results:
+              path: coverage
+      test_dependencies:
+        description: |
+          This job tests the project's dependencies.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: docker
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          yarn_lock:
+            default: ""
+            type: string
+        steps:
+          - docker_dependencies
+          - checkout
+          - configure_nvm
+          - display_versions
+          - restore_cache_command:
+              yarn_lock: << parameters.yarn_lock >>
+          - run:
+              command: npm run dep:check
+              name: Execute dependency tests
+      test_deprecations:
+        description: |
+          This job tests for deprecated dependencies, at any level
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: docker
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          yarn_lock:
+            default: ""
+            type: string
+        steps:
+          - docker_dependencies
+          - checkout
+          - configure_nvm
+          - display_versions
+          - restore_cache_command:
+              yarn_lock: << parameters.yarn_lock >>
+          - run:
+              command: |
+                if [ -f yarn.lock ]; then
+                  npx -y --package @mojaloop/ml-depcheck-utility@1.1.3 check-deprecations-yarn
+                else
+                  npx -y --package @mojaloop/ml-depcheck-utility@1.1.3 check-deprecations-npm
+                fi
+              name: Execute deprecations tests
+      test_functional:
+        description: This job executes the functional tests for the project.
+        environment:
+          ML_CORE_TEST_HARNESS_DIR: /tmp/ml-core-test-harness
+        executor:
+          name: machine
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          yarn_lock:
+            default: ""
+            type: string
+        steps:
+          - checkout
+          - configure_nvm
+          - attach_workspace:
+              at: /tmp
+          - run:
+              command: |
+                if [ -f /tmp/docker-image.tar ]; then
+                  docker load -i /tmp/docker-image.tar
+                fi
+              name: Load the pre-built docker image from workspace
+          - run:
+              command: |
+                nvm use default
+                npm run test:functional
+              name: Execute TTK functional tests
+          - store_artifacts:
+              destination: test
+              path: /tmp/ml-core-test-harness/reports
+      test_integration:
+        description: |
+          This job executes the integration tests for the project.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: machine
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          yarn_lock:
+            default: ""
+            type: string
+        steps:
+          - machine_dependencies
+          - checkout
+          - configure_nvm
+          - display_versions
+          - attach_workspace:
+              at: /tmp
+          - run:
+              command: |
+                if [ -f /tmp/docker-image.tar ]; then
+                  echo "Found docker-image.tar, loading..."
+                  docker load -i /tmp/docker-image.tar
+                else
+                  echo "No docker-image.tar found, skipping docker load."
+                fi
+              name: Load the pre-built docker image from workspace
+          - run:
+              command: mkdir -p ./test/results
+              name: Create dir for test results
+          - run:
+              command: |
+                # Set Node version to default (Note: this is needed on Ubuntu)
+                nvm use default
+
+                echo "Running integration tests...."
+                if [ -f yarn.lock ]; then
+                  yarn install --immutable
+                  yarn run build
+                  yarn run test:integration
+                else
+                  npm ci
+                  npm run test:integration
+                fi
+              environment:
+                ENDPOINT_URL: http://localhost:4545/notification
+                TEST_INT_REBALANCE_DELAY: 20000
+                TEST_INT_RETRY_COUNT: 30
+                TEST_INT_RETRY_DELAY: 2
+                UV_THREADPOOL_SIZE: 12
+                WAIT_FOR_REBALANCE: 20
+              name: Execute integration tests
+          - store_artifacts:
+              destination: test
+              path: ./test/results
+          - store_test_results:
+              path: ./test/results
+      test_lint:
+        description: |
+          This job executes lint tests on the project.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: docker
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          yarn_lock:
+            default: ""
+            type: string
+        steps:
+          - docker_dependencies
+          - checkout
+          - configure_nvm
+          - display_versions
+          - restore_cache_command:
+              yarn_lock: << parameters.yarn_lock >>
+          - run:
+              command: npm run lint
+              name: Execute lint tests
+      test_unit:
+        description: |
+          This job executes lint tests on the project.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: docker
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          yarn_lock:
+            default: ""
+            type: string
+        steps:
+          - docker_dependencies
+          - checkout
+          - configure_nvm
+          - display_versions
+          - restore_cache_command:
+              yarn_lock: << parameters.yarn_lock >>
+          - run:
+              command: mkdir -p ./test/results
+              name: Create dir for test results
+          - run:
+              command: npm -s run test:xunit
+              name: Execute unit tests
+          - store_artifacts:
+              destination: test
+              path: ./test/results
+          - store_test_results:
+              path: ./test/results
+      vulnerability_check:
+        description: |
+          This job checks for vulnerabilities in the project.
+        environment:
+          MAIN_BRANCH_NAME: main
+        executor:
+          name: docker
+          resource_class: << parameters.resource_class >>
+        parameters:
+          resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          yarn_lock:
+            default: ""
+            type: string
+        steps:
+          - docker_dependencies
+          - checkout
+          - configure_nvm
+          - display_versions
+          - restore_cache_command:
+              yarn_lock: << parameters.yarn_lock >>
+          - run:
+              command: mkdir -p ./audit/results
+              name: Create dir for test results
+          - run:
+              command: npm run audit:check -- -o json > ./audit/results/auditResults.json
+              name: Check for vulnerabilities
+          - store_artifacts:
+              destination: audit
+              path: ./audit/results
+      workflow:
+        description: |
+          Runs build and test workflow
+        executor: continuation/default
+        parameters:
+          build_local_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          check_security_txt_expiry_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          github_prerelease_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          github_release_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          grype_scan_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          license_scan_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          pr_title_check_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          publish_docker_prerelease_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          publish_docker_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          publish_docker_snapshot_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          publish_npm_prerelease_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          publish_npm_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          publish_npm_snapshot_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          release_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          setup_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          test_coverage_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          test_dependencies_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          test_deprecations_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          test_functional_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          test_integration_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          test_lint_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          test_unit_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+          vulnerability_check_resource_class:
+            default: medium
+            enum:
+              - small
+              - medium
+              - medium+
+              - large
+              - xlarge
+              - 2xlarge
+              - 2xlarge+
+            type: enum
+        steps:
+          - checkout
+          - run:
+              command: |
+                echo "$SCRIPT" > /tmp/build_and_test.yml
+                echo '{
+                  "pr_title_check_resource_class":"<< parameters.pr_title_check_resource_class>>",
+                  "setup_resource_class":"<< parameters.setup_resource_class>>",
+                  "test_dependencies_resource_class":"<< parameters.test_dependencies_resource_class>>",
+                  "test_deprecations_resource_class":"<< parameters.test_deprecations_resource_class>>",
+                  "test_lint_resource_class":"<< parameters.test_lint_resource_class>>",
+                  "test_unit_resource_class":"<< parameters.test_unit_resource_class>>",
+                  "test_coverage_resource_class":"<< parameters.test_coverage_resource_class>>",
+                  "vulnerability_check_resource_class":"<< parameters.vulnerability_check_resource_class>>",
+                  "license_scan_resource_class":"<< parameters.license_scan_resource_class>>",
+                  "build_local_resource_class":"<< parameters.build_local_resource_class>>",
+                  "test_integration_resource_class":"<< parameters.test_integration_resource_class>>",
+                  "test_functional_resource_class":"<< parameters.test_functional_resource_class>>",
+                  "grype_scan_resource_class":"<< parameters.grype_scan_resource_class>>",
+                  "check_security_txt_expiry_resource_class":"<< parameters.check_security_txt_expiry_resource_class>>",
+                  "release_resource_class":"<< parameters.release_resource_class>>",
+                  "github_release_resource_class":"<< parameters.github_release_resource_class>>",
+                  "github_prerelease_resource_class":"<< parameters.github_prerelease_resource_class>>",
+                  "publish_docker_resource_class":"<< parameters.publish_docker_resource_class>>",
+                  "publish_npm_resource_class":"<< parameters.publish_npm_resource_class>>",
+                  "publish_docker_snapshot_resource_class":"<< parameters.publish_docker_snapshot_resource_class>>",
+                  "publish_npm_snapshot_resource_class":"<< parameters.publish_npm_snapshot_resource_class>>",
+                  "publish_npm_prerelease_resource_class":"<< parameters.publish_npm_prerelease_resource_class>>",
+                  "publish_docker_prerelease_resource_class":"<< parameters.publish_docker_prerelease_resource_class>>",
+                  "git_tag":"'$CIRCLE_CI_TAG'",
+                  "pull_request":"'$CIRCLE_PULL_REQUEST'",
+                  "yarn_lock":"'$(test -f yarn.lock && echo "true" || echo "")'",
+                  "slack":"'$(test -n "$SLACK_ACCESS_TOKEN" && echo "true" || echo "")'",
+                  "aws":"'$(test -n "$AWS_SECRET_ACCESS_KEY" && echo "true" || echo "")'"
+                }' > /tmp/build_and_test_parameters.json
+              environment:
+                SCRIPT: |
+                  version: 2.1
+                  orbs:
+                    build: mojaloop/build@2.3.0
+                  parameters:
+                    git_tag:
+                      type: string
+                      default: ""
+                    pull_request:
+                      type: string
+                      default: ""
+                    yarn_lock:
+                      type: string
+                      default: ""
+                    slack:
+                      type: string
+                      default: ""
+                    aws:
+                      type: string
+                      default: ""
+                    pr_title_check_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    setup_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    test_dependencies_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    test_deprecations_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    test_lint_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    test_unit_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    test_coverage_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    vulnerability_check_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    license_scan_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    build_local_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    test_integration_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    test_functional_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    grype_scan_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    check_security_txt_expiry_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    release_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    github_release_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    github_prerelease_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    publish_docker_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    publish_npm_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    publish_docker_snapshot_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    publish_npm_snapshot_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    publish_npm_prerelease_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                    publish_docker_prerelease_resource_class:
+                      type: enum
+                      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+                      default: medium
+                  workflows:
+                    checks:
+                      when: \<< pipeline.parameters.pull_request >>
+                      jobs:
+                        - build/pr_title_check:
+                            name: PR title
+                            context: org-global
+                            resource_class: \<< pipeline.parameters.pr_title_check_resource_class >>
+                            filters:
+                              branches:
+                                ignore:
+                                  - main
+                                  - master
+                    build_and_test:
+                      jobs:
+                        - build/setup:
+                            name: Setup
+                            resource_class: \<< pipeline.parameters.setup_resource_class >>
+                            yarn_lock: \<< pipeline.parameters.yarn_lock >>
+                            filters: &setup-filter
+                              branches:
+                                ignore:
+                                  - /feature*/
+                                  - /bugfix*/
+                              tags: &setup-tags
+                                only: /v\d+(\.\d+){2}(-[a-zA-Z-][0-9a-zA-Z-]*\.\d+)?/
+                        - build/test_dependencies:
+                            name: Dependencies
+                            resource_class: \<< pipeline.parameters.test_dependencies_resource_class >>
+                            yarn_lock: \<< pipeline.parameters.yarn_lock >>
+                            filters:
+                              branches:
+                                ignore:
+                                  - main
+                                  - master
+                            requires:
+                              - Setup
+                        - build/test_deprecations:
+                            name: Deprecations
+                            resource_class: \<< pipeline.parameters.test_deprecations_resource_class >>
+                            yarn_lock: \<< pipeline.parameters.yarn_lock >>
+                            filters: *setup-filter
+                            requires:
+                              - Setup
+                        - build/test_lint: &test-condition
+                            name: Lint
+                            resource_class: \<< pipeline.parameters.test_lint_resource_class >>
+                            yarn_lock: \<< pipeline.parameters.yarn_lock >>
+                            filters: *setup-filter
+                            requires:
+                              - Setup
+                        - build/test_unit:
+                            \<<: *test-condition
+                            name: Unit tests
+                            resource_class: \<< pipeline.parameters.test_unit_resource_class >>
+                        - build/test_coverage:
+                            \<<: *test-condition
+                            name: Coverage
+                            aws: \<< pipeline.parameters.aws >>
+                            resource_class: \<< pipeline.parameters.test_coverage_resource_class >>
+                        - build/vulnerability_check:
+                            \<<: *test-condition
+                            name: Vulnerability check
+                            resource_class: \<< pipeline.parameters.vulnerability_check_resource_class >>
+                        - build/license_scan:
+                            \<<: *test-condition
+                            name: License scan
+                            resource_class: \<< pipeline.parameters.license_scan_resource_class >>
+                        - build/check_security_txt_expiry:
+                            name: Security.txt expiry
+                            resource_class: \<< pipeline.parameters.check_security_txt_expiry_resource_class >>
+                            filters: *setup-filter
+                            requires:
+                              - Setup
+                        - build/build_local:
+                            \<<: *test-condition
+                            name: Build
+                            resource_class: \<< pipeline.parameters.build_local_resource_class >>
+                            context: org-global
+                        - build/test_integration: &test-docker
+                            name: Integration tests
+                            resource_class: \<< pipeline.parameters.test_integration_resource_class >>
+                            yarn_lock: \<< pipeline.parameters.yarn_lock >>
+                            filters: *setup-filter
+                            requires:
+                              - Build
+                        - build/test_functional:
+                            \<<: *test-docker
+                            name: Functional tests
+                            resource_class: \<< pipeline.parameters.test_functional_resource_class >>
+                        - build/grype_scan:
+                            name: Grype scan
+                            resource_class: \<< pipeline.parameters.grype_scan_resource_class >>
+                            context: org-global
+                            filters:
+                              branches:
+                                only: /.*/
+                              tags: *setup-tags
+                            requires:
+                              - Setup
+                        - build/release:
+                            name: Release
+                            resource_class: \<< pipeline.parameters.release_resource_class >>
+                            yarn_lock: \<< pipeline.parameters.yarn_lock >>
+                            slack: \<< pipeline.parameters.slack >>
+                            context: org-global
+                            filters: &release
+                              branches:
+                                only:
+                                  - main
+                                  - master
+                                  - /release\/v.*/
+                            requires: &tests
+                              - Lint
+                              - Unit tests
+                              - Integration tests
+                              - Functional tests
+                              - Coverage
+                              - Vulnerability check
+                              - License scan
+                              - Grype scan
+                              - Security.txt expiry
+                        - build/github_release:
+                            name: GitHub release
+                            resource_class: \<< pipeline.parameters.github_release_resource_class >>
+                            slack: \<< pipeline.parameters.slack >>
+                            context: org-global
+                            filters: *release
+                            requires:
+                              - Release
+                        - build/publish_docker: &publish-job
+                            name: Docker release
+                            resource_class: \<< pipeline.parameters.publish_docker_resource_class >>
+                            slack: \<< pipeline.parameters.slack >>
+                            context: org-global
+                            filters:
+                              branches:
+                                ignore:
+                                  - /.*/
+                              tags:
+                                only: /v\d+(\.\d+){2}/
+                            requires: *tests
+                        - build/publish_npm:
+                            \<<: *publish-job
+                            name: NPM release
+                            resource_class: \<< pipeline.parameters.publish_npm_resource_class >>
+                            yarn_lock: \<< pipeline.parameters.yarn_lock >>
+                            slack: \<< pipeline.parameters.slack >>
+                        - build/publish_docker_snapshot: &publish-snapshot-job
+                            name: Docker snapshot
+                            resource_class: \<< pipeline.parameters.publish_docker_snapshot_resource_class >>
+                            slack: \<< pipeline.parameters.slack >>
+                            context: org-global
+                            filters:
+                              branches:
+                                ignore:
+                                  - /.*/
+                              tags:
+                                only: /v\d+(\.\d+){2}-(snapshot|hotfix|perf|tigerbeetle)\.\d+/
+                            requires: *tests
+                        - build/publish_npm_snapshot:
+                            \<<: *publish-snapshot-job
+                            name: NPM snapshot
+                            resource_class: \<< pipeline.parameters.publish_npm_snapshot_resource_class >>
+                            yarn_lock: \<< pipeline.parameters.yarn_lock >>
+                            slack: \<< pipeline.parameters.slack >>
+                        - build/github_prerelease:
+                            name: GitHub prerelease
+                            resource_class: \<< pipeline.parameters.github_prerelease_resource_class >>
+                            context: org-global
+                            filters:
+                              branches:
+                                ignore:
+                                  - /.*/
+                              tags:
+                                only: /v\d+(\.\d+){2}-(snapshot|hotfix|perf|tigerbeetle)\.\d+/
+                            requires: *tests
+                        - build/publish_npm_prerelease:
+                            name: NPM prerelease
+                            resource_class: \<< pipeline.parameters.publish_npm_prerelease_resource_class >>
+                            yarn_lock: \<< pipeline.parameters.yarn_lock >>
+                            # slack: \<< pipeline.parameters.slack >>
+                            context: org-global
+                            filters: &only-prerelease-branches
+                              branches:
+                                only:
+                                  - /(major|minor|patch)/.*/
+                            requires:
+                              - Lint
+                              - Unit tests
+                              - Integration tests
+                              - Functional tests
+                              - License scan
+                              - Grype scan
+                              - Security.txt expiry
+                        - build/publish_docker_prerelease:
+                            name: Docker prerelease
+                            resource_class: \<< pipeline.parameters.publish_docker_prerelease_resource_class >>
+                            # slack: \<< pipeline.parameters.slack >>
+                            context: org-global
+                            filters: *only-prerelease-branches
+                            requires:
+                              - NPM prerelease
+              name: Create workflow
+          - run:
+              command: |
+                if [ -f .circleci/additional-workflows.yaml ]; then
+                  # Install yq for YAML processing
+                  sudo apt-get update && sudo apt-get install -y jq
+                  wget https://github.com/mikefarah/yq/releases/download/v4.43.1/yq_linux_amd64 -O /tmp/yq
+                  chmod +x /tmp/yq
+                  /tmp/yq eval-all '. as $item ireduce ({}; . *+ $item)' /tmp/build_and_test.yml .circleci/additional-workflows.yaml > /tmp/merged-config.yml
+                  mv /tmp/merged-config.yml /tmp/build_and_test.yml
+                  cat /tmp/build_and_test.yml
+                fi
+              name: Merge additional workflows
+          - continuation/continue:
+              configuration_path: /tmp/build_and_test.yml
+              parameters: /tmp/build_and_test_parameters.json
+    examples:
+      build_and_test:
+        description: |
+          Build and publish nodejs projects to npm and docker.
+        usage:
+          version: "2.1"
+          setup: true
+          orbs:
+            build: mojaloop/build@2.3.0
+          workflows:
+            setup:
+              jobs:
+                - build/workflow:
+                    context: org-global
+                    filters:
+                      tags:
+                        only: /v\d+(\.\d+){2}(-[a-zA-Z-][0-9a-zA-Z-]*\.\d+)?/
