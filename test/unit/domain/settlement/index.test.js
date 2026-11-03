@@ -405,15 +405,15 @@ Test('SettlementService', async (settlementServiceTest) => {
         }
       })
 
-      await getSettlementsByParamsTest.test('throw', async test => {
+      await getSettlementsByParamsTest.test('answer an empty list when no settlement matches', async test => {
         try {
-          SettlementModel.getByParams = sandbox.stub()
-          await SettlementService.getSettlementsByParams(params, enums)
-          test.fail('Error not thrown!')
+          SettlementModel.getByParams = sandbox.stub().returns([])
+          const result = await SettlementService.getSettlementsByParams(params, enums)
+          test.deepEqual(result, [], 'no settlements')
           test.end()
         } catch (err) {
           logger.error(`getSettlementsByParamsTest failed with error - ${err}`)
-          test.equal(err.message, 'No settlements found matching the provided parameters: {"state":1}', `Error "${err.message}" thrown`)
+          test.fail()
           test.end()
         }
       })

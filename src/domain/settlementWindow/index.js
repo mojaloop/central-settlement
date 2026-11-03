@@ -83,11 +83,8 @@ module.exports = {
           }
         }
         return settlementWindows
-      } else {
-        const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, `settlementWindow by filters: ${JSON.stringify(params.query).replace(/"/g, '')} not found`)
-        logger.error(error)
-        throw error
       }
+      return []
     } else {
       const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Use at least one parameter: participantId, state, fromDateTime, toDateTime, currency')
       logger.error(error)

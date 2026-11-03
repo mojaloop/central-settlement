@@ -242,14 +242,8 @@ module.exports = {
           return settlements[i]
         })
         return result
-      } else {
-        const error = ErrorHandler.Factory.createFSPIOPError(
-          ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR,
-          `No settlements found matching the provided parameters: ${JSON.stringify(params.query)}`
-        )
-        logger.error(error)
-        throw error
       }
+      return []
     } else {
       const error = ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.VALIDATION_ERROR, 'Use at least one parameter: state, fromDateTime, toDateTime, currency, settlementWindowId, fromSettlementWindowDateTime, toSettlementWindowDateTime, participantId, accountId')
       logger.error(error)

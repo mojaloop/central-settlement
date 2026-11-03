@@ -175,14 +175,10 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
           test.ok(result, 'Result returned')
           test.ok(SettlementWindowModel.getByParams.withArgs(params, enums).calledOnce, 'SettlementWindowModel.getByParams with args ... called once')
 
-          SettlementWindowModel.getByParams = sandbox.stub().returns()
-          try {
-            await SettlementWindowService.getByParams(params, enums)
-            test.fail('Error expected, but not thrown!')
-          } catch (err) {
-            test.ok(err instanceof Error, `Error "${err.message}" thrown as expected`)
-            test.ok(SettlementWindowModel.getByParams.withArgs(params, enums).calledOnce, 'SettlementWindowModel.getByParams with args ... called once')
-          }
+          SettlementWindowModel.getByParams = sandbox.stub().returns([])
+          const none = await SettlementWindowService.getByParams(params, enums)
+          test.deepEqual(none, [], 'no settlement windows when none matches')
+          test.ok(SettlementWindowModel.getByParams.withArgs(params, enums).calledOnce, 'SettlementWindowModel.getByParams with args ... called once')
 
           params = { query: {} }
           try {
@@ -227,14 +223,10 @@ Test('SettlementWindowService', async (settlementWindowServiceTest) => {
           } catch (err) {
             test.equal(err.message, 'No records for settlementWidowContentId : 1 found')
           }
-          SettlementWindowModel.getByParams = sandbox.stub().returns()
-          try {
-            await SettlementWindowService.getByParams(params, enums)
-            test.fail('Error expected, but not thrown!')
-          } catch (err) {
-            test.ok(err instanceof Error, `Error "${err.message}" thrown as expected`)
-            test.ok(SettlementWindowModel.getByParams.withArgs(params, enums).calledOnce, 'SettlementWindowModel.getByParams with args ... called once')
-          }
+          SettlementWindowModel.getByParams = sandbox.stub().returns([])
+          const none = await SettlementWindowService.getByParams(params, enums)
+          test.deepEqual(none, [], 'no settlement windows when none matches')
+          test.ok(SettlementWindowModel.getByParams.withArgs(params, enums).calledOnce, 'SettlementWindowModel.getByParams with args ... called once')
 
           params = { query: {} }
           try {
