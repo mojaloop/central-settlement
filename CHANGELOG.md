@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.5.2](https://github.com/mojaloop/central-settlement/compare/v17.5.1...v17.5.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* **security:** patch 8 vulnerabilities + update deps, orb, docker ([#493](https://github.com/mojaloop/central-settlement/issues/493)) ([dcbd428](https://github.com/mojaloop/central-settlement/commit/dcbd42893c1ba2459e5e3da8b46a9f3f875ef380))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([daed60b](https://github.com/mojaloop/central-settlement/commit/daed60bee202218b0d66ae4b10fc4998d9aaaea1))
+
 ### [17.5.1](https://github.com/mojaloop/central-settlement/compare/v17.5.0...v17.5.1) (2026-09-25)
 
 

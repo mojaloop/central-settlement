@@ -4,5 +4,6 @@
   // Only use one of ["low": true, "moderate": true, "high": true, "critical": true]
   "moderate": true,
   "allowlist": [ // NOTE: Please add as much information as possible to any items added to the allowList
+    "GHSA-vfj7-8cjw-p6xm" // braces stack-exhaustion ReDoS - dev-only transitive via @mojaloop/api-snippets > ts-auto-mock > micromatch; no patched release of braces 3.x exists (2026-10-16)
   ]
 }
