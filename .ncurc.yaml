@@ -1,5 +1,7 @@
 ## Add a comment indicating the reason for each rejected dependency upgrade added to this list, and what must change before it can be removed.
 reject: [
   # joi v18 and onwards, is blocked by hapi-swagger@17.3.2 designed to work with Joi v17
-  "joi"
+  "joi",
+  # @mojaloop/central-ledger v19.14.0 is working version, later versions break because of moving to TypeScript
+  "@mojaloop/central-ledger"
 ]
