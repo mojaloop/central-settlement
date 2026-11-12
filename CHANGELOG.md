@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.5.3](https://github.com/mojaloop/central-settlement/compare/v17.5.2...v17.5.3) (2026-11-12)
+
+
+### Bug Fixes
+
+* **facade:** incorrect NDC in settlement reserve fixed ([#497](https://github.com/mojaloop/central-settlement/issues/497)) ([c0123a5](https://github.com/mojaloop/central-settlement/commit/c0123a531015ada1e3eafbbd023587ca87bd9be1))
+
+
+### Chore
+
+* **sbom:** update sbom [skip ci] ([11ee57f](https://github.com/mojaloop/central-settlement/commit/11ee57f3043f2f6c94d28a6829a3efa3a6529bfa))
+
 ### [17.5.2](https://github.com/mojaloop/central-settlement/compare/v17.5.1...v17.5.2) (2026-10-22)
 
 
