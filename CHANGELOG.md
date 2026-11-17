@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.5.4](https://github.com/mojaloop/central-settlement/compare/v17.5.3...v17.5.4) (2026-11-17)
+
+
+### Chore
+
+* add deprecation notice ([#479](https://github.com/mojaloop/central-settlement/issues/479)) ([3fc1543](https://github.com/mojaloop/central-settlement/commit/3fc1543ed9ae811c52f0f725de7f872d4d14e6e3))
+* **sbom:** update sbom [skip ci] ([ef97957](https://github.com/mojaloop/central-settlement/commit/ef97957e54fd0bf82b8fd6c16ac3d567739fe804))
+
 ### [17.5.3](https://github.com/mojaloop/central-settlement/compare/v17.5.2...v17.5.3) (2026-11-12)
 
 
