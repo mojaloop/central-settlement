@@ -1,9 +1,12 @@
 # central-settlements
+
+> **Note:** This repository has been merged into [`central-ledger`](https://github.com/mojaloop/central-ledger)
+> This repository has been deprecated and as will be soon marked as an archive.
+
 [![Git Commit](https://img.shields.io/github/last-commit/mojaloop/central-settlement.svg?style=flat)](https://github.com/mojaloop/central-settlement/commits/main)
 [![Git Releases](https://img.shields.io/github/release/mojaloop/central-settlement.svg?style=flat)](https://github.com/mojaloop/central-settlement/releases)
 [![Docker pulls](https://img.shields.io/docker/pulls/mojaloop/central-settlement.svg?style=flat)](https://hub.docker.com/r/mojaloop/central-settlement)
 [![CircleCI](https://circleci.com/gh/mojaloop/central-settlement.svg?style=svg)](https://app.circleci.com/pipelines/github/mojaloop/central-settlement)
-
 
 The Central Settlements service is part of the Mojaloop project and deployment.
 
